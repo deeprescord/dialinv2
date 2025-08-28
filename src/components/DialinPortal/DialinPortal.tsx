@@ -14,6 +14,7 @@ import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateFloorModal } from './CreateFloorModal';
+import { FloatingChat } from './FloatingChat';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -341,6 +342,9 @@ export function DialinPortal() {
         onClose={() => setShowCreateFloorModal(false)}
         onCreate={handleCreateFloor}
       />
+
+      {/* Floating Chat */}
+      <FloatingChat />
     </div>
   );
 }

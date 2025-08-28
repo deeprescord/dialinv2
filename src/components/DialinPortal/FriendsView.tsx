@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PinnedContactsRow } from './PinnedContactsRow';
+import { ContactHeader } from './ContactHeader';
 import { MediaGrid } from './MediaGrid';
 import { Friend, Post } from '@/data/catalogs';
 
@@ -26,10 +27,21 @@ export function FriendsView({
       transition={{ duration: 0.3 }}
       className="pt-32 lg:pt-28 pb-20"
     >
-      <PinnedContactsRow 
-        contacts={pinnedContacts}
-        onContactClick={onContactClick}
-      />
+      {/* Pinned Contact Headers */}
+      {pinnedContacts.length > 0 && (
+        <div className="mb-8 px-4">
+          <h2 className="text-xl font-semibold mb-4">Pinned Contacts</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pinnedContacts.slice(0, 4).map((contact) => (
+              <ContactHeader
+                key={contact.id}
+                contact={contact}
+                onContactClick={onContactClick}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="px-4 mb-6">
         <h2 className="text-xl font-semibold mb-4">Recent Posts</h2>

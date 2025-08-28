@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, ChevronDown, Coin } from '../icons';
+import { Search, Bell } from '../icons';
 import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
+import { UserDropdown } from './UserDropdown';
 import { formatDialCount } from '@/lib/filters';
 
 interface TopNavProps {
@@ -26,27 +26,27 @@ const filterTabs = ['videos', 'music', 'locations'];
 export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount }: TopNavProps) {
   return (
     <motion.nav 
-      className="fixed top-4 left-4 right-4 z-50 glass-nav px-6 py-3"
+      className="fixed top-4 left-4 right-4 z-50 glass-nav px-3 sm:px-6 py-3"
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-2 sm:space-x-8">
           <img 
             src="/brand/dialin-logo-white.png" 
             alt="Dialin" 
-            className="h-8 w-auto"
+            className="h-6 sm:h-8 w-auto"
           />
           
           {/* Desktop Tabs */}
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={currentTab === tab.id ? 'default' : 'ghost'}
-                className={`relative px-4 py-2 rounded-full transition-all duration-200 ${
+                className={`relative px-3 xl:px-4 py-2 rounded-full transition-all duration-200 text-sm ${
                   currentTab === tab.id 
                     ? 'bg-dialin-purple text-white shadow-lg shadow-dialin-purple/25' 
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -65,13 +65,13 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
         </div>
 
         {/* Right Side */}
-        <div className="flex items-center space-x-4">
-          {/* Search */}
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Search - Hidden on small screens */}
           <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
             <Input 
               placeholder="Search..." 
-              className="pl-10 bg-white/5 border-white/10 rounded-full w-64 focus:bg-white/10"
+              className="pl-10 bg-white/5 border-white/10 rounded-full w-48 xl:w-64 focus:bg-white/10"
             />
           </div>
 
@@ -83,24 +83,17 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
           )}
 
           {/* $DIAL Badge */}
-          <div className="flex items-center space-x-2 px-3 py-1 bg-dialin-gold/20 text-dialin-gold rounded-full">
-            <Coin size={16} />
+          <div className="hidden sm:flex items-center space-x-2 px-2 sm:px-3 py-1 bg-dialin-gold/20 text-dialin-gold rounded-full text-xs sm:text-sm">
             <span className="font-bold">{formatDialCount(dialCount)} $DIAL</span>
           </div>
 
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="p-2 rounded-full">
-            <Bell size={20} />
+            <Bell size={18} sm:size={20} />
           </Button>
 
-          {/* Profile */}
-          <div className="flex items-center space-x-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="https://i.pravatar.cc/150?img=1" />
-              <AvatarFallback>ME</AvatarFallback>
-            </Avatar>
-            <ChevronDown size={16} className="text-muted-foreground" />
-          </div>
+          {/* Profile Dropdown */}
+          <UserDropdown />
         </div>
       </div>
     </motion.nav>

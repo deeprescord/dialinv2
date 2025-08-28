@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Video, Music, MapPin, Home as HomeIcon } from '../icons';
@@ -21,7 +22,7 @@ const filterTabs = ['videos', 'music', 'locations'];
 export function MobileTabBar({ currentTab, onTabChange, selectedChipsCount }: MobileTabBarProps) {
   return (
     <motion.div 
-      className="lg:hidden fixed top-20 left-4 right-4 z-40 glass-nav p-2"
+      className="lg:hidden fixed top-16 sm:top-20 left-2 right-2 z-40 glass-nav p-2"
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, delay: 0.1 }}
@@ -32,14 +33,14 @@ export function MobileTabBar({ currentTab, onTabChange, selectedChipsCount }: Mo
           return (
             <button
               key={tab.id}
-              className={`relative flex flex-col items-center p-3 rounded-xl transition-all duration-200 ${
+              className={`relative flex flex-col items-center p-2 sm:p-3 rounded-xl transition-all duration-200 ${
                 currentTab === tab.id 
                   ? 'bg-dialin-purple text-white' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
               }`}
               onClick={() => onTabChange(tab.id)}
             >
-              <Icon size={20} />
+              <Icon size={18} />
               <span className="text-xs mt-1 font-medium">{tab.label}</span>
               
               {filterTabs.includes(tab.id) && selectedChipsCount > 0 && (

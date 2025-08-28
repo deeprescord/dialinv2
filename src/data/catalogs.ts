@@ -60,43 +60,43 @@ export interface Post {
 const UNSPLASH_IDS = {
   cinema: [
     '1489844398144-8afd8be2afeb', // Cinema screens
-    '1574267432553-4b3e64618c47', // Movie theater
-    '1616530940355-351fabd9524b', // Film equipment
-    '1518676590629-3dcbd9c5a5c9', // Retro cinema
     '1440404653325-ab127d49abc1', // Film projector
     '1578662996442-374dcbcbc495', // Movie posters
-    '1489844398144-8afd8be2afeb', // Theater seats
-    '1627797391403-89e5c6dd3b67'  // Cinema lobby
+    '1627797391403-89e5c6dd3b67', // Cinema lobby
+    '1501594907352-04cda38ebc29', // Theater
+    '1583843115260-240cbcde1c7d', // Film equipment
+    '1493225457124-a3b1d1ec61da', // Vintage cinema
+    '1617015689170-e801bff6e4a3'  // Movie night
   ],
   music: [
     '1493225457124-a3b1d1ec61da', // DJ equipment
-    '1571019613454-1cb2f99b2d8b', // Vinyl records
-    '1519640760746-95d1211bbeea', // Music studio
-    '1511735111819-9a3f7709049c', // Headphones
-    '1614149162883-7b777440b3d5', // Sound mixer
-    '1493225457124-a3b1d1ec61da', // Turntables
+    '1471478331149-c72f17e33c73', // Vinyl records
     '1507838153414-b4b713384a76', // Guitar
-    '1520523839897-11c3d9a7929b'  // Microphone
+    '1520523839897-11c3d9a7929b', // Microphone
+    '1493225457124-a3b1d1ec61da', // Turntables
+    '1499415479748-80246fb4c3db', // Music notes
+    '1531482615713-2afd69097998', // Piano
+    '1493225457124-a3b1d1ec61da'  // Studio
   ],
   locations: [
     '1506905925346-21bea4d5618c', // City skyline
-    '1507003211169-0a1dd7a838fa', // Urban street
     '1449824913935-59a10b8d2000', // Coffee shop
-    '1541963463532-d68292c34d19', // Modern building
-    '1508193638397-1c4234db14d8', // Restaurant interior
+    '1504754524776-8f4f37790ca0', // Urban street
+    '1529258283598-8d6fe60b27f4', // Modern building
     '1555396273-f888ea5eedc7', // Park view
     '1564501049412-60c094d46a1', // Shopping area
-    '1506629905496-0119596b5fdb'  // Art gallery
+    '1506629905496-0119596b5fdb', // Art gallery
+    '1506905925346-21bea4d5618c'  // Plaza
   ],
   spaces: [
-    '1618005182384-a83a8bd57fbe', // Modern interior
-    '1629909613654-28e6c8816c9b', // Cozy room
+    '1586023492675-c6aaed827346', // Modern interior
+    '1460925895917-afdab827c52f', // Library
+    '1497366216548-37526070297c', // Living room
+    '1553062407-98eeb64c6a62', // Cozy room
     '1586023492675-c6aaed827346', // Gaming setup
     '1598300042247-d088f8ab3a91', // Study space
     '1583847268964-a6f45e725dc3', // Creative workspace
-    '1586023492675-c6aaed827346', // Tech lab
-    '1460925895917-afdab827c52f', // Library
-    '1497366216548-37526070297c'  // Living room
+    '1586023492675-c6aaed827346'  // Tech lab
   ],
   people: [
     '1507003211169-0a1dd7a838fa', // Portrait 1

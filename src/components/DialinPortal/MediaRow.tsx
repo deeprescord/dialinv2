@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { VideoItem, MusicItem, LocationItem, Post } from '@/data/catalogs';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Card } from '../ui/card';
+import { ImageFallback } from '../ui/image-fallback';
 
 interface MediaItem {
   id: string;
@@ -75,7 +76,7 @@ export function MediaRow({ title, items, onItemClick, onItemLongPress }: MediaRo
               onClick={() => handleClick(item)}
             >
               <div className="relative">
-                <img 
+                <ImageFallback 
                   src={item.thumb} 
                   alt={item.title}
                   className="w-full h-40 object-cover"

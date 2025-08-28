@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Card } from '../ui/card';
+import { ImageFallback } from '../ui/image-fallback';
 
 interface GridItem {
   id: string;
@@ -71,7 +72,7 @@ export function MediaGrid({ items, onItemClick, onItemLongPress }: MediaGridProp
             onClick={() => handleClick(item)}
           >
             <div className="relative">
-              <img 
+              <ImageFallback 
                 src={item.thumb} 
                 alt={item.title}
                 className="w-full h-32 sm:h-40 object-cover"

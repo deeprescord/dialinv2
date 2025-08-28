@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Plus } from '../icons';
 import { Floor } from '@/data/catalogs';
+import { ImageFallback } from '../ui/image-fallback';
 
 interface FloorsBarProps {
   floors: Floor[];
@@ -23,7 +24,7 @@ export function FloorsBar({ floors, onCreateFloor }: FloorsBarProps) {
           >
             <div className="flex flex-col items-center space-y-2 cursor-pointer group">
               <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
-                <img 
+                <ImageFallback 
                   src={floor.thumb} 
                   alt={floor.name}
                   className="w-full h-full object-cover"

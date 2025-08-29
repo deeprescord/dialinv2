@@ -32,10 +32,10 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
     <div className={`w-full h-full ${className} cursor-grab active:cursor-grabbing`}>
       <Canvas
         camera={{ 
-          position: [0, 0, 0], 
+          position: [0, 0, 0.1], 
           fov: 75,
-          near: 0.1,
-          far: 100
+          near: 0.01,
+          far: 1000
         }}
         gl={{ antialias: true }}
         style={{ pointerEvents: 'auto' }}
@@ -48,7 +48,6 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
             enableDamping={true}
             dampingFactor={0.05}
             rotateSpeed={0.8}
-            target={[0, 0, 0]}
             enableRotate={true}
             autoRotate={false}
             // Allow full vertical rotation for 360° experience

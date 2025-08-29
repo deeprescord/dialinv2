@@ -22,7 +22,7 @@ const filterTabs = ['videos', 'music', 'locations'];
 export function MobileTabBar({ currentTab, onTabChange, selectedChipsCount }: MobileTabBarProps) {
   return (
     <motion.div 
-      className="lg:hidden fixed top-16 sm:top-20 left-2 right-2 z-40 glass-nav p-2"
+      className="lg:hidden fixed top-16 sm:top-[72px] left-4 right-4 z-40 glass-nav p-2"
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, delay: 0.1 }}

@@ -304,6 +304,8 @@ export default function FloorPage() {
               onContactClick={handleContactClick}
               onMediaClick={handleMediaClick}
               onMediaLongPress={handleMediaLongPress}
+              backgroundImage={backgroundImage}
+              floorName={currentFloor?.name || 'Lobby'}
             />
           )}
 

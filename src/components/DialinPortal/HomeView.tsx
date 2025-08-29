@@ -11,13 +11,17 @@ interface HomeViewProps {
   onContactClick: (contact: Friend) => void;
   onMediaClick: (item: any) => void;
   onMediaLongPress: (item: any) => void;
+  backgroundImage?: string;
+  floorName?: string;
 }
 
 export function HomeView({ 
   pinnedContacts, 
   onContactClick, 
   onMediaClick, 
-  onMediaLongPress 
+  onMediaLongPress,
+  backgroundImage,
+  floorName 
 }: HomeViewProps) {
   return (
     <motion.div
@@ -29,8 +33,9 @@ export function HomeView({
       <HeroHeaderVideo
         videoSrc="https://dialin.io/s/Skull-2.mp4"
         posterSrc="/media/lobby-poster.png"
-        title="Lobby"
+        title={floorName || "Lobby"}
         subtitle="Welcome back"
+        backgroundImage={backgroundImage}
       />
 
       {/* Pinned Contacts */}

@@ -6,9 +6,10 @@ interface HeroHeaderVideoProps {
   posterSrc: string;
   title: string;
   subtitle: string;
+  backgroundImage?: string;
 }
 
-export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle }: HeroHeaderVideoProps) {
+export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgroundImage }: HeroHeaderVideoProps) {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -67,7 +68,7 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle }: HeroHe
         className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 ${
           videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
         }`}
-        style={{ backgroundImage: `url(${posterSrc})` }}
+        style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
       />
 
       {/* Gradient Overlay */}

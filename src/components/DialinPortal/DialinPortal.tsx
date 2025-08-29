@@ -39,7 +39,10 @@ export function DialinPortal() {
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
-  const [floors, setFloors] = useState<Floor[]>(initialFloors);
+  const [floors, setFloors] = useState<Floor[]>([
+    { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
+    ...initialFloors
+  ]);
   const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);

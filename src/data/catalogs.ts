@@ -188,13 +188,10 @@ export const locations: LocationItem[] = [
 ];
 
 export const initialFloors: Floor[] = [
-  { id: '1', name: 'Chill Vibes', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[0]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '2', name: 'Study Hall', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[1]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '3', name: 'Gaming Zone', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[2]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '4', name: 'Music Room', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[3]}?q=80&w=200&h=120&fit=crop&auto=format` },
-  { id: '5', name: 'Creative Space', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[4]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '6', name: 'Tech Lab', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[5]}?q=80&w=200&h=120&fit=crop&auto=format` },
-  { id: '7', name: 'Quiet Library', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[6]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '8', name: 'Lounge Area', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[7]}?q=80&w=200&h=120&fit=crop&auto=format` },
 ];
 

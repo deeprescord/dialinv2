@@ -30,15 +30,15 @@ export function UserDropdown() {
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
-          <HardDrive size={16} />
+          <HardDrive width={16} height={16} />
           <span>Storage</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
-          <Database size={16} />
+          <Database width={16} height={16} />
           <span>Data</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
-          <Wallet size={16} />
+          <Wallet width={16} height={16} />
           <span>Wallet</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

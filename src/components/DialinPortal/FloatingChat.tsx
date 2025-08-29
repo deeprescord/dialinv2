@@ -68,7 +68,7 @@ export function FloatingChat() {
           onClick={() => setIsOpen(!isOpen)}
           className="h-14 w-14 rounded-full bg-dialin-purple hover:bg-dialin-purple-dark shadow-lg shadow-dialin-purple/25"
         >
-          <MessageCircle size={24} />
+          <MessageCircle width={24} height={24} />
         </Button>
       </motion.div>
 

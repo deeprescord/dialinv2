@@ -89,7 +89,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
 
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="p-2 rounded-full">
-            <Bell size={18} sm:size={20} />
+            <Bell size={18} className="sm:w-5 sm:h-5" />
           </Button>
 
           {/* Profile Dropdown */}

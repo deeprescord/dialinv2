@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Close } from '../icons';
 import { Card } from '../ui/card';
+import { Upload, X } from 'lucide-react';
 
 interface CreateFloorModalProps {
   isOpen: boolean;
@@ -21,12 +22,35 @@ const coverOptions = [
 export function CreateFloorModal({ isOpen, onClose, onCreate }: CreateFloorModalProps) {
   const [floorName, setFloorName] = useState('');
   const [selectedCover, setSelectedCover] = useState(coverOptions[0]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const result = e.target?.result as string;
+            setUploadedImages(prev => [...prev, result]);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  };
+
+  const removeUploadedImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleCreate = () => {
     if (floorName.trim()) {
       onCreate(floorName.trim(), selectedCover);
       setFloorName('');
       setSelectedCover(coverOptions[0]);
+      setUploadedImages([]);
       onClose();
     }
   };
@@ -74,10 +98,61 @@ export function CreateFloorModal({ isOpen, onClose, onCreate }: CreateFloorModal
                 {/* Cover Selection */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium mb-2">Choose Cover</label>
+                  
+                  {/* Upload Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mb-3 w-full glass-card border-white/20 hover:bg-white/5"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload size={16} className="mr-2" />
+                    Upload Custom Image
+                  </Button>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+
+                  {/* Combined Image Grid */}
                   <div className="grid grid-cols-2 gap-2">
+                    {/* Uploaded Images */}
+                    {uploadedImages.map((image, index) => (
+                      <button
+                        key={`uploaded-${index}`}
+                        className={`relative overflow-hidden rounded-lg border-2 transition-all ${
+                          selectedCover === image
+                            ? 'border-dialin-purple shadow-lg shadow-dialin-purple/25'
+                            : 'border-white/20 hover:border-white/40'
+                        }`}
+                        onClick={() => setSelectedCover(image)}
+                      >
+                        <img
+                          src={image}
+                          alt={`Uploaded ${index + 1}`}
+                          className="w-full h-20 object-cover"
+                        />
+                        <button
+                          className="absolute top-1 right-1 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeUploadedImage(index);
+                          }}
+                        >
+                          <X size={12} className="text-white" />
+                        </button>
+                      </button>
+                    ))}
+                    
+                    {/* Default Cover Options */}
                     {coverOptions.map((cover, index) => (
                       <button
-                        key={index}
+                        key={`default-${index}`}
                         className={`relative overflow-hidden rounded-lg border-2 transition-all ${
                           selectedCover === cover
                             ? 'border-dialin-purple shadow-lg shadow-dialin-purple/25'

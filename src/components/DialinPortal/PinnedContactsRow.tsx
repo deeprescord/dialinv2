@@ -13,9 +13,11 @@ export function PinnedContactsRow({ contacts, onContactClick }: PinnedContactsRo
   if (contacts.length === 0) return null;
 
   return (
-    <div className="mb-8">
-      <h2 className="text-xl font-semibold mb-4 px-4">Pinned Contacts</h2>
-      <div className="flex space-x-3 px-4 overflow-x-auto scrollbar-thin pb-2">
+    <div className="mb-8 relative">
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg"></div>
+      <div className="relative">
+        <h2 className="text-xl font-semibold mb-4 px-4 pt-3">Pinned Contacts</h2>
+        <div className="flex space-x-3 px-4 pb-3 overflow-x-auto scrollbar-thin">
         {contacts.map((contact, index) => (
           <motion.div
             key={contact.id}
@@ -45,6 +47,7 @@ export function PinnedContactsRow({ contacts, onContactClick }: PinnedContactsRo
             </Button>
           </motion.div>
         ))}
+        </div>
       </div>
     </div>
   );

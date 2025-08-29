@@ -9,10 +9,30 @@ interface SkyboxProps {
 }
 
 function Skybox({ imageUrl }: SkyboxProps) {
-  const texture = useLoader(TextureLoader, imageUrl);
   const meshRef = useRef<Mesh>(null);
+  const [texture, setTexture] = useState<any>(null);
+  const [error, setError] = useState(false);
 
-  // No automatic rotation - only mouse controlled
+  React.useEffect(() => {
+    const loader = new TextureLoader();
+    loader.load(
+      imageUrl,
+      (loadedTexture) => {
+        setTexture(loadedTexture);
+        setError(false);
+      },
+      undefined,
+      (err) => {
+        console.warn(`Failed to load skybox texture: ${imageUrl}`, err);
+        setError(true);
+      }
+    );
+  }, [imageUrl]);
+
+  // If error loading texture, don't render the skybox
+  if (error || !texture) {
+    return null;
+  }
 
   return (
     <mesh ref={meshRef} scale={[-50, 50, 50]}>

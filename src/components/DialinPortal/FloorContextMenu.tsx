@@ -67,7 +67,9 @@ export function FloorContextMenu({
             className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-lg shadow-lg min-w-48"
             style={{
               left: Math.min(position.x, window.innerWidth - 200),
-              top: Math.min(position.y, window.innerHeight - 200),
+              top: position.y + 250 > window.innerHeight 
+                ? Math.max(10, position.y - 250)
+                : position.y,
             }}
           >
             <div className="p-2">

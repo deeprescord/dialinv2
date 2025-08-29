@@ -15,6 +15,7 @@ interface HomeViewProps {
   backgroundImage?: string;
   floorName?: string;
   isLobby?: boolean;
+  show360?: boolean;
 }
 
 export function HomeView({ 
@@ -24,7 +25,8 @@ export function HomeView({
   onMediaLongPress,
   backgroundImage,
   floorName,
-  isLobby = false
+  isLobby = false,
+  show360 = false
 }: HomeViewProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -47,6 +49,7 @@ export function HomeView({
         subtitle="Welcome back"
         backgroundImage={backgroundImage}
         showVideo={isLobby}
+        show360={show360}
       />
 
       {isLobby ? (

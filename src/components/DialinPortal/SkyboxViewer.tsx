@@ -12,12 +12,7 @@ function Skybox({ imageUrl }: SkyboxProps) {
   const texture = useLoader(TextureLoader, imageUrl);
   const meshRef = useRef<Mesh>(null);
 
-  // Optional: Add rotation animation
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.001;
-    }
-  });
+  // No automatic rotation - only mouse controlled
 
   return (
     <mesh ref={meshRef} scale={[-50, 50, 50]}>

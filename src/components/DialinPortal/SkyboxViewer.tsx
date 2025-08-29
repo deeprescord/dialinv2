@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from 'react';
+import React, { Suspense, useRef, useState } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { TextureLoader, BackSide } from 'three';
@@ -28,19 +28,40 @@ interface SkyboxViewerProps {
 }
 
 export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
+  const [webglError, setWebglError] = useState(false);
+
+  if (webglError) {
+    return (
+      <div 
+        className={`w-full h-full bg-cover bg-center ${className}`}
+        style={{ backgroundImage: `url(${imageUrl})` }}
+      />
+    );
+  }
+
   return (
     <div className={`w-full h-full ${className}`}>
       <Canvas
         camera={{ 
-          position: [0, 0, 1], 
+          position: [0, 0, 0.1], 
           fov: 75,
-          near: 0.1,
-          far: 1000
+          near: 0.01,
+          far: 100
         }}
-        gl={{ antialias: true }}
+        gl={{ 
+          antialias: false,
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: false
+        }}
         style={{ 
           cursor: 'grab',
           touchAction: 'none'
+        }}
+        onCreated={(state) => {
+          // Ensure WebGL context is working
+          if (!state.gl.getContext()) {
+            setWebglError(true);
+          }
         }}
         onPointerDown={(e) => {
           (e.target as HTMLCanvasElement).style.cursor = 'grabbing';
@@ -57,7 +78,7 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
             enablePan={false}
             enableDamping={true}
             dampingFactor={0.05}
-            rotateSpeed={1.0}
+            rotateSpeed={0.5}
             enableRotate={true}
             autoRotate={false}
             minPolarAngle={0}

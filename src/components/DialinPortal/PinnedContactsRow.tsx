@@ -7,16 +7,17 @@ import { Friend } from '@/data/catalogs';
 interface PinnedContactsRowProps {
   contacts: Friend[];
   onContactClick: (contact: Friend) => void;
+  title?: string;
 }
 
-export function PinnedContactsRow({ contacts, onContactClick }: PinnedContactsRowProps) {
+export function PinnedContactsRow({ contacts, onContactClick, title = "Pinned Contacts" }: PinnedContactsRowProps) {
   if (contacts.length === 0) return null;
 
   return (
     <div className="mb-8 relative">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg"></div>
       <div className="relative">
-        <h2 className="text-xl font-semibold mb-4 px-4 pt-3">Pinned Contacts</h2>
+        <h2 className="text-xl font-semibold mb-4 px-4 pt-3">{title}</h2>
         <div className="flex space-x-3 px-4 pb-3 overflow-x-auto scrollbar-thin">
         {contacts.map((contact, index) => (
           <motion.div

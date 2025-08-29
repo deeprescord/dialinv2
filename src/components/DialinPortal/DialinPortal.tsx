@@ -209,13 +209,13 @@ export function DialinPortal() {
   };
 
   // Handle floor reordering
-  const handleReorderFloor = (floorId: string, direction: 'up' | 'down') => {
+  const handleReorderFloor = (floorId: string, direction: 'left' | 'right') => {
     setFloors(prev => {
       const currentIndex = prev.findIndex(floor => floor.id === floorId);
       if (currentIndex === -1) return prev;
 
       const newFloors = [...prev];
-      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      const targetIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
       if (targetIndex < 0 || targetIndex >= newFloors.length) return prev;
 

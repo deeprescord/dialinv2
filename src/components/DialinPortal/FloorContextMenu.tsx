@@ -11,7 +11,7 @@ interface FloorContextMenuProps {
   onClose: () => void;
   onDelete: (floorId: string) => void;
   onRename: (floorId: string, newName: string) => void;
-  onReorder: (floorId: string, direction: 'up' | 'down') => void;
+  onReorder: (floorId: string, direction: 'left' | 'right') => void;
   position: { x: number; y: number };
 }
 
@@ -123,12 +123,12 @@ export function FloorContextMenu({
                   size="sm"
                   className="w-full justify-start h-8 px-2 hover:bg-white/10"
                   onClick={() => {
-                    onReorder(floor.id, 'up');
+                    onReorder(floor.id, 'left');
                     onClose();
                   }}
                 >
                   <GripVertical size={14} className="mr-2" />
-                  Move Up
+                  Move Left
                 </Button>
 
                 <Button
@@ -136,12 +136,12 @@ export function FloorContextMenu({
                   size="sm"
                   className="w-full justify-start h-8 px-2 hover:bg-white/10"
                   onClick={() => {
-                    onReorder(floor.id, 'down');
+                    onReorder(floor.id, 'right');
                     onClose();
                   }}
                 >
                   <GripVertical size={14} className="mr-2" />
-                  Move Down
+                  Move Right
                 </Button>
 
                 <Button

@@ -11,7 +11,7 @@ interface FloorsBarProps {
   onCreateFloor: () => void;
   onDeleteFloor: (floorId: string) => void;
   onRenameFloor: (floorId: string, newName: string) => void;
-  onReorderFloor: (floorId: string, direction: 'up' | 'down') => void;
+  onReorderFloor: (floorId: string, direction: 'left' | 'right') => void;
 }
 
 export function FloorsBar({ floors, onCreateFloor, onDeleteFloor, onRenameFloor, onReorderFloor }: FloorsBarProps) {

@@ -29,7 +29,7 @@ interface SkyboxViewerProps {
 
 export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
   return (
-    <div className={`w-full h-full ${className} cursor-grab active:cursor-grabbing`}>
+    <div className={`w-full h-full ${className}`}>
       <Canvas
         camera={{ 
           position: [0, 0, 1], 
@@ -38,6 +38,16 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
           far: 1000
         }}
         gl={{ antialias: true }}
+        style={{ 
+          cursor: 'grab',
+          touchAction: 'none'
+        }}
+        onPointerDown={(e) => {
+          (e.target as HTMLCanvasElement).style.cursor = 'grabbing';
+        }}
+        onPointerUp={(e) => {
+          (e.target as HTMLCanvasElement).style.cursor = 'grab';
+        }}
       >
         <Suspense fallback={null}>
           <Skybox imageUrl={imageUrl} />

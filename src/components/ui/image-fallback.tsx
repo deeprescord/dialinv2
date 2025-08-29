@@ -30,22 +30,22 @@ export function ImageFallback({
   };
 
   return (
-    <>
+    <div className={cn("relative overflow-hidden", className)}>
       {isLoading && (
-        <div className={cn("bg-muted animate-pulse", className)} />
+        <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
       <img
         src={hasError ? (fallbackSrc || defaultFallback) : src}
         alt={alt}
         className={cn(
-          className,
+          "w-full h-full object-cover transition-opacity duration-300",
           hasError && fallbackClassName,
-          isLoading && "hidden"
+          isLoading ? "opacity-0" : "opacity-100"
         )}
         onLoad={handleLoad}
         onError={handleError}
         {...props}
       />
-    </>
+    </div>
   );
 }

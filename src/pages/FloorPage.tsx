@@ -276,13 +276,15 @@ export default function FloorPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      </div>
+      {/* Background Image - only show when not using 360° view */}
+      {!isMusicDen && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        </div>
+      )}
 
       {/* Content */}
       <div className="relative z-10">

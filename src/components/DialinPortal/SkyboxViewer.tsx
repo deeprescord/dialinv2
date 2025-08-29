@@ -43,25 +43,16 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
     <div className={`w-full h-full ${className}`}>
       <Canvas
         camera={{ 
-          position: [0, 0, 0.1], 
+          position: [0, 0, 0], 
           fov: 75,
-          near: 0.01,
-          far: 100
-        }}
-        gl={{ 
-          antialias: false,
-          powerPreference: "high-performance",
-          preserveDrawingBuffer: false
+          near: 0.1,
+          far: 1000
         }}
         style={{ 
           cursor: 'grab',
-          touchAction: 'none'
-        }}
-        onCreated={(state) => {
-          // Ensure WebGL context is working
-          if (!state.gl.getContext()) {
-            setWebglError(true);
-          }
+          touchAction: 'none',
+          width: '100%',
+          height: '100%'
         }}
         onPointerDown={(e) => {
           (e.target as HTMLCanvasElement).style.cursor = 'grabbing';

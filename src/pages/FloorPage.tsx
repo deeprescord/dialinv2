@@ -394,6 +394,7 @@ export default function FloorPage() {
           <StorageBar
             usedGB={560}
             totalTB={1}
+            className="hidden lg:block"
           />
         )}
 

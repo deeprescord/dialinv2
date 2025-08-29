@@ -122,7 +122,13 @@ export function FloorContextMenu({
               {/* Action Buttons */}
               <div className="space-y-1">
                 {/* 360° Toggle */}
-                <div className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded">
+                <div 
+                  className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded cursor-pointer"
+                  onClick={() => {
+                    onToggle360(floor.id, !floor.show360);
+                    onClose();
+                  }}
+                >
                   <div className="flex items-center">
                     <Globe size={14} className="mr-2" />
                     <span className="text-sm">360° View</span>

@@ -4,6 +4,16 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Trash2, Edit3, GripVertical, X } from 'lucide-react';
 import { Floor } from '@/data/catalogs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog';
 
 interface FloorContextMenuProps {
   floor: Floor;
@@ -26,6 +36,7 @@ export function FloorContextMenu({
 }: FloorContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(floor.name);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleRename = () => {
     if (newName.trim() && newName !== floor.name) {
@@ -148,10 +159,7 @@ export function FloorContextMenu({
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start h-8 px-2 hover:bg-destructive/20 text-destructive"
-                  onClick={() => {
-                    onDelete(floor.id);
-                    onClose();
-                  }}
+                  onClick={() => setShowDeleteConfirm(true)}
                 >
                   <Trash2 size={14} className="mr-2" />
                   Delete
@@ -159,6 +167,31 @@ export function FloorContextMenu({
               </div>
             </div>
           </motion.div>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Floor</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{floor.name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => {
+                    onDelete(floor.id);
+                    setShowDeleteConfirm(false);
+                    onClose();
+                  }}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
     </AnimatePresence>

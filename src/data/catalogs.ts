@@ -192,8 +192,8 @@ export const initialFloors: Floor[] = [
   { 
     id: '2', 
     name: 'Music Den', 
-    thumb: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png',
-    backgroundImage: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png'
+    thumb: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png',
+    backgroundImage: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png'
   },
   { 
     id: '3', 

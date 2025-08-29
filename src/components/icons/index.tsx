@@ -166,7 +166,12 @@ export const Maximize2 = ({ size = 24, className = '' }: { size?: number; classN
 export const Settings = ({ size = 24, className = '' }: { size?: number; className?: string }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3"/>
-    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m17.5-3.5L17 8.5m-5 5L7.5 18M1.5 8.5L7 3l5 5 4.5-4.5"/>
+    <path d="M12 1v6"/>
+    <path d="M12 13v6"/>
+    <path d="M5.64 7.64l4.95 4.95"/>
+    <path d="M13.41 13.41l4.95 4.95"/>
+    <path d="M16.36 7.64l-4.95 4.95"/>
+    <path d="M10.59 13.41l-4.95 4.95"/>
   </svg>
 );
 

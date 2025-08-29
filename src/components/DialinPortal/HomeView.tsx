@@ -13,6 +13,7 @@ interface HomeViewProps {
   onMediaLongPress: (item: any) => void;
   backgroundImage?: string;
   floorName?: string;
+  isLobby?: boolean;
 }
 
 export function HomeView({ 
@@ -21,7 +22,8 @@ export function HomeView({
   onMediaClick, 
   onMediaLongPress,
   backgroundImage,
-  floorName 
+  floorName,
+  isLobby = false
 }: HomeViewProps) {
   return (
     <motion.div
@@ -31,11 +33,12 @@ export function HomeView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
-        videoSrc="https://dialin.io/s/Skull-2.mp4"
+        videoSrc={isLobby ? "https://dialin.io/s/Skull-2.mp4" : undefined}
         posterSrc="/media/lobby-poster.png"
         title={floorName || "Lobby"}
         subtitle="Welcome back"
         backgroundImage={backgroundImage}
+        showVideo={isLobby}
       />
 
       {/* Pinned Contacts */}

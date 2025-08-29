@@ -280,6 +280,7 @@ export function DialinPortal() {
             onContactClick={handleContactClick}
             onMediaClick={handleMediaClick}
             onMediaLongPress={handleMediaLongPress}
+            isLobby={true}
           />
         )}
 

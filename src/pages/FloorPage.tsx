@@ -306,6 +306,7 @@ export default function FloorPage() {
               onMediaLongPress={handleMediaLongPress}
               backgroundImage={backgroundImage}
               floorName={currentFloor?.name || 'Lobby'}
+              isLobby={floorId === 'lobby'}
             />
           )}
 

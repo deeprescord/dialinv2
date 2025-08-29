@@ -192,7 +192,6 @@ export const initialFloors: Floor[] = [
   { id: '3', name: 'Gaming Zone', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[2]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '4', name: 'Music Room', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[3]}?q=80&w=200&h=120&fit=crop&auto=format` },
   { id: '6', name: 'Tech Lab', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[5]}?q=80&w=200&h=120&fit=crop&auto=format` },
-  { id: '8', name: 'Lounge Area', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[7]}?q=80&w=200&h=120&fit=crop&auto=format` },
 ];
 
 export const friendsPosts: Post[] = [

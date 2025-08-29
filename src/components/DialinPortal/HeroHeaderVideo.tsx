@@ -2,14 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface HeroHeaderVideoProps {
-  videoSrc: string;
+  videoSrc?: string;
   posterSrc: string;
   title: string;
   subtitle: string;
   backgroundImage?: string;
+  showVideo?: boolean;
 }
 
-export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgroundImage }: HeroHeaderVideoProps) {
+export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgroundImage, showVideo = true }: HeroHeaderVideoProps) {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -45,8 +46,8 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
 
   return (
     <div className="relative h-[60vh] lg:h-[70vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
-      {/* Video Background */}
-      {!videoError && (
+      {/* Video Background - only show for lobby */}
+      {showVideo && videoSrc && !videoError && (
         <video
           ref={videoRef}
           autoPlay
@@ -63,10 +64,10 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
         </video>
       )}
 
-      {/* Fallback Image */}
+      {/* Background Image - for floors or fallback */}
       <div 
         className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 ${
-          videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
+          !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
       />

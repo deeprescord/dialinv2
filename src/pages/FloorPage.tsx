@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { TopNav } from './TopNav';
-import { MobileTabBar } from './MobileTabBar';
-import { HomeView } from './HomeView';
-import { FriendsView } from './FriendsView';
-import { VideosView } from './VideosView';
-import { MusicView } from './MusicView';
-import { LocationsView } from './LocationsView';
-import { FloorsBar } from './FloorsBar';
-import { StorageBar } from './StorageBar';
-import { ShareMyBar } from './ShareMyBar';
-import { FloatingPlayer } from './FloatingPlayer';
-import { ContactPane } from './ContactPane';
-import { DialPopup } from './DialPopup';
-import { CreateFloorModal } from './CreateFloorModal';
-import { FloatingChat } from './FloatingChat';
+import { TopNav } from '@/components/DialinPortal/TopNav';
+import { MobileTabBar } from '@/components/DialinPortal/MobileTabBar';
+import { HomeView } from '@/components/DialinPortal/HomeView';
+import { FriendsView } from '@/components/DialinPortal/FriendsView';
+import { VideosView } from '@/components/DialinPortal/VideosView';
+import { MusicView } from '@/components/DialinPortal/MusicView';
+import { LocationsView } from '@/components/DialinPortal/LocationsView';
+import { FloorsBar } from '@/components/DialinPortal/FloorsBar';
+import { StorageBar } from '@/components/DialinPortal/StorageBar';
+import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
+import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
+import { ContactPane } from '@/components/DialinPortal/ContactPane';
+import { DialPopup } from '@/components/DialinPortal/DialPopup';
+import { CreateFloorModal } from '@/components/DialinPortal/CreateFloorModal';
+import { FloatingChat } from '@/components/DialinPortal/FloatingChat';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -32,14 +32,19 @@ import {
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
 
-export function DialinPortal() {
+export default function FloorPage() {
+  const { floorId } = useParams();
   const navigate = useNavigate();
+  
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedDials, setSelectedDials] = useState<Record<string, string[]>>({});
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
-  const [floors, setFloors] = useState<Floor[]>(initialFloors);
+  const [floors, setFloors] = useState<Floor[]>([
+    { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
+    ...initialFloors
+  ]);
   const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
@@ -54,6 +59,16 @@ export function DialinPortal() {
     isPlaying: false,
     progress: 25
   });
+
+  // Find current floor
+  const currentFloor = floors.find(floor => floor.id === floorId);
+  
+  // Redirect if floor not found
+  useEffect(() => {
+    if (!currentFloor && floorId !== 'lobby') {
+      navigate('/');
+    }
+  }, [currentFloor, floorId, navigate]);
 
   // Filter content based on selected dials
   const filteredVideos = applyDials(
@@ -116,9 +131,9 @@ export function DialinPortal() {
   // Handle tab change
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab);
-    setSelectedContact(null); // Close contact pane when switching tabs
+    setSelectedContact(null);
     if (tab !== 'videos' && tab !== 'music' && tab !== 'locations') {
-      setSelectedDials({}); // Clear filters when leaving filter tabs
+      setSelectedDials({});
     }
   };
 
@@ -229,8 +244,7 @@ export function DialinPortal() {
   // Handle floor navigation
   const handleFloorClick = (floor: Floor) => {
     if (floor.id === 'lobby') {
-      // Already on lobby (home page)
-      return;
+      navigate('/');
     } else {
       navigate(`/floor/${floor.id}`);
     }
@@ -253,143 +267,157 @@ export function DialinPortal() {
   const isViewingContact = !!selectedContact;
   const showFloorsBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
+  // Get background image
+  const backgroundImage = currentFloor?.thumb || '/media/lobby-poster.png';
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <TopNav
-        currentTab={currentTab}
-        onTabChange={handleTabChange}
-        selectedChipsCount={selectedChipsCount}
-        dialCount={1240}
-      />
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      </div>
 
-      <MobileTabBar
-        currentTab={currentTab}
-        onTabChange={handleTabChange}
-        selectedChipsCount={selectedChipsCount}
-      />
-
-      {/* Main Content */}
-      <main className="relative">
-        {currentTab === 'home' && (
-          <HomeView
-            pinnedContacts={pinnedContacts}
-            onContactClick={handleContactClick}
-            onMediaClick={handleMediaClick}
-            onMediaLongPress={handleMediaLongPress}
-          />
-        )}
-
-        {currentTab === 'friends' && (
-          <FriendsView
-            pinnedContacts={pinnedContacts}
-            posts={friendsPosts}
-            onContactClick={handleContactClick}
-            onPostClick={handleMediaClick}
-            onPostLongPress={handleMediaLongPress}
-          />
-        )}
-
-        {currentTab === 'videos' && (
-          <VideosView
-            videos={filteredVideos}
-            selectedDials={selectedDials}
-            onDialToggle={handleDialToggle}
-            onClearAll={handleClearAllFilters}
-            onVideoClick={handleMediaClick}
-            onVideoLongPress={handleMediaLongPress}
-          />
-        )}
-
-        {currentTab === 'music' && (
-          <MusicView
-            music={filteredMusic}
-            selectedDials={selectedDials}
-            onDialToggle={handleDialToggle}
-            onClearAll={handleClearAllFilters}
-            onMusicClick={handleMediaClick}
-            onMusicLongPress={handleMediaLongPress}
-          />
-        )}
-
-        {currentTab === 'locations' && (
-          <LocationsView
-            locations={filteredLocations}
-            selectedDials={selectedDials}
-            onDialToggle={handleDialToggle}
-            onClearAll={handleClearAllFilters}
-            onLocationClick={handleMediaClick}
-            onLocationLongPress={handleMediaLongPress}
-          />
-        )}
-      </main>
-
-      {/* Bottom Bars */}
-      {showFloorsBar && (
-        <div className="fixed bottom-16 left-0 right-0 z-30">
-          <FloorsBar
-            floors={floors}
-            currentFloorId="lobby"
-            onCreateFloor={() => setShowCreateFloorModal(true)}
-            onDeleteFloor={handleDeleteFloor}
-            onRenameFloor={handleRenameFloor}
-            onReorderFloor={handleReorderFloor}
-            onFloorClick={handleFloorClick}
-          />
-        </div>
-      )}
-
-      {isViewingContact ? (
-        <ShareMyBar
-          activeToggles={activeShareToggles}
-          onToggleChange={handleShareToggleChange}
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Navigation */}
+        <TopNav
+          currentTab={currentTab}
+          onTabChange={handleTabChange}
+          selectedChipsCount={selectedChipsCount}
+          dialCount={1240}
         />
-      ) : (
-        <StorageBar
-          usedGB={560}
-          totalTB={1}
+
+        <MobileTabBar
+          currentTab={currentTab}
+          onTabChange={handleTabChange}
+          selectedChipsCount={selectedChipsCount}
         />
-      )}
 
-      {/* Overlays */}
-      <ContactPane
-        isOpen={isViewingContact}
-        contact={selectedContact}
-        isPinned={isPinned}
-        sharedToggles={activeShareToggles}
-        onClose={() => setSelectedContact(null)}
-        onPin={handleContactPin}
-        onUnpin={handleContactUnpin}
-      />
+        {/* Main Content */}
+        <main className="relative">
+          {currentTab === 'home' && (
+            <HomeView
+              pinnedContacts={pinnedContacts}
+              onContactClick={handleContactClick}
+              onMediaClick={handleMediaClick}
+              onMediaLongPress={handleMediaLongPress}
+            />
+          )}
 
-      <FloatingPlayer
-        isVisible={floatingPlayer.isVisible}
-        item={floatingPlayer.item}
-        isPlaying={floatingPlayer.isPlaying}
-        progress={floatingPlayer.progress}
-        onPlay={handlePlayerPlay}
-        onPause={handlePlayerPause}
-        onSkipBack={() => {}}
-        onSkipForward={() => {}}
-        onExpand={() => {}}
-        onClose={handlePlayerClose}
-      />
+          {currentTab === 'friends' && (
+            <FriendsView
+              pinnedContacts={pinnedContacts}
+              posts={friendsPosts}
+              onContactClick={handleContactClick}
+              onPostClick={handleMediaClick}
+              onPostLongPress={handleMediaLongPress}
+            />
+          )}
 
-      <DialPopup
-        isOpen={showDialPopup}
-        item={dialPopupItem}
-        onClose={() => setShowDialPopup(false)}
-        onUseAsFilters={handleUseAsFilters}
-      />
+          {currentTab === 'videos' && (
+            <VideosView
+              videos={filteredVideos}
+              selectedDials={selectedDials}
+              onDialToggle={handleDialToggle}
+              onClearAll={handleClearAllFilters}
+              onVideoClick={handleMediaClick}
+              onVideoLongPress={handleMediaLongPress}
+            />
+          )}
 
-      <CreateFloorModal
-        isOpen={showCreateFloorModal}
-        onClose={() => setShowCreateFloorModal(false)}
-        onCreate={handleCreateFloor}
-      />
+          {currentTab === 'music' && (
+            <MusicView
+              music={filteredMusic}
+              selectedDials={selectedDials}
+              onDialToggle={handleDialToggle}
+              onClearAll={handleClearAllFilters}
+              onMusicClick={handleMediaClick}
+              onMusicLongPress={handleMediaLongPress}
+            />
+          )}
 
-      {/* Floating Chat */}
-      <FloatingChat />
+          {currentTab === 'locations' && (
+            <LocationsView
+              locations={filteredLocations}
+              selectedDials={selectedDials}
+              onDialToggle={handleDialToggle}
+              onClearAll={handleClearAllFilters}
+              onLocationClick={handleMediaClick}
+              onLocationLongPress={handleMediaLongPress}
+            />
+          )}
+        </main>
+
+        {/* Bottom Bars */}
+        {showFloorsBar && (
+          <div className="fixed bottom-16 left-0 right-0 z-30">
+            <FloorsBar
+              floors={floors}
+              currentFloorId={floorId}
+              onCreateFloor={() => setShowCreateFloorModal(true)}
+              onDeleteFloor={handleDeleteFloor}
+              onRenameFloor={handleRenameFloor}
+              onReorderFloor={handleReorderFloor}
+              onFloorClick={handleFloorClick}
+            />
+          </div>
+        )}
+
+        {isViewingContact ? (
+          <ShareMyBar
+            activeToggles={activeShareToggles}
+            onToggleChange={handleShareToggleChange}
+          />
+        ) : (
+          <StorageBar
+            usedGB={560}
+            totalTB={1}
+          />
+        )}
+
+        {/* Overlays */}
+        <ContactPane
+          isOpen={isViewingContact}
+          contact={selectedContact}
+          isPinned={isPinned}
+          sharedToggles={activeShareToggles}
+          onClose={() => setSelectedContact(null)}
+          onPin={handleContactPin}
+          onUnpin={handleContactUnpin}
+        />
+
+        <FloatingPlayer
+          isVisible={floatingPlayer.isVisible}
+          item={floatingPlayer.item}
+          isPlaying={floatingPlayer.isPlaying}
+          progress={floatingPlayer.progress}
+          onPlay={handlePlayerPlay}
+          onPause={handlePlayerPause}
+          onSkipBack={() => {}}
+          onSkipForward={() => {}}
+          onExpand={() => {}}
+          onClose={handlePlayerClose}
+        />
+
+        <DialPopup
+          isOpen={showDialPopup}
+          item={dialPopupItem}
+          onClose={() => setShowDialPopup(false)}
+          onUseAsFilters={handleUseAsFilters}
+        />
+
+        <CreateFloorModal
+          isOpen={showCreateFloorModal}
+          onClose={() => setShowCreateFloorModal(false)}
+          onCreate={handleCreateFloor}
+        />
+
+        {/* Floating Chat */}
+        <FloatingChat />
+      </div>
     </div>
   );
 }

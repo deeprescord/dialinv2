@@ -16,6 +16,7 @@ import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateFloorModal } from '@/components/DialinPortal/CreateFloorModal';
 import { FloatingChat } from '@/components/DialinPortal/FloatingChat';
+import { SkyboxViewer } from '@/components/DialinPortal/SkyboxViewer';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -269,16 +270,36 @@ export default function FloorPage() {
 
   // Get background image
   const backgroundImage = currentFloor?.backgroundImage || currentFloor?.thumb || '/media/lobby-poster.png';
+  
+  // Check if this is the Music Den floor and should show 360 view
+  const isMusicDen = currentFloor?.id === '2';
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      </div>
+      {/* Background - 360° view for Music Den, regular background for others */}
+      {isMusicDen ? (
+        <div className="absolute inset-0">
+          <SkyboxViewer 
+            imageUrl={backgroundImage} 
+            className="w-full h-full"
+          />
+          <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+          {/* 360° Indicator */}
+          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none z-20">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              360° View - Click & Drag
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        </div>
+      )}
 
       {/* Content */}
       <div className="relative z-10">

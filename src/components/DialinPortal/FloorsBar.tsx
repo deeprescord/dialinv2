@@ -13,7 +13,7 @@ interface FloorsBarProps {
 export function FloorsBar({ floors, onCreateFloor }: FloorsBarProps) {
   return (
     <div className="mb-4 relative">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg"></div>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
       <div className="relative flex items-center space-x-3 px-4 py-3 overflow-x-auto scrollbar-thin">
         {floors.map((floor, index) => (
           <motion.div

@@ -268,7 +268,7 @@ export default function FloorPage() {
   const showFloorsBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   // Get background image
-  const backgroundImage = currentFloor?.thumb || '/media/lobby-poster.png';
+  const backgroundImage = currentFloor?.backgroundImage || currentFloor?.thumb || '/media/lobby-poster.png';
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">

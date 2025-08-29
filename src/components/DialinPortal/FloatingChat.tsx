@@ -33,17 +33,87 @@ const chatThreads: ChatThread[] = [
   },
   {
     id: '3',
+    name: 'Maya Chen',
+    lastMessage: 'Check out this new synthwave track I found 🎵',
+    date: '08/05/2025',
+    avatar: 'https://i.pravatar.cc/150?img=3'
+  },
+  {
+    id: '4',
+    name: 'Alex Rivera',
+    lastMessage: 'Meeting in the Music Den at 8pm?',
+    date: '08/04/2025',
+    avatar: 'https://i.pravatar.cc/150?img=15'
+  },
+  {
+    id: '5',
     name: 'Dialin',
     lastMessage: 'Sup',
     date: '08/03/2025',
     avatar: '/brand/dialin-logo-white.png'
   },
   {
-    id: '4',
+    id: '6',
+    name: 'Jordan Kim',
+    lastMessage: 'That cyberpunk documentary was amazing! Thanks for sharing',
+    date: '08/02/2025',
+    avatar: 'https://i.pravatar.cc/150?img=20'
+  },
+  {
+    id: '7',
+    name: 'Sam Digital',
+    lastMessage: 'Just uploaded some new beats to the den',
+    date: '08/01/2025',
+    avatar: 'https://i.pravatar.cc/150?img=25'
+  },
+  {
+    id: '8',
+    name: 'Riley Moon',
+    lastMessage: 'Anyone up for a virtual hangout tonight?',
+    date: '07/31/2025',
+    avatar: 'https://i.pravatar.cc/150?img=30'
+  },
+  {
+    id: '9',
     name: 'Robyn Morgan',
     lastMessage: 'Congratulations, as of July 31, 2025 you and Robyn Morgan are now dialed in!',
     date: '07/30/2025',
     avatar: 'https://i.pravatar.cc/150?img=12'
+  },
+  {
+    id: '10',
+    name: 'Casey Neo',
+    lastMessage: 'Love the new floor designs! 🔥',
+    date: '07/29/2025',
+    avatar: 'https://i.pravatar.cc/150?img=35'
+  },
+  {
+    id: '11',
+    name: 'Phoenix Labs',
+    lastMessage: 'Beta testing the new AR features tomorrow',
+    date: '07/28/2025',
+    avatar: 'https://i.pravatar.cc/150?img=40'
+  },
+  {
+    id: '12',
+    name: 'Sage Digital',
+    lastMessage: 'That music visualization was incredible!',
+    date: '07/27/2025',
+    avatar: 'https://i.pravatar.cc/150?img=45'
+  },
+  {
+    id: '13',
+    name: 'Echo Studio',
+    lastMessage: 'New collaboration space is live 🎨',
+    date: '07/26/2025',
+    avatar: 'https://i.pravatar.cc/150?img=50'
+  },
+  {
+    id: '14',
+    name: 'Nova Tech',
+    lastMessage: 'Check out the latest immersive experience',
+    date: '07/25/2025',
+    avatar: 'https://i.pravatar.cc/150?img=55'
   }
 ];
 
@@ -79,7 +149,7 @@ export function FloatingChat() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-24 right-6 w-80 h-96 glass-card border border-white/10 rounded-lg overflow-hidden z-50"
+            className="fixed bottom-24 right-6 w-80 h-[36rem] glass-card border border-white/10 rounded-lg overflow-hidden z-50"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">

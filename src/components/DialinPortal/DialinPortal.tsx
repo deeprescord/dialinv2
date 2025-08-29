@@ -331,15 +331,16 @@ export function DialinPortal() {
       {/* Bottom Bars */}
       {showFloorsBar && (
         <div className="fixed bottom-16 left-0 right-0 z-30">
-          <FloorsBar
-            floors={floors}
-            currentFloorId="lobby"
-            onCreateFloor={() => setShowCreateFloorModal(true)}
-            onDeleteFloor={handleDeleteFloor}
-            onRenameFloor={handleRenameFloor}
-            onReorderFloor={handleReorderFloor}
-            onFloorClick={handleFloorClick}
-          />
+           <FloorsBar
+             floors={floors}
+             currentFloorId="lobby"
+             onCreateFloor={() => setShowCreateFloorModal(true)}
+             onDeleteFloor={handleDeleteFloor}
+             onRenameFloor={handleRenameFloor}
+             onReorderFloor={handleReorderFloor}
+             onToggle360={() => {}}
+             onFloorClick={handleFloorClick}
+           />
         </div>
       )}
 

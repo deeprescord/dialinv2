@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Trash2, Edit3, GripVertical, X } from 'lucide-react';
+import { Switch } from '../ui/switch';
+import { Trash2, Edit3, GripVertical, X, Globe } from 'lucide-react';
 import { Floor } from '@/data/catalogs';
 import {
   AlertDialog,
@@ -22,6 +23,7 @@ interface FloorContextMenuProps {
   onDelete: (floorId: string) => void;
   onRename: (floorId: string, newName: string) => void;
   onReorder: (floorId: string, direction: 'left' | 'right') => void;
+  onToggle360: (floorId: string, enabled: boolean) => void;
   position: { x: number; y: number };
 }
 
@@ -32,6 +34,7 @@ export function FloorContextMenu({
   onDelete,
   onRename,
   onReorder,
+  onToggle360,
   position
 }: FloorContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -118,6 +121,21 @@ export function FloorContextMenu({
 
               {/* Action Buttons */}
               <div className="space-y-1">
+                {/* 360° Toggle */}
+                <div className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded">
+                  <div className="flex items-center">
+                    <Globe size={14} className="mr-2" />
+                    <span className="text-sm">360° View</span>
+                  </div>
+                  <Switch
+                    checked={floor.show360 || false}
+                    onCheckedChange={(checked) => {
+                      onToggle360(floor.id, checked);
+                      onClose();
+                    }}
+                  />
+                </div>
+
                 <Button
                   variant="ghost"
                   size="sm"

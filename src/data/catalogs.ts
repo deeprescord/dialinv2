@@ -45,6 +45,7 @@ export interface Floor {
   name: string;
   thumb: string;
   backgroundImage?: string;
+  show360?: boolean;
 }
 
 export interface Post {

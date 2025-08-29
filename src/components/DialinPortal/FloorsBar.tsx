@@ -14,6 +14,7 @@ interface FloorsBarProps {
   onDeleteFloor: (floorId: string) => void;
   onRenameFloor: (floorId: string, newName: string) => void;
   onReorderFloor: (floorId: string, direction: 'left' | 'right') => void;
+  onToggle360: (floorId: string, enabled: boolean) => void;
   onFloorClick?: (floor: Floor) => void;
 }
 
@@ -24,6 +25,7 @@ export function FloorsBar({
   onDeleteFloor, 
   onRenameFloor, 
   onReorderFloor, 
+  onToggle360,
   onFloorClick 
 }: FloorsBarProps) {
   const navigate = useNavigate();
@@ -147,6 +149,7 @@ export function FloorsBar({
           onDelete={onDeleteFloor}
           onRename={onRenameFloor}
           onReorder={onReorderFloor}
+          onToggle360={onToggle360}
           position={contextMenu.position}
         />
       )}

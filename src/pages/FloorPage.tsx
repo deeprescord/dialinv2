@@ -264,6 +264,14 @@ export default function FloorPage() {
     setFloatingPlayer(prev => ({ ...prev, isVisible: false }));
   };
 
+  const handleToggle360 = (floorId: string, enabled: boolean) => {
+    setFloors(floors.map(floor => 
+      floor.id === floorId 
+        ? { ...floor, show360: enabled }
+        : floor
+    ));
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showFloorsBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -271,13 +279,13 @@ export default function FloorPage() {
   // Get background image
   const backgroundImage = currentFloor?.backgroundImage || currentFloor?.thumb || '/media/lobby-poster.png';
   
-  // Check if this is the Music Den floor and should show 360 view
-  const isMusicDen = currentFloor?.id === '2';
+  // Check if this floor should show 360 view
+  const show360 = currentFloor?.show360 || false;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background Image - only show when not using 360° view */}
-      {!isMusicDen && (
+      {!show360 && (
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${backgroundImage})` }}
@@ -313,7 +321,7 @@ export default function FloorPage() {
               backgroundImage={backgroundImage}
               floorName={currentFloor?.name || 'Lobby'}
               isLobby={floorId === 'lobby'}
-              show360={isMusicDen}
+              show360={show360}
             />
           )}
 
@@ -371,6 +379,7 @@ export default function FloorPage() {
               onDeleteFloor={handleDeleteFloor}
               onRenameFloor={handleRenameFloor}
               onReorderFloor={handleReorderFloor}
+              onToggle360={handleToggle360}
               onFloorClick={handleFloorClick}
             />
           </div>

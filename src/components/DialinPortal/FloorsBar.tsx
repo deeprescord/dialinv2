@@ -57,9 +57,10 @@ export function FloorsBar({
     }
   };
 
-  // Create floors with lobby at the start
+  // Create floors with lobby at the start, filtering out any existing lobby
   const lobbyFloor: Floor = { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
-  const allFloors = [lobbyFloor, ...floors];
+  const filteredFloors = floors.filter(floor => floor.id !== 'lobby');
+  const allFloors = [lobbyFloor, ...filteredFloors];
 
   const handleFloorClick = (floor: Floor) => {
     if (onFloorClick) {
@@ -90,8 +91,8 @@ export function FloorsBar({
             className="flex-shrink-0"
           >
             <div 
-              className={`flex flex-col items-center space-y-2 cursor-pointer group select-none ${
-                isCurrentFloor ? 'ring-2 ring-primary rounded-lg' : ''
+              className={`flex flex-col items-center space-y-2 cursor-pointer group select-none relative ${
+                isCurrentFloor ? 'floor-selected' : ''
               }`}
               onClick={() => handleFloorClick(floor)}
               onMouseDown={(e) => !isLobby && handleMouseDown(floor, e)}
@@ -105,9 +106,7 @@ export function FloorsBar({
               }}
               onTouchEnd={handleMouseUp}
             >
-              <div className={`w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform ${
-                isCurrentFloor ? 'ring-2 ring-primary' : ''
-              }`}>
+              <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
                 <ImageFallback 
                   src={floor.thumb} 
                   alt={floor.name}

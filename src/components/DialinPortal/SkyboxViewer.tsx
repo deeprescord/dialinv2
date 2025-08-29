@@ -8,40 +8,56 @@ interface SkyboxProps {
   imageUrl: string;
 }
 
-function GyroscopeControls({ enabled }: { enabled: boolean }) {
+function GyroscopeControls({ enabled, onActiveChange }: { enabled: boolean; onActiveChange?: (active: boolean) => void }) {
   const { camera } = useThree();
   const [orientation, setOrientation] = useState({ alpha: 0, beta: 0, gamma: 0 });
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      setIsActive(false);
+      onActiveChange?.(false);
+      return;
+    }
 
     const requestPermission = async () => {
       if (typeof (DeviceOrientationEvent as any)?.requestPermission === 'function') {
         try {
           const permission = await (DeviceOrientationEvent as any).requestPermission();
-          setPermissionGranted(permission === 'granted');
+          const granted = permission === 'granted';
+          setPermissionGranted(granted);
+          setIsActive(granted);
+          onActiveChange?.(granted);
         } catch (error) {
           console.warn('Device orientation permission denied:', error);
+          setPermissionGranted(false);
+          setIsActive(false);
+          onActiveChange?.(false);
         }
       } else {
         // Non-iOS devices or older browsers
         setPermissionGranted(true);
+        setIsActive(true);
+        onActiveChange?.(true);
       }
     };
 
     requestPermission();
-  }, [enabled]);
+  }, [enabled, onActiveChange]);
 
   useEffect(() => {
     if (!enabled || !permissionGranted) return;
 
     const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
-      setOrientation({
-        alpha: event.alpha || 0,
-        beta: event.beta || 0,
-        gamma: event.gamma || 0
-      });
+      // Only update if we have meaningful orientation data
+      if (event.alpha !== null && event.beta !== null && event.gamma !== null) {
+        setOrientation({
+          alpha: event.alpha,
+          beta: event.beta,
+          gamma: event.gamma
+        });
+      }
     };
 
     window.addEventListener('deviceorientation', handleDeviceOrientation);
@@ -49,7 +65,7 @@ function GyroscopeControls({ enabled }: { enabled: boolean }) {
   }, [enabled, permissionGranted]);
 
   useFrame(() => {
-    if (!enabled || !permissionGranted) return;
+    if (!enabled || !permissionGranted || !isActive) return;
 
     // Convert device orientation to camera rotation
     const alpha = MathUtils.degToRad(orientation.alpha); // Z axis (compass)
@@ -111,18 +127,14 @@ export function SkyboxViewer({ imageUrl, className = "", enableGyroscope = true 
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [gyroscopeActive, setGyroscopeActive] = useState(false);
 
   useEffect(() => {
     // Detect if device is mobile and has gyroscope capability
     const checkMobile = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const hasGyroscope = 'DeviceOrientationEvent' in window;
-      setIsMobile(isMobileDevice && hasGyroscope);
-      
-      // Auto-enable gyroscope on mobile if enabled prop is true
-      if (isMobileDevice && hasGyroscope && enableGyroscope) {
-        setGyroscopeEnabled(true);
-      }
+      setIsMobile(isMobileDevice && hasGyroscope && enableGyroscope);
     };
 
     checkMobile();
@@ -163,7 +175,10 @@ export function SkyboxViewer({ imageUrl, className = "", enableGyroscope = true 
       >
         <Suspense fallback={null}>
           <Skybox imageUrl={imageUrl} />
-          <GyroscopeControls enabled={gyroscopeEnabled} />
+          <GyroscopeControls 
+            enabled={gyroscopeEnabled} 
+            onActiveChange={setGyroscopeActive}
+          />
           <OrbitControls
             makeDefault
             enableZoom={false}
@@ -171,7 +186,7 @@ export function SkyboxViewer({ imageUrl, className = "", enableGyroscope = true 
             enableDamping={true}
             dampingFactor={0.1}
             rotateSpeed={1}
-            enableRotate={!gyroscopeEnabled} // Disable manual rotation when gyroscope is active
+            enableRotate={!gyroscopeActive} // Disable finger controls only when gyroscope is actively working
             autoRotate={false}
             minPolarAngle={0}
             maxPolarAngle={Math.PI}

@@ -58,8 +58,20 @@ export function HomeView({
           />
 
           {/* Content Rows */}
+          <div className="px-4 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">FRIENDS</h2>
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors"
+              >
+                <span className="text-lg font-semibold">+</span>
+              </button>
+            </div>
+          </div>
+
           <MediaRow
-            title="FRIENDS"
+            title=""
             items={friendsPosts}
             onItemClick={onMediaClick}
             onItemLongPress={onMediaLongPress}

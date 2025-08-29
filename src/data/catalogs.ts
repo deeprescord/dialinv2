@@ -44,6 +44,7 @@ export interface Floor {
   id: string;
   name: string;
   thumb: string;
+  backgroundImage?: string;
 }
 
 export interface Post {
@@ -188,10 +189,30 @@ export const locations: LocationItem[] = [
 ];
 
 export const initialFloors: Floor[] = [
-  { id: '2', name: 'Study Hall', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[1]}?q=80&w=200&h=120&fit=crop&auto=format` },
-  { id: '3', name: 'Gaming Zone', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[2]}?q=80&w=200&h=120&fit=crop&auto=format` },
-  { id: '4', name: 'Music Room', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[3]}?q=80&w=200&h=120&fit=crop&auto=format` },
-  { id: '6', name: 'Tech Lab', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[5]}?q=80&w=200&h=120&fit=crop&auto=format` },
+  { 
+    id: '2', 
+    name: 'Music Den', 
+    thumb: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png',
+    backgroundImage: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png'
+  },
+  { 
+    id: '3', 
+    name: 'Future Studio', 
+    thumb: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png',
+    backgroundImage: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png'
+  },
+  { 
+    id: '4', 
+    name: 'Command Center', 
+    thumb: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
+    backgroundImage: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png'
+  },
+  { 
+    id: '6', 
+    name: 'Grand Theater', 
+    thumb: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png',
+    backgroundImage: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png'
+  },
 ];
 
 export const friendsPosts: Post[] = [

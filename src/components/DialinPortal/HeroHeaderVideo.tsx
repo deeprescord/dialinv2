@@ -68,7 +68,7 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
 
       {/* 360° Skybox View - for special floors */}
       {show360 && backgroundImage && (
-        <div className="absolute inset-0 w-full h-full">
+        <div className="absolute inset-0 w-full h-full z-10">
           <Suspense fallback={
             <div 
               className="w-full h-full bg-cover bg-center"
@@ -81,7 +81,7 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
             />
           </Suspense>
           {/* 360° Indicator */}
-          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none z-20">
+          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none z-30">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
               360° View - Click & Drag
@@ -100,11 +100,11 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
         />
       )}
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      {/* Gradient Overlay - don't interfere with 360° view */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
 
       {/* Content */}
-      <div className="absolute bottom-8 left-8">
+      <div className={`absolute bottom-8 left-8 ${show360 ? 'z-30' : ''}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

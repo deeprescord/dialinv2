@@ -1,16 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Plus } from '../icons';
 import { Floor } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
+import { FloorContextMenu } from './FloorContextMenu';
 
 interface FloorsBarProps {
   floors: Floor[];
   onCreateFloor: () => void;
+  onDeleteFloor: (floorId: string) => void;
+  onRenameFloor: (floorId: string, newName: string) => void;
+  onReorderFloor: (floorId: string, direction: 'up' | 'down') => void;
 }
 
-export function FloorsBar({ floors, onCreateFloor }: FloorsBarProps) {
+export function FloorsBar({ floors, onCreateFloor, onDeleteFloor, onRenameFloor, onReorderFloor }: FloorsBarProps) {
+  const [contextMenu, setContextMenu] = useState<{
+    floor: Floor;
+    position: { x: number; y: number };
+  } | null>(null);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const handleMouseDown = (floor: Floor, event: React.MouseEvent) => {
+    const timer = setTimeout(() => {
+      setContextMenu({
+        floor,
+        position: { x: event.clientX, y: event.clientY }
+      });
+    }, 500); // 500ms press and hold
+    setPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
   return (
     <div className="mb-4 relative">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
@@ -23,7 +57,17 @@ export function FloorsBar({ floors, onCreateFloor }: FloorsBarProps) {
             transition={{ duration: 0.3, delay: index * 0.05 }}
             className="flex-shrink-0"
           >
-            <div className="flex flex-col items-center space-y-2 cursor-pointer group">
+            <div 
+              className="flex flex-col items-center space-y-2 cursor-pointer group select-none"
+              onMouseDown={(e) => handleMouseDown(floor, e)}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                handleMouseDown(floor, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+              }}
+              onTouchEnd={handleMouseUp}
+            >
               <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
                 <ImageFallback 
                   src={floor.thumb} 
@@ -53,6 +97,19 @@ export function FloorsBar({ floors, onCreateFloor }: FloorsBarProps) {
           </Button>
         </motion.div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <FloorContextMenu
+          floor={contextMenu.floor}
+          isOpen={true}
+          onClose={() => setContextMenu(null)}
+          onDelete={onDeleteFloor}
+          onRename={onRenameFloor}
+          onReorder={onReorderFloor}
+          position={contextMenu.position}
+        />
+      )}
     </div>
   );
 }

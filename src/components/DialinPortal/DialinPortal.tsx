@@ -196,6 +196,34 @@ export function DialinPortal() {
     setFloors(prev => [...prev, newFloor]);
   };
 
+  // Handle floor deletion
+  const handleDeleteFloor = (floorId: string) => {
+    setFloors(prev => prev.filter(floor => floor.id !== floorId));
+  };
+
+  // Handle floor renaming
+  const handleRenameFloor = (floorId: string, newName: string) => {
+    setFloors(prev => prev.map(floor => 
+      floor.id === floorId ? { ...floor, name: newName } : floor
+    ));
+  };
+
+  // Handle floor reordering
+  const handleReorderFloor = (floorId: string, direction: 'up' | 'down') => {
+    setFloors(prev => {
+      const currentIndex = prev.findIndex(floor => floor.id === floorId);
+      if (currentIndex === -1) return prev;
+
+      const newFloors = [...prev];
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      if (targetIndex < 0 || targetIndex >= newFloors.length) return prev;
+
+      [newFloors[currentIndex], newFloors[targetIndex]] = [newFloors[targetIndex], newFloors[currentIndex]];
+      return newFloors;
+    });
+  };
+
   // Handle floating player actions
   const handlePlayerPlay = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: true }));
@@ -290,6 +318,9 @@ export function DialinPortal() {
           <FloorsBar
             floors={floors}
             onCreateFloor={() => setShowCreateFloorModal(true)}
+            onDeleteFloor={handleDeleteFloor}
+            onRenameFloor={handleRenameFloor}
+            onReorderFloor={handleReorderFloor}
           />
         </div>
       )}

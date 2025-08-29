@@ -14,33 +14,37 @@ export function ImageFallback({
   fallbackClassName,
   ...props 
 }: ImageFallbackProps) {
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   const defaultFallback = "data:image/svg+xml,%3csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100' height='100' fill='%23374151'/%3e%3ctext x='50' y='50' font-family='system-ui' font-size='14' fill='%23d1d5db' text-anchor='middle' dy='0.3em'%3eImage%3c/text%3e%3c/svg%3e";
 
   const handleLoad = () => {
-    setIsLoading(false);
-    setHasError(false);
+    setImageState('loaded');
   };
 
   const handleError = () => {
-    setHasError(true);
-    setIsLoading(false);
+    setImageState('error');
   };
+
+  // Reset state when src changes
+  React.useEffect(() => {
+    if (src) {
+      setImageState('loading');
+    }
+  }, [src]);
 
   return (
     <div className={cn("relative overflow-hidden", className)}>
-      {isLoading && (
+      {imageState === 'loading' && (
         <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
       <img
-        src={hasError ? (fallbackSrc || defaultFallback) : src}
+        src={imageState === 'error' ? (fallbackSrc || defaultFallback) : src}
         alt={alt}
         className={cn(
           "w-full h-full object-cover transition-opacity duration-300",
-          hasError && fallbackClassName,
-          isLoading ? "opacity-0" : "opacity-100"
+          imageState === 'error' && fallbackClassName,
+          imageState === 'loading' ? "opacity-0" : "opacity-100"
         )}
         onLoad={handleLoad}
         onError={handleError}

@@ -43,22 +43,10 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
     <div className={`w-full h-full ${className}`}>
       <Canvas
         camera={{ 
-          position: [0, 0, 0], 
+          position: [0, 0, 0.1], 
           fov: 75,
           near: 0.1,
           far: 1000
-        }}
-        style={{ 
-          cursor: 'grab',
-          touchAction: 'none',
-          width: '100%',
-          height: '100%'
-        }}
-        onPointerDown={(e) => {
-          (e.target as HTMLCanvasElement).style.cursor = 'grabbing';
-        }}
-        onPointerUp={(e) => {
-          (e.target as HTMLCanvasElement).style.cursor = 'grab';
         }}
       >
         <Suspense fallback={null}>
@@ -68,12 +56,13 @@ export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
             enableZoom={false}
             enablePan={false}
             enableDamping={true}
-            dampingFactor={0.05}
-            rotateSpeed={0.5}
+            dampingFactor={0.1}
+            rotateSpeed={1}
             enableRotate={true}
             autoRotate={false}
             minPolarAngle={0}
             maxPolarAngle={Math.PI}
+            target={[0, 0, 0]}
           />
         </Suspense>
       </Canvas>

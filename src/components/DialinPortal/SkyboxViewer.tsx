@@ -29,33 +29,31 @@ interface SkyboxViewerProps {
 
 export function SkyboxViewer({ imageUrl, className = "" }: SkyboxViewerProps) {
   return (
-    <div className={`w-full h-full ${className}`}>
+    <div className={`w-full h-full ${className} cursor-grab active:cursor-grabbing`}>
       <Canvas
         camera={{ 
           position: [0, 0, 0], 
-          fov: 90,
+          fov: 75,
           near: 0.1,
           far: 100
         }}
         gl={{ antialias: true }}
+        style={{ pointerEvents: 'auto' }}
       >
         <Suspense fallback={null}>
           <Skybox imageUrl={imageUrl} />
           <OrbitControls
-            enableZoom={true}
+            enableZoom={false}
             enablePan={false}
             enableDamping={true}
-            dampingFactor={0.1}
-            rotateSpeed={-0.5}
-            minDistance={0.1}
-            maxDistance={0.1}
+            dampingFactor={0.05}
+            rotateSpeed={0.8}
             target={[0, 0, 0]}
             enableRotate={true}
             autoRotate={false}
-            reverseOrbit={false}
-            // Limit vertical rotation
-            minPolarAngle={Math.PI / 4}
-            maxPolarAngle={3 * Math.PI / 4}
+            // Allow full vertical rotation for 360° experience
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI}
           />
         </Suspense>
       </Canvas>

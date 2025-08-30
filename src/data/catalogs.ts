@@ -196,35 +196,40 @@ export const initialFloors: Floor[] = [
     name: 'Music Den', 
     thumb: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png',
     backgroundImage: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png',
-    show360: true
+    show360: true,
+    description: 'All your Sessions in One Place.'
   },
   { 
     id: '3', 
     name: 'Future Studio', 
     thumb: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png',
     backgroundImage: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png',
-    show360: true
+    show360: true,
+    description: 'Inspo from Artists and Ai'
   },
   { 
     id: '4', 
     name: 'Command Center', 
     thumb: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
     backgroundImage: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
-    show360: true
+    show360: true,
+    description: 'Workroom for Media and Content Strategies.'
   },
   { 
     id: '6', 
     name: 'Grand Theater', 
     thumb: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png',
     backgroundImage: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png',
-    show360: true
+    show360: true,
+    description: 'Recommendations from your family and friends.'
   },
   { 
     id: '7', 
     name: 'Starbuds', 
     thumb: '/media/starbuds-360.mp4',
     backgroundImage: '/media/starbuds-360.mp4',
-    show360: true
+    show360: true,
+    description: 'Welcome to Westmont'
   },
 ];
 

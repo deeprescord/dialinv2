@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
-import { Plus, MessageSquare, Bot } from '../icons';
+import { PlusCircle, MessageSquare, Bot } from '../icons';
 import { Floor } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { FloorContextMenu } from './FloorContextMenu';
@@ -83,106 +83,109 @@ export function FloorsBar({
   return (
     <div className="mb-4 relative">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
-      <div className="relative flex items-center space-x-3 px-4 py-3 overflow-x-auto scrollbar-thin">
-        {allFloors.map((floor, index) => {
-          const isLobby = floor.id === 'lobby';
-          const isCurrentFloor = currentFloorId === floor.id || (currentFloorId === undefined && isLobby);
-          
-          return (
-            <motion.div
-            key={floor.id}
+      <div className="relative flex items-center justify-between px-4 py-3 overflow-x-auto scrollbar-thin">
+        {/* Floors on the left */}
+        <div className="flex items-center space-x-3">
+          {allFloors.map((floor, index) => {
+            const isLobby = floor.id === 'lobby';
+            const isCurrentFloor = currentFloorId === floor.id || (currentFloorId === undefined && isLobby);
+            
+            return (
+              <motion.div
+                key={floor.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="flex-shrink-0"
+              >
+                <div 
+                  className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
+                  onClick={() => handleFloorClick(floor)}
+                  onMouseDown={(e) => !isLobby && handleMouseDown(floor, e)}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseLeave}
+                  onTouchStart={(e) => {
+                    if (!isLobby) {
+                      const touch = e.touches[0];
+                      handleMouseDown(floor, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+                    }
+                  }}
+                  onTouchEnd={handleMouseUp}
+                >
+                  {/* Triangle arrow for selected floor */}
+                  {isCurrentFloor && (
+                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                      <div className="w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-primary"></div>
+                    </div>
+                  )}
+                  <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
+                    <ImageFallback 
+                      src={floor.thumb} 
+                      alt={floor.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className={`text-xs font-medium text-center ${
+                    isCurrentFloor ? 'text-primary' : ''
+                  }`}>{floor.name}</span>
+                </div>
+              </motion.div>
+            )})}
+        </div>
+
+        {/* Action buttons on the right */}
+        <div className="flex items-center space-x-3 flex-shrink-0">
+          {/* New Floor Button */}
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            className="flex-shrink-0"
+            transition={{ duration: 0.3, delay: allFloors.length * 0.05 }}
           >
-            <div 
-              className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
-              onClick={() => handleFloorClick(floor)}
-              onMouseDown={(e) => !isLobby && handleMouseDown(floor, e)}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-              onTouchStart={(e) => {
-                if (!isLobby) {
-                  const touch = e.touches[0];
-                  handleMouseDown(floor, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
-                }
-              }}
-              onTouchEnd={handleMouseUp}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+              onClick={onCreateFloor}
             >
-              {/* Triangle arrow for selected floor */}
-              {isCurrentFloor && (
-                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                  <div className="w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-primary"></div>
-                </div>
-              )}
-              <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
-                <ImageFallback 
-                  src={floor.thumb} 
-                  alt={floor.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className={`text-xs font-medium text-center ${
-                isCurrentFloor ? 'text-primary' : ''
-              }`}>{floor.name}</span>
-            </div>
+              <PlusCircle size={20} className="text-green-400" />
+              <span className="text-xs">New</span>
+            </Button>
           </motion.div>
-        )})}
-        
-        {/* Chat Button */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: allFloors.length * 0.05 }}
-          className="flex-shrink-0"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10"
-            onClick={() => {/* Handle chat click */}}
-          >
-            <MessageSquare size={16} />
-            <span className="text-xs">Chat</span>
-          </Button>
-        </motion.div>
 
-        {/* AI Bot Button */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: (allFloors.length + 1) * 0.05 }}
-          className="flex-shrink-0"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-            onClick={() => setShowAIChat(true)}
+          {/* AI Bot Button */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: (allFloors.length + 1) * 0.05 }}
           >
-            <Bot size={16} />
-            <span className="text-xs">AI</span>
-          </Button>
-        </motion.div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+              onClick={() => setShowAIChat(true)}
+            >
+              <Bot size={20} className="text-blue-400" />
+              <span className="text-xs">AI</span>
+            </Button>
+          </motion.div>
 
-        {/* New Floor Button */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: (allFloors.length + 2) * 0.05 }}
-          className="flex-shrink-0"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-dashed border-white/30 hover:bg-white/10"
-            onClick={onCreateFloor}
+          {/* Chat Button */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: (allFloors.length + 2) * 0.05 }}
           >
-            <Plus size={16} />
-            <span className="text-xs">New</span>
-          </Button>
-        </motion.div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+              onClick={() => {/* Handle chat click */}}
+            >
+              <MessageSquare size={20} className="text-purple-400" />
+              <span className="text-xs">Chat</span>
+            </Button>
+          </motion.div>
+        </div>
       </div>
 
       {/* Context Menu */}

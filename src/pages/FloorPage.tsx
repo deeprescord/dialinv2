@@ -15,7 +15,6 @@ import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateFloorModal } from '@/components/DialinPortal/CreateFloorModal';
-import { FloatingChat } from '@/components/DialinPortal/FloatingChat';
 import { SkyboxViewer } from '@/components/DialinPortal/SkyboxViewer';
 import { 
   videoCatalog, 
@@ -443,9 +442,6 @@ export default function FloorPage() {
           onClose={() => setShowCreateFloorModal(false)}
           onCreate={handleCreateFloor}
         />
-
-        {/* Floating Chat */}
-        <FloatingChat />
       </div>
     </div>
   );

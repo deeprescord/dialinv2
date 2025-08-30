@@ -177,7 +177,7 @@ function Skybox({ mediaUrl }: SkyboxProps) {
   const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
   
   return (
-    <mesh ref={meshRef} scale={[-50, 50, 50]} rotation={isVideo ? [Math.PI, 0, 0] : [0, 0, 0]}>
+    <mesh ref={meshRef} scale={[-50, 50, 50]} rotation={isVideo ? [Math.PI, Math.PI, 0] : [0, 0, 0]}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>

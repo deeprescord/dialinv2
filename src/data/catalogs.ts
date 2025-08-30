@@ -4,6 +4,7 @@ import videoThumbnails from '@/assets/video-thumbnails.jpg';
 import musicCollection from '@/assets/music-collection.jpg';
 import locationShowcase from '@/assets/location-showcase.jpg';
 import userAvatarsSet from '@/assets/user-avatars-set.jpg';
+import featuredVideoBg from '@/assets/featured-video-bg.jpg';
 
 export interface VideoItem {
   id: string;
@@ -239,28 +240,28 @@ export const initialFloors: Floor[] = [
 ];
 
 export const friendsPosts: Post[] = [
-  { id: '1', title: 'Check out this cyberpunk setup', sharedBy: 'Alex Chen', sharedByAvatar: 'https://i.pravatar.cc/150?img=5', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[0]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '2:34' },
-  { id: '2', title: 'New synthwave track dropped', sharedBy: 'Maya Stone', sharedByAvatar: 'https://i.pravatar.cc/150?img=3', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[1]}?q=80&w=400&h=400&fit=crop&auto=format` },
-  { id: '3', title: 'Found this cool digital art space', sharedBy: 'Jordan Kim', sharedByAvatar: 'https://i.pravatar.cc/150?img=15', type: 'location', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.locations[2]}?q=80&w=400&h=225&fit=crop&auto=format` },
-  { id: '4', title: 'Virtual reality documentary', sharedBy: 'Sam Rivera', sharedByAvatar: 'https://i.pravatar.cc/150?img=11', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[3]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '4:12' },
+  { id: '1', title: 'Check out this cyberpunk setup', sharedBy: 'Alex Chen', sharedByAvatar: 'https://i.pravatar.cc/150?img=5', type: 'video', thumb: featuredVideoBg, duration: '2:34' },
+  { id: '2', title: 'New synthwave track dropped', sharedBy: 'Maya Stone', sharedByAvatar: 'https://i.pravatar.cc/150?img=3', type: 'music', thumb: musicCollection },
+  { id: '3', title: 'Found this cool digital art space', sharedBy: 'Jordan Kim', sharedByAvatar: 'https://i.pravatar.cc/150?img=15', type: 'location', thumb: locationShowcase },
+  { id: '4', title: 'Virtual reality documentary', sharedBy: 'Sam Rivera', sharedByAvatar: 'https://i.pravatar.cc/150?img=11', type: 'video', thumb: videoThumbnails, duration: '4:12' },
   { id: '5', title: 'Amazing music studio tour', sharedBy: 'Riley Moon', sharedByAvatar: 'https://i.pravatar.cc/150?img=20', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[2]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '3:45' },
-  { id: '6', title: 'Chill vibes playlist', sharedBy: 'Casey Park', sharedByAvatar: 'https://i.pravatar.cc/150?img=30', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[4]}?q=80&w=400&h=400&fit=crop&auto=format` },
-  { id: '7', title: 'Cool café discovery', sharedBy: 'Sage Rivers', sharedByAvatar: 'https://i.pravatar.cc/150?img=25', type: 'location', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.locations[3]}?q=80&w=400&h=225&fit=crop&auto=format` },
-  { id: '8', title: 'Behind the scenes footage', sharedBy: 'Phoenix Wu', sharedByAvatar: 'https://i.pravatar.cc/150?img=7', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[4]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '2:18' },
+  { id: '6', title: 'Chill vibes playlist', sharedBy: 'Casey Park', sharedByAvatar: 'https://i.pravatar.cc/150?img=30', type: 'music', thumb: musicCollection },
+  { id: '7', title: 'Cool café discovery', sharedBy: 'Sage Rivers', sharedByAvatar: 'https://i.pravatar.cc/150?img=25', type: 'location', thumb: locationShowcase },
+  { id: '8', title: 'Behind the scenes footage', sharedBy: 'Phoenix Wu', sharedByAvatar: 'https://i.pravatar.cc/150?img=7', type: 'video', thumb: videoThumbnails, duration: '2:18' },
   { id: '9', title: 'New music video release', sharedBy: 'Alex Chen', sharedByAvatar: 'https://i.pravatar.cc/150?img=5', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[5]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '3:22' },
-  { id: '10', title: 'Epic gaming setup tour', sharedBy: 'Maya Stone', sharedByAvatar: 'https://i.pravatar.cc/150?img=3', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[2]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '5:15' },
-  { id: '11', title: 'Late night vibes playlist', sharedBy: 'Jordan Kim', sharedByAvatar: 'https://i.pravatar.cc/150?img=15', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[3]}?q=80&w=400&h=400&fit=crop&auto=format` },
-  { id: '12', title: 'Found this hidden gem café', sharedBy: 'Sam Rivera', sharedByAvatar: 'https://i.pravatar.cc/150?img=11', type: 'location', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.locations[1]}?q=80&w=400&h=225&fit=crop&auto=format` },
+  { id: '10', title: 'Epic gaming setup tour', sharedBy: 'Maya Stone', sharedByAvatar: 'https://i.pravatar.cc/150?img=3', type: 'video', thumb: videoThumbnails, duration: '5:15' },
+  { id: '11', title: 'Late night vibes playlist', sharedBy: 'Jordan Kim', sharedByAvatar: 'https://i.pravatar.cc/150?img=15', type: 'music', thumb: musicCollection },
+  { id: '12', title: 'Found this hidden gem café', sharedBy: 'Sam Rivera', sharedByAvatar: 'https://i.pravatar.cc/150?img=11', type: 'location', thumb: locationShowcase },
   { id: '13', title: 'Weekend coding session', sharedBy: 'Riley Moon', sharedByAvatar: 'https://i.pravatar.cc/150?img=20', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[5]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '2:45' },
-  { id: '14', title: 'Retro synthwave collection', sharedBy: 'Casey Park', sharedByAvatar: 'https://i.pravatar.cc/150?img=30', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[0]}?q=80&w=400&h=400&fit=crop&auto=format` },
-  { id: '15', title: 'Urban exploration adventure', sharedBy: 'Sage Rivers', sharedByAvatar: 'https://i.pravatar.cc/150?img=25', type: 'location', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.locations[2]}?q=80&w=400&h=225&fit=crop&auto=format` },
-  { id: '16', title: 'Documentary on AI ethics', sharedBy: 'Phoenix Wu', sharedByAvatar: 'https://i.pravatar.cc/150?img=7', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[6]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '8:30' },
+  { id: '14', title: 'Retro synthwave collection', sharedBy: 'Casey Park', sharedByAvatar: 'https://i.pravatar.cc/150?img=30', type: 'music', thumb: musicCollection },
+  { id: '15', title: 'Urban exploration adventure', sharedBy: 'Sage Rivers', sharedByAvatar: 'https://i.pravatar.cc/150?img=25', type: 'location', thumb: locationShowcase },
+  { id: '16', title: 'Documentary on AI ethics', sharedBy: 'Phoenix Wu', sharedByAvatar: 'https://i.pravatar.cc/150?img=7', type: 'video', thumb: videoThumbnails, duration: '8:30' },
   { id: '17', title: 'Minimalist workspace setup', sharedBy: 'Alex Chen', sharedByAvatar: 'https://i.pravatar.cc/150?img=5', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[7]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '4:12' },
-  { id: '18', title: 'Jazz fusion experimental track', sharedBy: 'Maya Stone', sharedByAvatar: 'https://i.pravatar.cc/150?img=3', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[6]}?q=80&w=400&h=400&fit=crop&auto=format` },
-  { id: '19', title: 'Rooftop bar with city views', sharedBy: 'Jordan Kim', sharedByAvatar: 'https://i.pravatar.cc/150?img=15', type: 'location', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.locations[0]}?q=80&w=400&h=225&fit=crop&auto=format` },
-  { id: '20', title: 'Indie film festival highlights', sharedBy: 'Sam Rivera', sharedByAvatar: 'https://i.pravatar.cc/150?img=11', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[7]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '6:18' },
-  { id: '21', title: 'Ambient study music mix', sharedBy: 'Riley Moon', sharedByAvatar: 'https://i.pravatar.cc/150?img=20', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[2]}?q=80&w=400&h=400&fit=crop&auto=format` },
-  { id: '22', title: 'Art gallery opening night', sharedBy: 'Casey Park', sharedByAvatar: 'https://i.pravatar.cc/150?img=30', type: 'location', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.locations[7]}?q=80&w=400&h=225&fit=crop&auto=format` },
-  { id: '23', title: 'Behind the scenes vlog', sharedBy: 'Sage Rivers', sharedByAvatar: 'https://i.pravatar.cc/150?img=25', type: 'video', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.cinema[1]}?q=80&w=400&h=225&fit=crop&auto=format`, duration: '7:42' },
-  { id: '24', title: 'Electronic beats compilation', sharedBy: 'Phoenix Wu', sharedByAvatar: 'https://i.pravatar.cc/150?img=7', type: 'music', thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[1]}?q=80&w=400&h=400&fit=crop&auto=format` }
+  { id: '18', title: 'Jazz fusion experimental track', sharedBy: 'Maya Stone', sharedByAvatar: 'https://i.pravatar.cc/150?img=3', type: 'music', thumb: musicCollection },
+  { id: '19', title: 'Rooftop bar with city views', sharedBy: 'Jordan Kim', sharedByAvatar: 'https://i.pravatar.cc/150?img=15', type: 'location', thumb: locationShowcase },
+  { id: '20', title: 'Indie film festival highlights', sharedBy: 'Sam Rivera', sharedByAvatar: 'https://i.pravatar.cc/150?img=11', type: 'video', thumb: videoThumbnails, duration: '6:18' },
+  { id: '21', title: 'Ambient study music mix', sharedBy: 'Riley Moon', sharedByAvatar: 'https://i.pravatar.cc/150?img=20', type: 'music', thumb: musicCollection },
+  { id: '22', title: 'Art gallery opening night', sharedBy: 'Casey Park', sharedByAvatar: 'https://i.pravatar.cc/150?img=30', type: 'location', thumb: locationShowcase },
+  { id: '23', title: 'Behind the scenes vlog', sharedBy: 'Sage Rivers', sharedByAvatar: 'https://i.pravatar.cc/150?img=25', type: 'video', thumb: videoThumbnails, duration: '7:42' },
+  { id: '24', title: 'Electronic beats compilation', sharedBy: 'Phoenix Wu', sharedByAvatar: 'https://i.pravatar.cc/150?img=7', type: 'music', thumb: musicCollection }
 ];

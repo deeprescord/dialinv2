@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Play } from 'lucide-react';
 import { Post } from '@/data/catalogs';
+import { ImageFallback } from '../ui/image-fallback';
 
 interface FeaturedPostHeaderProps {
   post: Post;
@@ -20,9 +21,10 @@ export function FeaturedPostHeader({ post, onPostClick }: FeaturedPostHeaderProp
       onClick={() => onPostClick(post)}
     >
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${post.thumb})` }}
+      <ImageFallback 
+        src={post.thumb}
+        alt={post.title}
+        className="absolute inset-0 w-full h-full object-cover"
       />
       
       {/* Gradient Overlays */}

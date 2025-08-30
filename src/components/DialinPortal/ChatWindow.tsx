@@ -173,29 +173,27 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
             ) : (
               // Chat List View
               <>
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
-                  <h3 className="font-semibold text-white">Messages</h3>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowGroupCreator(true)}
-                    >
-                      <Plus size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onClose}
-                    >
-                      <Close size={16} />
-                    </Button>
+                {/* Header with Search */}
+                <div className="p-4 border-b border-white/10 bg-black/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">Messages</h3>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowGroupCreator(true)}
+                      >
+                        <Plus size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onClose}
+                      >
+                        <Close size={16} />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-
-                {/* Search */}
-                <div className="p-4 border-b border-white/10">
                   <Input
                     placeholder="Search conversations..."
                     value={searchQuery}
@@ -207,9 +205,9 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                 {/* Pinned Section */}
                 <div className="p-4 border-b border-white/10">
                   <h4 className="text-xs font-medium text-white/60 mb-3 uppercase tracking-wide">Pinned</h4>
-                  <div className="flex space-x-3 mb-4">
+                  <div className="flex space-x-3 mb-4 overflow-x-auto scrollbar-thin">
                     {pinnedContacts.map((contact) => (
-                      <div key={contact.id} className="flex flex-col items-center cursor-pointer hover:opacity-80">
+                      <div key={contact.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 flex-shrink-0">
                         <Avatar className="h-10 w-10 mb-1">
                           <AvatarImage src={contact.avatar} />
                           <AvatarFallback>{contact.name[0]}</AvatarFallback>
@@ -219,58 +217,61 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                     ))}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="flex space-x-3 overflow-x-auto scrollbar-thin">
                     {pinnedGroups.map((group) => (
-                      <div key={group.id} className="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer">
-                        <Avatar className="h-8 w-8 mr-3">
+                      <div key={group.id} className="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer flex-shrink-0 min-w-[120px]">
+                        <Avatar className="h-8 w-8 mr-2">
                           <AvatarImage src={group.avatar} />
                           <AvatarFallback>{group.name[0]}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-white font-medium">{group.name}</span>
+                        <span className="text-sm text-white font-medium truncate">{group.name}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Thread List */}
+                {/* Thread List - Now takes more space */}
                 <div className="flex-1 overflow-y-auto">
-                  {filteredThreads.map((thread) => (
-                    <div
-                      key={thread.id}
-                      onClick={() => setSelectedThread(thread)}
-                      className="flex items-center p-4 hover:bg-white/5 cursor-pointer border-b border-white/5"
-                    >
-                      <Avatar className="h-12 w-12 mr-3">
-                        <AvatarImage src={thread.avatar} />
-                        <AvatarFallback>{thread.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-white truncate">{thread.name}</h4>
-                          <span className="text-xs text-white/60 ml-2">{thread.timestamp}</span>
+                  <div className="max-h-full">
+                    {filteredThreads.map((thread) => (
+                      <div
+                        key={thread.id}
+                        onClick={() => setSelectedThread(thread)}
+                        className="flex items-center p-4 hover:bg-white/5 cursor-pointer border-b border-white/5"
+                      >
+                        <Avatar className="h-12 w-12 mr-3">
+                          <AvatarImage src={thread.avatar} />
+                          <AvatarFallback>{thread.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-white truncate">{thread.name}</h4>
+                            <span className="text-xs text-white/60 ml-2">{thread.timestamp}</span>
+                          </div>
+                          <p className="text-sm text-white/70 truncate mt-1">{thread.lastMessage}</p>
                         </div>
-                        <p className="text-sm text-white/70 truncate mt-1">{thread.lastMessage}</p>
+                        {thread.unread > 0 && (
+                          <div className="bg-dialin-purple text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ml-2">
+                            {thread.unread}
+                          </div>
+                        )}
                       </div>
-                      {thread.unread > 0 && (
-                        <div className="bg-dialin-purple text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ml-2">
-                          {thread.unread}
+                    ))}
+
+                    {filteredThreads.length === 0 && (
+                      <div className="p-8 text-center">
+                        <MessageCircle className="mx-auto mb-2 text-white/30" width={48} height={48} />
+                        <p className="text-sm text-white/50 mb-4">Start chatting with friends and groups</p>
+                        <div className="flex justify-center space-x-4">
+                          <Button variant="ghost" size="sm" className="text-xs text-white/80 hover:text-white">
+                            find new contacts
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-xs text-white/80 hover:text-white">
+                            invite to dialin
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                  ))}
-
-                  <div className="p-4 text-center">
-                    <MessageCircle className="mx-auto mb-2 text-white/30" width={48} height={48} />
-                    <p className="text-sm text-white/50 mb-4">Start chatting with friends and groups</p>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <Button variant="ghost" size="sm" className="text-xs text-white/80 hover:text-white">
-                      find new contacts
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-xs text-white/80 hover:text-white">
-                      invite to dialin
-                    </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

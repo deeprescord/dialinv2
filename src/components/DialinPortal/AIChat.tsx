@@ -91,9 +91,9 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md h-[70vh] max-h-[600px] z-50"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md h-[80vh] max-h-[700px] z-50"
           >
-            <div className="bg-background/95 backdrop-blur-xl border-0 md:border border-border md:rounded-2xl shadow-2xl flex flex-col h-full">
+            <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border bg-background/90 md:bg-transparent">
                 <div className="flex items-center space-x-3">
@@ -145,7 +145,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t border-border bg-background/90 md:bg-transparent">
+              <div className="p-4 border-t border-border bg-background/50">
                 <div className="flex space-x-2 items-end">
                   <Textarea
                     ref={inputRef}
@@ -161,7 +161,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
                     size="sm"
-                    className="px-3 h-10"
+                    className="px-3 h-10 shrink-0"
                   >
                     <Send size={16} />
                   </Button>

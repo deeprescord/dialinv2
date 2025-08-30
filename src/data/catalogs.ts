@@ -221,8 +221,8 @@ export const initialFloors: Floor[] = [
   { 
     id: '7', 
     name: 'Starbuds', 
-    thumb: 'https://dialin.io/s/Starbuds.MP4',
-    backgroundImage: 'https://dialin.io/s/Starbuds.MP4',
+    thumb: '/media/starbuds-360.mp4',
+    backgroundImage: '/media/starbuds-360.mp4',
     show360: true
   },
 ];

@@ -4,6 +4,8 @@ import { Close, Send } from '../icons';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
+// Force refresh to resolve Input reference error
+
 interface AIChatProps {
   isOpen: boolean;
   onClose: () => void;

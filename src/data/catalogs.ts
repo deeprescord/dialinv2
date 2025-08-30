@@ -218,6 +218,13 @@ export const initialFloors: Floor[] = [
     backgroundImage: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png',
     show360: true
   },
+  { 
+    id: '7', 
+    name: 'Starbuds', 
+    thumb: 'https://dialin.io/s/Starbuds.MP4',
+    backgroundImage: 'https://dialin.io/s/Starbuds.MP4',
+    show360: true
+  },
 ];
 
 export const friendsPosts: Post[] = [

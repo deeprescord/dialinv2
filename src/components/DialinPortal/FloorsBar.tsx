@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
-import { Plus } from '../icons';
+import { Plus, MessageSquare, Bot } from '../icons';
 import { Floor } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { FloorContextMenu } from './FloorContextMenu';
+import { AIChat } from './AIChat';
 
 interface FloorsBarProps {
   floors: Floor[];
@@ -36,6 +37,7 @@ export function FloorsBar({
     position: { x: number; y: number };
   } | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   const handleMouseDown = (floor: Floor, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -128,10 +130,47 @@ export function FloorsBar({
           </motion.div>
         )})}
         
+        {/* Chat Button */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: allFloors.length * 0.05 }}
+          className="flex-shrink-0"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10"
+            onClick={() => {/* Handle chat click */}}
+          >
+            <MessageSquare size={16} />
+            <span className="text-xs">Chat</span>
+          </Button>
+        </motion.div>
+
+        {/* AI Bot Button */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: (allFloors.length + 1) * 0.05 }}
+          className="flex-shrink-0"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+            onClick={() => setShowAIChat(true)}
+          >
+            <Bot size={16} />
+            <span className="text-xs">AI</span>
+          </Button>
+        </motion.div>
+
+        {/* New Floor Button */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: (allFloors.length + 2) * 0.05 }}
           className="flex-shrink-0"
         >
           <Button
@@ -160,6 +199,12 @@ export function FloorsBar({
           position={contextMenu.position}
         />
       )}
+
+      {/* AI Chat */}
+      <AIChat
+        isOpen={showAIChat}
+        onClose={() => setShowAIChat(false)}
+      />
     </div>
   );
 }

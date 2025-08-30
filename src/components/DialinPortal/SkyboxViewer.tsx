@@ -90,6 +90,10 @@ function Skybox({ mediaUrl }: SkyboxProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   React.useEffect(() => {
+    // Reset states
+    setTexture(null);
+    setError(false);
+    
     // Check if the URL is a video file
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
     
@@ -97,40 +101,30 @@ function Skybox({ mediaUrl }: SkyboxProps) {
       // Handle video
       const video = document.createElement('video');
       video.src = mediaUrl;
-      // Remove crossOrigin for external URLs that don't support it
-      // video.crossOrigin = 'anonymous';
       video.loop = true;
       video.muted = true;
       video.playsInline = true;
-      video.autoplay = true;
+      video.preload = 'metadata';
       
-      // Add multiple event listeners for better error handling
-      const handleLoadedData = () => {
-        try {
-          const videoTexture = new VideoTexture(video);
-          videoTexture.flipY = false;
-          setTexture(videoTexture);
-          setError(false);
-          
-          // Try to play the video
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch((playError) => {
-              console.warn('Video play failed:', playError);
-              // Try without autoplay
-              video.autoplay = false;
-              video.play().catch(console.warn);
-            });
-          }
-        } catch (textureError) {
-          console.warn('VideoTexture creation failed:', textureError);
-          setError(true);
-        }
-      };
+      let hasCreatedTexture = false;
       
       const handleCanPlay = () => {
-        if (!texture) {
-          handleLoadedData();
+        if (!hasCreatedTexture) {
+          hasCreatedTexture = true;
+          try {
+            const videoTexture = new VideoTexture(video);
+            videoTexture.flipY = false;
+            setTexture(videoTexture);
+            setError(false);
+            
+            // Start playing
+            video.play().catch((playError) => {
+              console.warn('Video play failed:', playError);
+            });
+          } catch (textureError) {
+            console.warn('VideoTexture creation failed:', textureError);
+            setError(true);
+          }
         }
       };
       
@@ -139,29 +133,21 @@ function Skybox({ mediaUrl }: SkyboxProps) {
         setError(true);
       };
       
-      video.addEventListener('loadeddata', handleLoadedData);
       video.addEventListener('canplay', handleCanPlay);
       video.addEventListener('error', handleError);
       
-      // Fallback timeout
-      const fallbackTimeout = setTimeout(() => {
-        if (!texture) {
-          console.warn('Video texture creation timeout');
-          setError(true);
-        }
-      }, 5000);
-      
       videoRef.current = video;
       
+      // Load the video
+      video.load();
+      
       return () => {
-        clearTimeout(fallbackTimeout);
-        video.removeEventListener('loadeddata', handleLoadedData);
         video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('error', handleError);
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.src = '';
-          videoRef.current.load();
+        video.pause();
+        video.remove();
+        if (texture) {
+          texture.dispose();
         }
       };
     } else {
@@ -180,7 +166,7 @@ function Skybox({ mediaUrl }: SkyboxProps) {
         }
       );
     }
-  }, [mediaUrl, texture]);
+  }, [mediaUrl]);
 
   // If error loading texture, don't render the skybox
   if (error || !texture) {

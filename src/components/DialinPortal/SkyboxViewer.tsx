@@ -176,8 +176,15 @@ function Skybox({ mediaUrl }: SkyboxProps) {
   // Check if this is a video file to apply different rotation
   const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
   
+  // Apply specific rotation based on video to center them properly
+  let rotation: [number, number, number] = isVideo ? [Math.PI, 0, 0] : [0, 0, 0];
+  if (mediaUrl.includes('lobby2.mp4')) {
+    // Center the Grand Theater video by rotating it to the center
+    rotation = [Math.PI, Math.PI / 2, 0];
+  }
+  
   return (
-    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={isVideo ? [Math.PI, 0, 0] : [0, 0, 0]}>
+    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotation}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>

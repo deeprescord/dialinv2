@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon } from '../icons';
 import { Button } from '../ui/button';
@@ -24,6 +24,34 @@ const tabs = [
 const filterTabs = ['videos', 'music', 'locations'];
 
 export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount }: TopNavProps) {
+  const [showMobileTabs, setShowMobileTabs] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Only handle scroll behavior on mobile
+      if (window.innerWidth >= 1024) {
+        setShowMobileTabs(true);
+        return;
+      }
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down - hide mobile tabs
+        setShowMobileTabs(false);
+      } else if (currentScrollY < lastScrollY || currentScrollY <= 50) {
+        // Scrolling up or at top - show mobile tabs
+        setShowMobileTabs(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   return (
     <motion.div 
       className="fixed top-4 left-4 right-4 z-50"
@@ -104,8 +132,14 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
       <motion.div 
         className="lg:hidden glass-nav p-2 mt-1"
         initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
+        animate={{ 
+          y: 0, 
+          opacity: showMobileTabs ? 1 : 0,
+          height: showMobileTabs ? 'auto' : 0,
+          paddingTop: showMobileTabs ? 8 : 0,
+          paddingBottom: showMobileTabs ? 8 : 0
+        }}
+        transition={{ duration: 0.3, delay: showMobileTabs ? 0.1 : 0 }}
       >
         <div className="flex items-center justify-around">
           {tabs.map((tab) => {

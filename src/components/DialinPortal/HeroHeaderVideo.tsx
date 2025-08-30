@@ -76,7 +76,7 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
             />
           }>
             <SkyboxViewer 
-              imageUrl={backgroundImage} 
+              mediaUrl={backgroundImage} 
               className="w-full h-full"
             />
           </Suspense>

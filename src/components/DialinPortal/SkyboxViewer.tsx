@@ -1,11 +1,11 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { TextureLoader, BackSide, Euler, MathUtils } from 'three';
+import { TextureLoader, BackSide, Euler, MathUtils, VideoTexture } from 'three';
 import { Mesh } from 'three';
 
 interface SkyboxProps {
-  imageUrl: string;
+  mediaUrl: string;
 }
 
 function GyroscopeControls({ enabled, onActiveChange }: { enabled: boolean; onActiveChange?: (active: boolean) => void }) {
@@ -83,26 +83,65 @@ function GyroscopeControls({ enabled, onActiveChange }: { enabled: boolean; onAc
   return null;
 }
 
-function Skybox({ imageUrl }: SkyboxProps) {
+function Skybox({ mediaUrl }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   React.useEffect(() => {
-    const loader = new TextureLoader();
-    loader.load(
-      imageUrl,
-      (loadedTexture) => {
-        setTexture(loadedTexture);
+    // Check if the URL is a video file
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    
+    if (isVideo) {
+      // Handle video
+      const video = document.createElement('video');
+      video.src = mediaUrl;
+      video.crossOrigin = 'anonymous';
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      
+      video.addEventListener('loadeddata', () => {
+        const videoTexture = new VideoTexture(video);
+        videoTexture.flipY = false;
+        setTexture(videoTexture);
         setError(false);
-      },
-      undefined,
-      (err) => {
-        console.warn(`Failed to load skybox texture: ${imageUrl}`, err);
+        video.play().catch(console.warn);
+      });
+      
+      video.addEventListener('error', (err) => {
+        console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
         setError(true);
-      }
-    );
-  }, [imageUrl]);
+      });
+      
+      videoRef.current = video;
+      
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.pause();
+          videoRef.current.src = '';
+          videoRef.current.load();
+        }
+      };
+    } else {
+      // Handle image
+      const loader = new TextureLoader();
+      loader.load(
+        mediaUrl,
+        (loadedTexture) => {
+          setTexture(loadedTexture);
+          setError(false);
+        },
+        undefined,
+        (err) => {
+          console.warn(`Failed to load skybox texture: ${mediaUrl}`, err);
+          setError(true);
+        }
+      );
+    }
+  }, [mediaUrl]);
 
   // If error loading texture, don't render the skybox
   if (error || !texture) {
@@ -118,12 +157,12 @@ function Skybox({ imageUrl }: SkyboxProps) {
 }
 
 interface SkyboxViewerProps {
-  imageUrl: string;
+  mediaUrl: string;
   className?: string;
   enableGyroscope?: boolean;
 }
 
-export function SkyboxViewer({ imageUrl, className = "", enableGyroscope = true }: SkyboxViewerProps) {
+export function SkyboxViewer({ mediaUrl, className = "", enableGyroscope = true }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -141,12 +180,29 @@ export function SkyboxViewer({ imageUrl, className = "", enableGyroscope = true 
   }, [enableGyroscope]);
 
   if (webglError) {
-    return (
-      <div 
-        className={`w-full h-full bg-cover bg-center ${className}`}
-        style={{ backgroundImage: `url(${imageUrl})` }}
-      />
-    );
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    
+    if (isVideo) {
+      return (
+        <div className={`w-full h-full relative ${className}`}>
+          <video
+            src={mediaUrl}
+            className="w-full h-full object-cover"
+            loop
+            muted
+            autoPlay
+            playsInline
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div 
+          className={`w-full h-full bg-cover bg-center ${className}`}
+          style={{ backgroundImage: `url(${mediaUrl})` }}
+        />
+      );
+    }
   }
 
   return (
@@ -174,7 +230,7 @@ export function SkyboxViewer({ imageUrl, className = "", enableGyroscope = true 
         }}
       >
         <Suspense fallback={null}>
-          <Skybox imageUrl={imageUrl} />
+          <Skybox mediaUrl={mediaUrl} />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 
             onActiveChange={setGyroscopeActive}

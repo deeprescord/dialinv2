@@ -95,9 +95,7 @@ export function FloorsBar({
             className="flex-shrink-0"
           >
             <div 
-              className={`flex flex-col items-center space-y-2 cursor-pointer group select-none relative ${
-                isCurrentFloor ? 'floor-selected' : ''
-              }`}
+              className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
               onClick={() => handleFloorClick(floor)}
               onMouseDown={(e) => !isLobby && handleMouseDown(floor, e)}
               onMouseUp={handleMouseUp}
@@ -110,6 +108,12 @@ export function FloorsBar({
               }}
               onTouchEnd={handleMouseUp}
             >
+              {/* Triangle arrow for selected floor */}
+              {isCurrentFloor && (
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                  <div className="w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-primary"></div>
+                </div>
+              )}
               <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
                 <ImageFallback 
                   src={floor.thumb} 

@@ -98,12 +98,22 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-40 right-6 w-80 h-[36rem] glass-card border border-white/10 rounded-lg overflow-hidden z-50 flex flex-col"
-          >
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-transparent z-40"
+              onClick={onClose}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.9 }}
+              className="fixed bottom-40 right-6 w-80 h-[36rem] glass-card border border-white/10 rounded-lg overflow-hidden z-50 flex flex-col"
+            >
             {selectedThread ? (
               // Individual Thread View
               <>
@@ -276,7 +286,8 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                 </div>
               </>
             )}
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

@@ -218,7 +218,7 @@ export const initialFloors: Floor[] = [
   { 
     id: '6', 
     name: 'Grand Theater', 
-    thumb: '/media/lobby2.mp4',
+    thumb: '/media/grand-theater-thumb.jpg',
     backgroundImage: '/media/lobby2.mp4',
     show360: true,
     description: 'Recommendations from your family and friends.'
@@ -226,7 +226,7 @@ export const initialFloors: Floor[] = [
   { 
     id: '7', 
     name: 'Starbuds', 
-    thumb: '/media/starbuds-360.mp4',
+    thumb: '/media/starbuds-thumb.jpg',
     backgroundImage: '/media/starbuds-360.mp4',
     show360: true,
     description: 'Welcome to Westmont'

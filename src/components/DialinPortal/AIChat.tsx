@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Close, Send } from '../icons';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 
 interface AIChatProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
     }
   ]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-focus input when opening on mobile
   useEffect(() => {
@@ -144,21 +144,22 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
 
               {/* Input */}
               <div className="p-4 border-t border-border bg-background/90 md:bg-transparent">
-                <div className="flex space-x-2">
-                  <Input
+                <div className="flex space-x-2 items-end">
+                  <Textarea
                     ref={inputRef}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message..."
-                    className="flex-1 bg-muted/50 border-muted focus:border-primary"
+                    className="flex-1 bg-muted/50 border-muted focus:border-primary resize-none min-h-[60px] max-h-[120px]"
                     autoFocus
+                    rows={2}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
                     size="sm"
-                    className="px-3"
+                    className="px-3 h-10"
                   >
                     <Send size={16} />
                   </Button>

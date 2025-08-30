@@ -91,8 +91,9 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md h-[80vh] max-h-[700px] z-50"
+            className="fixed inset-0 flex items-center justify-center p-4 z-[60]"
           >
+            <div className="w-full max-w-md h-[80vh] max-h-[700px]">
             <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border bg-background/90 md:bg-transparent">
@@ -167,6 +168,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                   </Button>
                 </div>
               </div>
+            </div>
             </div>
           </motion.div>
         </>

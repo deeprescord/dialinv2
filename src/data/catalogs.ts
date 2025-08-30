@@ -1,4 +1,9 @@
 // Mock data for Dialin V3 Portal
+import grandTheaterPoster from '@/assets/grand-theater-poster.jpg';
+import videoThumbnails from '@/assets/video-thumbnails.jpg';
+import musicCollection from '@/assets/music-collection.jpg';
+import locationShowcase from '@/assets/location-showcase.jpg';
+import userAvatarsSet from '@/assets/user-avatars-set.jpg';
 
 export interface VideoItem {
   id: string;
@@ -218,7 +223,7 @@ export const initialFloors: Floor[] = [
   { 
     id: '6', 
     name: 'Grand Theater', 
-    thumb: '/media/grand-theater-thumb.jpg',
+    thumb: grandTheaterPoster,
     backgroundImage: '/media/lobby2.mp4',
     show360: true,
     description: 'Recommendations from your family and friends.'

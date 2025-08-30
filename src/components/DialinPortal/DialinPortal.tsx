@@ -29,6 +29,8 @@ import {
   Friend,
   Floor
 } from '@/data/catalogs';
+import lobbyPoster from '@/assets/lobby-poster.jpg';
+import appBackground from '@/assets/app-background.jpg';
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
 
@@ -40,7 +42,7 @@ export function DialinPortal() {
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
   const [floors, setFloors] = useState<Floor[]>([
-    { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
+    { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: appBackground },
     ...initialFloors
   ]);
   const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);

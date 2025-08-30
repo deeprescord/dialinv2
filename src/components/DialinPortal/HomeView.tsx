@@ -6,6 +6,8 @@ import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
 import { videoCatalog, musicCatalog, friendsPosts, friends } from '@/data/catalogs';
 import { Friend } from '@/data/catalogs';
+import lobbyBackground from '@/assets/lobby-background.jpg';
+import appBackground from '@/assets/app-background.jpg';
 
 interface HomeViewProps {
   pinnedContacts: Friend[];
@@ -46,10 +48,10 @@ export function HomeView({
       {/* Hero Header */}
       <HeroHeaderVideo
         videoSrc={isLobby ? "https://dialin.io/s/Skull-2.mp4" : undefined}
-        posterSrc="/media/lobby-poster.png"
+        posterSrc={backgroundImage || lobbyBackground}
         title={floorName || "Lobby"}
         subtitle={floorDescription || "Welcome back"}
-        backgroundImage={backgroundImage}
+        backgroundImage={backgroundImage || (isLobby ? appBackground : lobbyBackground)}
         showVideo={isLobby}
         show360={show360}
       />

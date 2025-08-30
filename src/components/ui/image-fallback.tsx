@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import logoFallback from '@/assets/logo-fallback.jpg';
+import userAvatarsSet from '@/assets/user-avatars-set.jpg';
+import appBackground from '@/assets/app-background.jpg';
 
 interface ImageFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
@@ -16,7 +19,26 @@ export function ImageFallback({
 }: ImageFallbackProps) {
   const [hasError, setHasError] = useState(false);
 
-  const defaultFallback = "data:image/svg+xml,%3csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100' height='100' fill='%23374151'/%3e%3ctext x='50' y='50' font-family='system-ui' font-size='14' fill='%23d1d5db' text-anchor='middle' dy='0.3em'%3eImage%3c/text%3e%3c/svg%3e";
+  // Choose appropriate fallback based on alt text or className
+  const getSmartFallback = () => {
+    if (fallbackSrc) return fallbackSrc;
+    
+    const altLower = alt?.toLowerCase() || '';
+    const classLower = className?.toLowerCase() || '';
+    
+    if (altLower.includes('avatar') || altLower.includes('profile') || classLower.includes('avatar')) {
+      return userAvatarsSet;
+    }
+    if (altLower.includes('logo') || altLower.includes('dialin') || classLower.includes('logo')) {
+      return logoFallback;
+    }
+    if (altLower.includes('background') || altLower.includes('hero') || classLower.includes('background')) {
+      return appBackground;
+    }
+    
+    // Default fallback with better styling
+    return "data:image/svg+xml,%3csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100' height='100' fill='%2318181b'/%3e%3ctext x='50' y='50' font-family='system-ui' font-size='12' fill='%236366f1' text-anchor='middle' dy='0.3em'%3eImage%3c/text%3e%3c/svg%3e";
+  };
 
   const handleError = () => {
     setHasError(true);
@@ -29,11 +51,12 @@ export function ImageFallback({
 
   return (
     <img
-      src={hasError ? (fallbackSrc || defaultFallback) : src}
+      src={hasError ? getSmartFallback() : src}
       alt={alt}
       className={cn(
         className,
-        hasError && fallbackClassName
+        hasError && fallbackClassName,
+        hasError && "object-cover" // Ensure fallback images fit well
       )}
       onError={handleError}
       {...props}

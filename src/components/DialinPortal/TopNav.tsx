@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
 import { formatDialCount } from '@/lib/filters';
+import logoFallback from '@/assets/logo-fallback.jpg';
 
 interface TopNavProps {
   currentTab: string;
@@ -68,6 +69,10 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
               src="/brand/dialin-logo-white.png" 
               alt="Dialin" 
               className="h-6 sm:h-8 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = logoFallback;
+              }}
             />
             
             {/* Desktop Tabs */}

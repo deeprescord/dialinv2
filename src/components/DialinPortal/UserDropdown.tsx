@@ -3,6 +3,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { ImageFallback } from '../ui/image-fallback';
 import { Settings, HardDrive, Database, Wallet, ChevronDown } from '../icons';
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ export function UserDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center space-x-2 p-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://i.pravatar.cc/150?img=1" />
+            <ImageFallback src="https://i.pravatar.cc/150?img=1" alt="User avatar" />
             <AvatarFallback>ME</AvatarFallback>
           </Avatar>
           <ChevronDown size={16} className="text-muted-foreground" />

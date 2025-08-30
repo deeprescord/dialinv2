@@ -177,7 +177,7 @@ function Skybox({ mediaUrl }: SkyboxProps) {
   const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
   const rotation: [number, number, number] = isVideo 
     ? [0, 3 * Math.PI / 4, 0]  // Video rotation for centered logo
-    : [0, Math.PI, 0];         // Image rotation (reverted)
+    : [0, 3 * Math.PI / 4, 0]; // Image rotation (original working setting)
 
   return (
     <mesh ref={meshRef} scale={[-50, -50, 50]} rotation={rotation}>

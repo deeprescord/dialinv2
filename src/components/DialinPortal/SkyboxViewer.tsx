@@ -97,28 +97,67 @@ function Skybox({ mediaUrl }: SkyboxProps) {
       // Handle video
       const video = document.createElement('video');
       video.src = mediaUrl;
-      video.crossOrigin = 'anonymous';
+      // Remove crossOrigin for external URLs that don't support it
+      // video.crossOrigin = 'anonymous';
       video.loop = true;
       video.muted = true;
       video.playsInline = true;
       video.autoplay = true;
       
-      video.addEventListener('loadeddata', () => {
-        const videoTexture = new VideoTexture(video);
-        videoTexture.flipY = false;
-        setTexture(videoTexture);
-        setError(false);
-        video.play().catch(console.warn);
-      });
+      // Add multiple event listeners for better error handling
+      const handleLoadedData = () => {
+        try {
+          const videoTexture = new VideoTexture(video);
+          videoTexture.flipY = false;
+          setTexture(videoTexture);
+          setError(false);
+          
+          // Try to play the video
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((playError) => {
+              console.warn('Video play failed:', playError);
+              // Try without autoplay
+              video.autoplay = false;
+              video.play().catch(console.warn);
+            });
+          }
+        } catch (textureError) {
+          console.warn('VideoTexture creation failed:', textureError);
+          setError(true);
+        }
+      };
       
-      video.addEventListener('error', (err) => {
+      const handleCanPlay = () => {
+        if (!texture) {
+          handleLoadedData();
+        }
+      };
+      
+      const handleError = (err: any) => {
         console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
         setError(true);
-      });
+      };
+      
+      video.addEventListener('loadeddata', handleLoadedData);
+      video.addEventListener('canplay', handleCanPlay);
+      video.addEventListener('error', handleError);
+      
+      // Fallback timeout
+      const fallbackTimeout = setTimeout(() => {
+        if (!texture) {
+          console.warn('Video texture creation timeout');
+          setError(true);
+        }
+      }, 5000);
       
       videoRef.current = video;
       
       return () => {
+        clearTimeout(fallbackTimeout);
+        video.removeEventListener('loadeddata', handleLoadedData);
+        video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('error', handleError);
         if (videoRef.current) {
           videoRef.current.pause();
           videoRef.current.src = '';
@@ -141,7 +180,7 @@ function Skybox({ mediaUrl }: SkyboxProps) {
         }
       );
     }
-  }, [mediaUrl]);
+  }, [mediaUrl, texture]);
 
   // If error loading texture, don't render the skybox
   if (error || !texture) {

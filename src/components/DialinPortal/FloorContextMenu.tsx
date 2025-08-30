@@ -4,7 +4,8 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare } from 'lucide-react';
+import { Slider } from '../ui/slider';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
 import { Floor } from '@/data/catalogs';
 import {
   AlertDialog,
@@ -26,6 +27,9 @@ interface FloorContextMenuProps {
   onUpdateDescription: (floorId: string, newDescription: string) => void;
   onReorder: (floorId: string, direction: 'left' | 'right') => void;
   onToggle360: (floorId: string, enabled: boolean) => void;
+  on360AxisChange?: (floorId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (floorId: string, volume: number) => void;
+  on360MuteToggle?: (floorId: string, muted: boolean) => void;
   position: { x: number; y: number };
 }
 
@@ -38,6 +42,9 @@ export function FloorContextMenu({
   onUpdateDescription,
   onReorder,
   onToggle360,
+  on360AxisChange,
+  on360VolumeChange,
+  on360MuteToggle,
   position
 }: FloorContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -45,6 +52,11 @@ export function FloorContextMenu({
   const [newName, setNewName] = useState(floor.name);
   const [newDescription, setNewDescription] = useState(floor.description || 'Welcome back');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [show360Advanced, setShow360Advanced] = useState(false);
+  const [xAxis, setXAxis] = useState(floor.xAxis || 0);
+  const [yAxis, setYAxis] = useState(floor.yAxis || 0);
+  const [volume, setVolume] = useState(floor.volume || 50);
+  const [isMuted, setIsMuted] = useState(floor.isMuted !== undefined ? floor.isMuted : true);
 
   const handleRename = () => {
     if (newName.trim() && newName !== floor.name) {
@@ -155,24 +167,110 @@ export function FloorContextMenu({
               {/* Action Buttons */}
               <div className="space-y-1">
                 {/* 360° Toggle */}
-                <div 
-                  className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded cursor-pointer"
-                  onClick={() => {
-                    onToggle360(floor.id, !floor.show360);
-                    onClose();
-                  }}
-                >
-                  <div className="flex items-center">
-                    <Globe size={14} className="mr-2" />
-                    <span className="text-sm">360° View</span>
-                  </div>
-                  <Switch
-                    checked={floor.show360 || false}
-                    onCheckedChange={(checked) => {
-                      onToggle360(floor.id, checked);
-                      onClose();
+                <div className="border-b border-white/10 pb-2 mb-2">
+                  <div 
+                    className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded cursor-pointer"
+                    onClick={() => {
+                      onToggle360(floor.id, !floor.show360);
                     }}
-                  />
+                  >
+                    <div className="flex items-center">
+                      <Globe size={14} className="mr-2" />
+                      <span className="text-sm">360° View</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={floor.show360 || false}
+                        onCheckedChange={(checked) => {
+                          onToggle360(floor.id, checked);
+                        }}
+                      />
+                      {floor.show360 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShow360Advanced(!show360Advanced);
+                          }}
+                          className="p-1 hover:bg-white/10 rounded"
+                        >
+                          {show360Advanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Advanced 360° Controls */}
+                  {floor.show360 && show360Advanced && (
+                    <div className="px-2 py-3 space-y-4 bg-background/50 rounded-md mx-2 mt-2">
+                      {/* X Axis Control */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-foreground/70">X Axis</label>
+                        <Slider
+                          value={[xAxis]}
+                          onValueChange={(value) => {
+                            setXAxis(value[0]);
+                            on360AxisChange?.(floor.id, 'x', value[0]);
+                          }}
+                          min={-180}
+                          max={180}
+                          step={1}
+                          className="w-full"
+                        />
+                        <span className="text-xs text-foreground/60">{xAxis}°</span>
+                      </div>
+
+                      {/* Y Axis Control */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-foreground/70">Y Axis</label>
+                        <Slider
+                          value={[yAxis]}
+                          onValueChange={(value) => {
+                            setYAxis(value[0]);
+                            on360AxisChange?.(floor.id, 'y', value[0]);
+                          }}
+                          min={-90}
+                          max={90}
+                          step={1}
+                          className="w-full"
+                        />
+                        <span className="text-xs text-foreground/60">{yAxis}°</span>
+                      </div>
+
+                      {/* Mute Toggle */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          {isMuted ? <VolumeX size={12} className="mr-2" /> : <Volume2 size={12} className="mr-2" />}
+                          <span className="text-xs">Audio</span>
+                        </div>
+                        <Switch
+                          checked={!isMuted}
+                          onCheckedChange={(checked) => {
+                            setIsMuted(!checked);
+                            on360MuteToggle?.(floor.id, !checked);
+                          }}
+                        />
+                      </div>
+
+                      {/* Volume Control */}
+                      {!isMuted && (
+                        <div className="space-y-2">
+                          <label className="text-xs text-foreground/70">Volume</label>
+                          <Slider
+                            value={[volume]}
+                            onValueChange={(value) => {
+                              setVolume(value[0]);
+                              on360VolumeChange?.(floor.id, value[0]);
+                            }}
+                            min={0}
+                            max={100}
+                            step={1}
+                            className="w-full"
+                          />
+                          <span className="text-xs text-foreground/60">{volume}%</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <Button

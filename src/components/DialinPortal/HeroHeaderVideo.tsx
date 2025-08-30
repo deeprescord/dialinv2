@@ -10,9 +10,25 @@ interface HeroHeaderVideoProps {
   backgroundImage?: string;
   showVideo?: boolean;
   show360?: boolean;
+  xAxisOffset?: number;
+  yAxisOffset?: number;
+  volume?: number;
+  isMuted?: boolean;
 }
 
-export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgroundImage, showVideo = true, show360 = false }: HeroHeaderVideoProps) {
+export function HeroHeaderVideo({ 
+  videoSrc, 
+  posterSrc, 
+  title, 
+  subtitle, 
+  backgroundImage, 
+  showVideo = true, 
+  show360 = false,
+  xAxisOffset,
+  yAxisOffset,
+  volume,
+  isMuted
+}: HeroHeaderVideoProps) {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -78,6 +94,10 @@ export function HeroHeaderVideo({ videoSrc, posterSrc, title, subtitle, backgrou
             <SkyboxViewer 
               mediaUrl={backgroundImage} 
               className="w-full h-full"
+              xAxisOffset={xAxisOffset}
+              yAxisOffset={yAxisOffset}
+              volume={volume}
+              isMuted={isMuted}
             />
           </Suspense>
           {/* 360° Indicator */}

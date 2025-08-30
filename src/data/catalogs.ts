@@ -53,6 +53,10 @@ export interface Floor {
   backgroundImage?: string;
   show360?: boolean;
   description?: string;
+  xAxis?: number;
+  yAxis?: number;
+  volume?: number;
+  isMuted?: boolean;
 }
 
 export interface Post {

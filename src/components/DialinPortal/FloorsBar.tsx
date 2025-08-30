@@ -18,6 +18,9 @@ interface FloorsBarProps {
   onUpdateFloorDescription: (floorId: string, newDescription: string) => void;
   onReorderFloor: (floorId: string, direction: 'left' | 'right') => void;
   onToggle360: (floorId: string, enabled: boolean) => void;
+  on360AxisChange?: (floorId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (floorId: string, volume: number) => void;
+  on360MuteToggle?: (floorId: string, muted: boolean) => void;
   onFloorClick?: (floor: Floor) => void;
 }
 
@@ -30,6 +33,9 @@ export function FloorsBar({
   onUpdateFloorDescription, 
   onReorderFloor, 
   onToggle360,
+  on360AxisChange,
+  on360VolumeChange,
+  on360MuteToggle,
   onFloorClick 
 }: FloorsBarProps) {
   const navigate = useNavigate();
@@ -201,6 +207,9 @@ export function FloorsBar({
           onUpdateDescription={onUpdateFloorDescription}
           onReorder={onReorderFloor}
           onToggle360={onToggle360}
+          on360AxisChange={on360AxisChange}
+          on360VolumeChange={on360VolumeChange}
+          on360MuteToggle={on360MuteToggle}
           position={contextMenu.position}
         />
       )}

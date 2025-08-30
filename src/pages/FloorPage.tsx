@@ -277,6 +277,30 @@ export default function FloorPage() {
     ));
   };
 
+  const handle360AxisChange = (floorId: string, axis: 'x' | 'y', value: number) => {
+    setFloors(floors.map(floor => 
+      floor.id === floorId 
+        ? { ...floor, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
+        : floor
+    ));
+  };
+
+  const handle360VolumeChange = (floorId: string, volume: number) => {
+    setFloors(floors.map(floor => 
+      floor.id === floorId 
+        ? { ...floor, volume }
+        : floor
+    ));
+  };
+
+  const handle360MuteToggle = (floorId: string, muted: boolean) => {
+    setFloors(floors.map(floor => 
+      floor.id === floorId 
+        ? { ...floor, isMuted: muted }
+        : floor
+    ));
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showFloorsBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -328,6 +352,10 @@ export default function FloorPage() {
               floorDescription={currentFloor?.description}
               isLobby={floorId === 'lobby'}
               show360={show360}
+              xAxisOffset={currentFloor?.xAxis}
+              yAxisOffset={currentFloor?.yAxis}
+              volume={currentFloor?.volume}
+              isMuted={currentFloor?.isMuted}
             />
           )}
 
@@ -387,6 +415,9 @@ export default function FloorPage() {
             onUpdateFloorDescription={handleUpdateFloorDescription}
             onReorderFloor={handleReorderFloor}
             onToggle360={handleToggle360}
+            on360AxisChange={handle360AxisChange}
+            on360VolumeChange={handle360VolumeChange}
+            on360MuteToggle={handle360MuteToggle}
             onFloorClick={handleFloorClick}
           />
           </div>

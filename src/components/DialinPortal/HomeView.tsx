@@ -19,6 +19,10 @@ interface HomeViewProps {
   floorDescription?: string;
   isLobby?: boolean;
   show360?: boolean;
+  xAxisOffset?: number;
+  yAxisOffset?: number;
+  volume?: number;
+  isMuted?: boolean;
 }
 
 export function HomeView({ 
@@ -30,7 +34,11 @@ export function HomeView({
   floorName,
   floorDescription,
   isLobby = false,
-  show360 = false
+  show360 = false,
+  xAxisOffset,
+  yAxisOffset,
+  volume,
+  isMuted
 }: HomeViewProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -54,6 +62,10 @@ export function HomeView({
         backgroundImage={backgroundImage || (isLobby ? appBackground : lobbyBackground)}
         showVideo={isLobby}
         show360={show360}
+        xAxisOffset={xAxisOffset}
+        yAxisOffset={yAxisOffset}
+        volume={volume}
+        isMuted={isMuted}
       />
 
       {isLobby ? (

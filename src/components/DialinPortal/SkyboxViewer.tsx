@@ -4,9 +4,6 @@ import { OrbitControls } from '@react-three/drei';
 import { TextureLoader, BackSide, Euler, MathUtils, VideoTexture } from 'three';
 import { Mesh } from 'three';
 
-interface SkyboxProps {
-  mediaUrl: string;
-}
 
 function GyroscopeControls({ enabled, onActiveChange }: { enabled: boolean; onActiveChange?: (active: boolean) => void }) {
   const { camera } = useThree();
@@ -83,7 +80,15 @@ function GyroscopeControls({ enabled, onActiveChange }: { enabled: boolean; onAc
   return null;
 }
 
-function Skybox({ mediaUrl }: SkyboxProps) {
+interface SkyboxProps {
+  mediaUrl: string;
+  xAxisOffset?: number;
+  yAxisOffset?: number;
+  volume?: number;
+  isMuted?: boolean;
+}
+
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -102,7 +107,8 @@ function Skybox({ mediaUrl }: SkyboxProps) {
       const video = document.createElement('video');
       video.src = mediaUrl;
       video.loop = true;
-      video.muted = true;
+      video.muted = isMuted;
+      video.volume = isMuted ? 0 : volume / 100;
       video.playsInline = true;
       video.preload = 'metadata';
       
@@ -183,6 +189,10 @@ function Skybox({ mediaUrl }: SkyboxProps) {
     rotation = [Math.PI, Math.PI / 2, 0];
   }
   
+  // Apply user-defined axis offsets
+  rotation[0] += MathUtils.degToRad(yAxisOffset || 0); // Y axis affects X rotation
+  rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
+  
   return (
     <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotation}>
       <sphereGeometry args={[1, 60, 40]} />
@@ -195,9 +205,21 @@ interface SkyboxViewerProps {
   mediaUrl: string;
   className?: string;
   enableGyroscope?: boolean;
+  xAxisOffset?: number;
+  yAxisOffset?: number;
+  volume?: number;
+  isMuted?: boolean;
 }
 
-export function SkyboxViewer({ mediaUrl, className = "", enableGyroscope = true }: SkyboxViewerProps) {
+export function SkyboxViewer({ 
+  mediaUrl, 
+  className = "", 
+  enableGyroscope = true,
+  xAxisOffset = 0,
+  yAxisOffset = 0,
+  volume = 50,
+  isMuted = true
+}: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -265,7 +287,13 @@ export function SkyboxViewer({ mediaUrl, className = "", enableGyroscope = true 
         }}
       >
         <Suspense fallback={null}>
-          <Skybox mediaUrl={mediaUrl} />
+          <Skybox 
+            mediaUrl={mediaUrl} 
+            xAxisOffset={xAxisOffset}
+            yAxisOffset={yAxisOffset}
+            volume={volume}
+            isMuted={isMuted}
+          />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 
             onActiveChange={setGyroscopeActive}

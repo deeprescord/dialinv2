@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
-import { Trash2, Edit3, GripVertical, X, Globe } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare } from 'lucide-react';
 import { Floor } from '@/data/catalogs';
 import {
   AlertDialog,
@@ -22,6 +23,7 @@ interface FloorContextMenuProps {
   onClose: () => void;
   onDelete: (floorId: string) => void;
   onRename: (floorId: string, newName: string) => void;
+  onUpdateDescription: (floorId: string, newDescription: string) => void;
   onReorder: (floorId: string, direction: 'left' | 'right') => void;
   onToggle360: (floorId: string, enabled: boolean) => void;
   position: { x: number; y: number };
@@ -33,12 +35,15 @@ export function FloorContextMenu({
   onClose,
   onDelete,
   onRename,
+  onUpdateDescription,
   onReorder,
   onToggle360,
   position
 }: FloorContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [newName, setNewName] = useState(floor.name);
+  const [newDescription, setNewDescription] = useState(floor.description || 'Welcome back');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleRename = () => {
@@ -49,12 +54,26 @@ export function FloorContextMenu({
     onClose();
   };
 
+  const handleDescriptionUpdate = () => {
+    if (newDescription.trim() && newDescription !== floor.description) {
+      onUpdateDescription(floor.id, newDescription.trim());
+    }
+    setIsEditingDescription(false);
+    onClose();
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleRename();
+      if (isRenaming) {
+        handleRename();
+      } else if (isEditingDescription) {
+        handleDescriptionUpdate();
+      }
     } else if (e.key === 'Escape') {
       setIsRenaming(false);
+      setIsEditingDescription(false);
       setNewName(floor.name);
+      setNewDescription(floor.description || 'Welcome back');
       onClose();
     }
   };
@@ -113,9 +132,23 @@ export function FloorContextMenu({
                     placeholder="Floor name"
                   />
                 </div>
-              ) : (
+              ) : isEditingDescription ? (
                 <div className="mb-3 px-2">
+                  <Textarea
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleDescriptionUpdate}
+                    className="text-sm resize-none"
+                    rows={2}
+                    autoFocus
+                    placeholder="Welcome back phrase"
+                  />
+                </div>
+              ) : (
+                <div className="mb-3 px-2 space-y-1">
                   <p className="text-sm text-foreground font-medium">{floor.name}</p>
+                  <p className="text-xs text-foreground/60">{floor.description || 'Welcome back'}</p>
                 </div>
               )}
 
@@ -147,10 +180,21 @@ export function FloorContextMenu({
                   size="sm"
                   className="w-full justify-start h-8 px-2 hover:bg-white/10"
                   onClick={() => setIsRenaming(true)}
-                  disabled={isRenaming}
+                  disabled={isRenaming || isEditingDescription}
                 >
                   <Edit3 size={14} className="mr-2" />
                   Rename
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start h-8 px-2 hover:bg-white/10"
+                  onClick={() => setIsEditingDescription(true)}
+                  disabled={isRenaming || isEditingDescription}
+                >
+                  <MessageSquare size={14} className="mr-2" />
+                  Edit Description
                 </Button>
 
                 <Button

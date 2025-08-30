@@ -13,6 +13,7 @@ interface FloorsBarProps {
   onCreateFloor: () => void;
   onDeleteFloor: (floorId: string) => void;
   onRenameFloor: (floorId: string, newName: string) => void;
+  onUpdateFloorDescription: (floorId: string, newDescription: string) => void;
   onReorderFloor: (floorId: string, direction: 'left' | 'right') => void;
   onToggle360: (floorId: string, enabled: boolean) => void;
   onFloorClick?: (floor: Floor) => void;
@@ -23,7 +24,8 @@ export function FloorsBar({
   currentFloorId, 
   onCreateFloor, 
   onDeleteFloor, 
-  onRenameFloor, 
+  onRenameFloor,
+  onUpdateFloorDescription, 
   onReorderFloor, 
   onToggle360,
   onFloorClick 
@@ -148,6 +150,7 @@ export function FloorsBar({
           onClose={() => setContextMenu(null)}
           onDelete={onDeleteFloor}
           onRename={onRenameFloor}
+          onUpdateDescription={onUpdateFloorDescription}
           onReorder={onReorderFloor}
           onToggle360={onToggle360}
           position={contextMenu.position}

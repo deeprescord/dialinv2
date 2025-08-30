@@ -213,6 +213,13 @@ export function DialinPortal() {
     ));
   };
 
+  // Handle floor description update
+  const handleUpdateFloorDescription = (floorId: string, newDescription: string) => {
+    setFloors(prev => prev.map(floor => 
+      floor.id === floorId ? { ...floor, description: newDescription } : floor
+    ));
+  };
+
   // Handle floor reordering
   const handleReorderFloor = (floorId: string, direction: 'left' | 'right') => {
     setFloors(prev => {
@@ -335,11 +342,12 @@ export function DialinPortal() {
              floors={floors}
              currentFloorId="lobby"
              onCreateFloor={() => setShowCreateFloorModal(true)}
-             onDeleteFloor={handleDeleteFloor}
-             onRenameFloor={handleRenameFloor}
-             onReorderFloor={handleReorderFloor}
-             onToggle360={() => {}}
-             onFloorClick={handleFloorClick}
+              onDeleteFloor={handleDeleteFloor}
+              onRenameFloor={handleRenameFloor}
+              onUpdateFloorDescription={handleUpdateFloorDescription}
+              onReorderFloor={handleReorderFloor}
+              onToggle360={() => {}}
+              onFloorClick={handleFloorClick}
            />
         </div>
       )}

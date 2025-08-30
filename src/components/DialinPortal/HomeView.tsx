@@ -14,6 +14,7 @@ interface HomeViewProps {
   onMediaLongPress: (item: any) => void;
   backgroundImage?: string;
   floorName?: string;
+  floorDescription?: string;
   isLobby?: boolean;
   show360?: boolean;
 }
@@ -25,6 +26,7 @@ export function HomeView({
   onMediaLongPress,
   backgroundImage,
   floorName,
+  floorDescription,
   isLobby = false,
   show360 = false
 }: HomeViewProps) {
@@ -46,7 +48,7 @@ export function HomeView({
         videoSrc={isLobby ? "https://dialin.io/s/Skull-2.mp4" : undefined}
         posterSrc="/media/lobby-poster.png"
         title={floorName || "Lobby"}
-        subtitle="Welcome back"
+        subtitle={floorDescription || "Welcome back"}
         backgroundImage={backgroundImage}
         showVideo={isLobby}
         show360={show360}

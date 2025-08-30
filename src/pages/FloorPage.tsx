@@ -226,6 +226,13 @@ export default function FloorPage() {
     ));
   };
 
+  // Handle floor description update
+  const handleUpdateFloorDescription = (floorId: string, newDescription: string) => {
+    setFloors(prev => prev.map(floor => 
+      floor.id === floorId ? { ...floor, description: newDescription } : floor
+    ));
+  };
+
   // Handle floor reordering
   const handleReorderFloor = (floorId: string, direction: 'left' | 'right') => {
     setFloors(prev => {
@@ -320,6 +327,7 @@ export default function FloorPage() {
               onMediaLongPress={handleMediaLongPress}
               backgroundImage={backgroundImage}
               floorName={currentFloor?.name || 'Lobby'}
+              floorDescription={currentFloor?.description}
               isLobby={floorId === 'lobby'}
               show360={show360}
             />
@@ -378,6 +386,7 @@ export default function FloorPage() {
               onCreateFloor={() => setShowCreateFloorModal(true)}
               onDeleteFloor={handleDeleteFloor}
               onRenameFloor={handleRenameFloor}
+              onUpdateFloorDescription={handleUpdateFloorDescription}
               onReorderFloor={handleReorderFloor}
               onToggle360={handleToggle360}
               onFloorClick={handleFloorClick}

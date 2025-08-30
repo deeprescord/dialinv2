@@ -33,7 +33,7 @@ export function FeaturedPostHeader({ post, onPostClick }: FeaturedPostHeaderProp
       <div className="absolute inset-0 backdrop-blur-[1px] bg-white/5" />
       
       {/* Content */}
-      <div className="relative p-6 min-h-[200px] flex flex-col justify-end">
+      <div className="relative p-8 min-h-[320px] flex flex-col justify-end">
         {/* Featured Label */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}

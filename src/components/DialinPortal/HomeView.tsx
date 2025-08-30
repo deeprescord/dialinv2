@@ -56,11 +56,13 @@ export function HomeView({
 
       {isLobby ? (
         <>
-          {/* Pinned Contacts */}
-          <PinnedContactsRow 
-            contacts={pinnedContacts}
-            onContactClick={onContactClick}
-          />
+          {/* Pinned Contacts - Hidden on mobile */}
+          <div className="hidden md:block">
+            <PinnedContactsRow 
+              contacts={pinnedContacts}
+              onContactClick={onContactClick}
+            />
+          </div>
 
           {/* Content Rows */}
           <div className="px-4 mb-6">

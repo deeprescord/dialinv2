@@ -34,7 +34,7 @@ export function LocationsView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pt-32 lg:pt-28 pb-20"
+      className="pt-40 lg:pt-28 pb-20"
     >
       <SelectedChips 
         selectedDials={selectedDials}

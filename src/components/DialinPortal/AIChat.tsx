@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Close, Send } from '../icons';
 import { Button } from '../ui/button';
@@ -26,6 +26,17 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
     }
   ]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus input when opening on mobile
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Small delay to ensure the component is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -78,11 +89,11 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md h-[70vh] max-h-[600px] z-50"
+            className="fixed inset-0 md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 md:w-[90vw] md:max-w-md md:h-[70vh] md:max-h-[600px] z-50"
           >
-            <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col h-full">
+            <div className="bg-background/95 backdrop-blur-xl border-0 md:border border-border md:rounded-2xl shadow-2xl flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center justify-between p-4 border-b border-border bg-background/90 md:bg-transparent">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
                     <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
@@ -132,14 +143,16 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t border-border">
+              <div className="p-4 border-t border-border bg-background/90 md:bg-transparent">
                 <div className="flex space-x-2">
                   <Input
+                    ref={inputRef}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message..."
                     className="flex-1 bg-muted/50 border-muted focus:border-primary"
+                    autoFocus
                   />
                   <Button
                     onClick={handleSendMessage}

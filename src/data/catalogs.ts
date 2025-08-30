@@ -218,8 +218,8 @@ export const initialFloors: Floor[] = [
   { 
     id: '6', 
     name: 'Grand Theater', 
-    thumb: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png',
-    backgroundImage: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png',
+    thumb: '/media/lobby2.mp4',
+    backgroundImage: '/media/lobby2.mp4',
     show360: true,
     description: 'Recommendations from your family and friends.'
   },

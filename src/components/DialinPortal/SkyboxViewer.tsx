@@ -173,8 +173,11 @@ function Skybox({ mediaUrl }: SkyboxProps) {
     return null;
   }
 
+  // Check if this is a video file to apply different rotation
+  const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+  
   return (
-    <mesh ref={meshRef} scale={[-50, 50, 50]}>
+    <mesh ref={meshRef} scale={[-50, 50, 50]} rotation={isVideo ? [0, Math.PI, 0] : [0, 0, 0]}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>

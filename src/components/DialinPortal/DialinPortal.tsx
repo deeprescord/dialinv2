@@ -15,7 +15,6 @@ import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateFloorModal } from './CreateFloorModal';
-import { FloatingChat } from './FloatingChat';
 
 import { 
   videoCatalog, 
@@ -45,7 +44,6 @@ export function DialinPortal() {
     ...initialFloors
   ]);
   const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
-  const [showFloatingChat, setShowFloatingChat] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -350,7 +348,6 @@ export function DialinPortal() {
               onReorderFloor={handleReorderFloor}
               onToggle360={() => {}}
               onFloorClick={handleFloorClick}
-              onChatToggle={() => setShowFloatingChat(!showFloatingChat)}
            />
         </div>
       )}
@@ -404,9 +401,6 @@ export function DialinPortal() {
         onClose={() => setShowCreateFloorModal(false)}
         onCreate={handleCreateFloor}
       />
-
-      {/* Floating Chat */}
-      {showFloatingChat && <FloatingChat />}
     </div>
   );
 }

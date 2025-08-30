@@ -15,7 +15,6 @@ import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateFloorModal } from '@/components/DialinPortal/CreateFloorModal';
-import { FloatingChat } from '@/components/DialinPortal/FloatingChat';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -46,7 +45,6 @@ export default function FloorPage() {
     ...initialFloors
   ]);
   const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
-  const [showFloatingChat, setShowFloatingChat] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -390,7 +388,6 @@ export default function FloorPage() {
             onReorderFloor={handleReorderFloor}
             onToggle360={handleToggle360}
             onFloorClick={handleFloorClick}
-            onChatToggle={() => setShowFloatingChat(!showFloatingChat)}
           />
           </div>
         )}
@@ -444,9 +441,6 @@ export default function FloorPage() {
           onClose={() => setShowCreateFloorModal(false)}
           onCreate={handleCreateFloor}
         />
-
-        {/* Floating Chat */}
-        {showFloatingChat && <FloatingChat />}
       </div>
     </div>
   );

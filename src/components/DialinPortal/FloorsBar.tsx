@@ -7,6 +7,7 @@ import { Floor } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { FloorContextMenu } from './FloorContextMenu';
 import { AIChat } from './AIChat';
+import { ChatWindow } from './ChatWindow';
 
 interface FloorsBarProps {
   floors: Floor[];
@@ -18,7 +19,6 @@ interface FloorsBarProps {
   onReorderFloor: (floorId: string, direction: 'left' | 'right') => void;
   onToggle360: (floorId: string, enabled: boolean) => void;
   onFloorClick?: (floor: Floor) => void;
-  onChatToggle?: () => void;
 }
 
 export function FloorsBar({ 
@@ -30,8 +30,7 @@ export function FloorsBar({
   onUpdateFloorDescription, 
   onReorderFloor, 
   onToggle360,
-  onFloorClick,
-  onChatToggle 
+  onFloorClick 
 }: FloorsBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -40,6 +39,7 @@ export function FloorsBar({
   } | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showChatWindow, setShowChatWindow] = useState(false);
 
   const handleMouseDown = (floor: Floor, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -181,7 +181,7 @@ export function FloorsBar({
               variant="outline"
               size="sm"
               className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-              onClick={onChatToggle}
+              onClick={() => setShowChatWindow(true)}
             >
               <MessageSquare size={20} className="text-purple-400" />
               <span className="text-xs">Chat</span>
@@ -209,6 +209,12 @@ export function FloorsBar({
       <AIChat
         isOpen={showAIChat}
         onClose={() => setShowAIChat(false)}
+      />
+
+      {/* Chat Window */}
+      <ChatWindow
+        isOpen={showChatWindow}
+        onClose={() => setShowChatWindow(false)}
       />
     </div>
   );

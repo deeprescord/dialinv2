@@ -174,7 +174,7 @@ function Skybox({ mediaUrl }: SkyboxProps) {
   }
 
   return (
-    <mesh ref={meshRef} scale={[-50, -50, 50]} rotation={[0, Math.PI / 2, 0]}>
+    <mesh ref={meshRef} scale={[-50, -50, 50]} rotation={[0, Math.PI, 0]}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>

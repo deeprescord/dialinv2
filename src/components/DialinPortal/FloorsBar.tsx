@@ -18,6 +18,7 @@ interface FloorsBarProps {
   onReorderFloor: (floorId: string, direction: 'left' | 'right') => void;
   onToggle360: (floorId: string, enabled: boolean) => void;
   onFloorClick?: (floor: Floor) => void;
+  onChatToggle?: () => void;
 }
 
 export function FloorsBar({ 
@@ -29,7 +30,8 @@ export function FloorsBar({
   onUpdateFloorDescription, 
   onReorderFloor, 
   onToggle360,
-  onFloorClick 
+  onFloorClick,
+  onChatToggle 
 }: FloorsBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -179,7 +181,7 @@ export function FloorsBar({
               variant="outline"
               size="sm"
               className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-              onClick={() => {/* Handle chat click */}}
+              onClick={onChatToggle}
             >
               <MessageSquare size={20} className="text-purple-400" />
               <span className="text-xs">Chat</span>

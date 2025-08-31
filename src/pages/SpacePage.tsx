@@ -8,13 +8,13 @@ import { FriendsView } from '@/components/DialinPortal/FriendsView';
 import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
-import { FloorsBar } from '@/components/DialinPortal/FloorsBar';
+import { SpacesBar } from '@/components/DialinPortal/SpacesBar';
 import { StorageBar } from '@/components/DialinPortal/StorageBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
-import { CreateFloorModal } from '@/components/DialinPortal/CreateFloorModal';
+import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -31,8 +31,8 @@ import {
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
 
-export default function FloorPage() {
-  const { floorId } = useParams();
+export default function SpacePage() {
+  const { spaceId } = useParams();
   const navigate = useNavigate();
   
   const [currentTab, setCurrentTab] = useState('home');
@@ -40,11 +40,11 @@ export default function FloorPage() {
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
-  const [floors, setFloors] = useState<Floor[]>([
+  const [spaces, setSpaces] = useState<Space[]>([
     { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
-    ...initialFloors
+    ...initialSpaces
   ]);
-  const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
+  const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -59,15 +59,15 @@ export default function FloorPage() {
     progress: 25
   });
 
-  // Find current floor
-  const currentFloor = floors.find(floor => floor.id === floorId);
+  // Find current space
+  const currentSpace = spaces.find(space => space.id === spaceId);
   
-  // Redirect if floor not found
+  // Redirect if space not found
   useEffect(() => {
-    if (!currentFloor && floorId !== 'lobby') {
+    if (!currentSpace && spaceId !== 'lobby') {
       navigate('/');
     }
-  }, [currentFloor, floorId, navigate]);
+  }, [currentSpace, spaceId, navigate]);
 
   // Filter content based on selected dials
   const filteredVideos = applyDials(
@@ -202,57 +202,57 @@ export default function FloorPage() {
     );
   };
 
-  // Handle floor creation
-  const handleCreateFloor = (name: string, coverUrl: string) => {
-    const newFloor: Floor = {
+  // Handle space creation
+  const handleCreateSpace = (name: string, coverUrl: string) => {
+    const newSpace: Space = {
       id: Date.now().toString(),
       name,
       thumb: coverUrl
     };
-    setFloors(prev => [...prev, newFloor]);
+    setSpaces(prev => [...prev, newSpace]);
   };
 
-  // Handle floor deletion
-  const handleDeleteFloor = (floorId: string) => {
-    setFloors(prev => prev.filter(floor => floor.id !== floorId));
+  // Handle space deletion
+  const handleDeleteSpace = (spaceId: string) => {
+    setSpaces(prev => prev.filter(space => space.id !== spaceId));
   };
 
-  // Handle floor renaming
-  const handleRenameFloor = (floorId: string, newName: string) => {
-    setFloors(prev => prev.map(floor => 
-      floor.id === floorId ? { ...floor, name: newName } : floor
+  // Handle space renaming
+  const handleRenameSpace = (spaceId: string, newName: string) => {
+    setSpaces(prev => prev.map(space => 
+      space.id === spaceId ? { ...space, name: newName } : space
     ));
   };
 
-  // Handle floor description update
-  const handleUpdateFloorDescription = (floorId: string, newDescription: string) => {
-    setFloors(prev => prev.map(floor => 
-      floor.id === floorId ? { ...floor, description: newDescription } : floor
+  // Handle space description update
+  const handleUpdateSpaceDescription = (spaceId: string, newDescription: string) => {
+    setSpaces(prev => prev.map(space => 
+      space.id === spaceId ? { ...space, description: newDescription } : space
     ));
   };
 
-  // Handle floor reordering
-  const handleReorderFloor = (floorId: string, direction: 'left' | 'right') => {
-    setFloors(prev => {
-      const currentIndex = prev.findIndex(floor => floor.id === floorId);
+  // Handle space reordering
+  const handleReorderSpace = (spaceId: string, direction: 'left' | 'right') => {
+    setSpaces(prev => {
+      const currentIndex = prev.findIndex(space => space.id === spaceId);
       if (currentIndex === -1) return prev;
 
-      const newFloors = [...prev];
+      const newSpaces = [...prev];
       const targetIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
-      if (targetIndex < 0 || targetIndex >= newFloors.length) return prev;
+      if (targetIndex < 0 || targetIndex >= newSpaces.length) return prev;
 
-      [newFloors[currentIndex], newFloors[targetIndex]] = [newFloors[targetIndex], newFloors[currentIndex]];
-      return newFloors;
+      [newSpaces[currentIndex], newSpaces[targetIndex]] = [newSpaces[targetIndex], newSpaces[currentIndex]];
+      return newSpaces;
     });
   };
 
-  // Handle floor navigation
-  const handleFloorClick = (floor: Floor) => {
-    if (floor.id === 'lobby') {
+  // Handle space navigation
+  const handleSpaceClick = (space: Space) => {
+    if (space.id === 'lobby') {
       navigate('/');
     } else {
-      navigate(`/floor/${floor.id}`);
+      navigate(`/space/${space.id}`);
     }
   };
 
@@ -269,47 +269,47 @@ export default function FloorPage() {
     setFloatingPlayer(prev => ({ ...prev, isVisible: false }));
   };
 
-  const handleToggle360 = (floorId: string, enabled: boolean) => {
-    setFloors(floors.map(floor => 
-      floor.id === floorId 
-        ? { ...floor, show360: enabled }
-        : floor
+  const handleToggle360 = (spaceId: string, enabled: boolean) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, show360: enabled }
+        : space
     ));
   };
 
-  const handle360AxisChange = (floorId: string, axis: 'x' | 'y', value: number) => {
-    setFloors(floors.map(floor => 
-      floor.id === floorId 
-        ? { ...floor, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
-        : floor
+  const handle360AxisChange = (spaceId: string, axis: 'x' | 'y', value: number) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
+        : space
     ));
   };
 
-  const handle360VolumeChange = (floorId: string, volume: number) => {
-    setFloors(floors.map(floor => 
-      floor.id === floorId 
-        ? { ...floor, volume }
-        : floor
+  const handle360VolumeChange = (spaceId: string, volume: number) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, volume }
+        : space
     ));
   };
 
-  const handle360MuteToggle = (floorId: string, muted: boolean) => {
-    setFloors(floors.map(floor => 
-      floor.id === floorId 
-        ? { ...floor, isMuted: muted }
-        : floor
+  const handle360MuteToggle = (spaceId: string, muted: boolean) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, isMuted: muted }
+        : space
     ));
   };
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
-  const showFloorsBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
+  const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   // Get background image
-  const backgroundImage = currentFloor?.backgroundImage || currentFloor?.thumb || '/media/lobby-poster.png';
+  const backgroundImage = currentSpace?.backgroundImage || currentSpace?.thumb || '/media/lobby-poster.png';
   
-  // Check if this floor should show 360 view
-  const show360 = currentFloor?.show360 || false;
+  // Check if this space should show 360 view
+  const show360 = currentSpace?.show360 || false;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -348,14 +348,14 @@ export default function FloorPage() {
               onMediaClick={handleMediaClick}
               onMediaLongPress={handleMediaLongPress}
               backgroundImage={backgroundImage}
-              floorName={currentFloor?.name || 'Lobby'}
-              floorDescription={currentFloor?.description}
-              isLobby={floorId === 'lobby'}
+              floorName={currentSpace?.name || 'Lobby'}
+              floorDescription={currentSpace?.description}
+              isLobby={spaceId === 'lobby'}
               show360={show360}
-              xAxisOffset={currentFloor?.xAxis}
-              yAxisOffset={currentFloor?.yAxis}
-              volume={currentFloor?.volume}
-              isMuted={currentFloor?.isMuted}
+              xAxisOffset={currentSpace?.xAxis}
+              yAxisOffset={currentSpace?.yAxis}
+              volume={currentSpace?.volume}
+              isMuted={currentSpace?.isMuted}
             />
           )}
 
@@ -404,21 +404,21 @@ export default function FloorPage() {
         </main>
 
         {/* Bottom Bars */}
-        {showFloorsBar && (
+        {showSpacesBar && (
           <div className="fixed bottom-16 left-0 right-0 z-30">
-          <FloorsBar 
-            floors={floors} 
-            currentFloorId={currentFloor?.id}
-            onCreateFloor={() => setShowCreateFloorModal(true)}
-            onDeleteFloor={handleDeleteFloor}
-            onRenameFloor={handleRenameFloor}
-            onUpdateFloorDescription={handleUpdateFloorDescription}
-            onReorderFloor={handleReorderFloor}
+          <SpacesBar 
+            spaces={spaces} 
+            currentSpaceId={currentSpace?.id}
+            onCreateSpace={() => setShowCreateSpaceModal(true)}
+            onDeleteSpace={handleDeleteSpace}
+            onRenameSpace={handleRenameSpace}
+            onUpdateSpaceDescription={handleUpdateSpaceDescription}
+            onReorderSpace={handleReorderSpace}
             onToggle360={handleToggle360}
             on360AxisChange={handle360AxisChange}
             on360VolumeChange={handle360VolumeChange}
             on360MuteToggle={handle360MuteToggle}
-            onFloorClick={handleFloorClick}
+            onSpaceClick={handleSpaceClick}
           />
           </div>
         )}
@@ -467,10 +467,10 @@ export default function FloorPage() {
           onUseAsFilters={handleUseAsFilters}
         />
 
-        <CreateFloorModal
-          isOpen={showCreateFloorModal}
-          onClose={() => setShowCreateFloorModal(false)}
-          onCreate={handleCreateFloor}
+        <CreateSpaceModal
+          isOpen={showCreateSpaceModal}
+          onClose={() => setShowCreateSpaceModal(false)}
+          onCreate={handleCreateSpace}
         />
       </div>
     </div>

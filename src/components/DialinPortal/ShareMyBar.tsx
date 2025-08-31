@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Check } from '../icons';
+import { Check, Smartphone, Building, Phone, Mail, Home } from 'lucide-react';
 import { SHARE_TOGGLES } from '@/data/constants';
-import * as Icons from '../icons';
 
 interface ShareMyBarProps {
   activeToggles: string[];
@@ -11,22 +10,33 @@ interface ShareMyBarProps {
 }
 
 export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Smartphone': return Smartphone;
+      case 'Building': return Building;
+      case 'Phone': return Phone;
+      case 'Mail': return Mail;
+      case 'Home': return Home;
+      default: return Smartphone;
+    }
+  };
+
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 glass-nav p-4 border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 glass-nav px-4 py-3 border-t border-white/10"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-3">
-        <h3 className="text-sm font-semibold">Share My</h3>
-        <p className="text-xs text-muted-foreground">Toggle what you share with this contact</p>
+      <div className="mb-2">
+        <h3 className="text-xs font-semibold text-white/90">SHARE MY</h3>
+        <p className="text-xs text-white/60">Toggle what you share with this contact</p>
       </div>
       
-      <div className="flex space-x-3 overflow-x-auto scrollbar-thin pb-2">
+      <div className="flex justify-between gap-2 overflow-x-auto scrollbar-thin">
         {SHARE_TOGGLES.map((toggle) => {
           const isActive = activeToggles.includes(toggle.key);
-          const IconComponent = Icons[toggle.icon as keyof typeof Icons] as React.ComponentType<any>;
+          const IconComponent = getIcon(toggle.icon);
           
           return (
             <motion.div
@@ -34,23 +44,27 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.2 }}
-              className="flex-shrink-0"
+              className="flex-shrink-0 flex flex-col items-center"
             >
               <Button
-                variant="outline"
-                className={`relative w-16 h-16 p-0 border-none ${toggle.color} transition-all duration-200 hover:scale-105`}
+                variant="ghost"
+                className={`relative w-12 h-12 p-0 rounded-xl border transition-all duration-200 hover:scale-105 ${
+                  isActive 
+                    ? 'bg-green-500/20 border-green-500/50 text-green-400' 
+                    : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
+                }`}
                 onClick={() => onToggleChange(toggle.key)}
               >
-                <div className="flex flex-col items-center justify-center text-white">
-                  <IconComponent size={20} />
-                </div>
+                <IconComponent size={18} />
                 {isActive && (
-                  <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
-                    <Check size={10} className="text-white" />
+                  <div className="absolute -top-1 -right-1 bg-green-500 rounded-full w-5 h-5 flex items-center justify-center">
+                    <Check size={12} className="text-white" />
                   </div>
                 )}
               </Button>
-              <p className="text-xs text-center mt-1 max-w-16 line-clamp-2">{toggle.label}</p>
+              <p className="text-xs text-center mt-1 text-white/60 max-w-16 line-clamp-2 leading-tight">
+                {toggle.label}
+              </p>
             </motion.div>
           );
         })}

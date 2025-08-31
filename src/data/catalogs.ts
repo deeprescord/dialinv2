@@ -249,7 +249,8 @@ export const initialSpaces: Space[] = [
     thumb: '/media/starbuds-thumb.jpg',
     backgroundImage: '/media/starbuds-360.mp4',
     show360: true,
-    xAxis: -84,
+    xAxis: -94,
+    yAxis: -8,
     description: 'Welcome to Westmont'
   },
 ];

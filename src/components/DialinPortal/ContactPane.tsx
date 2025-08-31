@@ -65,7 +65,7 @@ export function ContactPane({
         >
           {/* Hero Header */}
           <div 
-            className="relative h-96 bg-cover bg-center bg-no-repeat"
+            className="relative h-[60vh] lg:h-[70vh] bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/lovable-uploads/cropped-header-bg.png')`
             }}

@@ -6,7 +6,7 @@ import { Close } from '../icons';
 import { Card } from '../ui/card';
 import { Upload, X } from 'lucide-react';
 
-interface CreateFloorModalProps {
+interface CreateSpaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (name: string, coverUrl: string) => void;
@@ -19,8 +19,8 @@ const coverOptions = [
   'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=200&h=120&fit=crop&auto=format',
 ];
 
-export function CreateFloorModal({ isOpen, onClose, onCreate }: CreateFloorModalProps) {
-  const [floorName, setFloorName] = useState('');
+export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModalProps) {
+  const [spaceName, setSpaceName] = useState('');
   const [selectedCover, setSelectedCover] = useState(coverOptions[0]);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,9 +46,9 @@ export function CreateFloorModal({ isOpen, onClose, onCreate }: CreateFloorModal
   };
 
   const handleCreate = () => {
-    if (floorName.trim()) {
-      onCreate(floorName.trim(), selectedCover);
-      setFloorName('');
+    if (spaceName.trim()) {
+      onCreate(spaceName.trim(), selectedCover);
+      setSpaceName('');
       setSelectedCover(coverOptions[0]);
       setUploadedImages([]);
       onClose();
@@ -77,20 +77,20 @@ export function CreateFloorModal({ isOpen, onClose, onCreate }: CreateFloorModal
           >
             <Card className="glass-card border-white/20">
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-lg font-semibold">Create New Floor</h2>
+                <h2 className="text-lg font-semibold">Create New Space</h2>
                 <Button variant="ghost" size="sm" onClick={onClose}>
                   <Close size={20} />
                 </Button>
               </div>
 
               <div className="p-4">
-                {/* Floor Name */}
+                {/* Space Name */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Floor Name</label>
+                  <label className="block text-sm font-medium mb-2">Space Name</label>
                   <Input
-                    value={floorName}
-                    onChange={(e) => setFloorName(e.target.value)}
-                    placeholder="Enter floor name..."
+                    value={spaceName}
+                    onChange={(e) => setSpaceName(e.target.value)}
+                    placeholder="Enter space name..."
                     className="glass-card bg-white/5 border-white/10"
                   />
                 </div>
@@ -177,10 +177,10 @@ export function CreateFloorModal({ isOpen, onClose, onCreate }: CreateFloorModal
                   </Button>
                   <Button 
                     onClick={handleCreate}
-                    disabled={!floorName.trim()}
+                    disabled={!spaceName.trim()}
                     className="flex-1 bg-dialin-purple hover:bg-dialin-purple-dark"
                   >
-                    Create Floor
+                    Create Space
                   </Button>
                 </div>
               </div>

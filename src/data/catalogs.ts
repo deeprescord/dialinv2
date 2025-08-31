@@ -46,7 +46,7 @@ export interface LocationItem {
   thumb: string;
 }
 
-export interface Floor {
+export interface Space {
   id: string;
   name: string;
   thumb: string;
@@ -200,7 +200,15 @@ export const locations: LocationItem[] = [
   }))
 ];
 
-export const initialFloors: Floor[] = [
+// Update Starbuds space with real product data  
+export const starbudsProducts = [
+  { id: '1', title: 'Premium Flower', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-flower-showcase.jpg', type: 'flower' },
+  { id: '2', title: 'Edibles Collection', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-edibles-collection.jpg', type: 'edible' },
+  { id: '3', title: 'Concentrates', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-concentrates.jpg', type: 'concentrate' },
+  { id: '4', title: 'Merchandise', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-merchandise.jpg', type: 'merch' }
+];
+
+export const initialSpaces: Space[] = [
   { 
     id: '2', 
     name: 'Music Den', 

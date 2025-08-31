@@ -21,12 +21,12 @@ import {
   locations, 
   friends, 
   friendsPosts, 
-  initialFloors,
+  initialSpaces,
   VideoItem,
   MusicItem,
   LocationItem,
   Friend,
-  Floor
+  Space
 } from '@/data/catalogs';
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';

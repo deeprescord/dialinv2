@@ -6,7 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
 import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
-import { Floor } from '@/data/catalogs';
+import { Space } from '@/data/catalogs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,23 +18,23 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog';
 
-interface FloorContextMenuProps {
-  floor: Floor;
+interface SpaceContextMenuProps {
+  space: Space;
   isOpen: boolean;
   onClose: () => void;
-  onDelete: (floorId: string) => void;
-  onRename: (floorId: string, newName: string) => void;
-  onUpdateDescription: (floorId: string, newDescription: string) => void;
-  onReorder: (floorId: string, direction: 'left' | 'right') => void;
-  onToggle360: (floorId: string, enabled: boolean) => void;
-  on360AxisChange?: (floorId: string, axis: 'x' | 'y', value: number) => void;
-  on360VolumeChange?: (floorId: string, volume: number) => void;
-  on360MuteToggle?: (floorId: string, muted: boolean) => void;
+  onDelete: (spaceId: string) => void;
+  onRename: (spaceId: string, newName: string) => void;
+  onUpdateDescription: (spaceId: string, newDescription: string) => void;
+  onReorder: (spaceId: string, direction: 'left' | 'right') => void;
+  onToggle360: (spaceId: string, enabled: boolean) => void;
+  on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (spaceId: string, volume: number) => void;
+  on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   position: { x: number; y: number };
 }
 
-export function FloorContextMenu({
-  floor,
+export function SpaceContextMenu({
+  space,
   isOpen,
   onClose,
   onDelete,
@@ -46,29 +46,29 @@ export function FloorContextMenu({
   on360VolumeChange,
   on360MuteToggle,
   position
-}: FloorContextMenuProps) {
+}: SpaceContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [newName, setNewName] = useState(floor.name);
-  const [newDescription, setNewDescription] = useState(floor.description || 'Welcome back');
+  const [newName, setNewName] = useState(space.name);
+  const [newDescription, setNewDescription] = useState(space.description || 'Welcome back');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [show360Advanced, setShow360Advanced] = useState(false);
-  const [xAxis, setXAxis] = useState(floor.xAxis || 0);
-  const [yAxis, setYAxis] = useState(floor.yAxis || 0);
-  const [volume, setVolume] = useState(floor.volume || 50);
-  const [isMuted, setIsMuted] = useState(floor.isMuted !== undefined ? floor.isMuted : true);
+  const [xAxis, setXAxis] = useState(space.xAxis || 0);
+  const [yAxis, setYAxis] = useState(space.yAxis || 0);
+  const [volume, setVolume] = useState(space.volume || 50);
+  const [isMuted, setIsMuted] = useState(space.isMuted !== undefined ? space.isMuted : true);
 
   const handleRename = () => {
-    if (newName.trim() && newName !== floor.name) {
-      onRename(floor.id, newName.trim());
+    if (newName.trim() && newName !== space.name) {
+      onRename(space.id, newName.trim());
     }
     setIsRenaming(false);
     onClose();
   };
 
   const handleDescriptionUpdate = () => {
-    if (newDescription.trim() && newDescription !== floor.description) {
-      onUpdateDescription(floor.id, newDescription.trim());
+    if (newDescription.trim() && newDescription !== space.description) {
+      onUpdateDescription(space.id, newDescription.trim());
     }
     setIsEditingDescription(false);
     onClose();
@@ -84,8 +84,8 @@ export function FloorContextMenu({
     } else if (e.key === 'Escape') {
       setIsRenaming(false);
       setIsEditingDescription(false);
-      setNewName(floor.name);
-      setNewDescription(floor.description || 'Welcome back');
+      setNewName(space.name);
+      setNewDescription(space.description || 'Welcome back');
       onClose();
     }
   };
@@ -120,7 +120,7 @@ export function FloorContextMenu({
             <div className="p-2">
               {/* Header */}
               <div className="flex items-center justify-between mb-3 px-2">
-                <h3 className="text-sm font-medium text-foreground/80">Floor Options</h3>
+                <h3 className="text-sm font-medium text-foreground/80">Space Options</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -141,7 +141,7 @@ export function FloorContextMenu({
                     onBlur={handleRename}
                     className="text-sm h-8"
                     autoFocus
-                    placeholder="Floor name"
+                    placeholder="Space name"
                   />
                 </div>
               ) : isEditingDescription ? (
@@ -159,8 +159,8 @@ export function FloorContextMenu({
                 </div>
               ) : (
                 <div className="mb-3 px-2 space-y-1">
-                  <p className="text-sm text-foreground font-medium">{floor.name}</p>
-                  <p className="text-xs text-foreground/60">{floor.description || 'Welcome back'}</p>
+                  <p className="text-sm text-foreground font-medium">{space.name}</p>
+                  <p className="text-xs text-foreground/60">{space.description || 'Welcome back'}</p>
                 </div>
               )}
 
@@ -171,7 +171,7 @@ export function FloorContextMenu({
                   <div 
                     className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded cursor-pointer"
                     onClick={() => {
-                      onToggle360(floor.id, !floor.show360);
+                      onToggle360(space.id, !space.show360);
                     }}
                   >
                     <div className="flex items-center">
@@ -180,12 +180,12 @@ export function FloorContextMenu({
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch
-                        checked={floor.show360 || false}
+                        checked={space.show360 || false}
                         onCheckedChange={(checked) => {
-                          onToggle360(floor.id, checked);
+                          onToggle360(space.id, checked);
                         }}
                       />
-                      {floor.show360 && (
+                      {space.show360 && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -200,7 +200,7 @@ export function FloorContextMenu({
                   </div>
 
                   {/* Advanced 360° Controls */}
-                  {floor.show360 && show360Advanced && (
+                  {space.show360 && show360Advanced && (
                     <div className="px-2 py-3 space-y-4 bg-background/50 rounded-md mx-2 mt-2">
                       {/* X Axis Control */}
                       <div className="space-y-2">
@@ -209,7 +209,7 @@ export function FloorContextMenu({
                           value={[xAxis]}
                           onValueChange={(value) => {
                             setXAxis(value[0]);
-                            on360AxisChange?.(floor.id, 'x', value[0]);
+                            on360AxisChange?.(space.id, 'x', value[0]);
                           }}
                           min={-180}
                           max={180}
@@ -226,7 +226,7 @@ export function FloorContextMenu({
                           value={[yAxis]}
                           onValueChange={(value) => {
                             setYAxis(value[0]);
-                            on360AxisChange?.(floor.id, 'y', value[0]);
+                            on360AxisChange?.(space.id, 'y', value[0]);
                           }}
                           min={-90}
                           max={90}
@@ -246,7 +246,7 @@ export function FloorContextMenu({
                           checked={!isMuted}
                           onCheckedChange={(checked) => {
                             setIsMuted(!checked);
-                            on360MuteToggle?.(floor.id, !checked);
+                            on360MuteToggle?.(space.id, !checked);
                           }}
                         />
                       </div>
@@ -259,7 +259,7 @@ export function FloorContextMenu({
                             value={[volume]}
                             onValueChange={(value) => {
                               setVolume(value[0]);
-                              on360VolumeChange?.(floor.id, value[0]);
+                              on360VolumeChange?.(space.id, value[0]);
                             }}
                             min={0}
                             max={100}
@@ -299,10 +299,7 @@ export function FloorContextMenu({
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start h-8 px-2 hover:bg-white/10"
-                  onClick={() => {
-                    onReorder(floor.id, 'left');
-                    onClose();
-                  }}
+                  onClick={() => onReorder(space.id, 'left')}
                 >
                   <GripVertical size={14} className="mr-2" />
                   Move Left
@@ -313,7 +310,7 @@ export function FloorContextMenu({
                   size="sm"
                   className="w-full justify-start h-8 px-2 hover:bg-white/10"
                   onClick={() => {
-                    onReorder(floor.id, 'right');
+                    onReorder(space.id, 'right');
                     onClose();
                   }}
                 >
@@ -338,9 +335,9 @@ export function FloorContextMenu({
           <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Floor</AlertDialogTitle>
+                <AlertDialogTitle>Delete Space</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{floor.name}"? This action cannot be undone.
+                  Are you sure you want to delete "{space.name}"? This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -348,7 +345,7 @@ export function FloorContextMenu({
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={() => {
-                    onDelete(floor.id);
+                    onDelete(space.id);
                     setShowDeleteConfirm(false);
                     onClose();
                   }}

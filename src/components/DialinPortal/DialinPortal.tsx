@@ -8,13 +8,13 @@ import { FriendsView } from './FriendsView';
 import { VideosView } from './VideosView';
 import { MusicView } from './MusicView';
 import { LocationsView } from './LocationsView';
-import { FloorsBar } from './FloorsBar';
+import { SpacesBar } from './SpacesBar';
 import { StorageBar } from './StorageBar';
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
-import { CreateFloorModal } from './CreateFloorModal';
+import { CreateSpaceModal } from './CreateSpaceModal';
 
 import { 
   videoCatalog, 
@@ -22,12 +22,12 @@ import {
   locations, 
   friends, 
   friendsPosts, 
-  initialFloors,
+  initialSpaces,
   VideoItem,
   MusicItem,
   LocationItem,
   Friend,
-  Floor
+  Space
 } from '@/data/catalogs';
 import lobbyPoster from '@/assets/lobby-poster.jpg';
 import appBackground from '@/assets/app-background.jpg';
@@ -41,11 +41,11 @@ export function DialinPortal() {
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
-  const [floors, setFloors] = useState<Floor[]>([
+  const [spaces, setSpaces] = useState<Space[]>([
     { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: appBackground },
-    ...initialFloors
+    ...initialSpaces
   ]);
-  const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
+  const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -193,58 +193,59 @@ export function DialinPortal() {
     );
   };
 
-  // Handle floor creation
-  const handleCreateFloor = (name: string, coverUrl: string) => {
-    const newFloor: Floor = {
+  // Handle space creation
+  const handleCreateSpace = (name: string, coverUrl: string) => {
+    const newSpace: Space = {
       id: Date.now().toString(),
       name,
       thumb: coverUrl
     };
-    setFloors(prev => [...prev, newFloor]);
+    setSpaces(prev => [...prev, newSpace]);
+    setShowCreateSpaceModal(false);
   };
 
-  // Handle floor deletion
-  const handleDeleteFloor = (floorId: string) => {
-    setFloors(prev => prev.filter(floor => floor.id !== floorId));
+  // Handle space deletion
+  const handleDeleteSpace = (spaceId: string) => {
+    setSpaces(prev => prev.filter(space => space.id !== spaceId));
   };
 
-  // Handle floor renaming
-  const handleRenameFloor = (floorId: string, newName: string) => {
-    setFloors(prev => prev.map(floor => 
-      floor.id === floorId ? { ...floor, name: newName } : floor
+  // Handle space renaming
+  const handleRenameSpace = (spaceId: string, newName: string) => {
+    setSpaces(prev => prev.map(space => 
+      space.id === spaceId ? { ...space, name: newName } : space
     ));
   };
 
-  // Handle floor description update
-  const handleUpdateFloorDescription = (floorId: string, newDescription: string) => {
-    setFloors(prev => prev.map(floor => 
-      floor.id === floorId ? { ...floor, description: newDescription } : floor
+  // Handle space description update
+  const handleUpdateSpaceDescription = (spaceId: string, newDescription: string) => {
+    setSpaces(prev => prev.map(space => 
+      space.id === spaceId ? { ...space, description: newDescription } : space
     ));
   };
 
-  // Handle floor reordering
-  const handleReorderFloor = (floorId: string, direction: 'left' | 'right') => {
-    setFloors(prev => {
-      const currentIndex = prev.findIndex(floor => floor.id === floorId);
+  // Handle space reordering
+  const handleReorderSpace = (spaceId: string, direction: 'left' | 'right') => {
+    setSpaces(prev => {
+      const currentIndex = prev.findIndex(space => space.id === spaceId);
       if (currentIndex === -1) return prev;
 
-      const newFloors = [...prev];
+      const newSpaces = [...prev];
       const targetIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
-      if (targetIndex < 0 || targetIndex >= newFloors.length) return prev;
+      if (targetIndex < 0 || targetIndex >= newSpaces.length) return prev;
 
-      [newFloors[currentIndex], newFloors[targetIndex]] = [newFloors[targetIndex], newFloors[currentIndex]];
-      return newFloors;
+      [newSpaces[currentIndex], newSpaces[targetIndex]] = [newSpaces[targetIndex], newSpaces[currentIndex]];
+      return newSpaces;
     });
   };
 
-  // Handle floor navigation
-  const handleFloorClick = (floor: Floor) => {
-    if (floor.id === 'lobby') {
+  // Handle space navigation
+  const handleSpaceClick = (space: Space) => {
+    if (space.id === 'lobby') {
       // Already on lobby (home page)
       return;
     } else {
-      navigate(`/floor/${floor.id}`);
+      navigate(`/space/${space.id}`);
     }
   };
 
@@ -263,7 +264,7 @@ export function DialinPortal() {
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
-  const showFloorsBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
+  const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   return (
     <div className="min-h-screen bg-background">
@@ -338,18 +339,18 @@ export function DialinPortal() {
       </main>
 
       {/* Bottom Bars */}
-      {showFloorsBar && (
+      {showSpacesBar && (
         <div className="fixed bottom-16 left-0 right-0 z-30">
-           <FloorsBar
-             floors={floors}
-             currentFloorId="lobby"
-             onCreateFloor={() => setShowCreateFloorModal(true)}
-              onDeleteFloor={handleDeleteFloor}
-              onRenameFloor={handleRenameFloor}
-              onUpdateFloorDescription={handleUpdateFloorDescription}
-              onReorderFloor={handleReorderFloor}
+           <SpacesBar
+             spaces={spaces}
+             currentSpaceId="lobby"
+             onCreateSpace={() => setShowCreateSpaceModal(true)}
+              onDeleteSpace={handleDeleteSpace}
+              onRenameSpace={handleRenameSpace}
+              onUpdateSpaceDescription={handleUpdateSpaceDescription}
+              onReorderSpace={handleReorderSpace}
               onToggle360={() => {}}
-              onFloorClick={handleFloorClick}
+              onSpaceClick={handleSpaceClick}
            />
         </div>
       )}
@@ -398,10 +399,10 @@ export function DialinPortal() {
         onUseAsFilters={handleUseAsFilters}
       />
 
-      <CreateFloorModal
-        isOpen={showCreateFloorModal}
-        onClose={() => setShowCreateFloorModal(false)}
-        onCreate={handleCreateFloor}
+      <CreateSpaceModal
+        isOpen={showCreateSpaceModal}
+        onClose={() => setShowCreateSpaceModal(false)}
+        onCreate={handleCreateSpace}
       />
     </div>
   );

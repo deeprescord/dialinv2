@@ -83,39 +83,44 @@ export function ContactPane({
               {/* Contact Name */}
               <div className="text-center pt-8">
                 <h1 className="text-4xl font-bold text-white mb-2">{contact.name}</h1>
-                <div className="flex justify-center space-x-2">
-                  {SHARE_TOGGLES.map((toggle) => {
-                    if (!sharedToggles.includes(toggle.key)) return null;
-                    const IconComponent = Icons[toggle.icon as keyof typeof Icons] as React.ComponentType<any>;
-                    
-                    return (
-                      <div
-                        key={toggle.key}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${toggle.color} opacity-80`}
-                      >
-                        <IconComponent size={18} className="text-white" />
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
 
-              {/* Avatar and Pin */}
-              <div className="flex items-end justify-between">
-                <div className="flex flex-col items-center space-y-2">
-                  <Avatar className="h-20 w-20 ring-4 ring-white/30">
-                    <AvatarImage src={contact.avatar} />
-                    <AvatarFallback>{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <Button
-                    variant={isPinned ? 'default' : 'outline'}
-                    size="sm"
-                    className="glass-card border-white/20 text-xs bg-white/10 hover:bg-white/20"
-                    onClick={isPinned ? onUnpin : onPin}
-                  >
-                    <Pin size={14} className="mr-1" />
-                    {isPinned ? 'Unpin' : 'Pin'}
-                  </Button>
+              {/* Avatar and Shared Info - Bottom Right */}
+              <div className="flex items-end justify-end">
+                <div className="flex items-center space-x-3">
+                  {/* Shared Info Icons */}
+                  <div className="flex space-x-2">
+                    {SHARE_TOGGLES.map((toggle) => {
+                      if (!sharedToggles.includes(toggle.key)) return null;
+                      const IconComponent = Icons[toggle.icon as keyof typeof Icons] as React.ComponentType<any>;
+                      
+                      return (
+                        <div
+                          key={toggle.key}
+                          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30"
+                        >
+                          <IconComponent size={18} className="text-white" />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Avatar and Pin */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <Avatar className="h-16 w-16 ring-4 ring-white/30">
+                      <AvatarImage src={contact.avatar} />
+                      <AvatarFallback>{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <Button
+                      variant={isPinned ? 'default' : 'outline'}
+                      size="sm"
+                      className="glass-card border-white/20 text-xs bg-white/10 hover:bg-white/20"
+                      onClick={isPinned ? onUnpin : onPin}
+                    >
+                      <Pin size={14} className="mr-1" />
+                      {isPinned ? 'Unpin' : 'Pin'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

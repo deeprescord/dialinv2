@@ -94,8 +94,8 @@ export function ContactPane({
               <Close size={20} />
             </Button>
             
-            {/* Contact Name - Centered */}
-            <div className="absolute inset-0 flex items-center justify-center">
+            {/* Contact Name - Bottom Left */}
+            <div className="absolute bottom-6 left-6">
               <h1 className="text-5xl font-bold text-white">{contact.name}</h1>
             </div>
           </div>

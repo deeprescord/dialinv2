@@ -95,7 +95,7 @@ export function ContactPane({
             </Button>
             
             {/* Contact Name - Bottom Left */}
-            <div className="absolute bottom-6 left-6">
+            <div className="absolute bottom-16 left-6">
               <h1 className="text-5xl font-bold text-white">{contact.name}</h1>
             </div>
           </div>

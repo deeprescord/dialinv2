@@ -93,6 +93,11 @@ export function ContactPane({
             >
               <Close size={20} />
             </Button>
+            
+            {/* Contact Name - Centered */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h1 className="text-5xl font-bold text-white">{contact.name}</h1>
+            </div>
           </div>
 
           {/* Contact Navigation Bar */}
@@ -103,13 +108,10 @@ export function ContactPane({
               <div className="flex items-center space-x-4">
                 {/* Contact Avatar and Info */}
                 <div className="flex items-center space-x-3">
-                  <div className="flex flex-col items-center space-y-1">
-                    <h2 className="text-sm font-semibold text-white">{contact.name}</h2>
-                    <Avatar className="h-12 w-12 ring-2 ring-white/30">
-                      <AvatarImage src={contact.avatar} />
-                      <AvatarFallback className="text-sm">{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
-                  </div>
+                  <Avatar className="h-12 w-12 ring-2 ring-white/30">
+                    <AvatarImage src={contact.avatar} />
+                    <AvatarFallback className="text-sm">{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  </Avatar>
                   
                   {/* Contact Info Icons */}
                   <div className="flex space-x-2">

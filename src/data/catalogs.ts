@@ -239,6 +239,8 @@ export const initialSpaces: Space[] = [
     thumb: grandTheaterPoster,
     backgroundImage: '/media/lobby2.mp4',
     show360: true,
+    xAxis: -180,
+    isMuted: false,
     description: 'Recommendations from your family and friends.'
   },
   { 
@@ -247,6 +249,7 @@ export const initialSpaces: Space[] = [
     thumb: '/media/starbuds-thumb.jpg',
     backgroundImage: '/media/starbuds-360.mp4',
     show360: true,
+    xAxis: -84,
     description: 'Welcome to Westmont'
   },
 ];

@@ -51,18 +51,20 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
           
           return (
             <div key={toggle.key} className="flex flex-col items-center">
-              <Button
-                variant="ghost"
-                className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${getButtonColor(toggle.key)}`}
-                onClick={() => onToggleChange(toggle.key)}
-              >
-                <IconComponent size={24} className="text-white" />
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${getButtonColor(toggle.key)}`}
+                  onClick={() => onToggleChange(toggle.key)}
+                >
+                  <IconComponent size={24} className="text-white" />
+                </Button>
                 {isActive && (
-                  <div className="absolute -top-1 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center">
-                    <Check size={14} className="text-black" />
+                  <div className="absolute -top-1 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center border-2 border-black">
+                    <Check size={14} className="text-black font-bold" />
                   </div>
                 )}
-              </Button>
+              </div>
               <p className="text-xs text-center mt-2 text-white max-w-16 leading-tight">
                 {toggle.label}
               </p>

@@ -65,9 +65,9 @@ export function ContactPane({
         >
           {/* Hero Header */}
           <div 
-            className="relative h-screen bg-cover bg-center bg-no-repeat"
+            className="relative h-96 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/lovable-uploads/1e022703-aa29-4fc7-82ce-a5e734f8fe91.png')`
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/lovable-uploads/cropped-header-bg.png')`
             }}
           >
             <Button

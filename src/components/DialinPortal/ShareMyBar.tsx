@@ -23,49 +23,50 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 glass-nav px-4 py-3 border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm px-6 py-4"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-2">
-        <h3 className="text-xs font-semibold text-white/90">SHARE MY</h3>
-        <p className="text-xs text-white/60">Toggle what you share with this contact</p>
+      <div className="mb-3">
+        <h3 className="text-sm font-semibold text-white">SHARE MY:</h3>
       </div>
       
-      <div className="flex justify-between gap-2 overflow-x-auto scrollbar-thin">
+      <div className="flex justify-center gap-4">
         {SHARE_TOGGLES.map((toggle) => {
           const isActive = activeToggles.includes(toggle.key);
           const IconComponent = getIcon(toggle.icon);
           
+          // Define colors to match the screenshot
+          const getButtonColor = (key: string) => {
+            switch (key) {
+              case 'personal': return 'bg-emerald-500';
+              case 'workAddress': return 'bg-violet-500';
+              case 'workPhone': return 'bg-cyan-500';
+              case 'workEmail': return 'bg-blue-500';
+              case 'homeAddress': return 'bg-orange-500';
+              default: return 'bg-gray-500';
+            }
+          };
+          
           return (
-            <motion.div
-              key={toggle.key}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              className="flex-shrink-0 flex flex-col items-center"
-            >
+            <div key={toggle.key} className="flex flex-col items-center">
               <Button
                 variant="ghost"
-                className={`relative w-12 h-12 p-0 rounded-xl border transition-all duration-200 hover:scale-105 ${
-                  isActive 
-                    ? 'bg-green-500/20 border-green-500/50 text-green-400' 
-                    : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
-                }`}
+                className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${getButtonColor(toggle.key)}`}
                 onClick={() => onToggleChange(toggle.key)}
               >
-                <IconComponent size={18} />
+                <IconComponent size={24} className="text-white" />
                 {isActive && (
-                  <div className="absolute -top-1 -right-1 bg-green-500 rounded-full w-5 h-5 flex items-center justify-center">
-                    <Check size={12} className="text-white" />
+                  <div className="absolute -top-1 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center">
+                    <Check size={14} className="text-black" />
                   </div>
                 )}
               </Button>
-              <p className="text-xs text-center mt-1 text-white/60 max-w-16 line-clamp-2 leading-tight">
+              <p className="text-xs text-center mt-2 text-white max-w-16 leading-tight">
                 {toggle.label}
               </p>
-            </motion.div>
+            </div>
           );
         })}
       </div>

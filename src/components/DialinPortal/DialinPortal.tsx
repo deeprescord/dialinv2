@@ -435,7 +435,7 @@ export function DialinPortal() {
         onNewClick={() => setShowCreateSpaceModal(!showCreateSpaceModal)}
         onAIClick={() => {
           console.log('AI button clicked, current state:', showAIChat);
-          setShowAIChat(!showAIChat);
+          setShowAIChat(prev => !prev);
         }}
         onChatClick={() => setShowChatWindow(!showChatWindow)}
         activeSpaceId="lobby"

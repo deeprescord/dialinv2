@@ -69,8 +69,9 @@ export function BottomNavigationBar({
 
   const handleMouseDown = (e: React.MouseEvent, space: Space) => {
     e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
     const timer = setTimeout(() => {
-      const rect = e.currentTarget.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
       setContextMenu({
         space,
         position: { 
@@ -119,9 +120,19 @@ export function BottomNavigationBar({
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
                 onTouchStart={(e) => {
-                  const touch = e.touches[0];
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  handleMouseDown(e as any, space);
+                  e.preventDefault();
+                  const target = e.currentTarget as HTMLElement;
+                  const timer = setTimeout(() => {
+                    const rect = target.getBoundingClientRect();
+                    setContextMenu({
+                      space,
+                      position: { 
+                        x: rect.left + rect.width / 2, 
+                        y: rect.top - 10 
+                      }
+                    });
+                  }, 500);
+                  setPressTimer(timer);
                 }}
                 onTouchEnd={handleMouseUp}
               >

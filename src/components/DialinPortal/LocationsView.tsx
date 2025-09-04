@@ -35,46 +35,47 @@ export function LocationsView({
   }));
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="pt-40 lg:pt-28 pb-20"
-    >
-      {/* Featured Location Header */}
-      {featuredLocation && (
-        <FeaturedLocationHeader
-          location={featuredLocation}
-          locations={locations}
-          onLocationClick={onLocationClick}
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="pt-40 lg:pt-28 pb-32" // Increased bottom padding for floors bar
+      >
+        {/* Featured Location Header */}
+        {featuredLocation && (
+          <FeaturedLocationHeader
+            location={featuredLocation}
+            locations={locations}
+            onLocationClick={onLocationClick}
+          />
+        )}
+
+        <SelectedChips 
+          selectedDials={selectedDials}
+          onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
         />
-      )}
 
-      <SelectedChips 
-        selectedDials={selectedDials}
-        onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
-      />
+        <DialsBarCompact
+          dialGroups={LOCATION_GROUPS}
+          selectedDials={selectedDials}
+          onDialToggle={onDialToggle}
+          onClearAll={onClearAll}
+        />
 
-      <DialsBarCompact
-        dialGroups={LOCATION_GROUPS}
-        selectedDials={selectedDials}
-        onDialToggle={onDialToggle}
-        onClearAll={onClearAll}
-      />
+        <div className="px-4 mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-white">More Locations</h2>
+        </div>
 
-
-      <div className="px-4 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-white">More Locations</h2>
-      </div>
-
-      <MediaGrid
-        items={locationGridItems}
-        onItemClick={onLocationClick}
-        onItemLongPress={onLocationLongPress}
-      />
+        <MediaGrid
+          items={locationGridItems}
+          onItemClick={onLocationClick}
+          onItemLongPress={onLocationLongPress}
+        />
+      </motion.div>
       
-      {/* Fixed Floors Tab at Bottom */}
+      {/* Fixed Floors Tab at Bottom - Outside the main container */}
       <FloorsTab />
-    </motion.div>
+    </>
   );
 }

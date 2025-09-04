@@ -18,7 +18,7 @@ export function FloorsTab() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-md border-t border-white/10 safe-area-pb"
     >
       <div className="px-4 py-3">
         <div className="flex items-center justify-between mb-3">

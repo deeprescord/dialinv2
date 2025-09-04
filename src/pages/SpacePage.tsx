@@ -464,10 +464,11 @@ export default function SpacePage() {
         {/* Fixed Bottom Navigation Bar */}
         <BottomNavigationBar 
           onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
-          onNewClick={() => setShowCreateSpaceModal(true)}
+          onNewClick={() => setShowCreateSpaceModal(!showCreateSpaceModal)}
           onAIClick={() => setShowAIChat(!showAIChat)}
           onChatClick={() => setShowChatWindow(!showChatWindow)}
           activeSpaceId={spaceId || 'lobby'}
+          isNewActive={showCreateSpaceModal}
           isAIActive={showAIChat}
           isChatActive={showChatWindow}
         />

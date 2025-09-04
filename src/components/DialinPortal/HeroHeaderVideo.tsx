@@ -63,7 +63,7 @@ export function HeroHeaderVideo({
   }, [videoLoaded]);
 
   return (
-    <div className="relative h-[60vh] lg:h-[70vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
+    <div className="relative h-[75vh] lg:h-[85vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
       {/* Video Background - only show for lobby */}
       {showVideo && videoSrc && !videoError && (
         <video

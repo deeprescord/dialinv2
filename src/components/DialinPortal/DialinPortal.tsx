@@ -399,10 +399,11 @@ export function DialinPortal() {
       {/* Fixed Bottom Navigation Bar */}
       <BottomNavigationBar 
         onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
-        onNewClick={() => setShowCreateSpaceModal(true)}
+        onNewClick={() => setShowCreateSpaceModal(!showCreateSpaceModal)}
         onAIClick={() => setShowAIChat(!showAIChat)}
         onChatClick={() => setShowChatWindow(!showChatWindow)}
         activeSpaceId="lobby"
+        isNewActive={showCreateSpaceModal}
         isAIActive={showAIChat}
         isChatActive={showChatWindow}
       />

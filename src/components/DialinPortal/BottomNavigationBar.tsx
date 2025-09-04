@@ -18,6 +18,7 @@ interface BottomNavigationBarProps {
   onAIClick?: () => void;
   onChatClick?: () => void;
   activeSpaceId?: string;
+  isNewActive?: boolean;
   isAIActive?: boolean;
   isChatActive?: boolean;
 }
@@ -28,6 +29,7 @@ export function BottomNavigationBar({
   onAIClick, 
   onChatClick,
   activeSpaceId = 'lobby',
+  isNewActive = false,
   isAIActive = false,
   isChatActive = false
 }: BottomNavigationBarProps) {
@@ -128,7 +130,11 @@ export function BottomNavigationBar({
           <Button
             variant="ghost"
             size="sm"
-            className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            className={`h-10 px-4 border rounded-full transition-all duration-200 ${
+              isNewActive 
+                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
+                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
+            }`}
             onClick={onNewClick}
           >
             <Plus className="h-4 w-4 mr-2" />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DialsBar } from './DialsBar';
+import { FeaturedLocationHeader } from './FeaturedLocationHeader';
+import { DialsBarCompact } from './DialsBarCompact';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
 import { LocationItem } from '@/data/catalogs';
@@ -23,7 +24,10 @@ export function LocationsView({
   onLocationClick,
   onLocationLongPress
 }: LocationsViewProps) {
-  const locationGridItems = locations.map(item => ({
+  const featuredLocation = locations[0];
+  const remainingLocations = locations.slice(1);
+  
+  const locationGridItems = remainingLocations.map(item => ({
     ...item,
     title: item.name,
     sharedBy: item.distance
@@ -36,17 +40,29 @@ export function LocationsView({
       transition={{ duration: 0.3 }}
       className="pt-40 lg:pt-28 pb-20"
     >
+      {/* Featured Location Header */}
+      {featuredLocation && (
+        <FeaturedLocationHeader
+          location={featuredLocation}
+          onLocationClick={onLocationClick}
+        />
+      )}
+
       <SelectedChips 
         selectedDials={selectedDials}
         onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
       />
 
-      <DialsBar
+      <DialsBarCompact
         dialGroups={LOCATION_GROUPS}
         selectedDials={selectedDials}
         onDialToggle={onDialToggle}
         onClearAll={onClearAll}
       />
+
+      <div className="px-4 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-white">More Locations</h2>
+      </div>
 
       <MediaGrid
         items={locationGridItems}

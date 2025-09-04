@@ -69,17 +69,20 @@ export function BottomNavigationBar({
 
   const handleMouseDown = (e: React.MouseEvent, space: Space) => {
     e.preventDefault();
+    e.stopPropagation();
     console.log('Press and hold started for:', space.name);
     const target = e.currentTarget as HTMLElement;
     const timer = setTimeout(() => {
       console.log('Press and hold triggered for:', space.name);
       const rect = target.getBoundingClientRect();
+      const position = { 
+        x: rect.left + rect.width / 2, 
+        y: Math.max(50, rect.top - 50) // Ensure it's visible on screen
+      };
+      console.log('Setting context menu with position:', position, 'for space:', space.name);
       setContextMenu({
         space,
-        position: { 
-          x: rect.left + rect.width / 2, 
-          y: rect.top - 10 
-        }
+        position
       });
     }, 500); // 500ms press and hold
     setPressTimer(timer);
@@ -189,7 +192,11 @@ export function BottomNavigationBar({
                 ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
                 : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
             }`}
-            onClick={onAIClick}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onAIClick?.();
+            }}
           >
             <Sparkles className="h-4 w-4 mr-2" />
             AI
@@ -213,7 +220,9 @@ export function BottomNavigationBar({
 
       {/* Context Menu */}
       {contextMenu && (
-        <SpaceContextMenu
+        <>
+          {console.log('Rendering SpaceContextMenu for:', contextMenu.space.name)}
+          <SpaceContextMenu
           space={contextMenu.space}
           isOpen={!!contextMenu}
           onClose={() => setContextMenu(null)}
@@ -227,6 +236,7 @@ export function BottomNavigationBar({
           on360MuteToggle={on360MuteToggle}
           position={contextMenu.position}
         />
+        </>
       )}
     </motion.div>
   );

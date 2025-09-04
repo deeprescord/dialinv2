@@ -195,6 +195,7 @@ export function BottomNavigationBar({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              console.log('AI button clicked in BottomNavigationBar, calling onAIClick');
               onAIClick?.();
             }}
           >

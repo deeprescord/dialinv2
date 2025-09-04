@@ -37,8 +37,10 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       setJustOpened(true);
       const timer = setTimeout(() => {
         setJustOpened(false);
-      }, 300); // 300ms delay before allowing backdrop close
+      }, 800); // Longer delay to prevent immediate close
       return () => clearTimeout(timer);
+    } else {
+      setJustOpened(false); // Reset when closed
     }
   }, [isOpen]);
 

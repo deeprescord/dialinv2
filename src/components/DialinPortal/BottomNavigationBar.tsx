@@ -5,11 +5,11 @@ import { Button } from '../ui/button';
 
 const spaces = [
   { id: 'lobby', name: 'Lobby', image: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png', active: false },
-  { id: 'music-den', name: 'Music Den', image: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png', active: false },
-  { id: 'future-studio', name: 'Future Studio', image: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png', active: false },
-  { id: 'command-center', name: 'Command Center', image: '/lovable-uploads/1e022703-aa29-4fc7-82ce-a5e734f8fe91.png', active: false },
-  { id: 'grand-theater', name: 'Grand Theater', image: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png', active: false },
-  { id: 'starbuds', name: 'Starbuds', image: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png', active: false },
+  { id: '2', name: 'Music Den', image: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png', active: false },
+  { id: '3', name: 'Future Studio', image: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png', active: false },
+  { id: '4', name: 'Command Center', image: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png', active: false },
+  { id: '6', name: 'Grand Theater', image: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png', active: false },
+  { id: '7', name: 'Starbuds', image: '/media/starbuds-thumb.jpg', active: false },
 ];
 
 interface BottomNavigationBarProps {

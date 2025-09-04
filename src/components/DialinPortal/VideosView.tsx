@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DialsBar } from './DialsBar';
+import { FeaturedVideoHeader } from './FeaturedVideoHeader';
+import { DialsBarCompact } from './DialsBarCompact';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
 import { VideoItem } from '@/data/catalogs';
@@ -23,6 +24,9 @@ export function VideosView({
   onVideoClick,
   onVideoLongPress
 }: VideosViewProps) {
+  const featuredVideo = videos[0];
+  const remainingVideos = videos.slice(1);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -30,20 +34,32 @@ export function VideosView({
       transition={{ duration: 0.3 }}
       className="pt-40 lg:pt-28 pb-20"
     >
+      {/* Featured Video Header */}
+      {featuredVideo && (
+        <FeaturedVideoHeader
+          video={featuredVideo}
+          onVideoClick={onVideoClick}
+        />
+      )}
+
       <SelectedChips 
         selectedDials={selectedDials}
         onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
       />
 
-      <DialsBar
+      <DialsBarCompact
         dialGroups={VIDEO_GROUPS}
         selectedDials={selectedDials}
         onDialToggle={onDialToggle}
         onClearAll={onClearAll}
       />
 
+      <div className="px-4 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-white">More Videos</h2>
+      </div>
+
       <MediaGrid
-        items={videos}
+        items={remainingVideos}
         onItemClick={onVideoClick}
         onItemLongPress={onVideoLongPress}
       />

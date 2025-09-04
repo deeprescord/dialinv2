@@ -4,6 +4,7 @@ import { FeaturedLocationHeader } from './FeaturedLocationHeader';
 import { DialsBarCompact } from './DialsBarCompact';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
+import { LocationsMap } from './LocationsMap';
 import { LocationItem } from '@/data/catalogs';
 import { LOCATION_GROUPS } from '@/data/constants';
 
@@ -59,6 +60,10 @@ export function LocationsView({
         onDialToggle={onDialToggle}
         onClearAll={onClearAll}
       />
+
+      <div className="px-4 mb-6">
+        <LocationsMap locations={locations} />
+      </div>
 
       <div className="px-4 mb-6">
         <h2 className="text-xl font-semibold mb-4 text-white">More Locations</h2>

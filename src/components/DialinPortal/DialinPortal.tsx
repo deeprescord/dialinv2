@@ -15,6 +15,8 @@ import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateSpaceModal } from './CreateSpaceModal';
 import { BottomNavigationBar } from './BottomNavigationBar';
+import { AIChat } from './AIChat';
+import { ChatWindow } from './ChatWindow';
 
 import { 
   videoCatalog, 
@@ -48,6 +50,8 @@ export function DialinPortal() {
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [showChatWindow, setShowChatWindow] = useState(false);
   const [floatingPlayer, setFloatingPlayer] = useState<{
     isVisible: boolean;
     item: any;
@@ -399,12 +403,22 @@ export function DialinPortal() {
         onCreate={handleCreateSpace}
       />
 
+      <AIChat
+        isOpen={showAIChat}
+        onClose={() => setShowAIChat(false)}
+      />
+
+      <ChatWindow
+        isOpen={showChatWindow}
+        onClose={() => setShowChatWindow(false)}
+      />
+
       {/* Fixed Bottom Navigation Bar */}
       <BottomNavigationBar 
         onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
         onNewClick={() => setShowCreateSpaceModal(true)}
-        onAIClick={() => {}} // TODO: Add AI functionality
-        onChatClick={() => {}} // TODO: Add chat functionality
+        onAIClick={() => setShowAIChat(true)}
+        onChatClick={() => setShowChatWindow(true)}
         activeSpaceId="lobby"
       />
     </div>

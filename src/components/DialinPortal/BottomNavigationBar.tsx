@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus, MessageSquare, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -27,10 +27,10 @@ export function BottomNavigationBar({
   onChatClick,
   activeSpaceId = 'lobby'
 }: BottomNavigationBarProps) {
-  const [selectedSpace, setSelectedSpace] = useState(activeSpaceId);
+  // Don't use local state, use activeSpaceId directly
+  const selectedSpace = activeSpaceId;
 
   const handleSpaceClick = (spaceId: string) => {
-    setSelectedSpace(spaceId);
     onSpaceClick?.(spaceId);
   };
 

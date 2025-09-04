@@ -453,7 +453,10 @@ export default function SpacePage() {
 
         <AIChat
           isOpen={showAIChat}
-          onClose={() => setShowAIChat(false)}
+          onClose={() => {
+            console.log('AI Chat onClose called, setting to false');
+            setShowAIChat(false);
+          }}
         />
 
         <ChatWindow

@@ -69,8 +69,10 @@ export function BottomNavigationBar({
 
   const handleMouseDown = (e: React.MouseEvent, space: Space) => {
     e.preventDefault();
+    console.log('Press and hold started for:', space.name);
     const target = e.currentTarget as HTMLElement;
     const timer = setTimeout(() => {
+      console.log('Press and hold triggered for:', space.name);
       const rect = target.getBoundingClientRect();
       setContextMenu({
         space,
@@ -210,16 +212,16 @@ export function BottomNavigationBar({
       </div>
 
       {/* Context Menu */}
-      {contextMenu && onDeleteSpace && onRenameSpace && onUpdateSpaceDescription && onReorderSpace && onToggle360 && (
+      {contextMenu && (
         <SpaceContextMenu
           space={contextMenu.space}
           isOpen={!!contextMenu}
           onClose={() => setContextMenu(null)}
-          onDelete={onDeleteSpace}
-          onRename={onRenameSpace}
-          onUpdateDescription={onUpdateSpaceDescription}
-          onReorder={onReorderSpace}
-          onToggle360={onToggle360}
+          onDelete={onDeleteSpace || (() => {})}
+          onRename={onRenameSpace || (() => {})}
+          onUpdateDescription={onUpdateSpaceDescription || (() => {})}
+          onReorder={onReorderSpace || (() => {})}
+          onToggle360={onToggle360 || (() => {})}
           on360AxisChange={on360AxisChange}
           on360VolumeChange={on360VolumeChange}
           on360MuteToggle={on360MuteToggle}

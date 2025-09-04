@@ -400,7 +400,10 @@ export function DialinPortal() {
       <BottomNavigationBar 
         onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
         onNewClick={() => setShowCreateSpaceModal(!showCreateSpaceModal)}
-        onAIClick={() => setShowAIChat(!showAIChat)}
+        onAIClick={() => {
+          console.log('AI button clicked, current state:', showAIChat);
+          setShowAIChat(!showAIChat);
+        }}
         onChatClick={() => setShowChatWindow(!showChatWindow)}
         activeSpaceId="lobby"
         isNewActive={showCreateSpaceModal}

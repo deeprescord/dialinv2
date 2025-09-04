@@ -37,7 +37,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       setJustOpened(true);
       const timer = setTimeout(() => {
         setJustOpened(false);
-      }, 800); // Longer delay to prevent immediate close
+      }, 500); // 500ms delay before allowing backdrop close
       return () => clearTimeout(timer);
     } else {
       setJustOpened(false); // Reset when closed
@@ -97,7 +97,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
             onClick={(e) => {
-              // Prevent immediate close when just opened
+              // Prevent immediate close when just opened or when clicking to close
               if (justOpened) {
                 e.preventDefault();
                 e.stopPropagation();

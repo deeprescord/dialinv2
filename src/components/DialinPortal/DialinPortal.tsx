@@ -14,7 +14,7 @@ import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateSpaceModal } from './CreateSpaceModal';
-import { FloorsTab } from './FloorsTab';
+import { BottomNavigationBar } from './BottomNavigationBar';
 
 import { 
   videoCatalog, 
@@ -399,8 +399,8 @@ export function DialinPortal() {
         onCreate={handleCreateSpace}
       />
 
-      {/* Fixed Floors Tab Footer */}
-      <FloorsTab />
+      {/* Fixed Bottom Navigation Bar */}
+      <BottomNavigationBar />
     </div>
   );
 }

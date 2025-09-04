@@ -14,7 +14,7 @@ import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
-import { FloorsTab } from '@/components/DialinPortal/FloorsTab';
+import { BottomNavigationBar } from '@/components/DialinPortal/BottomNavigationBar';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -467,8 +467,8 @@ export default function SpacePage() {
           onCreate={handleCreateSpace}
         />
 
-        {/* Fixed Floors Tab Footer */}
-        <FloorsTab />
+        {/* Fixed Bottom Navigation Bar */}
+        <BottomNavigationBar />
       </div>
     </div>
   );

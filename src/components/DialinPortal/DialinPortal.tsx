@@ -8,7 +8,7 @@ import { FriendsView } from './FriendsView';
 import { VideosView } from './VideosView';
 import { MusicView } from './MusicView';
 import { LocationsView } from './LocationsView';
-import { SpacesBar } from './SpacesBar';
+
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
@@ -268,7 +268,6 @@ export function DialinPortal() {
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
-  const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   return (
     <div className="min-h-screen bg-background">
@@ -342,22 +341,6 @@ export function DialinPortal() {
         )}
       </main>
 
-      {/* Bottom Bars */}
-      {showSpacesBar && (
-        <div className="fixed bottom-16 left-0 right-0 z-30">
-           <SpacesBar
-             spaces={spaces}
-             currentSpaceId="lobby"
-             onCreateSpace={() => setShowCreateSpaceModal(true)}
-              onDeleteSpace={handleDeleteSpace}
-              onRenameSpace={handleRenameSpace}
-              onUpdateSpaceDescription={handleUpdateSpaceDescription}
-              onReorderSpace={handleReorderSpace}
-              onToggle360={() => {}}
-              onSpaceClick={handleSpaceClick}
-           />
-        </div>
-      )}
 
       {isViewingContact && (
         <ShareMyBar
@@ -417,9 +400,11 @@ export function DialinPortal() {
       <BottomNavigationBar 
         onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
         onNewClick={() => setShowCreateSpaceModal(true)}
-        onAIClick={() => setShowAIChat(true)}
-        onChatClick={() => setShowChatWindow(true)}
+        onAIClick={() => setShowAIChat(!showAIChat)}
+        onChatClick={() => setShowChatWindow(!showChatWindow)}
         activeSpaceId="lobby"
+        isAIActive={showAIChat}
+        isChatActive={showChatWindow}
       />
     </div>
   );

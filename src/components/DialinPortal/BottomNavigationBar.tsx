@@ -18,6 +18,8 @@ interface BottomNavigationBarProps {
   onAIClick?: () => void;
   onChatClick?: () => void;
   activeSpaceId?: string;
+  isAIActive?: boolean;
+  isChatActive?: boolean;
 }
 
 export function BottomNavigationBar({ 
@@ -25,7 +27,9 @@ export function BottomNavigationBar({
   onNewClick, 
   onAIClick, 
   onChatClick,
-  activeSpaceId = 'lobby'
+  activeSpaceId = 'lobby',
+  isAIActive = false,
+  isChatActive = false
 }: BottomNavigationBarProps) {
   // Don't use local state, use activeSpaceId directly
   const selectedSpace = activeSpaceId;
@@ -134,7 +138,11 @@ export function BottomNavigationBar({
           <Button
             variant="ghost"
             size="sm"
-            className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            className={`h-10 px-4 border rounded-full transition-all duration-200 ${
+              isAIActive 
+                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
+                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
+            }`}
             onClick={onAIClick}
           >
             <Sparkles className="h-4 w-4 mr-2" />
@@ -144,7 +152,11 @@ export function BottomNavigationBar({
           <Button
             variant="ghost"
             size="sm"
-            className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            className={`h-10 px-4 border rounded-full transition-all duration-200 ${
+              isChatActive 
+                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
+                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
+            }`}
             onClick={onChatClick}
           >
             <MessageSquare className="h-4 w-4 mr-2" />

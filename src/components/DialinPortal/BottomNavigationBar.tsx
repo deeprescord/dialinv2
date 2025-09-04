@@ -126,15 +126,18 @@ export function BottomNavigationBar({
                 onMouseLeave={handleMouseLeave}
                 onTouchStart={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Touch start on space:', space.name);
                   const target = e.currentTarget as HTMLElement;
                   const timer = setTimeout(() => {
-                    const rect = target.getBoundingClientRect();
+                    console.log('Long press triggered for space:', space.name);
+                    // Position at center of screen for better visibility
+                    const x = window.innerWidth / 2 - 100;
+                    const y = window.innerHeight / 2 - 150;
+                    
                     setContextMenu({
                       space,
-                      position: { 
-                        x: rect.left + rect.width / 2, 
-                        y: rect.top - 10 
-                      }
+                      position: { x, y }
                     });
                   }, 500);
                   setPressTimer(timer);

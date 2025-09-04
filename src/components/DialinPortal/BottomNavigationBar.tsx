@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, MessageSquare, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
+import { SpaceContextMenu } from './SpaceContextMenu';
+import { Space } from '@/data/catalogs';
 
 const spaces = [
   { id: 'lobby', name: 'Lobby', image: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png', active: false },
@@ -21,6 +23,15 @@ interface BottomNavigationBarProps {
   isNewActive?: boolean;
   isAIActive?: boolean;
   isChatActive?: boolean;
+  spaces?: Space[];
+  onDeleteSpace?: (spaceId: string) => void;
+  onRenameSpace?: (spaceId: string, newName: string) => void;
+  onUpdateSpaceDescription?: (spaceId: string, newDescription: string) => void;
+  onReorderSpace?: (spaceId: string, direction: 'left' | 'right') => void;
+  onToggle360?: (spaceId: string, enabled: boolean) => void;
+  on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (spaceId: string, volume: number) => void;
+  on360MuteToggle?: (spaceId: string, muted: boolean) => void;
 }
 
 export function BottomNavigationBar({ 
@@ -31,13 +42,58 @@ export function BottomNavigationBar({
   activeSpaceId = 'lobby',
   isNewActive = false,
   isAIActive = false,
-  isChatActive = false
+  isChatActive = false,
+  spaces: passedSpaces,
+  onDeleteSpace,
+  onRenameSpace,
+  onUpdateSpaceDescription,
+  onReorderSpace,
+  onToggle360,
+  on360AxisChange,
+  on360VolumeChange,
+  on360MuteToggle
 }: BottomNavigationBarProps) {
-  // Don't use local state, use activeSpaceId directly
   const selectedSpace = activeSpaceId;
+  const [contextMenu, setContextMenu] = useState<{
+    space: Space;
+    position: { x: number; y: number };
+  } | null>(null);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+
+  // Use passed spaces or fallback to default
+  const allSpaces = passedSpaces || spaces;
 
   const handleSpaceClick = (spaceId: string) => {
     onSpaceClick?.(spaceId);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, space: Space) => {
+    e.preventDefault();
+    const timer = setTimeout(() => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setContextMenu({
+        space,
+        position: { 
+          x: rect.left + rect.width / 2, 
+          y: rect.top - 10 
+        }
+      });
+    }, 500); // 500ms press and hold
+    setPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
   };
 
   return (
@@ -52,13 +108,22 @@ export function BottomNavigationBar({
 
         {/* Spaces Section */}
         <div className="flex items-center gap-3 overflow-x-auto flex-1">
-          {spaces.map((space) => {
+          {allSpaces.map((space) => {
             const isActive = space.id === selectedSpace;
             return (
               <div
                 key={space.id}
                 className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer"
                 onClick={() => handleSpaceClick(space.id)}
+                onMouseDown={(e) => handleMouseDown(e, space)}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  handleMouseDown(e as any, space);
+                }}
+                onTouchEnd={handleMouseUp}
               >
                 <div className={`
                   relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200
@@ -68,7 +133,7 @@ export function BottomNavigationBar({
                   }
                 `}>
                   <img 
-                    src={space.image} 
+                    src={space.image || space.thumb} 
                     alt={space.name}
                     className="w-full h-full object-cover"
                   />
@@ -132,6 +197,24 @@ export function BottomNavigationBar({
           </Button>
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && onDeleteSpace && onRenameSpace && onUpdateSpaceDescription && onReorderSpace && onToggle360 && (
+        <SpaceContextMenu
+          space={contextMenu.space}
+          isOpen={!!contextMenu}
+          onClose={() => setContextMenu(null)}
+          onDelete={onDeleteSpace}
+          onRename={onRenameSpace}
+          onUpdateDescription={onUpdateSpaceDescription}
+          onReorder={onReorderSpace}
+          onToggle360={onToggle360}
+          on360AxisChange={on360AxisChange}
+          on360VolumeChange={on360VolumeChange}
+          on360MuteToggle={on360MuteToggle}
+          position={contextMenu.position}
+        />
+      )}
     </motion.div>
   );
 }

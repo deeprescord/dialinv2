@@ -253,6 +253,39 @@ export function DialinPortal() {
     }
   };
 
+  // Handle 360° controls
+  const handleToggle360 = (spaceId: string, enabled: boolean) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, show360: enabled }
+        : space
+    ));
+  };
+
+  const handle360AxisChange = (spaceId: string, axis: 'x' | 'y', value: number) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
+        : space
+    ));
+  };
+
+  const handle360VolumeChange = (spaceId: string, volume: number) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, volume }
+        : space
+    ));
+  };
+
+  const handle360MuteToggle = (spaceId: string, muted: boolean) => {
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, isMuted: muted }
+        : space
+    ));
+  };
+
   // Handle floating player actions
   const handlePlayerPlay = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: true }));
@@ -409,6 +442,15 @@ export function DialinPortal() {
         isNewActive={showCreateSpaceModal}
         isAIActive={showAIChat}
         isChatActive={showChatWindow}
+        spaces={spaces}
+        onDeleteSpace={handleDeleteSpace}
+        onRenameSpace={handleRenameSpace}
+        onUpdateSpaceDescription={handleUpdateSpaceDescription}
+        onReorderSpace={handleReorderSpace}
+        onToggle360={handleToggle360}
+        on360AxisChange={handle360AxisChange}
+        on360VolumeChange={handle360VolumeChange}
+        on360MuteToggle={handle360MuteToggle}
       />
     </div>
   );

@@ -474,6 +474,15 @@ export default function SpacePage() {
           isNewActive={showCreateSpaceModal}
           isAIActive={showAIChat}
           isChatActive={showChatWindow}
+          spaces={spaces}
+          onDeleteSpace={handleDeleteSpace}
+          onRenameSpace={handleRenameSpace}
+          onUpdateSpaceDescription={handleUpdateSpaceDescription}
+          onReorderSpace={handleReorderSpace}
+          onToggle360={handleToggle360}
+          on360AxisChange={handle360AxisChange}
+          on360VolumeChange={handle360VolumeChange}
+          on360MuteToggle={handle360MuteToggle}
         />
       </div>
     </div>

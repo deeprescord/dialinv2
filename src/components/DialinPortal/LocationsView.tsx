@@ -35,12 +35,11 @@ export function LocationsView({
   }));
 
   return (
-    <>
-      <motion.div
+    <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="pt-40 lg:pt-28 pb-32" // Increased bottom padding for floors bar
+        className="pt-40 lg:pt-28 pb-24" // Bottom padding for footer
       >
         {/* Featured Location Header */}
         {featuredLocation && (
@@ -72,10 +71,6 @@ export function LocationsView({
           onItemClick={onLocationClick}
           onItemLongPress={onLocationLongPress}
         />
-      </motion.div>
-      
-      {/* Fixed Floors Tab at Bottom - Outside the main container */}
-      <FloorsTab />
-    </>
+    </motion.div>
   );
 }

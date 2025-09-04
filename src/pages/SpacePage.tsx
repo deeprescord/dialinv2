@@ -9,7 +9,6 @@ import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
 import { SpacesBar } from '@/components/DialinPortal/SpacesBar';
-import { StorageBar } from '@/components/DialinPortal/StorageBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
@@ -423,16 +422,10 @@ export default function SpacePage() {
           </div>
         )}
 
-        {isViewingContact ? (
+        {isViewingContact && (
           <ShareMyBar
             activeToggles={activeShareToggles}
             onToggleChange={handleShareToggleChange}
-          />
-        ) : (
-          <StorageBar
-            usedGB={560}
-            totalTB={1}
-            className="hidden lg:block"
           />
         )}
 

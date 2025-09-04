@@ -9,7 +9,6 @@ import { VideosView } from './VideosView';
 import { MusicView } from './MusicView';
 import { LocationsView } from './LocationsView';
 import { SpacesBar } from './SpacesBar';
-import { StorageBar } from './StorageBar';
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
@@ -355,16 +354,10 @@ export function DialinPortal() {
         </div>
       )}
 
-      {isViewingContact ? (
+      {isViewingContact && (
         <ShareMyBar
           activeToggles={activeShareToggles}
           onToggleChange={handleShareToggleChange}
-        />
-      ) : (
-        <StorageBar
-          usedGB={560}
-          totalTB={1}
-          className="hidden lg:block"
         />
       )}
 

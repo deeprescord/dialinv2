@@ -5,6 +5,7 @@ import musicCollection from '@/assets/music-collection.jpg';
 import locationShowcase from '@/assets/location-showcase.jpg';
 import userAvatarsSet from '@/assets/user-avatars-set.jpg';
 import featuredVideoBg from '@/assets/featured-video-bg.jpg';
+import synthwaveNightsCover from '@/assets/synthwave-nights-cover.jpg';
 
 export interface VideoItem {
   id: string;
@@ -148,7 +149,7 @@ export const videoCatalog: VideoItem[] = [
 ];
 
 export const musicCatalog: MusicItem[] = [
-  { id: '1', title: 'Synthwave Nights', artist: 'Neon Dreams', length: '3:45', art: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[0]}?q=80&w=400&h=400&fit=crop&auto=format`, type: 'Electronic', vibe: 'Chill', decade: '2020s', energy: 'Medium' },
+  { id: '1', title: 'Synthwave Nights', artist: 'Neon Dreams', length: '3:45', art: synthwaveNightsCover, type: 'Electronic', vibe: 'Chill', decade: '2020s', energy: 'Medium' },
   { id: '2', title: 'Digital Love', artist: 'Cyber Soul', length: '4:23', art: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[1]}?q=80&w=400&h=400&fit=crop&auto=format`, type: 'Pop', vibe: 'Uplifting', decade: '2020s', energy: 'High' },
   { id: '3', title: 'Binary Dreams', artist: 'Code Symphony', length: '2:56', art: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[2]}?q=80&w=400&h=400&fit=crop&auto=format`, type: 'Ambient', vibe: 'Contemplative', decade: '2020s', energy: 'Low' },
   { id: '4', title: 'Holographic', artist: 'Future Bass', length: '3:12', art: `https://images.unsplash.com/photo-${UNSPLASH_IDS.music[3]}?q=80&w=400&h=400&fit=crop&auto=format`, type: 'Bass', vibe: 'Energetic', decade: '2020s', energy: 'High' },

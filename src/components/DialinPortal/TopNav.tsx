@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon } from '../icons';
+import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon, Plus } from '../icons';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
@@ -101,6 +101,15 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
 
           {/* Right Side */}
           <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Add Button */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10"
+            >
+              <Plus size={18} className="sm:w-5 sm:h-5" />
+            </Button>
+
             {/* Search - Hidden on small screens */}
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />

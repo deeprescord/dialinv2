@@ -4,7 +4,6 @@ import { FeaturedLocationHeader } from './FeaturedLocationHeader';
 import { DialsBarCompact } from './DialsBarCompact';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
-import { FloorsTab } from './FloorsTab';
 import { LocationItem } from '@/data/catalogs';
 import { LOCATION_GROUPS } from '@/data/constants';
 

@@ -468,7 +468,13 @@ export default function SpacePage() {
         />
 
         {/* Fixed Bottom Navigation Bar */}
-        <BottomNavigationBar />
+        <BottomNavigationBar 
+          onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
+          onNewClick={() => setShowCreateSpaceModal(true)}
+          onAIClick={() => {}} // TODO: Add AI functionality
+          onChatClick={() => {}} // TODO: Add chat functionality
+          activeSpaceId={spaceId || 'lobby'}
+        />
       </div>
     </div>
   );

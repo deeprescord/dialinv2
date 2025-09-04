@@ -400,7 +400,13 @@ export function DialinPortal() {
       />
 
       {/* Fixed Bottom Navigation Bar */}
-      <BottomNavigationBar />
+      <BottomNavigationBar 
+        onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
+        onNewClick={() => setShowCreateSpaceModal(true)}
+        onAIClick={() => {}} // TODO: Add AI functionality
+        onChatClick={() => {}} // TODO: Add chat functionality
+        activeSpaceId="lobby"
+      />
     </div>
   );
 }

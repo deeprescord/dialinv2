@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, MessageSquare, Sparkles } from 'lucide-react';
+import { Plus, MessageSquare, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const spaces = [
-  { id: 'lobby', name: 'Lobby', image: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png', active: true },
+  { id: 'lobby', name: 'Lobby', image: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png', active: false },
   { id: 'music-den', name: 'Music Den', image: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png', active: false },
   { id: 'future-studio', name: 'Future Studio', image: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png', active: false },
   { id: 'command-center', name: 'Command Center', image: '/lovable-uploads/1e022703-aa29-4fc7-82ce-a5e734f8fe91.png', active: false },
@@ -12,7 +12,46 @@ const spaces = [
   { id: 'starbuds', name: 'Starbuds', image: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png', active: false },
 ];
 
-export function BottomNavigationBar() {
+interface BottomNavigationBarProps {
+  onSpaceClick?: (spaceId: string) => void;
+  onNewClick?: () => void;
+  onAIClick?: () => void;
+  onChatClick?: () => void;
+  activeSpaceId?: string;
+}
+
+export function BottomNavigationBar({ 
+  onSpaceClick, 
+  onNewClick, 
+  onAIClick, 
+  onChatClick,
+  activeSpaceId = 'lobby'
+}: BottomNavigationBarProps) {
+  const [selectedSpace, setSelectedSpace] = useState(activeSpaceId);
+
+  const handleSpaceClick = (spaceId: string) => {
+    setSelectedSpace(spaceId);
+    onSpaceClick?.(spaceId);
+  };
+
+  const handleNavigateUp = () => {
+    const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
+    if (currentIndex > 0) {
+      const newSpace = spaces[currentIndex - 1];
+      handleSpaceClick(newSpace.id);
+    }
+  };
+
+  const handleNavigateDown = () => {
+    const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
+    if (currentIndex < spaces.length - 1) {
+      const newSpace = spaces[currentIndex + 1];
+      handleSpaceClick(newSpace.id);
+    }
+  };
+
+  const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
+
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
@@ -21,37 +60,63 @@ export function BottomNavigationBar() {
       className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-white/10 safe-area-pb"
     >
       <div className="flex items-center justify-between px-4 py-3 max-w-screen-xl mx-auto">
+        {/* Navigation Arrows */}
+        <div className="flex items-center gap-1 mr-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10"
+            disabled={currentIndex <= 0}
+            onClick={handleNavigateUp}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10"
+            disabled={currentIndex >= spaces.length - 1}
+            onClick={handleNavigateDown}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
+
         {/* Spaces Section */}
         <div className="flex items-center gap-3 overflow-x-auto flex-1">
-          {spaces.map((space) => (
-            <div
-              key={space.id}
-              className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer"
-            >
-              <div className={`
-                relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200
-                ${space.active 
-                  ? 'border-primary shadow-lg shadow-primary/30' 
-                  : 'border-white/20 hover:border-white/40'
-                }
-              `}>
-                <img 
-                  src={space.image} 
-                  alt={space.name}
-                  className="w-full h-full object-cover"
-                />
-                {space.active && (
-                  <div className="absolute top-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background" />
-                )}
+          {spaces.map((space) => {
+            const isActive = space.id === selectedSpace;
+            return (
+              <div
+                key={space.id}
+                className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer"
+                onClick={() => handleSpaceClick(space.id)}
+              >
+                <div className={`
+                  relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200
+                  ${isActive 
+                    ? 'border-primary shadow-lg shadow-primary/30' 
+                    : 'border-white/20 hover:border-white/40'
+                  }
+                `}>
+                  <img 
+                    src={space.image} 
+                    alt={space.name}
+                    className="w-full h-full object-cover"
+                  />
+                  {isActive && (
+                    <div className="absolute top-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background" />
+                  )}
+                </div>
+                <span className={`
+                  text-xs font-medium transition-colors duration-200
+                  ${isActive ? 'text-primary' : 'text-white/70'}
+                `}>
+                  {space.name}
+                </span>
               </div>
-              <span className={`
-                text-xs font-medium transition-colors duration-200
-                ${space.active ? 'text-primary' : 'text-white/70'}
-              `}>
-                {space.name}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         {/* Action Buttons */}
@@ -60,6 +125,7 @@ export function BottomNavigationBar() {
             variant="ghost"
             size="sm"
             className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            onClick={onNewClick}
           >
             <Plus className="h-4 w-4 mr-2" />
             New
@@ -69,6 +135,7 @@ export function BottomNavigationBar() {
             variant="ghost"
             size="sm"
             className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            onClick={onAIClick}
           >
             <Sparkles className="h-4 w-4 mr-2" />
             AI
@@ -78,6 +145,7 @@ export function BottomNavigationBar() {
             variant="ghost"
             size="sm"
             className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            onClick={onChatClick}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
             Chat

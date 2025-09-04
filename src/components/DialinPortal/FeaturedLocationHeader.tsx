@@ -4,21 +4,29 @@ import { Button } from '../ui/button';
 import { MapPin, Navigation } from 'lucide-react';
 import { LocationItem } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
+import { LocationsMap } from './LocationsMap';
 
 interface FeaturedLocationHeaderProps {
   location: LocationItem;
+  locations: LocationItem[];
   onLocationClick: (location: LocationItem) => void;
 }
 
-export function FeaturedLocationHeader({ location, onLocationClick }: FeaturedLocationHeaderProps) {
+export function FeaturedLocationHeader({ location, locations, onLocationClick }: FeaturedLocationHeaderProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="relative mb-8 mx-4 rounded-xl overflow-hidden cursor-pointer group h-[60vh] lg:h-[70vh]"
-      onClick={() => onLocationClick(location)}
-    >
+    <div className="mb-8">
+      {/* Map Demo */}
+      <div className="mx-4 mb-6">
+        <LocationsMap locations={locations} />
+      </div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative mx-4 rounded-xl overflow-hidden cursor-pointer group h-[60vh] lg:h-[70vh]"
+        onClick={() => onLocationClick(location)}
+      >
       {/* Background Image */}
       <ImageFallback 
         src={location.thumb}
@@ -97,6 +105,7 @@ export function FeaturedLocationHeader({ location, onLocationClick }: FeaturedLo
       
       {/* Hover Effect */}
       <div className="absolute inset-0 bg-gradient-to-t from-cyberpunk-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }

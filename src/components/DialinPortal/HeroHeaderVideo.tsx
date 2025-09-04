@@ -124,7 +124,7 @@ export function HeroHeaderVideo({
       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
 
       {/* Content */}
-      <div className={`absolute bottom-8 left-8 ${show360 ? 'z-30' : ''}`}>
+      <div className={`absolute bottom-12 left-8 ${show360 ? 'z-30' : ''}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,7 +133,7 @@ export function HeroHeaderVideo({
           <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2">
             {title}
           </h1>
-          <p className="text-lg lg:text-xl text-white/80">
+          <p className="text-lg lg:text-xl text-white/80 max-w-2xl">
             {subtitle}
           </p>
         </motion.div>

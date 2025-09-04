@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, MessageSquare, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, MessageSquare, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const spaces = [
@@ -40,24 +40,6 @@ export function BottomNavigationBar({
     onSpaceClick?.(spaceId);
   };
 
-  const handleNavigateUp = () => {
-    const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
-    if (currentIndex > 0) {
-      const newSpace = spaces[currentIndex - 1];
-      handleSpaceClick(newSpace.id);
-    }
-  };
-
-  const handleNavigateDown = () => {
-    const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
-    if (currentIndex < spaces.length - 1) {
-      const newSpace = spaces[currentIndex + 1];
-      handleSpaceClick(newSpace.id);
-    }
-  };
-
-  const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
-
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
@@ -66,27 +48,7 @@ export function BottomNavigationBar({
       className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-white/10 safe-area-pb"
     >
       <div className="flex items-center justify-between px-4 py-3 max-w-screen-xl mx-auto">
-        {/* Navigation Arrows */}
-        <div className="flex items-center gap-1 mr-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10"
-            disabled={currentIndex <= 0}
-            onClick={handleNavigateUp}
-          >
-            <ArrowUp className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10"
-            disabled={currentIndex >= spaces.length - 1}
-            onClick={handleNavigateDown}
-          >
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* Navigation Arrows - REMOVED */}
 
         {/* Spaces Section */}
         <div className="flex items-center gap-3 overflow-x-auto flex-1">

@@ -98,13 +98,13 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
-          <>
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
               onClick={onClose}
             />
             
@@ -114,7 +114,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-5xl h-[75vh] z-[60]"
+              className="relative z-10 w-[85vw] max-w-5xl h-[75vh]"
             >
               <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col">
             
@@ -290,9 +290,9 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                 </div>
               </>
             )}
-              </div>
+               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 

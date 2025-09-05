@@ -85,15 +85,15 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             onClick={onClose}
           />
 
-          {/* AI Chat Window - Centered */}
+          {/* AI Chat Window */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="fixed inset-0 flex items-center justify-center p-4 z-[60]"
+            className="fixed bottom-20 right-6 w-80 h-[32rem] z-[60]"
           >
-            <div className="w-full max-w-md h-[80vh] max-h-[700px]">
+            <div className="w-full h-full">
             <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border bg-background/90 md:bg-transparent">

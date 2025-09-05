@@ -75,13 +75,13 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
             onClick={onClose}
           />
 
@@ -91,7 +91,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="fixed bottom-20 right-6 w-80 h-[32rem] z-[60]"
+            className="relative z-10 w-[85vw] max-w-5xl h-[75vh]"
           >
             <div className="w-full h-full">
             <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col h-full">
@@ -171,7 +171,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             </div>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

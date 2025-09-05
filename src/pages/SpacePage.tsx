@@ -409,22 +409,22 @@ export default function SpacePage() {
             onToggleChange={handleShareToggleChange}
           />
         ) : showSpacesBar ? (
-          <CombinedBottomBar 
-            spaces={spaces} 
-            currentSpaceId={currentSpace?.id}
-            onCreateSpace={() => setShowCreateSpaceModal(true)}
-            onDeleteSpace={handleDeleteSpace}
-            onRenameSpace={handleRenameSpace}
-            onUpdateSpaceDescription={handleUpdateSpaceDescription}
-            onReorderSpace={handleReorderSpace}
-            onToggle360={handleToggle360}
-            on360AxisChange={handle360AxisChange}
-            on360VolumeChange={handle360VolumeChange}
-            on360MuteToggle={handle360MuteToggle}
-            onSpaceClick={handleSpaceClick}
-            usedGB={560}
-            totalTB={1}
-          />
+          <div className="fixed bottom-16 left-0 right-0 z-30">
+            <CombinedBottomBar 
+              spaces={spaces} 
+              currentSpaceId={currentSpace?.id}
+              onCreateSpace={() => setShowCreateSpaceModal(true)}
+              onDeleteSpace={handleDeleteSpace}
+              onRenameSpace={handleRenameSpace}
+              onUpdateSpaceDescription={handleUpdateSpaceDescription}
+              onReorderSpace={handleReorderSpace}
+              onToggle360={handleToggle360}
+              on360AxisChange={handle360AxisChange}
+              on360VolumeChange={handle360VolumeChange}
+              on360MuteToggle={handle360MuteToggle}
+              onSpaceClick={handleSpaceClick}
+            />
+          </div>
         ) : null}
 
         {/* Overlays */}

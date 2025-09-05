@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
-import { Progress } from '../ui/progress';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
-import { formatStorageUsed } from '@/lib/filters';
 
 interface CombinedBottomBarProps {
   spaces: Space[];
@@ -24,8 +22,6 @@ interface CombinedBottomBarProps {
   on360VolumeChange?: (spaceId: string, volume: number) => void;
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   onSpaceClick?: (space: Space) => void;
-  usedGB: number;
-  totalTB: number;
   className?: string;
 }
 
@@ -42,8 +38,6 @@ export function CombinedBottomBar({
   on360VolumeChange,
   on360MuteToggle,
   onSpaceClick,
-  usedGB,
-  totalTB,
   className = ""
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
@@ -96,28 +90,9 @@ export function CombinedBottomBar({
     }
   };
 
-  const { used, total, percentage } = formatStorageUsed(usedGB, totalTB) as any;
-
   return (
-    <motion.div 
-      className={`fixed bottom-0 left-0 right-0 glass-nav border-t border-white/10 ${className}`}
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.3, delay: 0.5 }}
-    >
-      {/* Storage Bar */}
-      <div className="px-4 py-3 border-b border-white/10">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Storage</span>
-          <span className="text-xs text-muted-foreground">{used} / {total}</span>
-        </div>
-        <Progress 
-          value={percentage} 
-          className="h-2"
-        />
-      </div>
-
-      {/* Spaces Bar */}
+    <div className="mb-4 relative">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
       <div className="relative">
         <div className="flex items-center justify-between px-4 py-3 overflow-x-auto scrollbar-thin">
           {/* Spaces on the left */}
@@ -254,6 +229,6 @@ export function CombinedBottomBar({
           onClose={() => setShowChatWindow(false)}
         />
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -14,6 +14,7 @@ import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateSpaceModal } from './CreateSpaceModal';
+import { ChatWindow } from './ChatWindow';
 
 import { 
   videoCatalog, 
@@ -45,6 +46,7 @@ export function DialinPortal() {
     ...initialSpaces
   ]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
+  const [showChatWindow, setShowChatWindow] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -390,6 +392,8 @@ export function DialinPortal() {
             on360VolumeChange={handle360VolumeChange}
             on360MuteToggle={handle360MuteToggle}
             onSpaceClick={handleSpaceClick}
+            showChatWindow={showChatWindow}
+            onToggleChatWindow={() => setShowChatWindow(!showChatWindow)}
           />
         </div>
       ) : null}
@@ -429,6 +433,11 @@ export function DialinPortal() {
         isOpen={showCreateSpaceModal}
         onClose={() => setShowCreateSpaceModal(false)}
         onCreate={handleCreateSpace}
+      />
+
+      <ChatWindow
+        isOpen={showChatWindow}
+        onClose={() => setShowChatWindow(false)}
       />
     </div>
   );

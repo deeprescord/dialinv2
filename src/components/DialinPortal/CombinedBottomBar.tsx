@@ -7,7 +7,6 @@ import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
 import { AIChat } from './AIChat';
-import { ChatWindow } from './ChatWindow';
 
 interface CombinedBottomBarProps {
   spaces: Space[];
@@ -23,6 +22,8 @@ interface CombinedBottomBarProps {
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   onSpaceClick?: (space: Space) => void;
   className?: string;
+  showChatWindow?: boolean;
+  onToggleChatWindow?: () => void;
 }
 
 export function CombinedBottomBar({ 
@@ -38,7 +39,9 @@ export function CombinedBottomBar({
   on360VolumeChange,
   on360MuteToggle,
   onSpaceClick,
-  className = ""
+  className = "",
+  showChatWindow,
+  onToggleChatWindow
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -47,7 +50,6 @@ export function CombinedBottomBar({
   } | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [showAIChat, setShowAIChat] = useState(false);
-  const [showChatWindow, setShowChatWindow] = useState(false);
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -190,7 +192,7 @@ export function CombinedBottomBar({
                 variant="outline"
                 size="sm"
                 className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                onClick={() => setShowChatWindow(!showChatWindow)}
+                onClick={onToggleChatWindow}
               >
                 <MessageSquare size={20} className="text-purple-400" />
                 <span className="text-xs">Chat</span>
@@ -221,12 +223,6 @@ export function CombinedBottomBar({
         <AIChat
           isOpen={showAIChat}
           onClose={() => setShowAIChat(false)}
-        />
-
-        {/* Chat Window */}
-        <ChatWindow
-          isOpen={showChatWindow}
-          onClose={() => setShowChatWindow(false)}
         />
       </div>
     </div>

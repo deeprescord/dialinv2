@@ -219,7 +219,8 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                 {/* Pinned Section */}
                 <div className="p-4 border-b border-white/10">
                   <h4 className="text-xs font-medium text-white/60 mb-3 uppercase tracking-wide">Pinned</h4>
-                  <div className="flex space-x-3 mb-4 overflow-x-auto scrollbar-thin">
+                  <div className="flex space-x-3 overflow-x-auto scrollbar-thin">
+                    {/* Pinned Contacts */}
                     {pinnedContacts.map((contact) => (
                       <div key={contact.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 flex-shrink-0">
                         <Avatar className="h-10 w-10 mb-1">
@@ -229,16 +230,15 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                         <span className="text-xs text-white/80">{contact.name}</span>
                       </div>
                     ))}
-                  </div>
-
-                  <div className="flex space-x-3 overflow-x-auto scrollbar-thin">
+                    
+                    {/* Pinned Groups */}
                     {pinnedGroups.map((group) => (
-                      <div key={group.id} className="flex items-center p-2 rounded hover:bg-white/5 cursor-pointer flex-shrink-0 min-w-[120px]">
-                        <Avatar className="h-8 w-8 mr-2">
+                      <div key={group.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 flex-shrink-0">
+                        <Avatar className="h-10 w-10 mb-1">
                           <AvatarImage src={group.avatar} />
                           <AvatarFallback>{group.name[0]}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-white font-medium truncate">{group.name}</span>
+                        <span className="text-xs text-white/80 text-center max-w-[60px] truncate">{group.name}</span>
                       </div>
                     ))}
                   </div>

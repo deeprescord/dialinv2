@@ -231,7 +231,8 @@ export const initialSpaces: Space[] = [
     thumb: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
     backgroundImage: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
     show360: true,
-    description: 'Workroom for Media and Content Strategies.'
+    description: 'Workroom for Media and Content Strategies.',
+    xAxis: 41
   },
   { 
     id: '6', 

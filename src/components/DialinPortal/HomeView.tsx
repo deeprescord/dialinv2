@@ -59,7 +59,7 @@ export function HomeView({
         posterSrc={backgroundImage || lobbyBackground}
         title={floorName || "Lobby"}
         subtitle={floorDescription || "Welcome back"}
-        backgroundImage={backgroundImage || (isLobby ? appBackground : lobbyBackground)}
+        backgroundImage={backgroundImage || (isLobby ? "/lovable-uploads/8b2617c9-35d8-4b43-aaea-0787f47b6053.png" : lobbyBackground)}
         showVideo={isLobby}
         show360={show360}
         xAxisOffset={xAxisOffset}

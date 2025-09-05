@@ -112,12 +112,9 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-3xl h-[32rem] glass-card border border-white/10 rounded-lg overflow-hidden z-[9999] flex flex-col"
+              className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-5xl h-[75vh] glass-card border border-white/10 rounded-xl overflow-hidden z-[9999] flex flex-col"
               style={{ 
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)'
+                marginTop: '-2rem'
               }}
             >
             {selectedThread ? (

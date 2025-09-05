@@ -14,6 +14,8 @@ import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
+import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
+import { AIChat } from '@/components/DialinPortal/AIChat';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -57,6 +59,8 @@ export default function SpacePage() {
     isPlaying: false,
     progress: 25
   });
+  const [showChatWindow, setShowChatWindow] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   // Find current space
   const currentSpace = spaces.find(space => space.id === spaceId);
@@ -300,6 +304,15 @@ export default function SpacePage() {
     ));
   };
 
+  // Handle chat and AI chat toggles
+  const handleToggleChatWindow = () => {
+    setShowChatWindow(prev => !prev);
+  };
+
+  const handleToggleAIChat = () => {
+    setShowAIChat(prev => !prev);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -423,6 +436,11 @@ export default function SpacePage() {
               on360VolumeChange={handle360VolumeChange}
               on360MuteToggle={handle360MuteToggle}
               onSpaceClick={handleSpaceClick}
+              showChatWindow={showChatWindow}
+              onToggleChatWindow={handleToggleChatWindow}
+              showCreateSpaceModal={showCreateSpaceModal}
+              showAIChat={showAIChat}
+              onToggleAIChat={handleToggleAIChat}
             />
           </div>
         ) : null}
@@ -462,6 +480,16 @@ export default function SpacePage() {
           isOpen={showCreateSpaceModal}
           onClose={() => setShowCreateSpaceModal(false)}
           onCreate={handleCreateSpace}
+        />
+
+        <ChatWindow
+          isOpen={showChatWindow}
+          onClose={() => setShowChatWindow(false)}
+        />
+
+        <AIChat
+          isOpen={showAIChat}
+          onClose={() => setShowAIChat(false)}
         />
       </div>
     </div>

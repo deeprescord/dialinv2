@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
+import { Close } from '../icons';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
-import { AIChat } from './AIChat';
 
 interface CombinedBottomBarProps {
   spaces: Space[];
@@ -24,6 +24,9 @@ interface CombinedBottomBarProps {
   className?: string;
   showChatWindow?: boolean;
   onToggleChatWindow?: () => void;
+  showCreateSpaceModal?: boolean;
+  showAIChat?: boolean;
+  onToggleAIChat?: () => void;
 }
 
 export function CombinedBottomBar({ 
@@ -41,7 +44,10 @@ export function CombinedBottomBar({
   onSpaceClick,
   className = "",
   showChatWindow,
-  onToggleChatWindow
+  onToggleChatWindow,
+  showCreateSpaceModal,
+  showAIChat,
+  onToggleAIChat
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -49,7 +55,6 @@ export function CombinedBottomBar({
     position: { x: number; y: number };
   } | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
-  const [showAIChat, setShowAIChat] = useState(false);
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -148,56 +153,81 @@ export function CombinedBottomBar({
 
           {/* Action buttons on the right */}
           <div className="flex items-center space-x-3 flex-shrink-0">
-            {/* New Space Button */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: allSpaces.length * 0.05 }}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                onClick={onCreateSpace}
+            {/* Show close button when any panel is open, otherwise show normal buttons */}
+            {(showChatWindow || showCreateSpaceModal || showAIChat) ? (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <PlusCircle size={20} className="text-green-400" />
-                <span className="text-xs">New</span>
-              </Button>
-            </motion.div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-red-500/50"
+                  onClick={() => {
+                    if (showChatWindow) onToggleChatWindow?.();
+                    if (showCreateSpaceModal) onCreateSpace();
+                    if (showAIChat) onToggleAIChat?.();
+                  }}
+                >
+                  <Close size={20} className="text-red-400" />
+                  <span className="text-xs">Close</span>
+                </Button>
+              </motion.div>
+            ) : (
+              <>
+                {/* New Space Button */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: allSpaces.length * 0.05 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    onClick={onCreateSpace}
+                  >
+                    <PlusCircle size={20} className="text-green-400" />
+                    <span className="text-xs">New</span>
+                  </Button>
+                </motion.div>
 
-            {/* AI Bot Button */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: (allSpaces.length + 1) * 0.05 }}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                onClick={() => setShowAIChat(!showAIChat)}
-              >
-                <Bot size={20} className="text-blue-400" />
-                <span className="text-xs">AI</span>
-              </Button>
-            </motion.div>
+                {/* AI Bot Button */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: (allSpaces.length + 1) * 0.05 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    onClick={onToggleAIChat}
+                  >
+                    <Bot size={20} className="text-blue-400" />
+                    <span className="text-xs">AI</span>
+                  </Button>
+                </motion.div>
 
-            {/* Chat Button */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: (allSpaces.length + 2) * 0.05 }}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                onClick={onToggleChatWindow}
-              >
-                <MessageSquare size={20} className="text-purple-400" />
-                <span className="text-xs">Chat</span>
-              </Button>
-            </motion.div>
+                {/* Chat Button */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: (allSpaces.length + 2) * 0.05 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    onClick={onToggleChatWindow}
+                  >
+                    <MessageSquare size={20} className="text-purple-400" />
+                    <span className="text-xs">Chat</span>
+                  </Button>
+                </motion.div>
+              </>
+            )}
           </div>
         </div>
 
@@ -218,12 +248,6 @@ export function CombinedBottomBar({
             position={contextMenu.position}
           />
         )}
-
-        {/* AI Chat */}
-        <AIChat
-          isOpen={showAIChat}
-          onClose={() => setShowAIChat(false)}
-        />
       </div>
     </div>
   );

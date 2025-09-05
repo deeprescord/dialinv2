@@ -93,26 +93,25 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
             className="relative z-10 w-[85vw] max-w-5xl h-[75vh]"
           >
-            <div className="w-full h-full">
-            <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col h-full">
+            <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border bg-background/90 md:bg-transparent">
+              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                     <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">AI Assistant</h3>
-                    <p className="text-xs text-muted-foreground">Always ready to help</p>
+                    <h3 className="font-semibold text-white">AI Assistant</h3>
+                    <p className="text-xs text-white/60">Always ready to help</p>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="h-8 w-8 p-0 hover:bg-muted"
+                  className="h-8 w-8 p-0 hover:bg-white/10 text-white"
                 >
                   <Close size={16} />
                 </Button>
@@ -130,13 +129,13 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                         msg.isUser
-                          ? 'bg-primary text-primary-foreground ml-auto'
-                          : 'bg-muted text-foreground'
+                          ? 'bg-blue-500 text-white ml-auto'
+                          : 'bg-white/10 text-white'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                       <p className={`text-xs mt-1 opacity-70 ${
-                        msg.isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        msg.isUser ? 'text-white/70' : 'text-white/60'
                       }`}>
                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
@@ -146,7 +145,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t border-border bg-background/50">
+              <div className="p-4 border-t border-white/10 bg-black/10">
                 <div className="flex space-x-2 items-end">
                   <Textarea
                     ref={inputRef}
@@ -154,7 +153,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message..."
-                    className="flex-1 bg-muted/50 border-muted focus:border-primary resize-none min-h-[60px] max-h-[120px]"
+                    className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-blue-500 resize-none min-h-[60px] max-h-[120px]"
                     autoFocus
                     rows={2}
                   />
@@ -162,13 +161,12 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
                     size="sm"
-                    className="px-3 h-10 shrink-0"
+                    className="px-3 h-10 shrink-0 bg-blue-500 hover:bg-blue-600"
                   >
                     <Send size={16} />
                   </Button>
                 </div>
               </div>
-            </div>
             </div>
           </motion.div>
         </div>

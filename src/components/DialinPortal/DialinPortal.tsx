@@ -15,6 +15,7 @@ import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateSpaceModal } from './CreateSpaceModal';
 import { ChatWindow } from './ChatWindow';
+import { AIChat } from './AIChat';
 
 import { 
   videoCatalog, 
@@ -47,6 +48,7 @@ export function DialinPortal() {
   ]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -394,6 +396,9 @@ export function DialinPortal() {
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={() => setShowChatWindow(!showChatWindow)}
+            showCreateSpaceModal={showCreateSpaceModal}
+            showAIChat={showAIChat}
+            onToggleAIChat={() => setShowAIChat(!showAIChat)}
           />
         </div>
       ) : null}
@@ -438,6 +443,11 @@ export function DialinPortal() {
       <ChatWindow
         isOpen={showChatWindow}
         onClose={() => setShowChatWindow(false)}
+      />
+
+      <AIChat
+        isOpen={showAIChat}
+        onClose={() => setShowAIChat(false)}
       />
     </div>
   );

@@ -75,7 +75,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
             exit={{ opacity: 0, scale: 0.9 }}
             className="relative z-10 w-96"
           >
-            <Card className="glass-card border-white/20">
+            <Card className="glass-card border border-white/10 rounded-xl">
               <div className="flex items-center justify-between p-4 border-b border-white/10">
                 <h2 className="text-lg font-semibold">Create New Space</h2>
                 <Button variant="ghost" size="sm" onClick={onClose}>

@@ -38,7 +38,7 @@ export function LocationsView({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="pt-40 lg:pt-28 pb-40" // Bottom padding for footer
+        className="pt-40 lg:pt-28 pb-24" // Bottom padding for footer
       >
         {/* Featured Location Header */}
         {featuredLocation && (

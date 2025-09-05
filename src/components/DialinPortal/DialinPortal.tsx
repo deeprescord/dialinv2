@@ -8,7 +8,7 @@ import { FriendsView } from './FriendsView';
 import { VideosView } from './VideosView';
 import { MusicView } from './MusicView';
 import { LocationsView } from './LocationsView';
-
+import { SpacesBar } from './SpacesBar';
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
@@ -253,39 +253,6 @@ export function DialinPortal() {
     }
   };
 
-  // Handle 360° controls
-  const handleToggle360 = (spaceId: string, enabled: boolean) => {
-    setSpaces(spaces.map(space => 
-      space.id === spaceId 
-        ? { ...space, show360: enabled }
-        : space
-    ));
-  };
-
-  const handle360AxisChange = (spaceId: string, axis: 'x' | 'y', value: number) => {
-    setSpaces(spaces.map(space => 
-      space.id === spaceId 
-        ? { ...space, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
-        : space
-    ));
-  };
-
-  const handle360VolumeChange = (spaceId: string, volume: number) => {
-    setSpaces(spaces.map(space => 
-      space.id === spaceId 
-        ? { ...space, volume }
-        : space
-    ));
-  };
-
-  const handle360MuteToggle = (spaceId: string, muted: boolean) => {
-    setSpaces(spaces.map(space => 
-      space.id === spaceId 
-        ? { ...space, isMuted: muted }
-        : space
-    ));
-  };
-
   // Handle floating player actions
   const handlePlayerPlay = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: true }));
@@ -301,6 +268,7 @@ export function DialinPortal() {
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
+  const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   return (
     <div className="min-h-screen bg-background">
@@ -374,6 +342,22 @@ export function DialinPortal() {
         )}
       </main>
 
+      {/* Bottom Bars */}
+      {showSpacesBar && (
+        <div className="fixed bottom-16 left-0 right-0 z-30">
+           <SpacesBar
+             spaces={spaces}
+             currentSpaceId="lobby"
+             onCreateSpace={() => setShowCreateSpaceModal(true)}
+              onDeleteSpace={handleDeleteSpace}
+              onRenameSpace={handleRenameSpace}
+              onUpdateSpaceDescription={handleUpdateSpaceDescription}
+              onReorderSpace={handleReorderSpace}
+              onToggle360={() => {}}
+              onSpaceClick={handleSpaceClick}
+           />
+        </div>
+      )}
 
       {isViewingContact && (
         <ShareMyBar
@@ -421,10 +405,7 @@ export function DialinPortal() {
 
       <AIChat
         isOpen={showAIChat}
-        onClose={() => {
-          console.log('AI Chat onClose called, setting to false');
-          setShowAIChat(false);
-        }}
+        onClose={() => setShowAIChat(false)}
       />
 
       <ChatWindow
@@ -435,25 +416,10 @@ export function DialinPortal() {
       {/* Fixed Bottom Navigation Bar */}
       <BottomNavigationBar 
         onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
-        onNewClick={() => setShowCreateSpaceModal(!showCreateSpaceModal)}
-        onAIClick={() => {
-          console.log('AI button clicked, current state:', showAIChat);
-          setShowAIChat(prev => !prev);
-        }}
-        onChatClick={() => setShowChatWindow(!showChatWindow)}
+        onNewClick={() => setShowCreateSpaceModal(true)}
+        onAIClick={() => setShowAIChat(true)}
+        onChatClick={() => setShowChatWindow(true)}
         activeSpaceId="lobby"
-        isNewActive={showCreateSpaceModal}
-        isAIActive={showAIChat}
-        isChatActive={showChatWindow}
-        spaces={spaces}
-        onDeleteSpace={handleDeleteSpace}
-        onRenameSpace={handleRenameSpace}
-        onUpdateSpaceDescription={handleUpdateSpaceDescription}
-        onReorderSpace={handleReorderSpace}
-        onToggle360={handleToggle360}
-        on360AxisChange={handle360AxisChange}
-        on360VolumeChange={handle360VolumeChange}
-        on360MuteToggle={handle360MuteToggle}
       />
     </div>
   );

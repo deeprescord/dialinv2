@@ -8,7 +8,7 @@ import { FriendsView } from '@/components/DialinPortal/FriendsView';
 import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
-
+import { SpacesBar } from '@/components/DialinPortal/SpacesBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
@@ -307,6 +307,7 @@ export default function SpacePage() {
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
+  const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   // Get background image
   const backgroundImage = currentSpace?.backgroundImage || currentSpace?.thumb || '/media/lobby-poster.png';
@@ -406,6 +407,25 @@ export default function SpacePage() {
           )}
         </main>
 
+        {/* Bottom Bars */}
+        {showSpacesBar && (
+          <div className="fixed bottom-16 left-0 right-0 z-30">
+          <SpacesBar 
+            spaces={spaces} 
+            currentSpaceId={currentSpace?.id}
+            onCreateSpace={() => setShowCreateSpaceModal(true)}
+            onDeleteSpace={handleDeleteSpace}
+            onRenameSpace={handleRenameSpace}
+            onUpdateSpaceDescription={handleUpdateSpaceDescription}
+            onReorderSpace={handleReorderSpace}
+            onToggle360={handleToggle360}
+            on360AxisChange={handle360AxisChange}
+            on360VolumeChange={handle360VolumeChange}
+            on360MuteToggle={handle360MuteToggle}
+            onSpaceClick={handleSpaceClick}
+          />
+          </div>
+        )}
 
         {isViewingContact && (
           <ShareMyBar
@@ -453,10 +473,7 @@ export default function SpacePage() {
 
         <AIChat
           isOpen={showAIChat}
-          onClose={() => {
-            console.log('AI Chat onClose called, setting to false');
-            setShowAIChat(false);
-          }}
+          onClose={() => setShowAIChat(false)}
         />
 
         <ChatWindow
@@ -467,25 +484,10 @@ export default function SpacePage() {
         {/* Fixed Bottom Navigation Bar */}
         <BottomNavigationBar 
           onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
-          onNewClick={() => setShowCreateSpaceModal(!showCreateSpaceModal)}
-          onAIClick={() => {
-            console.log('AI button clicked, current state:', showAIChat);
-            setShowAIChat(prev => !prev);
-          }}
-          onChatClick={() => setShowChatWindow(!showChatWindow)}
+          onNewClick={() => setShowCreateSpaceModal(true)}
+          onAIClick={() => setShowAIChat(true)}
+          onChatClick={() => setShowChatWindow(true)}
           activeSpaceId={spaceId || 'lobby'}
-          isNewActive={showCreateSpaceModal}
-          isAIActive={showAIChat}
-          isChatActive={showChatWindow}
-          spaces={spaces}
-          onDeleteSpace={handleDeleteSpace}
-          onRenameSpace={handleRenameSpace}
-          onUpdateSpaceDescription={handleUpdateSpaceDescription}
-          onReorderSpace={handleReorderSpace}
-          onToggle360={handleToggle360}
-          on360AxisChange={handle360AxisChange}
-          on360VolumeChange={handle360VolumeChange}
-          on360MuteToggle={handle360MuteToggle}
         />
       </div>
     </div>

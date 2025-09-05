@@ -63,7 +63,7 @@ export function HeroHeaderVideo({
   }, [videoLoaded]);
 
   return (
-    <div className="relative h-[75vh] lg:h-[85vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
+    <div className="relative h-[60vh] lg:h-[70vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
       {/* Video Background - only show for lobby */}
       {showVideo && videoSrc && !videoError && (
         <video
@@ -124,16 +124,16 @@ export function HeroHeaderVideo({
       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
 
       {/* Content */}
-      <div className={`absolute bottom-16 left-8 ${show360 ? 'z-30' : ''}`}>
+      <div className={`absolute bottom-8 left-8 ${show360 ? 'z-30' : ''}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-3">
+          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2">
             {title}
           </h1>
-          <p className="text-lg lg:text-xl text-white/80 max-w-2xl">
+          <p className="text-lg lg:text-xl text-white/80">
             {subtitle}
           </p>
         </motion.div>

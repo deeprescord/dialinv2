@@ -28,21 +28,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
     }
   ]);
-  const [justOpened, setJustOpened] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Track when AI chat just opened to prevent immediate close
-  useEffect(() => {
-    if (isOpen) {
-      setJustOpened(true);
-      const timer = setTimeout(() => {
-        setJustOpened(false);
-      }, 500); // 500ms delay before allowing backdrop close
-      return () => clearTimeout(timer);
-    } else {
-      setJustOpened(false); // Reset when closed
-    }
-  }, [isOpen]);
 
   // Auto-focus input when opening on mobile
   useEffect(() => {
@@ -96,15 +82,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
-            onClick={(e) => {
-              // Prevent immediate close when just opened or when clicking to close
-              if (justOpened) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-              }
-              onClose();
-            }}
+            onClick={onClose}
           />
 
           {/* AI Chat Window - Centered */}

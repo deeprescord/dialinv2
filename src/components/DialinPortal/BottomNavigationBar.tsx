@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, MessageSquare, Sparkles } from 'lucide-react';
+import { Plus, MessageSquare, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '../ui/button';
-import { SpaceContextMenu } from './SpaceContextMenu';
-import { Space } from '@/data/catalogs';
 
 const spaces = [
   { id: 'lobby', name: 'Lobby', image: '/lovable-uploads/8600e4d1-299a-4ed6-93a5-5cf4ccef922e.png', active: false },
-  { id: '2', name: 'Music Den', image: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png', active: false },
-  { id: '3', name: 'Future Studio', image: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png', active: false },
-  { id: '4', name: 'Command Center', image: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png', active: false },
-  { id: '6', name: 'Grand Theater', image: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png', active: false },
-  { id: '7', name: 'Starbuds', image: '/media/starbuds-thumb.jpg', active: false },
+  { id: 'music-den', name: 'Music Den', image: '/lovable-uploads/480b4a89-5167-4b3a-b770-090a5367cd92.png', active: false },
+  { id: 'future-studio', name: 'Future Studio', image: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png', active: false },
+  { id: 'command-center', name: 'Command Center', image: '/lovable-uploads/1e022703-aa29-4fc7-82ce-a5e734f8fe91.png', active: false },
+  { id: 'grand-theater', name: 'Grand Theater', image: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png', active: false },
+  { id: 'starbuds', name: 'Starbuds', image: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png', active: false },
 ];
 
 interface BottomNavigationBarProps {
@@ -20,18 +18,6 @@ interface BottomNavigationBarProps {
   onAIClick?: () => void;
   onChatClick?: () => void;
   activeSpaceId?: string;
-  isNewActive?: boolean;
-  isAIActive?: boolean;
-  isChatActive?: boolean;
-  spaces?: Space[];
-  onDeleteSpace?: (spaceId: string) => void;
-  onRenameSpace?: (spaceId: string, newName: string) => void;
-  onUpdateSpaceDescription?: (spaceId: string, newDescription: string) => void;
-  onReorderSpace?: (spaceId: string, direction: 'left' | 'right') => void;
-  onToggle360?: (spaceId: string, enabled: boolean) => void;
-  on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
-  on360VolumeChange?: (spaceId: string, volume: number) => void;
-  on360MuteToggle?: (spaceId: string, muted: boolean) => void;
 }
 
 export function BottomNavigationBar({ 
@@ -39,68 +25,32 @@ export function BottomNavigationBar({
   onNewClick, 
   onAIClick, 
   onChatClick,
-  activeSpaceId = 'lobby',
-  isNewActive = false,
-  isAIActive = false,
-  isChatActive = false,
-  spaces: passedSpaces,
-  onDeleteSpace,
-  onRenameSpace,
-  onUpdateSpaceDescription,
-  onReorderSpace,
-  onToggle360,
-  on360AxisChange,
-  on360VolumeChange,
-  on360MuteToggle
+  activeSpaceId = 'lobby'
 }: BottomNavigationBarProps) {
+  // Don't use local state, use activeSpaceId directly
   const selectedSpace = activeSpaceId;
-  const [contextMenu, setContextMenu] = useState<{
-    space: Space;
-    position: { x: number; y: number };
-  } | null>(null);
-  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
-
-  // Use passed spaces or fallback to default
-  const allSpaces = passedSpaces || spaces;
 
   const handleSpaceClick = (spaceId: string) => {
     onSpaceClick?.(spaceId);
   };
 
-  const handleMouseDown = (e: React.MouseEvent, space: Space) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Press and hold started for:', space.name);
-    const target = e.currentTarget as HTMLElement;
-    const timer = setTimeout(() => {
-      console.log('Press and hold triggered for:', space.name);
-      const rect = target.getBoundingClientRect();
-      const position = { 
-        x: rect.left + rect.width / 2, 
-        y: Math.max(50, rect.top - 50) // Ensure it's visible on screen
-      };
-      console.log('Setting context menu with position:', position, 'for space:', space.name);
-      setContextMenu({
-        space,
-        position
-      });
-    }, 500); // 500ms press and hold
-    setPressTimer(timer);
-  };
-
-  const handleMouseUp = () => {
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      setPressTimer(null);
+  const handleNavigateUp = () => {
+    const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
+    if (currentIndex > 0) {
+      const newSpace = spaces[currentIndex - 1];
+      handleSpaceClick(newSpace.id);
     }
   };
 
-  const handleMouseLeave = () => {
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      setPressTimer(null);
+  const handleNavigateDown = () => {
+    const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
+    if (currentIndex < spaces.length - 1) {
+      const newSpace = spaces[currentIndex + 1];
+      handleSpaceClick(newSpace.id);
     }
   };
+
+  const currentIndex = spaces.findIndex(space => space.id === selectedSpace);
 
   return (
     <motion.div
@@ -110,39 +60,37 @@ export function BottomNavigationBar({
       className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-white/10 safe-area-pb"
     >
       <div className="flex items-center justify-between px-4 py-3 max-w-screen-xl mx-auto">
-        {/* Navigation Arrows - REMOVED */}
+        {/* Navigation Arrows */}
+        <div className="flex items-center gap-1 mr-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10"
+            disabled={currentIndex <= 0}
+            onClick={handleNavigateUp}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10"
+            disabled={currentIndex >= spaces.length - 1}
+            onClick={handleNavigateDown}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
 
         {/* Spaces Section */}
         <div className="flex items-center gap-3 overflow-x-auto flex-1">
-          {allSpaces.map((space) => {
+          {spaces.map((space) => {
             const isActive = space.id === selectedSpace;
             return (
               <div
                 key={space.id}
                 className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer"
                 onClick={() => handleSpaceClick(space.id)}
-                onMouseDown={(e) => handleMouseDown(e, space)}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Touch start on space:', space.name);
-                  const target = e.currentTarget as HTMLElement;
-                  const timer = setTimeout(() => {
-                    console.log('Long press triggered for space:', space.name);
-                    // Position at center of screen for better visibility
-                    const x = window.innerWidth / 2 - 100;
-                    const y = window.innerHeight / 2 - 150;
-                    
-                    setContextMenu({
-                      space,
-                      position: { x, y }
-                    });
-                  }, 500);
-                  setPressTimer(timer);
-                }}
-                onTouchEnd={handleMouseUp}
               >
                 <div className={`
                   relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200
@@ -152,7 +100,7 @@ export function BottomNavigationBar({
                   }
                 `}>
                   <img 
-                    src={space.image || space.thumb} 
+                    src={space.image} 
                     alt={space.name}
                     className="w-full h-full object-cover"
                   />
@@ -176,11 +124,7 @@ export function BottomNavigationBar({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-10 px-4 border rounded-full transition-all duration-200 ${
-              isNewActive 
-                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
-                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
-            }`}
+            className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
             onClick={onNewClick}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -190,17 +134,8 @@ export function BottomNavigationBar({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-10 px-4 border rounded-full transition-all duration-200 ${
-              isAIActive 
-                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
-                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
-            }`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('AI button clicked in BottomNavigationBar, calling onAIClick');
-              onAIClick?.();
-            }}
+            className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
+            onClick={onAIClick}
           >
             <Sparkles className="h-4 w-4 mr-2" />
             AI
@@ -209,11 +144,7 @@ export function BottomNavigationBar({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-10 px-4 border rounded-full transition-all duration-200 ${
-              isChatActive 
-                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30' 
-                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white'
-            }`}
+            className="h-10 px-4 bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:text-white rounded-full"
             onClick={onChatClick}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
@@ -221,27 +152,6 @@ export function BottomNavigationBar({
           </Button>
         </div>
       </div>
-
-      {/* Context Menu */}
-      {contextMenu && (
-        <>
-          {console.log('Rendering SpaceContextMenu for:', contextMenu.space.name)}
-          <SpaceContextMenu
-          space={contextMenu.space}
-          isOpen={!!contextMenu}
-          onClose={() => setContextMenu(null)}
-          onDelete={onDeleteSpace || (() => {})}
-          onRename={onRenameSpace || (() => {})}
-          onUpdateDescription={onUpdateSpaceDescription || (() => {})}
-          onReorder={onReorderSpace || (() => {})}
-          onToggle360={onToggle360 || (() => {})}
-          on360AxisChange={on360AxisChange}
-          on360VolumeChange={on360VolumeChange}
-          on360MuteToggle={on360MuteToggle}
-          position={contextMenu.position}
-        />
-        </>
-      )}
     </motion.div>
   );
 }

@@ -51,7 +51,7 @@ export function HomeView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pb-40"
+      className="pb-32"
     >
       {/* Hero Header */}
       <HeroHeaderVideo

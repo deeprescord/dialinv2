@@ -249,7 +249,7 @@ export const initialSpaces: Space[] = [
     show360: true,
     description: 'Welcome to Westmont',
     xAxis: -90,
-    yAxis: -19,
+    yAxis: -10,
     volume: 50,
     isMuted: false
   },

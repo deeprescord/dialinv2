@@ -91,8 +91,8 @@ export function CombinedBottomBar({
   };
 
   return (
-    <div className="mb-4 relative">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
+    <div className="mb-0 relative">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-md border border-white/10"></div>
       <div className="relative">
         <div className="flex items-center justify-between px-4 py-3 overflow-x-auto scrollbar-thin">
           {/* Spaces on the left */}

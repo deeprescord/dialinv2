@@ -409,7 +409,7 @@ export default function SpacePage() {
             onToggleChange={handleShareToggleChange}
           />
         ) : showSpacesBar ? (
-          <div className="fixed bottom-16 left-0 right-0 z-30">
+          <div className="fixed bottom-0 left-0 right-0 z-30">
             <CombinedBottomBar 
               spaces={spaces} 
               currentSpaceId={currentSpace?.id}

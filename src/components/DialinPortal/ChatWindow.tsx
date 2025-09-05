@@ -104,23 +104,20 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-transparent z-40"
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
               onClick={onClose}
             />
             
+            {/* Chat Window */}
             <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="w-[85vw] max-w-5xl h-[75vh] glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col"
-              style={{ 
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 9999
-              }}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-5xl h-[75vh] z-[60]"
             >
+              <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col">
+            
             {selectedThread ? (
               // Individual Thread View
               <>
@@ -293,6 +290,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                 </div>
               </>
             )}
+              </div>
             </motion.div>
           </>
         )}

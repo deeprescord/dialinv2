@@ -239,7 +239,9 @@ export const initialSpaces: Space[] = [
     thumb: grandTheaterPoster,
     backgroundImage: '/media/lobby2.mp4',
     show360: true,
-    description: 'Recommendations from your family and friends.'
+    description: 'Recommendations from your family and friends.',
+    xAxis: -177,
+    isMuted: false
   },
   { 
     id: '7', 

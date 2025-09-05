@@ -124,7 +124,7 @@ export function HeroHeaderVideo({
       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
 
       {/* Content */}
-      <div className={`absolute bottom-32 left-8 ${show360 ? 'z-30' : ''}`}>
+      <div className={`absolute bottom-40 left-8 ${show360 ? 'z-30' : ''}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

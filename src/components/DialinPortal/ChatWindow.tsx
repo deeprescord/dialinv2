@@ -112,7 +112,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="fixed bottom-20 right-6 w-80 h-[36rem] glass-card border border-white/10 rounded-lg overflow-hidden z-50 flex flex-col"
+              className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-[90vw] max-w-4xl h-[36rem] glass-card border border-white/10 rounded-lg overflow-hidden z-50 flex flex-col"
             >
             {selectedThread ? (
               // Individual Thread View

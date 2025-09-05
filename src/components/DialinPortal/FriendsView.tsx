@@ -28,7 +28,7 @@ export function FriendsView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pt-40 lg:pt-28 pb-24"
+      className="pt-40 lg:pt-28 pb-20"
     >
       {/* Featured Post Header */}
       {featuredPost && (

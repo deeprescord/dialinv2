@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FeaturedLocationHeader } from './FeaturedLocationHeader';
-import { DialsBarCompact } from './DialsBarCompact';
+import { DialsBar } from './DialsBar';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
 import { LocationItem } from '@/data/catalogs';
@@ -24,10 +23,7 @@ export function LocationsView({
   onLocationClick,
   onLocationLongPress
 }: LocationsViewProps) {
-  const featuredLocation = locations[0];
-  const remainingLocations = locations.slice(1);
-  
-  const locationGridItems = remainingLocations.map(item => ({
+  const locationGridItems = locations.map(item => ({
     ...item,
     title: item.name,
     sharedBy: item.distance
@@ -35,41 +31,28 @@ export function LocationsView({
 
   return (
     <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="pt-40 lg:pt-28 pb-24" // Bottom padding for footer
-      >
-        {/* Featured Location Header */}
-        {featuredLocation && (
-          <FeaturedLocationHeader
-            location={featuredLocation}
-            locations={locations}
-            onLocationClick={onLocationClick}
-          />
-        )}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="pt-40 lg:pt-28 pb-20"
+    >
+      <SelectedChips 
+        selectedDials={selectedDials}
+        onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
+      />
 
-        <SelectedChips 
-          selectedDials={selectedDials}
-          onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
-        />
+      <DialsBar
+        dialGroups={LOCATION_GROUPS}
+        selectedDials={selectedDials}
+        onDialToggle={onDialToggle}
+        onClearAll={onClearAll}
+      />
 
-        <DialsBarCompact
-          dialGroups={LOCATION_GROUPS}
-          selectedDials={selectedDials}
-          onDialToggle={onDialToggle}
-          onClearAll={onClearAll}
-        />
-
-        <div className="px-4 mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-white">More Locations</h2>
-        </div>
-
-        <MediaGrid
-          items={locationGridItems}
-          onItemClick={onLocationClick}
-          onItemLongPress={onLocationLongPress}
-        />
+      <MediaGrid
+        items={locationGridItems}
+        onItemClick={onLocationClick}
+        onItemLongPress={onLocationLongPress}
+      />
     </motion.div>
   );
 }

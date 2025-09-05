@@ -9,14 +9,12 @@ import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
 import { SpacesBar } from '@/components/DialinPortal/SpacesBar';
+import { StorageBar } from '@/components/DialinPortal/StorageBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
-import { BottomNavigationBar } from '@/components/DialinPortal/BottomNavigationBar';
-import { AIChat } from '@/components/DialinPortal/AIChat';
-import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -49,8 +47,6 @@ export default function SpacePage() {
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
-  const [showAIChat, setShowAIChat] = useState(false);
-  const [showChatWindow, setShowChatWindow] = useState(false);
   const [floatingPlayer, setFloatingPlayer] = useState<{
     isVisible: boolean;
     item: any;
@@ -427,10 +423,16 @@ export default function SpacePage() {
           </div>
         )}
 
-        {isViewingContact && (
+        {isViewingContact ? (
           <ShareMyBar
             activeToggles={activeShareToggles}
             onToggleChange={handleShareToggleChange}
+          />
+        ) : (
+          <StorageBar
+            usedGB={560}
+            totalTB={1}
+            className="hidden lg:block"
           />
         )}
 
@@ -469,25 +471,6 @@ export default function SpacePage() {
           isOpen={showCreateSpaceModal}
           onClose={() => setShowCreateSpaceModal(false)}
           onCreate={handleCreateSpace}
-        />
-
-        <AIChat
-          isOpen={showAIChat}
-          onClose={() => setShowAIChat(false)}
-        />
-
-        <ChatWindow
-          isOpen={showChatWindow}
-          onClose={() => setShowChatWindow(false)}
-        />
-
-        {/* Fixed Bottom Navigation Bar */}
-        <BottomNavigationBar 
-          onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
-          onNewClick={() => setShowCreateSpaceModal(true)}
-          onAIClick={() => setShowAIChat(true)}
-          onChatClick={() => setShowChatWindow(true)}
-          activeSpaceId={spaceId || 'lobby'}
         />
       </div>
     </div>

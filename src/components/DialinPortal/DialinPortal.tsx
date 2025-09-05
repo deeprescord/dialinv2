@@ -9,14 +9,14 @@ import { VideosView } from './VideosView';
 import { MusicView } from './MusicView';
 import { LocationsView } from './LocationsView';
 import { SpacesBar } from './SpacesBar';
+import { StorageBar } from './StorageBar';
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { CreateSpaceModal } from './CreateSpaceModal';
-import { BottomNavigationBar } from './BottomNavigationBar';
 
-import {
+import { 
   videoCatalog, 
   musicCatalog, 
   locations, 
@@ -355,10 +355,16 @@ export function DialinPortal() {
         </div>
       )}
 
-      {isViewingContact && (
+      {isViewingContact ? (
         <ShareMyBar
           activeToggles={activeShareToggles}
           onToggleChange={handleShareToggleChange}
+        />
+      ) : (
+        <StorageBar
+          usedGB={560}
+          totalTB={1}
+          className="hidden lg:block"
         />
       )}
 
@@ -397,20 +403,6 @@ export function DialinPortal() {
         isOpen={showCreateSpaceModal}
         onClose={() => setShowCreateSpaceModal(false)}
         onCreate={handleCreateSpace}
-      />
-
-      {/* Fixed Bottom Navigation Bar */}
-      <BottomNavigationBar 
-        onSpaceClick={(spaceId) => navigate(`/space/${spaceId}`)}
-        onNewClick={() => setShowCreateSpaceModal(true)}
-        onAIClick={() => {}}
-        onChatClick={() => {}}
-        activeSpaceId="lobby"
-        onDeleteSpace={handleDeleteSpace}
-        onRenameSpace={handleRenameSpace}
-        onUpdateSpaceDescription={handleUpdateSpaceDescription}
-        onReorderSpace={handleReorderSpace}
-        onToggle360={() => {}}
       />
     </div>
   );

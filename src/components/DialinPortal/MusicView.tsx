@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FeaturedMusicHeader } from './FeaturedMusicHeader';
-import { DialsBarCompact } from './DialsBarCompact';
+import { DialsBar } from './DialsBar';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
 import { MusicItem } from '@/data/catalogs';
@@ -24,10 +23,7 @@ export function MusicView({
   onMusicClick,
   onMusicLongPress
 }: MusicViewProps) {
-  const featuredMusic = music[0];
-  const remainingMusic = music.slice(1);
-  
-  const musicGridItems = remainingMusic.map(item => ({
+  const musicGridItems = music.map(item => ({
     ...item,
     thumb: item.art,
     sharedBy: item.artist,
@@ -39,31 +35,19 @@ export function MusicView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pt-40 lg:pt-28 pb-24"
+      className="pt-40 lg:pt-28 pb-20"
     >
-      {/* Featured Music Header */}
-      {featuredMusic && (
-        <FeaturedMusicHeader
-          music={featuredMusic}
-          onMusicClick={onMusicClick}
-        />
-      )}
-
       <SelectedChips 
         selectedDials={selectedDials}
         onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
       />
 
-      <DialsBarCompact
+      <DialsBar
         dialGroups={MUSIC_GROUPS}
         selectedDials={selectedDials}
         onDialToggle={onDialToggle}
         onClearAll={onClearAll}
       />
-
-      <div className="px-4 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-white">More Music</h2>
-      </div>
 
       <MediaGrid
         items={musicGridItems}

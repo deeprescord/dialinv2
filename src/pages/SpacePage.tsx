@@ -8,8 +8,7 @@ import { FriendsView } from '@/components/DialinPortal/FriendsView';
 import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
-import { SpacesBar } from '@/components/DialinPortal/SpacesBar';
-import { StorageBar } from '@/components/DialinPortal/StorageBar';
+import { CombinedBottomBar } from '@/components/DialinPortal/CombinedBottomBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
@@ -403,10 +402,14 @@ export default function SpacePage() {
           )}
         </main>
 
-        {/* Bottom Bars */}
-        {showSpacesBar && (
-          <div className="fixed bottom-16 left-0 right-0 z-30">
-          <SpacesBar 
+        {/* Bottom Bar */}
+        {isViewingContact ? (
+          <ShareMyBar
+            activeToggles={activeShareToggles}
+            onToggleChange={handleShareToggleChange}
+          />
+        ) : showSpacesBar ? (
+          <CombinedBottomBar 
             spaces={spaces} 
             currentSpaceId={currentSpace?.id}
             onCreateSpace={() => setShowCreateSpaceModal(true)}
@@ -419,22 +422,10 @@ export default function SpacePage() {
             on360VolumeChange={handle360VolumeChange}
             on360MuteToggle={handle360MuteToggle}
             onSpaceClick={handleSpaceClick}
-          />
-          </div>
-        )}
-
-        {isViewingContact ? (
-          <ShareMyBar
-            activeToggles={activeShareToggles}
-            onToggleChange={handleShareToggleChange}
-          />
-        ) : (
-          <StorageBar
             usedGB={560}
             totalTB={1}
-            className="hidden lg:block"
           />
-        )}
+        ) : null}
 
         {/* Overlays */}
         <ContactPane

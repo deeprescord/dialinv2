@@ -99,7 +99,7 @@ export function SpaceContextMenu({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -109,12 +109,10 @@ export function SpaceContextMenu({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-lg shadow-lg min-w-48"
+            className="fixed z-[60] bg-background/95 backdrop-blur-md border border-white/20 rounded-lg shadow-lg min-w-48"
             style={{
-              left: Math.min(position.x, window.innerWidth - 200),
-              top: position.y + 250 > window.innerHeight 
-                ? Math.max(10, position.y - 250)
-                : position.y,
+              left: Math.max(10, Math.min(position.x, window.innerWidth - 200)),
+              top: Math.max(10, Math.min(position.y, window.innerHeight - 400)),
             }}
           >
             <div className="p-2">

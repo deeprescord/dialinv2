@@ -60,7 +60,7 @@ export function BottomNavigationBar({
     const timer = setTimeout(() => {
       setContextMenu({
         space,
-        position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        position: { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 150 }
       });
     }, 500);
     setPressTimer(timer);

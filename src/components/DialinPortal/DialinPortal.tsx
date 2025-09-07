@@ -16,6 +16,7 @@ import { DialPopup } from './DialPopup';
 import { CreateSpaceModal } from './CreateSpaceModal';
 import { ChatWindow } from './ChatWindow';
 import { AIChat } from './AIChat';
+import { AddContactPanel } from './AddContactPanel';
 
 import { 
   videoCatalog, 
@@ -49,6 +50,7 @@ export function DialinPortal() {
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showAddPanel, setShowAddPanel] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -311,6 +313,11 @@ export function DialinPortal() {
     setShowChatWindow(true);
   };
 
+  // Handle opening add panel for contact
+  const handleContactAddClick = () => {
+    setShowAddPanel(true);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -428,6 +435,7 @@ export function DialinPortal() {
         onUnpin={handleContactUnpin}
         onChatClick={handleContactChatClick}
         onAIClick={() => setShowAIChat(true)}
+        onAddClick={handleContactAddClick}
       />
 
       <FloatingPlayer
@@ -467,6 +475,17 @@ export function DialinPortal() {
       <AIChat
         isOpen={showAIChat}
         onClose={() => setShowAIChat(false)}
+      />
+
+      <AddContactPanel
+        isOpen={showAddPanel}
+        contact={selectedContact}
+        onClose={() => setShowAddPanel(false)}
+        spaces={spaces}
+        onAddToSpace={(spaceId) => {
+          console.log(`Adding ${selectedContact?.name} to space ${spaceId}`);
+          setShowAddPanel(false);
+        }}
       />
     </div>
   );

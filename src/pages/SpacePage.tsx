@@ -16,6 +16,7 @@ import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
 import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { AIChat } from '@/components/DialinPortal/AIChat';
+import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -61,6 +62,7 @@ export default function SpacePage() {
   });
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showAddPanel, setShowAddPanel] = useState(false);
 
   // Find current space
   const currentSpace = spaces.find(space => space.id === spaceId);
@@ -327,6 +329,11 @@ export default function SpacePage() {
     setShowChatWindow(true);
   };
 
+  // Handle opening add panel for contact
+  const handleContactAddClick = () => {
+    setShowAddPanel(true);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -470,6 +477,7 @@ export default function SpacePage() {
           onUnpin={handleContactUnpin}
           onChatClick={handleContactChatClick}
           onAIClick={() => setShowAIChat(true)}
+          onAddClick={handleContactAddClick}
         />
 
         <FloatingPlayer
@@ -509,6 +517,17 @@ export default function SpacePage() {
         <AIChat
           isOpen={showAIChat}
           onClose={() => setShowAIChat(false)}
+        />
+
+        <AddContactPanel
+          isOpen={showAddPanel}
+          contact={selectedContact}
+          onClose={() => setShowAddPanel(false)}
+          spaces={spaces}
+          onAddToSpace={(spaceId) => {
+            console.log(`Adding ${selectedContact?.name} to space ${spaceId}`);
+            setShowAddPanel(false);
+          }}
         />
       </div>
     </div>

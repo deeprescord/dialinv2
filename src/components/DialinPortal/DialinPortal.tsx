@@ -305,6 +305,12 @@ export function DialinPortal() {
     }
   };
 
+  // Handle opening chat for specific contact
+  const handleContactChatClick = (contact: Friend) => {
+    setSelectedContact(contact);
+    setShowChatWindow(true);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -420,6 +426,7 @@ export function DialinPortal() {
         onClose={() => setSelectedContact(null)}
         onPin={handleContactPin}
         onUnpin={handleContactUnpin}
+        onChatClick={handleContactChatClick}
       />
 
       <FloatingPlayer
@@ -448,12 +455,13 @@ export function DialinPortal() {
         onCreate={handleCreateSpace}
       />
 
-        <ChatWindow
-          isOpen={showChatWindow}
-          onClose={() => setShowChatWindow(false)}
-          pinnedContacts={pinnedContacts}
-          onContactClick={handleChatContactClick}
-        />
+      <ChatWindow
+        isOpen={showChatWindow}
+        onClose={() => setShowChatWindow(false)}
+        pinnedContacts={pinnedContacts}
+        onContactClick={handleChatContactClick}
+        selectedContactId={selectedContact?.id}
+      />
 
       <AIChat
         isOpen={showAIChat}

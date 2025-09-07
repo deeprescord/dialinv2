@@ -17,6 +17,7 @@ interface ContactPaneProps {
   onClose: () => void;
   onPin: () => void;
   onUnpin: () => void;
+  onChatClick?: (contact: Friend) => void;
 }
 
 export function ContactPane({ 
@@ -26,7 +27,8 @@ export function ContactPane({
   sharedToggles,
   onClose, 
   onPin, 
-  onUnpin 
+  onUnpin,
+  onChatClick
 }: ContactPaneProps) {
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['workPhone', 'workEmail']);
   const [currentSection, setCurrentSection] = useState('posts');
@@ -185,6 +187,7 @@ export function ContactPane({
                   variant="outline"
                   size="sm"
                   className="flex items-center space-x-1 h-8 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                  onClick={() => contact && onChatClick?.(contact)}
                 >
                   <MessageSquare size={14} className="text-purple-400" />
                   <span className="text-xs">Chat</span>

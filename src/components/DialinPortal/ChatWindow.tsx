@@ -26,6 +26,7 @@ interface ChatWindowProps {
     lastSeen?: string;
   }>;
   onContactClick?: (contactId: string) => void;
+  selectedContactId?: string; // Opens directly to this contact's thread
 }
 
 const chatThreads: ChatThread[] = [
@@ -83,10 +84,39 @@ const pinnedGroups = [
   { id: 'g2', name: 'The Enterprise', avatar: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?q=80&w=150&h=150&fit=crop' }
 ];
 
-export function ChatWindow({ isOpen, onClose, pinnedContacts = [], onContactClick }: ChatWindowProps) {
+export function ChatWindow({ isOpen, onClose, pinnedContacts = [], onContactClick, selectedContactId }: ChatWindowProps) {
   const [showGroupCreator, setShowGroupCreator] = useState(false);
   const [selectedThread, setSelectedThread] = useState<ChatThread | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Auto-select thread if selectedContactId is provided
+  React.useEffect(() => {
+    if (selectedContactId && isOpen) {
+      // Find or create a chat thread for this contact
+      const existingThread = chatThreads.find(thread => thread.id === selectedContactId);
+      if (existingThread) {
+        setSelectedThread(existingThread);
+      } else {
+        // Create a new thread for this contact if it doesn't exist
+        const contact = pinnedContacts.find(c => c.id === selectedContactId);
+        if (contact) {
+          const newThread: ChatThread = {
+            id: selectedContactId,
+            name: contact.name,
+            avatar: contact.avatar,
+            lastMessage: 'Start a new conversation...',
+            timestamp: 'now',
+            unread: 0,
+            type: 'direct'
+          };
+          setSelectedThread(newThread);
+        }
+      }
+    } else if (!selectedContactId) {
+      // Reset to list view if no specific contact selected
+      setSelectedThread(null);
+    }
+  }, [selectedContactId, isOpen, pinnedContacts]);
 
   const filteredThreads = useMemo(() => {
     if (!searchQuery) return chatThreads;

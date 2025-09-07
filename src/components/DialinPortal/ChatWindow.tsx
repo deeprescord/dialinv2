@@ -18,6 +18,14 @@ interface ChatThread {
 interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
+  pinnedContacts?: Array<{
+    id: string;
+    name: string;
+    avatar: string;
+    isOnline?: boolean;
+    lastSeen?: string;
+  }>;
+  onContactClick?: (contactId: string) => void;
 }
 
 const chatThreads: ChatThread[] = [
@@ -68,19 +76,14 @@ const chatThreads: ChatThread[] = [
   }
 ];
 
-const pinnedContacts = [
-  { id: 'p1', name: 'Emma', avatar: 'https://i.pravatar.cc/150?img=44' },
-  { id: 'p2', name: 'James', avatar: 'https://i.pravatar.cc/150?img=52' },
-  { id: 'p3', name: 'Lisa', avatar: 'https://i.pravatar.cc/150?img=49' },
-  { id: 'p4', name: 'David', avatar: 'https://i.pravatar.cc/150?img=55' }
-];
+// Removed hardcoded pinnedContacts - now using props
 
 const pinnedGroups = [
   { id: 'g1', name: 'Guardians of the Galaxy', avatar: 'https://images.unsplash.com/photo-1446776877081-d282a0f896e2?q=80&w=150&h=150&fit=crop' },
   { id: 'g2', name: 'The Enterprise', avatar: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?q=80&w=150&h=150&fit=crop' }
 ];
 
-export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
+export function ChatWindow({ isOpen, onClose, pinnedContacts = [], onContactClick }: ChatWindowProps) {
   const [showGroupCreator, setShowGroupCreator] = useState(false);
   const [selectedThread, setSelectedThread] = useState<ChatThread | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -224,11 +227,20 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                       <h4 className="text-xs font-medium text-white/60 mb-3 uppercase tracking-wide">Pinned</h4>
                       <div className="flex space-x-3 overflow-x-auto scrollbar-thin">
                         {pinnedContacts.map((contact) => (
-                          <div key={contact.id} className="flex flex-col items-center cursor-pointer hover:opacity-80 flex-shrink-0">
-                            <Avatar className="h-10 w-10 mb-1">
-                              <AvatarImage src={contact.avatar} />
-                              <AvatarFallback>{contact.name[0]}</AvatarFallback>
-                            </Avatar>
+                          <div 
+                            key={contact.id} 
+                            className="flex flex-col items-center cursor-pointer hover:opacity-80 flex-shrink-0 transition-opacity"
+                            onClick={() => onContactClick?.(contact.id)}
+                          >
+                            <div className="relative">
+                              <Avatar className="h-10 w-10 mb-1">
+                                <AvatarImage src={contact.avatar} />
+                                <AvatarFallback>{contact.name[0]}</AvatarFallback>
+                              </Avatar>
+                              {contact.isOnline && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-black rounded-full" />
+                              )}
+                            </div>
                             <span className="text-xs text-white/80">{contact.name}</span>
                           </div>
                         ))}

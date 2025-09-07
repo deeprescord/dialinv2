@@ -313,6 +313,14 @@ export default function SpacePage() {
     setShowAIChat(prev => !prev);
   };
 
+  // Handle contact click from chat window
+  const handleChatContactClick = (contactId: string) => {
+    const contact = pinnedContacts.find(c => c.id === contactId);
+    if (contact) {
+      handleContactClick(contact);
+    }
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -485,6 +493,8 @@ export default function SpacePage() {
         <ChatWindow
           isOpen={showChatWindow}
           onClose={() => setShowChatWindow(false)}
+          pinnedContacts={pinnedContacts}
+          onContactClick={handleChatContactClick}
         />
 
         <AIChat

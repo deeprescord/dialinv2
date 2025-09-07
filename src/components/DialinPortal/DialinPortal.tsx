@@ -297,6 +297,14 @@ export function DialinPortal() {
     ));
   };
 
+  // Handle contact click from chat window
+  const handleChatContactClick = (contactId: string) => {
+    const contact = friends.find(c => c.id === contactId);
+    if (contact) {
+      handleContactClick(contact);
+    }
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -440,10 +448,12 @@ export function DialinPortal() {
         onCreate={handleCreateSpace}
       />
 
-      <ChatWindow
-        isOpen={showChatWindow}
-        onClose={() => setShowChatWindow(false)}
-      />
+        <ChatWindow
+          isOpen={showChatWindow}
+          onClose={() => setShowChatWindow(false)}
+          pinnedContacts={pinnedContacts}
+          onContactClick={handleChatContactClick}
+        />
 
       <AIChat
         isOpen={showAIChat}

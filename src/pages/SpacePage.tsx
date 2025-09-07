@@ -469,6 +469,7 @@ export default function SpacePage() {
           onPin={handleContactPin}
           onUnpin={handleContactUnpin}
           onChatClick={handleContactChatClick}
+          onAIClick={() => setShowAIChat(true)}
         />
 
         <FloatingPlayer

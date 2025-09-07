@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Close, Send } from '../icons';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
+import { Input } from '../ui/input';
+import { aiService } from '@/lib/ai-service';
 
 // Force refresh to resolve Input reference error
 
@@ -16,6 +18,8 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  isLoading?: boolean;
+  isError?: boolean;
 }
 
 export function AIChat({ isOpen, onClose }: AIChatProps) {
@@ -28,7 +32,10 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
     }
   ]);
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState(!aiService.hasApiKey());
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-focus input when opening on mobile
   useEffect(() => {
@@ -40,7 +47,12 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
     }
   }, [isOpen]);
 
-  const handleSendMessage = () => {
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
     if (!message.trim()) return;
 
     const userMessage: Message = {
@@ -50,19 +62,59 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Add loading message
+    const loadingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: 'Thinking...',
+      isUser: false,
+      timestamp: new Date(),
+      isLoading: true,
+    };
+
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
     setMessage('');
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'I understand your question. Let me help you with that!',
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+    try {
+      // Convert messages to AI service format
+      const chatMessages = messages
+        .filter(msg => !msg.isLoading && !msg.isError)
+        .map(msg => ({
+          role: msg.isUser ? 'user' as const : 'assistant' as const,
+          content: msg.text,
+        }));
+      
+      // Add current user message
+      chatMessages.push({ role: 'user', content: userMessage.text });
+
+      const aiResponse = await aiService.sendMessage(chatMessages);
+
+      // Replace loading message with actual response
+      setMessages(prev => prev.map(msg => 
+        msg.id === loadingMessage.id 
+          ? { ...msg, text: aiResponse, isLoading: false }
+          : msg
+      ));
+    } catch (error) {
+      // Replace loading message with error
+      setMessages(prev => prev.map(msg => 
+        msg.id === loadingMessage.id 
+          ? { 
+              ...msg, 
+              text: error instanceof Error ? error.message : 'Sorry, I encountered an error. Please try again.',
+              isLoading: false,
+              isError: true
+            }
+          : msg
+      ));
+    }
+  };
+
+  const handleApiKeySubmit = () => {
+    if (apiKey.trim()) {
+      aiService.setApiKey(apiKey.trim());
+      setShowApiKeyInput(false);
+      setApiKey('');
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -119,6 +171,33 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {showApiKeyInput && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-4">
+                    <h4 className="text-yellow-400 font-medium mb-2">OpenAI API Key Required</h4>
+                    <p className="text-white/70 text-sm mb-3">
+                      Enter your OpenAI API key to enable AI chat functionality.
+                    </p>
+                    <div className="flex space-x-2">
+                      <Input
+                        type="password"
+                        placeholder="sk-..."
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        className="flex-1 bg-white/5 border-yellow-500/30 text-white placeholder:text-white/50"
+                        onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
+                      />
+                      <Button
+                        onClick={handleApiKeySubmit}
+                        disabled={!apiKey.trim()}
+                        size="sm"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-black"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 {messages.map((msg) => (
                   <motion.div
                     key={msg.id}
@@ -130,18 +209,30 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                         msg.isUser
                           ? 'bg-blue-500 text-white ml-auto'
+                          : msg.isError
+                          ? 'bg-red-500/20 text-red-200 border border-red-500/30'
                           : 'bg-white/10 text-white'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                      <div className="flex items-center space-x-2">
+                        {msg.isLoading && (
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                          </div>
+                        )}
+                        <p className="text-sm whitespace-pre-wrap flex-1">{msg.text}</p>
+                      </div>
                       <p className={`text-xs mt-1 opacity-70 ${
-                        msg.isUser ? 'text-white/70' : 'text-white/60'
+                        msg.isUser ? 'text-white/70' : msg.isError ? 'text-red-300/70' : 'text-white/60'
                       }`}>
                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </motion.div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
@@ -159,9 +250,9 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!message.trim()}
+                    disabled={!message.trim() || showApiKeyInput}
                     size="sm"
-                    className="px-3 h-10 shrink-0 bg-blue-500 hover:bg-blue-600"
+                    className="px-3 h-10 shrink-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
                   >
                     <Send size={16} />
                   </Button>

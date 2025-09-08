@@ -16,6 +16,7 @@ interface SpacesBarProps {
   onDeleteSpace: (spaceId: string) => void;
   onRenameSpace: (spaceId: string, newName: string) => void;
   onUpdateSpaceDescription: (spaceId: string, newDescription: string) => void;
+  onUpdateSpaceThumbnail?: (spaceId: string, thumbnailUrl: string) => void;
   onReorderSpace: (spaceId: string, direction: 'left' | 'right') => void;
   onToggle360: (spaceId: string, enabled: boolean) => void;
   on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
@@ -24,14 +25,15 @@ interface SpacesBarProps {
   onSpaceClick?: (space: Space) => void;
 }
 
-export function SpacesBar({ 
-  spaces, 
-  currentSpaceId, 
-  onCreateSpace, 
-  onDeleteSpace, 
+export function SpacesBar({
+  spaces,
+  currentSpaceId,
+  onCreateSpace,
+  onDeleteSpace,
   onRenameSpace,
-  onUpdateSpaceDescription, 
-  onReorderSpace, 
+  onUpdateSpaceDescription,
+  onUpdateSpaceThumbnail,
+  onReorderSpace,
   onToggle360,
   on360AxisChange,
   on360VolumeChange,
@@ -205,6 +207,7 @@ export function SpacesBar({
           onDelete={onDeleteSpace}
           onRename={onRenameSpace}
           onUpdateDescription={onUpdateSpaceDescription}
+          onUpdateThumbnail={onUpdateSpaceThumbnail}
           onReorder={onReorderSpace}
           onToggle360={onToggle360}
           on360AxisChange={on360AxisChange}

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image } from 'lucide-react';
 import { Space } from '@/data/catalogs';
 import {
   AlertDialog,
@@ -25,6 +25,7 @@ interface SpaceContextMenuProps {
   onDelete: (spaceId: string) => void;
   onRename: (spaceId: string, newName: string) => void;
   onUpdateDescription: (spaceId: string, newDescription: string) => void;
+  onUpdateThumbnail?: (spaceId: string, thumbnailUrl: string) => void;
   onReorder: (spaceId: string, direction: 'left' | 'right') => void;
   onToggle360: (spaceId: string, enabled: boolean) => void;
   on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
@@ -40,6 +41,7 @@ export function SpaceContextMenu({
   onDelete,
   onRename,
   onUpdateDescription,
+  onUpdateThumbnail,
   onReorder,
   onToggle360,
   on360AxisChange,
@@ -57,6 +59,7 @@ export function SpaceContextMenu({
   const [yAxis, setYAxis] = useState(space.yAxis || 0);
   const [volume, setVolume] = useState(space.volume || 50);
   const [isMuted, setIsMuted] = useState(space.isMuted !== undefined ? space.isMuted : true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleRename = () => {
     if (newName.trim() && newName !== space.name) {
@@ -72,6 +75,21 @@ export function SpaceContextMenu({
     }
     setIsEditingDescription(false);
     onClose();
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onUpdateThumbnail) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          onUpdateThumbnail(space.id, result);
+          onClose();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -159,8 +177,18 @@ export function SpaceContextMenu({
                 </div>
               ) : (
                 <div className="mb-3 px-2 space-y-1">
-                  <p className="text-sm text-foreground font-medium">{space.name}</p>
-                  <p className="text-xs text-foreground/60">{space.description || 'Welcome back'}</p>
+                  <p 
+                    className="text-sm text-foreground font-medium cursor-pointer hover:text-primary transition-colors" 
+                    onClick={() => setIsRenaming(true)}
+                  >
+                    {space.name}
+                  </p>
+                  <p 
+                    className="text-xs text-foreground/60 cursor-pointer hover:text-foreground/80 transition-colors" 
+                    onClick={() => setIsEditingDescription(true)}
+                  >
+                    {space.description || 'Welcome back'}
+                  </p>
                 </div>
               )}
 
@@ -272,6 +300,24 @@ export function SpaceContextMenu({
                     </div>
                   )}
                 </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start h-8 px-2 hover:bg-white/10"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Image size={14} className="mr-2" />
+                  Change Thumbnail
+                </Button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  style={{ display: 'none' }}
+                />
 
                 <Button
                   variant="ghost"

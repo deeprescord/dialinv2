@@ -230,6 +230,13 @@ export function DialinPortal() {
     ));
   };
 
+  // Handle space thumbnail update
+  const handleUpdateSpaceThumbnail = (spaceId: string, thumbnailUrl: string) => {
+    setSpaces(prev => prev.map(space => 
+      space.id === spaceId ? { ...space, thumb: thumbnailUrl } : space
+    ));
+  };
+
   // Handle space reordering
   const handleReorderSpace = (spaceId: string, direction: 'left' | 'right') => {
     setSpaces(prev => {
@@ -427,6 +434,7 @@ export function DialinPortal() {
             onDeleteSpace={handleDeleteSpace}
             onRenameSpace={handleRenameSpace}
             onUpdateSpaceDescription={handleUpdateSpaceDescription}
+            onUpdateSpaceThumbnail={handleUpdateSpaceThumbnail}
             onReorderSpace={handleReorderSpace}
             onToggle360={handleToggle360}
             on360AxisChange={handle360AxisChange}

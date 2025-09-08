@@ -235,6 +235,14 @@ export function SkyboxViewer({
   const [gyroscopeActive, setGyroscopeActive] = useState(false);
 
   useEffect(() => {
+    // Check if this is an external video URL that will likely have CORS issues
+    const isExternalVideo = mediaUrl.includes('dialin.io') && /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    if (isExternalVideo) {
+      // Immediately use fallback for external videos
+      setWebglError(true);
+      return;
+    }
+
     // Detect if device is mobile and has gyroscope capability
     const checkMobile = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -254,7 +262,7 @@ export function SkyboxViewer({
     return () => {
       window.removeEventListener('webgl-security-error', handleWebGLError);
     };
-  }, [enableGyroscope]);
+  }, [enableGyroscope, mediaUrl]);
 
   if (webglError) {
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
@@ -266,10 +274,22 @@ export function SkyboxViewer({
             src={mediaUrl}
             className="w-full h-full object-cover"
             loop
-            muted
+            muted={isMuted}
             autoPlay
             playsInline
+            ref={(video) => {
+              if (video && !isMuted) {
+                video.volume = volume / 100;
+              }
+            }}
           />
+          {/* Fallback indicator */}
+          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+              Video Mode (360° unavailable)
+            </div>
+          </div>
         </div>
       );
     } else {

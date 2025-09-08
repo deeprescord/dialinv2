@@ -54,7 +54,7 @@ export function VideosView({
         backgroundImage="/media/lobby2.mp4"
         showVideo={false}
         show360={true}
-        xAxisOffset={-90}
+        xAxisOffset={-179}
         yAxisOffset={-10}
         volume={50}
         isMuted={false}

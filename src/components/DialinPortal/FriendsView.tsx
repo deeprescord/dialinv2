@@ -33,11 +33,12 @@ export function FriendsView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
+        videoSrc="https://dialin.io/s/2099568-hd_1920_1080_30fps.mp4"
         posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
         title="Friends"
         subtitle="Connect and share moments"
-        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
-        showVideo={false}
+        backgroundImage="https://dialin.io/s/2099568-hd_1920_1080_30fps.mp4"
+        showVideo={true}
       />
 
       {/* Featured Post Section */}

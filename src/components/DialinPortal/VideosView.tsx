@@ -51,7 +51,6 @@ export function VideosView({
         posterSrc="/media/grand-theater-thumb.jpg"
         title="Videos"
         subtitle="Explore visual stories"
-        backgroundImage="/media/lobby2.mp4"
         showVideo={false}
         show360={true}
         xAxisOffset={-179}

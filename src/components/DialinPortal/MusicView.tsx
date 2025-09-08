@@ -58,7 +58,6 @@ export function MusicView({
         posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
         title="Music"
         subtitle="Discover your sound"
-        backgroundImage="/media/elton-john-360.mp4"
         showVideo={false}
         show360={true}
         isMuted={false}

@@ -42,7 +42,6 @@ export function LocationsView({
         posterSrc="/lovable-uploads/a84b7237-eb79-414b-bf89-4ea53044a7ea.png"
         title="Locations"
         subtitle="Discover amazing places"
-        backgroundImage="/lovable-uploads/a84b7237-eb79-414b-bf89-4ea53044a7ea.png"
         showVideo={false}
         show360={true}
         xAxisOffset={0}

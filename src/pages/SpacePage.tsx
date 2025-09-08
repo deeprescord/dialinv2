@@ -352,23 +352,11 @@ export default function SpacePage() {
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
-  // Get background image
-  const backgroundImage = currentSpace?.backgroundImage || currentSpace?.thumb || '/media/lobby-poster.png';
-  
-  // Check if this space should show 360 view
+  // Get background - always black now  
   const show360 = currentSpace?.show360 || false;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background Image - only show when not using 360° view */}
-      {!show360 && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
-        >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        </div>
-      )}
+    <div className="min-h-screen bg-black relative overflow-hidden">
 
       {/* Content */}
       <div className="relative z-10">
@@ -396,7 +384,6 @@ export default function SpacePage() {
               onContactClick={handleContactClick}
               onMediaClick={handleMediaClick}
               onMediaLongPress={handleMediaLongPress}
-              backgroundImage={backgroundImage}
               floorName={currentSpace?.name || 'Lobby'}
               floorDescription={currentSpace?.description}
               isLobby={spaceId === 'lobby'}

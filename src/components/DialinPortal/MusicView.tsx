@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DialsBar } from './DialsBar';
-import { SelectedChips } from './SelectedChips';
+import { CompactFilterHeader } from './CompactFilterHeader';
 import { MediaGrid } from './MediaGrid';
 import { MusicItem } from '@/data/catalogs';
-import { MUSIC_GROUPS } from '@/data/constants';
+import { MUSIC_FILTERS } from '@/data/constants';
 
 interface MusicViewProps {
   music: MusicItem[];
@@ -30,23 +29,35 @@ export function MusicView({
     sharedByAvatar: undefined
   }));
 
+  const handleFilterChange = (filterKey: string, values: string[]) => {
+    // Clear current selection for this filter
+    const currentSelection = selectedDials[filterKey] || [];
+    currentSelection.forEach(value => {
+      onDialToggle(filterKey, value);
+    });
+    
+    // Add new selections
+    values.forEach(value => {
+      if (!currentSelection.includes(value)) {
+        onDialToggle(filterKey, value);
+      }
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pt-40 lg:pt-28 pb-20"
+      className="pb-32"
     >
-      <SelectedChips 
-        selectedDials={selectedDials}
-        onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
-      />
-
-      <DialsBar
-        dialGroups={MUSIC_GROUPS}
-        selectedDials={selectedDials}
-        onDialToggle={onDialToggle}
+      <CompactFilterHeader
+        filters={MUSIC_FILTERS}
+        selectedFilters={selectedDials}
+        onFilterChange={handleFilterChange}
         onClearAll={onClearAll}
+        title="Music"
+        subtitle="Discover your sound"
       />
 
       <MediaGrid

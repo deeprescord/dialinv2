@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { FeaturedPostHeader } from './FeaturedPostHeader';
 import { MediaGrid } from './MediaGrid';
 import { Friend, Post } from '@/data/catalogs';
@@ -28,14 +29,25 @@ export function FriendsView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pt-40 lg:pt-28 pb-20"
+      className="pb-32"
     >
-      {/* Featured Post Header */}
+      {/* Hero Header */}
+      <HeroHeaderVideo
+        posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        title="Friends"
+        subtitle="Connect and share moments"
+        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        showVideo={false}
+      />
+
+      {/* Featured Post Section */}
       {featuredPost && (
-        <FeaturedPostHeader
-          post={featuredPost}
-          onPostClick={onPostClick}
-        />
+        <div className="px-4 mb-6">
+          <FeaturedPostHeader
+            post={featuredPost}
+            onPostClick={onPostClick}
+          />
+        </div>
       )}
 
       <div className="px-4 mb-6">

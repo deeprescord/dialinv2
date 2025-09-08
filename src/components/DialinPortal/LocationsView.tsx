@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { DialsBar } from './DialsBar';
 import { SelectedChips } from './SelectedChips';
 import { MediaGrid } from './MediaGrid';
@@ -34,25 +35,36 @@ export function LocationsView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pt-40 lg:pt-28 pb-20"
+      className="pb-32"
     >
-      <SelectedChips 
-        selectedDials={selectedDials}
-        onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
+      {/* Hero Header */}
+      <HeroHeaderVideo
+        posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        title="Locations"
+        subtitle="Discover amazing places"
+        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        showVideo={false}
       />
 
-      <DialsBar
-        dialGroups={LOCATION_GROUPS}
-        selectedDials={selectedDials}
-        onDialToggle={onDialToggle}
-        onClearAll={onClearAll}
-      />
+      <div className="mt-8">
+        <SelectedChips 
+          selectedDials={selectedDials}
+          onRemoveChip={(groupKey, option) => onDialToggle(groupKey, option)}
+        />
 
-      <MediaGrid
-        items={locationGridItems}
-        onItemClick={onLocationClick}
-        onItemLongPress={onLocationLongPress}
-      />
+        <DialsBar
+          dialGroups={LOCATION_GROUPS}
+          selectedDials={selectedDials}
+          onDialToggle={onDialToggle}
+          onClearAll={onClearAll}
+        />
+
+        <MediaGrid
+          items={locationGridItems}
+          onItemClick={onLocationClick}
+          onItemLongPress={onLocationLongPress}
+        />
+      </div>
     </motion.div>
   );
 }

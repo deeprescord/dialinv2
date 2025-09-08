@@ -1,11 +1,16 @@
 // Constants and dial group definitions for Dialin V3
 
-export const VIDEO_TYPES = ['Sci-Fi', 'Music Video', 'Documentary', 'Tech', 'Comedy', 'Drama'];
-export const MUSIC_TYPES = ['Electronic', 'Pop', 'Ambient', 'Bass', 'Rock', 'Hip Hop'];
+export const VIDEO_TYPES = ['Documentary', 'Tutorial', 'Entertainment', 'News', 'Review'];
+export const VIDEO_TOPICS = ['Technology', 'Art', 'Science', 'Culture', 'Business', 'Gaming'];
+export const VIDEO_BIASES = ['Objective', 'Opinion', 'Educational', 'Commercial', 'Personal'];
+export const VIDEO_REGIONS = ['Global', 'North America', 'Europe', 'Asia', 'Other'];
+
+export const MUSIC_GENRES = ['Electronic', 'Pop', 'Ambient', 'Bass', 'Rock', 'Hip Hop', 'Jazz', 'Classical'];
+export const MUSIC_VIBES = ['Dark', 'Energetic', 'Contemplative', 'Futuristic', 'Chill', 'Uplifting'];
+export const MUSIC_DECADES = ['1990s', '2000s', '2010s', '2020s'];
+export const MUSIC_ENERGY = ['Low', 'Medium', 'High'];
+
 export const LOCATION_TYPES = ['Café', 'Park', 'Plaza', 'District', 'Mall', 'Beach'];
-export const VIBES = ['Dark', 'Energetic', 'Contemplative', 'Futuristic', 'Chill', 'Uplifting'];
-export const DECADES = ['1990s', '2000s', '2010s', '2020s'];
-export const ENERGY = ['Low', 'Medium', 'High'];
 
 export interface DialGroup {
   key: string;
@@ -13,19 +18,23 @@ export interface DialGroup {
   options: string[];
 }
 
-export const VIDEO_GROUPS: DialGroup[] = [
+export const VIDEO_FILTERS: DialGroup[] = [
   { key: 'type', label: 'Type', options: VIDEO_TYPES },
-  { key: 'vibe', label: 'Vibe', options: VIBES },
-  { key: 'decade', label: 'Decade', options: DECADES },
-  { key: 'energy', label: 'Energy', options: ENERGY },
+  { key: 'topic', label: 'Topic', options: VIDEO_TOPICS },
+  { key: 'bias', label: 'Bias', options: VIDEO_BIASES },
+  { key: 'region', label: 'Region', options: VIDEO_REGIONS },
 ];
 
-export const MUSIC_GROUPS: DialGroup[] = [
-  { key: 'type', label: 'Genre', options: MUSIC_TYPES },
-  { key: 'vibe', label: 'Vibe', options: VIBES },
-  { key: 'decade', label: 'Decade', options: DECADES },
-  { key: 'energy', label: 'Energy', options: ENERGY },
+export const MUSIC_FILTERS: DialGroup[] = [
+  { key: 'energy', label: 'Energy', options: MUSIC_ENERGY },
+  { key: 'genre', label: 'Genre', options: MUSIC_GENRES },
+  { key: 'decade', label: 'Decade', options: MUSIC_DECADES },
+  { key: 'vibe', label: 'Vibe', options: MUSIC_VIBES },
 ];
+
+// Legacy groups for backward compatibility
+export const VIDEO_GROUPS: DialGroup[] = VIDEO_FILTERS;
+export const MUSIC_GROUPS: DialGroup[] = MUSIC_FILTERS;
 
 export const LOCATION_GROUPS: DialGroup[] = [
   { key: 'type', label: 'Type', options: LOCATION_TYPES },

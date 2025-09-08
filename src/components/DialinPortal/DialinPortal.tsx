@@ -17,6 +17,7 @@ import { CreateSpaceModal } from './CreateSpaceModal';
 import { ChatWindow } from './ChatWindow';
 import { AIChat } from './AIChat';
 import { AddContactPanel } from './AddContactPanel';
+import { Settings360Modal } from './Settings360Modal';
 
 import { 
   videoCatalog, 
@@ -53,6 +54,7 @@ export function DialinPortal() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
+  const [show360Settings, setShow360Settings] = useState(false);
   const [floatingPlayer, setFloatingPlayer] = useState<{
     isVisible: boolean;
     item: any;
@@ -318,9 +320,18 @@ export function DialinPortal() {
     setShowAddPanel(true);
   };
 
+  // Handle 360 settings modal
+  const handleOpen360Settings = () => {
+    setShow360Settings(true);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
+  
+  // Get lobby space for 360 settings
+  const lobbySpace = spaces.find(space => space.id === 'lobby');
+  const show360 = lobbySpace?.show360 || false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -330,6 +341,8 @@ export function DialinPortal() {
         onTabChange={handleTabChange}
         selectedChipsCount={selectedChipsCount}
         dialCount={1240}
+        show360={show360}
+        onOpen360Settings={handleOpen360Settings}
       />
 
       <MobileTabBar
@@ -347,6 +360,11 @@ export function DialinPortal() {
             onMediaClick={handleMediaClick}
             onMediaLongPress={handleMediaLongPress}
             isLobby={true}
+            show360={show360}
+            xAxisOffset={lobbySpace?.xAxis}
+            yAxisOffset={lobbySpace?.yAxis}
+            volume={lobbySpace?.volume}
+            isMuted={lobbySpace?.isMuted}
           />
         )}
 
@@ -486,6 +504,20 @@ export function DialinPortal() {
           console.log(`Adding ${selectedContact?.name} to space ${spaceId}`);
           setShowAddPanel(false);
         }}
+      />
+
+      <Settings360Modal
+        isOpen={show360Settings}
+        onClose={() => setShow360Settings(false)}
+        show360={show360}
+        onToggle360={() => handleToggle360('lobby', !show360)}
+        xAxisOffset={lobbySpace?.xAxis || 0}
+        yAxisOffset={lobbySpace?.yAxis || 0}
+        onAxisChange={(axis, value) => handle360AxisChange('lobby', axis, value)}
+        volume={lobbySpace?.volume || 0.5}
+        isMuted={lobbySpace?.isMuted || false}
+        onVolumeChange={(volume) => handle360VolumeChange('lobby', volume)}
+        onMuteToggle={() => handle360MuteToggle('lobby', !lobbySpace?.isMuted)}
       />
     </div>
   );

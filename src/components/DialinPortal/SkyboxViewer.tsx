@@ -235,6 +235,9 @@ export function SkyboxViewer({
   const [gyroscopeActive, setGyroscopeActive] = useState(false);
 
   useEffect(() => {
+    // Check if this is an external video URL that will have CORS issues with WebGL
+    const isExternalVideo = mediaUrl.includes('dialin.io') && /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    
     // Detect if device is mobile and has gyroscope capability
     const checkMobile = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -243,6 +246,12 @@ export function SkyboxViewer({
     };
 
     checkMobile();
+
+    // For external videos, immediately use fallback to avoid CORS issues
+    if (isExternalVideo) {
+      setWebglError(true);
+      return;
+    }
 
     // Listen for WebGL security errors from child components
     const handleWebGLError = () => {
@@ -254,7 +263,7 @@ export function SkyboxViewer({
     return () => {
       window.removeEventListener('webgl-security-error', handleWebGLError);
     };
-  }, [enableGyroscope]);
+  }, [enableGyroscope, mediaUrl]);
 
   if (webglError) {
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
@@ -269,17 +278,18 @@ export function SkyboxViewer({
             muted={isMuted}
             autoPlay
             playsInline
+            controls={true}
             ref={(video) => {
               if (video && !isMuted) {
                 video.volume = volume / 100;
               }
             }}
           />
-          {/* Fallback indicator */}
+          {/* Enhanced fallback indicator for 360° external videos */}
           <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-              Video Mode (360° unavailable)
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              360° Video - Standard View
             </div>
           </div>
         </div>

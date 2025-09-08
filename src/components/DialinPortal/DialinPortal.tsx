@@ -13,6 +13,7 @@ import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
+import { DialControlPanel } from './DialControlPanel';
 import { CreateSpaceModal } from './CreateSpaceModal';
 import { ChatWindow } from './ChatWindow';
 import { AIChat } from './AIChat';
@@ -54,6 +55,8 @@ export function DialinPortal() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
+  const [showDialControlPanel, setShowDialControlPanel] = useState(false);
+  const [dialControlItem, setDialControlItem] = useState<any>(null);
   const [show360Settings, setShow360Settings] = useState(false);
   const [floatingPlayer, setFloatingPlayer] = useState<{
     isVisible: boolean;
@@ -162,8 +165,17 @@ export function DialinPortal() {
   };
 
   const handleMediaLongPress = (item: any) => {
-    setDialPopupItem(item);
-    setShowDialPopup(true);
+    // Add owner information for the control panel
+    const itemWithOwner = {
+      ...item,
+      owner: {
+        name: 'Deep',
+        avatar: '/lovable-uploads/4a081491-5093-440d-993f-14bf495c4380.png'
+      },
+      dateCreated: 'August 30th, 2025'
+    };
+    setDialControlItem(itemWithOwner);
+    setShowDialControlPanel(true);
   };
 
   // Handle dial popup
@@ -189,6 +201,44 @@ export function DialinPortal() {
     }
     setShowDialPopup(false);
     setDialPopupItem(null);
+  };
+
+  // Handle dial control panel
+  const handleDialControlSelect = (selectedDialsArray: string[], selectedSets: string[]) => {
+    // Convert selected dials and sets to filter format
+    const newDials: Record<string, string[]> = {};
+    
+    // Add emoji dials as 'mood' or 'vibe'
+    if (selectedDialsArray.length > 0) {
+      newDials.vibe = selectedDialsArray;
+    }
+    
+    // Add sets as categories
+    if (selectedSets.length > 0) {
+      newDials.type = selectedSets;
+    }
+    
+    setSelectedDials(newDials);
+    
+    // Navigate to appropriate tab based on item type
+    if (dialControlItem) {
+      if (dialControlItem.artist || dialControlItem.length) {
+        setCurrentTab('music');
+      } else if (dialControlItem.duration) {
+        setCurrentTab('videos');
+      } else if (dialControlItem.distance) {
+        setCurrentTab('locations');
+      }
+    }
+  };
+
+  const handleOwnerClick = (ownerId: string) => {
+    // Find and select the owner as a contact
+    const owner = friends.find(f => f.name === ownerId);
+    if (owner) {
+      setSelectedContact(owner);
+    }
+    setShowDialControlPanel(false);
   };
 
   // Handle share toggle
@@ -482,6 +532,31 @@ export function DialinPortal() {
         item={dialPopupItem}
         onClose={() => setShowDialPopup(false)}
         onUseAsFilters={handleUseAsFilters}
+      />
+
+      <DialControlPanel
+        isOpen={showDialControlPanel}
+        item={dialControlItem}
+        onClose={() => setShowDialControlPanel(false)}
+        onSelect={handleDialControlSelect}
+        onOwnerClick={handleOwnerClick}
+        onDelete={() => {
+          console.log('Delete item:', dialControlItem?.id);
+          setShowDialControlPanel(false);
+        }}
+        onShare={() => {
+          console.log('Share item:', dialControlItem?.id);
+          setShowDialControlPanel(false);
+        }}
+        onPost={() => {
+          console.log('Post item:', dialControlItem?.id);
+          setShowDialControlPanel(false);
+        }}
+        onSettings={() => {
+          console.log('Settings for item:', dialControlItem?.id);
+          setShow360Settings(true);
+          setShowDialControlPanel(false);
+        }}
       />
 
       <CreateSpaceModal

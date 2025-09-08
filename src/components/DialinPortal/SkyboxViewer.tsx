@@ -235,9 +235,6 @@ export function SkyboxViewer({
   const [gyroscopeActive, setGyroscopeActive] = useState(false);
 
   useEffect(() => {
-    // Check if this is an external video URL that will have CORS issues with WebGL
-    const isExternalVideo = mediaUrl.includes('dialin.io') && /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
-    
     // Detect if device is mobile and has gyroscope capability
     const checkMobile = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -246,12 +243,6 @@ export function SkyboxViewer({
     };
 
     checkMobile();
-
-    // For external videos, immediately use fallback to avoid CORS issues
-    if (isExternalVideo) {
-      setWebglError(true);
-      return;
-    }
 
     // Listen for WebGL security errors from child components
     const handleWebGLError = () => {

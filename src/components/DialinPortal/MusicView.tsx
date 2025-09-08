@@ -54,11 +54,11 @@ export function MusicView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
-        videoSrc="https://dialin.io/s/Elton-John-Farewell-Yellow-Brick-Road-The-Legacewey-VR360-2.mp4"
+        videoSrc="/media/elton-john-360.mp4"
         posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
         title="Music"
         subtitle="Discover your sound"
-        backgroundImage="https://dialin.io/s/Elton-John-Farewell-Yellow-Brick-Road-The-Legacewey-VR360-2.mp4"
+        backgroundImage="/media/elton-john-360.mp4"
         showVideo={false}
         show360={true}
         isMuted={false}

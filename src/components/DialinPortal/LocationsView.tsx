@@ -39,11 +39,16 @@ export function LocationsView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
-        posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        posterSrc="/lovable-uploads/a84b7237-eb79-414b-bf89-4ea53044a7ea.png"
         title="Locations"
         subtitle="Discover amazing places"
-        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        backgroundImage="/lovable-uploads/a84b7237-eb79-414b-bf89-4ea53044a7ea.png"
         showVideo={false}
+        show360={true}
+        xAxisOffset={0}
+        yAxisOffset={0}
+        volume={30}
+        isMuted={true}
       />
 
       <div className="mt-8">

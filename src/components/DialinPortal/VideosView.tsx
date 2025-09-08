@@ -47,11 +47,14 @@ export function VideosView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
-        posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        videoSrc="/media/lobby2.mp4"
+        posterSrc="/media/grand-theater-thumb.jpg"
         title="Videos"
         subtitle="Explore visual stories"
-        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        backgroundImage="/media/lobby2.mp4"
         showVideo={false}
+        show360={true}
+        isMuted={true}
       />
 
       <div className="mt-8">

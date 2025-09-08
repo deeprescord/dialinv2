@@ -54,11 +54,17 @@ export function MusicView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
+        videoSrc="https://dialin.io/s/Elton-John-Farewell-Yellow-Brick-Road-The-Legacy-VR360.mp4"
         posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
         title="Music"
         subtitle="Discover your sound"
-        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        backgroundImage="https://dialin.io/s/Elton-John-Farewell-Yellow-Brick-Road-The-Legacy-VR360.mp4"
         showVideo={false}
+        show360={true}
+        isMuted={false}
+        volume={0.7}
+        xAxisOffset={0}
+        yAxisOffset={0}
       />
 
       <div className="mt-8">

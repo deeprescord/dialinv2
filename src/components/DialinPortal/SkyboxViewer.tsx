@@ -235,14 +235,6 @@ export function SkyboxViewer({
   const [gyroscopeActive, setGyroscopeActive] = useState(false);
 
   useEffect(() => {
-    // Check if this is an external video URL that will likely have CORS issues
-    const isExternalVideo = mediaUrl.includes('dialin.io') && /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
-    if (isExternalVideo) {
-      // Immediately use fallback for external videos
-      setWebglError(true);
-      return;
-    }
-
     // Detect if device is mobile and has gyroscope capability
     const checkMobile = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -262,7 +254,7 @@ export function SkyboxViewer({
     return () => {
       window.removeEventListener('webgl-security-error', handleWebGLError);
     };
-  }, [enableGyroscope, mediaUrl]);
+  }, [enableGyroscope]);
 
   if (webglError) {
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { CompactFilterHeader } from './CompactFilterHeader';
 import { MediaGrid } from './MediaGrid';
 import { MusicItem } from '@/data/catalogs';
@@ -51,20 +52,31 @@ export function MusicView({
       transition={{ duration: 0.3 }}
       className="pb-32"
     >
-      <CompactFilterHeader
-        filters={MUSIC_FILTERS}
-        selectedFilters={selectedDials}
-        onFilterChange={handleFilterChange}
-        onClearAll={onClearAll}
+      {/* Hero Header */}
+      <HeroHeaderVideo
+        posterSrc="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
         title="Music"
         subtitle="Discover your sound"
+        backgroundImage="/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"
+        showVideo={false}
       />
 
-      <MediaGrid
-        items={musicGridItems}
-        onItemClick={onMusicClick}
-        onItemLongPress={onMusicLongPress}
-      />
+      <div className="mt-8">
+        <CompactFilterHeader
+          filters={MUSIC_FILTERS}
+          selectedFilters={selectedDials}
+          onFilterChange={handleFilterChange}
+          onClearAll={onClearAll}
+          title="Filters"
+          subtitle="Refine your music discovery"
+        />
+
+        <MediaGrid
+          items={musicGridItems}
+          onItemClick={onMusicClick}
+          onItemLongPress={onMusicLongPress}
+        />
+      </div>
     </motion.div>
   );
 }

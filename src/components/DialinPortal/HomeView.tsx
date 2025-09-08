@@ -55,7 +55,7 @@ export function HomeView({
     >
       {/* Hero Header */}
       <HeroHeaderVideo
-        videoSrc={isLobby ? "https://dialin.io/s/Lobby2.mp4" : undefined}
+        videoSrc={isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined}
         posterSrc={backgroundImage || lobbyBackground}
         title={floorName || "Lobby"}
         subtitle={floorDescription || "Welcome back"}

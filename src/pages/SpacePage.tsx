@@ -14,6 +14,7 @@ import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialPopup } from '@/components/DialinPortal/DialPopup';
 import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
+import { Settings360Modal } from '@/components/DialinPortal/Settings360Modal';
 import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { AIChat } from '@/components/DialinPortal/AIChat';
 import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
@@ -63,6 +64,7 @@ export default function SpacePage() {
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [show360Settings, setShow360Settings] = useState(false);
 
   // Find current space
   const currentSpace = spaces.find(space => space.id === spaceId);
@@ -334,6 +336,11 @@ export default function SpacePage() {
     setShowAddPanel(true);
   };
 
+  // Handle 360 settings modal
+  const handleOpen360Settings = () => {
+    setShow360Settings(true);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -364,6 +371,8 @@ export default function SpacePage() {
           onTabChange={handleTabChange}
           selectedChipsCount={selectedChipsCount}
           dialCount={1240}
+          show360={show360}
+          onOpen360Settings={handleOpen360Settings}
         />
 
         <MobileTabBar
@@ -528,6 +537,20 @@ export default function SpacePage() {
             console.log(`Adding ${selectedContact?.name} to space ${spaceId}`);
             setShowAddPanel(false);
           }}
+        />
+
+        <Settings360Modal
+          isOpen={show360Settings}
+          onClose={() => setShow360Settings(false)}
+          show360={show360}
+          onToggle360={() => handleToggle360(spaceId || 'lobby', !show360)}
+          xAxisOffset={currentSpace?.xAxis}
+          yAxisOffset={currentSpace?.yAxis}
+          onAxisChange={(axis, value) => handle360AxisChange(spaceId || 'lobby', axis, value)}
+          volume={currentSpace?.volume}
+          isMuted={currentSpace?.isMuted}
+          onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
+          onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
         />
       </div>
     </div>

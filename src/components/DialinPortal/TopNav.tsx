@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon } from '../icons';
+import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon, Settings } from '../icons';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
@@ -12,6 +12,8 @@ interface TopNavProps {
   onTabChange: (tab: string) => void;
   selectedChipsCount: number;
   dialCount: number;
+  show360?: boolean;
+  onOpen360Settings?: () => void;
 }
 
 const tabs = [
@@ -24,7 +26,7 @@ const tabs = [
 
 const filterTabs = ['videos', 'music', 'locations'];
 
-export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount }: TopNavProps) {
+export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings }: TopNavProps) {
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -115,6 +117,18 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount 
               <div className="hidden lg:flex items-center px-3 py-1 bg-dialin-gold/20 text-dialin-gold rounded-full text-sm">
                 {selectedChipsCount} filters
               </div>
+            )}
+
+            {/* 360 Settings Button */}
+            {show360 && onOpen360Settings && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 rounded-full"
+                onClick={onOpen360Settings}
+              >
+                <Settings size={18} className="sm:w-5 sm:h-5" />
+              </Button>
             )}
 
             {/* $DIAL Badge */}

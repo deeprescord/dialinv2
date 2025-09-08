@@ -106,6 +106,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       // Handle video
       const video = document.createElement('video');
       video.src = mediaUrl;
+      video.crossOrigin = 'anonymous'; // Enable CORS for WebGL texture usage
       video.loop = true;
       video.muted = isMuted;
       video.volume = isMuted ? 0 : volume / 100;
@@ -130,6 +131,14 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           } catch (textureError) {
             console.warn('VideoTexture creation failed:', textureError);
             setError(true);
+            // Also trigger webglError in parent component for fallback
+            if (textureError.name === 'SecurityError') {
+              // This will trigger the parent to use webglError fallback
+              setTimeout(() => {
+                const event = new CustomEvent('webgl-security-error');
+                window.dispatchEvent(event);
+              }, 100);
+            }
           }
         }
       };
@@ -234,6 +243,17 @@ export function SkyboxViewer({
     };
 
     checkMobile();
+
+    // Listen for WebGL security errors from child components
+    const handleWebGLError = () => {
+      setWebglError(true);
+    };
+
+    window.addEventListener('webgl-security-error', handleWebGLError);
+    
+    return () => {
+      window.removeEventListener('webgl-security-error', handleWebGLError);
+    };
   }, [enableGyroscope]);
 
   if (webglError) {

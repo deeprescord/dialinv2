@@ -56,10 +56,10 @@ export function HomeView({
       {/* Hero Header */}
       <HeroHeaderVideo
         videoSrc={isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined}
-        posterSrc={backgroundImage || lobbyBackground}
+        posterSrc={backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
         title={floorName || "Lobby"}
         subtitle={floorDescription || "Welcome back"}
-        backgroundImage={backgroundImage || (isLobby ? "/lovable-uploads/8b2617c9-35d8-4b43-aaea-0787f47b6053.png" : lobbyBackground)}
+        backgroundImage={backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
         showVideo={isLobby}
         show360={show360}
         xAxisOffset={xAxisOffset}

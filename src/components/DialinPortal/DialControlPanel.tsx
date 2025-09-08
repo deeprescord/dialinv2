@@ -78,7 +78,7 @@ export function DialControlPanel({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center p-4 pb-8">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

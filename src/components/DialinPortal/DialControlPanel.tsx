@@ -367,23 +367,52 @@ export function DialControlPanel({
                        </div>
                      )}
                      
-                     {dialSettings.presentation === 'circular' && (
-                       <div className="flex flex-col items-center">
-                         <div className="relative w-24 h-24 mb-4">
-                           <div className="absolute inset-0 border-4 border-white/20 rounded-full" />
-                           <div 
-                             className="absolute top-0 left-1/2 w-1 h-12 bg-white rounded-full origin-bottom transform transition-transform"
-                             style={{ 
-                               transformOrigin: 'bottom center',
-                               transform: `translateX(-50%) rotate(${(newDialIntensity[0] / 100) * 180 - 90}deg)`
-                             }}
-                           />
-                         </div>
-                         <div className="text-white text-sm">
-                           {newDialIntensity[0]}%
-                         </div>
-                       </div>
-                     )}
+                      {dialSettings.presentation === 'circular' && (
+                        <div className="flex flex-col items-center">
+                          <div className="relative w-32 h-32 mb-4">
+                            {/* Circle border */}
+                            <div className="absolute inset-0 border-4 border-white/20 rounded-full" />
+                            
+                            {/* Keywords distributed around the circle */}
+                            {dialSettings.keywords.map((keyword, index) => {
+                              const totalKeywords = dialSettings.keywords.length;
+                              // Distribute evenly around circle, starting from 12 o'clock (top)
+                              const angle = (index / (totalKeywords - 1)) * 180 - 90; // -90 to 90 degrees
+                              const radius = 60; // Distance from center
+                              const x = Math.cos((angle * Math.PI) / 180) * radius;
+                              const y = Math.sin((angle * Math.PI) / 180) * radius;
+                              
+                              return (
+                                <div
+                                  key={index}
+                                  className="absolute text-xs text-white font-medium transform -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
+                                  style={{
+                                    left: `calc(50% + ${x}px)`,
+                                    top: `calc(50% + ${y}px)`
+                                  }}
+                                >
+                                  {keyword}
+                                </div>
+                              );
+                            })}
+                            
+                            {/* Dial pointer */}
+                            <div 
+                              className="absolute top-0 left-1/2 w-1 h-14 bg-white rounded-full origin-bottom transform transition-transform"
+                              style={{ 
+                                transformOrigin: 'bottom center',
+                                transform: `translateX(-50%) rotate(${((newDialIntensity[0] / 100) * 180) - 90}deg)`
+                              }}
+                            />
+                            
+                            {/* Center dot */}
+                            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+                          </div>
+                          <div className="text-white text-sm">
+                            {Math.round(((newDialIntensity[0] / 100) * (dialSettings.keywords.length - 1)))} - {dialSettings.keywords[Math.round(((newDialIntensity[0] / 100) * (dialSettings.keywords.length - 1)))] || 'N/A'}
+                          </div>
+                        </div>
+                      )}
                      
                      {dialSettings.presentation === 'xy-pad' && (
                        <div className="flex flex-col items-center">
@@ -786,8 +815,37 @@ export function DialControlPanel({
                   )}
                   {dialSettings.presentation === 'circular' && (
                     <div className="flex justify-center">
-                      <div className="w-16 h-16 border-4 border-white/20 rounded-full relative">
-                        <div className="absolute top-0 left-1/2 w-1 h-8 bg-white rounded-full transform -translate-x-1/2 rotate-45" />
+                      <div className="relative w-20 h-20">
+                        <div className="w-full h-full border-4 border-white/20 rounded-full" />
+                        
+                        {/* Keywords distributed around the circle */}
+                        {dialSettings.keywords.map((keyword, index) => {
+                          const totalKeywords = dialSettings.keywords.length;
+                          // Distribute evenly around circle, starting from 12 o'clock (top)
+                          const angle = (index / (totalKeywords - 1)) * 180 - 90; // -90 to 90 degrees
+                          const radius = 35; // Distance from center
+                          const x = Math.cos((angle * Math.PI) / 180) * radius;
+                          const y = Math.sin((angle * Math.PI) / 180) * radius;
+                          
+                          return (
+                            <div
+                              key={index}
+                              className="absolute text-xs text-white font-medium transform -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
+                              style={{
+                                left: `calc(50% + ${x}px)`,
+                                top: `calc(50% + ${y}px)`
+                              }}
+                            >
+                              {keyword.substring(0, 3)}
+                            </div>
+                          );
+                        })}
+                        
+                        {/* Dial pointer */}
+                        <div className="absolute top-0 left-1/2 w-1 h-8 bg-white rounded-full transform -translate-x-1/2 rotate-45 origin-bottom" />
+                        
+                        {/* Center dot */}
+                        <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2" />
                       </div>
                     </div>
                   )}

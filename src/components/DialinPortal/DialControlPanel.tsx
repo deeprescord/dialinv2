@@ -40,6 +40,10 @@ const dialEmojis = [
   { emoji: '😭', label: 'CRYING' },
   { emoji: '🙏', label: 'PRAY' },
   { emoji: '🚀', label: 'ROCKET' },
+  { emoji: '💯', label: 'HUNDRED' },
+  { emoji: '⚡', label: 'LIGHTNING' },
+  { emoji: '🎯', label: 'TARGET' },
+  { emoji: '🎉', label: 'PARTY' },
 ];
 
 const mockPeople = [
@@ -68,6 +72,14 @@ export function DialControlPanel({
   const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
   const [newDialKeyword, setNewDialKeyword] = useState('');
   const [newDialIntensity, setNewDialIntensity] = useState([50]);
+  const [customDials, setCustomDials] = useState<Array<{emoji: string, label: string, votes: number}>>([]);
+  const [votingResults, setVotingResults] = useState<Array<{dial: string, votes: number, percentage: number}>>([
+    { dial: '🤝', votes: 12, percentage: 35 },
+    { dial: '👍', votes: 8, percentage: 24 },
+    { dial: '🔥', votes: 6, percentage: 18 },
+    { dial: '😊', votes: 4, percentage: 12 },
+    { dial: '🚀', votes: 4, percentage: 11 },
+  ]);
 
   if (!item) return null;
 
@@ -92,6 +104,19 @@ export function DialControlPanel({
     onClose();
   };
 
+  const saveNewDial = () => {
+    if (newDialKeyword.trim()) {
+      const newDial = {
+        emoji: '🎭', // Default emoji for custom dials
+        label: newDialKeyword.toUpperCase(),
+        votes: 0
+      };
+      setCustomDials(prev => [...prev, newDial]);
+      setNewDialKeyword('');
+      setNewDialIntensity([50]);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -110,7 +135,7 @@ export function DialControlPanel({
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
-            className="relative z-10 w-full max-w-lg mx-4 md:max-w-2xl bg-black/70 backdrop-blur-xl rounded-t-3xl md:rounded-3xl border border-white/20 overflow-hidden max-h-[90vh] flex flex-col text-white"
+            className="relative z-10 w-full max-w-2xl mx-4 md:max-w-5xl bg-black/70 backdrop-blur-xl rounded-t-3xl md:rounded-3xl border border-white/20 overflow-hidden max-h-[90vh] flex flex-col text-white"
           >
             {/* Header */}
             <div className="p-6 pb-4">
@@ -147,12 +172,21 @@ export function DialControlPanel({
                 </div>
                 
                 <div className="space-y-4">
-                  <Input
-                    value={newDialKeyword}
-                    onChange={(e) => setNewDialKeyword(e.target.value)}
-                    placeholder="KEYWORD"
-                    className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-full px-6 py-3"
-                  />
+                  <div className="flex gap-3">
+                    <Input
+                      value={newDialKeyword}
+                      onChange={(e) => setNewDialKeyword(e.target.value)}
+                      placeholder="KEYWORD"
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-full px-6 py-3 flex-1"
+                    />
+                    <Button
+                      onClick={saveNewDial}
+                      disabled={!newDialKeyword.trim()}
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full px-6"
+                    >
+                      SAVE
+                    </Button>
+                  </div>
                   
                   <div className="px-2">
                     <Slider
@@ -173,16 +207,16 @@ export function DialControlPanel({
                   <Plus className="w-6 h-6 text-white" />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-8 gap-3">
                   {dialEmojis.map((dial, index) => (
                     <button
                       key={index}
                       onClick={() => toggleDial(dial.emoji)}
-                      className="flex flex-col items-center space-y-2 group"
+                      className="flex flex-col items-center space-y-1 group"
                     >
                       <div
                         className={`
-                          w-20 h-20 rounded-full flex items-center justify-center text-3xl bg-white/20
+                          w-16 h-16 rounded-full flex items-center justify-center text-2xl bg-white/20
                           ${selectedDials.includes(dial.emoji) ? 'ring-4 ring-white' : ''}
                           group-hover:scale-110 transition-all duration-200
                         `}
@@ -197,6 +231,67 @@ export function DialControlPanel({
                 </div>
               </div>
 
+              {/* Custom Dials Section */}
+              {customDials.length > 0 && (
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-white">CUSTOM DIALS</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-8 gap-3">
+                    {customDials.map((dial, index) => (
+                      <button
+                        key={index}
+                        onClick={() => toggleDial(dial.emoji)}
+                        className="flex flex-col items-center space-y-1 group"
+                      >
+                        <div
+                          className={`
+                            w-16 h-16 rounded-full flex items-center justify-center text-2xl bg-white/20
+                            ${selectedDials.includes(dial.emoji) ? 'ring-4 ring-white' : ''}
+                            group-hover:scale-110 transition-all duration-200
+                          `}
+                        >
+                          {dial.emoji}
+                        </div>
+                        <span className="text-xs text-gray-300 text-center font-medium">
+                          {dial.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Voting Results Section */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white">VOTING RESULTS</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  {votingResults.map((result, index) => (
+                    <div key={index} className="flex items-center justify-between bg-white/10 rounded-lg p-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-lg">
+                          {result.dial}
+                        </div>
+                        <span className="text-sm font-medium text-white">{result.votes} votes</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-20 h-2 bg-white/20 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-white rounded-full transition-all duration-300"
+                            style={{ width: `${result.percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-300 w-8">{result.percentage}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* People Section */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
@@ -204,7 +299,7 @@ export function DialControlPanel({
                   <Plus className="w-6 h-6 text-white" />
                 </div>
                 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-8 gap-3">
                   {mockPeople.map((person) => (
                     <button
                       key={person.id}
@@ -212,7 +307,7 @@ export function DialControlPanel({
                       className="flex flex-col items-center space-y-1 group"
                     >
                       <Avatar 
-                        className={`w-16 h-16 ${selectedPeople.includes(person.id) ? 'ring-4 ring-white' : ''} group-hover:scale-110 transition-all duration-200`}
+                        className={`w-12 h-12 ${selectedPeople.includes(person.id) ? 'ring-4 ring-white' : ''} group-hover:scale-110 transition-all duration-200`}
                       >
                         <AvatarImage src={person.avatar} alt={person.name} />
                         <AvatarFallback className="bg-white/20 text-white">{person.name[0]}</AvatarFallback>

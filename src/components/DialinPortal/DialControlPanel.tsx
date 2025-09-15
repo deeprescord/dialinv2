@@ -135,7 +135,11 @@ export function DialControlPanel({
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
-            className="relative z-10 w-full max-w-2xl mx-4 md:max-w-5xl bg-black/70 backdrop-blur-xl rounded-t-3xl md:rounded-3xl border border-white/20 overflow-hidden max-h-[90vh] flex flex-col text-white"
+            className="relative z-10 w-full max-w-2xl mx-4 md:max-w-5xl bg-white/[0.08] backdrop-blur-3xl rounded-t-3xl md:rounded-3xl border border-white/[0.12] shadow-2xl shadow-black/20 overflow-hidden max-h-[90vh] flex flex-col text-white"
+            style={{
+              backdropFilter: 'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            }}
           >
             {/* Header */}
             <div className="p-6 pb-4">

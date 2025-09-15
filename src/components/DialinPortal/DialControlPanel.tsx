@@ -79,6 +79,7 @@ export function DialControlPanel({
   const [emojiIntensity, setEmojiIntensity] = useState([50]);
   const [showDialSettings, setShowDialSettings] = useState(false);
   const [dialSettings, setDialSettings] = useState({
+    name: 'New Dial',
     keywords: ['min', 'max'],
     presentation: 'horizontal' as 'horizontal' | 'vertical' | 'buttons' | 'circular' | 'xy-pad',
     icon: null as string | null,
@@ -312,19 +313,96 @@ export function DialControlPanel({
                     </Button>
                   </div>
                   
-                  <div className="px-2">
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-                      <span>{dialSettings.keywords[0] || 'min'}</span>
-                      <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
-                    </div>
-                    <Slider
-                      value={newDialIntensity}
-                      onValueChange={setNewDialIntensity}
-                      max={100}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
+                   <div className="px-2">
+                     {/* Dynamic Dial Rendering */}
+                     {dialSettings.presentation === 'horizontal' && (
+                       <>
+                         <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                           <span>{dialSettings.keywords[0] || 'min'}</span>
+                           <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                         </div>
+                         <Slider
+                           value={newDialIntensity}
+                           onValueChange={setNewDialIntensity}
+                           max={100}
+                           step={1}
+                           className="w-full"
+                         />
+                       </>
+                     )}
+                     
+                     {dialSettings.presentation === 'vertical' && (
+                       <div className="flex items-center gap-4">
+                         <div className="flex flex-col items-center">
+                           <span className="text-xs text-gray-400 mb-2">{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                           <div className="h-32 w-2 bg-white/20 rounded-full relative">
+                             <div 
+                               className="absolute bottom-0 w-full bg-white rounded-full transition-all"
+                               style={{ height: `${newDialIntensity[0]}%` }}
+                             />
+                           </div>
+                           <span className="text-xs text-gray-400 mt-2">{dialSettings.keywords[0] || 'min'}</span>
+                         </div>
+                         <div className="text-white text-sm">
+                           {newDialIntensity[0]}%
+                         </div>
+                       </div>
+                     )}
+                     
+                     {dialSettings.presentation === 'buttons' && (
+                       <div className="flex gap-2 flex-wrap">
+                         {dialSettings.keywords.map((keyword, index) => (
+                           <button
+                             key={index}
+                             onClick={() => setNewDialIntensity([Math.round((index / (dialSettings.keywords.length - 1)) * 100)])}
+                             className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+                               Math.abs(newDialIntensity[0] - (index / (dialSettings.keywords.length - 1)) * 100) < 10
+                                 ? 'bg-white text-black'
+                                 : 'bg-white/20 text-white hover:bg-white/30'
+                             }`}
+                           >
+                             {keyword}
+                           </button>
+                         ))}
+                       </div>
+                     )}
+                     
+                     {dialSettings.presentation === 'circular' && (
+                       <div className="flex flex-col items-center">
+                         <div className="relative w-24 h-24 mb-4">
+                           <div className="absolute inset-0 border-4 border-white/20 rounded-full" />
+                           <div 
+                             className="absolute top-0 left-1/2 w-1 h-12 bg-white rounded-full origin-bottom transform transition-transform"
+                             style={{ 
+                               transformOrigin: 'bottom center',
+                               transform: `translateX(-50%) rotate(${(newDialIntensity[0] / 100) * 180 - 90}deg)`
+                             }}
+                           />
+                         </div>
+                         <div className="text-white text-sm">
+                           {newDialIntensity[0]}%
+                         </div>
+                       </div>
+                     )}
+                     
+                     {dialSettings.presentation === 'xy-pad' && (
+                       <div className="flex flex-col items-center">
+                         <div className="relative w-32 h-32 bg-white/20 rounded-lg mb-4">
+                           <div 
+                             className="absolute w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"
+                             style={{ 
+                               left: `${newDialIntensity[0]}%`,
+                               top: '50%'
+                             }}
+                           />
+                         </div>
+                         <div className="flex justify-between w-32 text-xs text-gray-400">
+                           <span>{dialSettings.keywords[0] || 'min'}</span>
+                           <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                         </div>
+                       </div>
+                     )}
+                   </div>
                 </div>
               </div>
 
@@ -580,9 +658,20 @@ export function DialControlPanel({
               </button>
             </div>
 
+            {/* Dial Name Section */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-white mb-3">DIAL NAME</h4>
+              <Input
+                value={dialSettings.name}
+                onChange={(e) => setDialSettings(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter dial name"
+                className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-lg px-4 py-2 w-full"
+              />
+            </div>
+
             {/* Keywords Section */}
             <div className="mb-6">
-              <h4 className="text-sm font-semibold text-white mb-3">KEYWORDS</h4>
+              <h4 className="text-sm font-semibold text-white mb-3">KEYWORD SPECTRUM</h4>
               <div className="space-y-2">
                 {dialSettings.keywords.map((keyword, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -632,7 +721,7 @@ export function DialControlPanel({
 
             {/* Presentation Type */}
             <div className="mb-6">
-              <h4 className="text-sm font-semibold text-white mb-3">PRESENTATION</h4>
+              <h4 className="text-sm font-semibold text-white mb-3">DIAL TYPE</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { value: 'horizontal', label: 'Horizontal' },
@@ -654,6 +743,63 @@ export function DialControlPanel({
                   </button>
                 ))}
               </div>
+              
+              {/* Preview right below dial type */}
+              <div className="mt-4">
+                <h5 className="text-xs font-semibold text-gray-400 mb-2 uppercase">Preview</h5>
+                <div className="p-4 bg-white/10 rounded-lg">
+                  {dialSettings.presentation === 'horizontal' && (
+                    <>
+                      <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                        <span>{dialSettings.keywords[0] || 'min'}</span>
+                        <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                      </div>
+                      <div className="w-full h-2 bg-white/20 rounded-full">
+                        <div className="w-1/2 h-full bg-white rounded-full" />
+                      </div>
+                    </>
+                  )}
+                  {dialSettings.presentation === 'vertical' && (
+                    <div className="flex justify-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs text-gray-400 mb-1">{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                        <div className="h-20 w-2 bg-white/20 rounded-full relative">
+                          <div className="absolute bottom-0 w-full bg-white rounded-full h-1/2" />
+                        </div>
+                        <span className="text-xs text-gray-400 mt-1">{dialSettings.keywords[0] || 'min'}</span>
+                      </div>
+                    </div>
+                  )}
+                  {dialSettings.presentation === 'buttons' && (
+                    <div className="flex gap-2 justify-center">
+                      {dialSettings.keywords.map((keyword, index) => (
+                        <button
+                          key={index}
+                          className={`px-3 py-1 text-xs rounded-full ${
+                            index === 1 ? 'bg-white text-black' : 'bg-white/20 text-white'
+                          }`}
+                        >
+                          {keyword}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {dialSettings.presentation === 'circular' && (
+                    <div className="flex justify-center">
+                      <div className="w-16 h-16 border-4 border-white/20 rounded-full relative">
+                        <div className="absolute top-0 left-1/2 w-1 h-8 bg-white rounded-full transform -translate-x-1/2 rotate-45" />
+                      </div>
+                    </div>
+                  )}
+                  {dialSettings.presentation === 'xy-pad' && (
+                    <div className="flex justify-center">
+                      <div className="relative w-20 h-20 bg-white/20 rounded-lg">
+                        <div className="absolute w-2 h-2 bg-white rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Dial Icon */}
@@ -669,39 +815,6 @@ export function DialControlPanel({
                 <Upload className="w-5 h-5" />
                 {dialSettings.icon ? 'Change Icon' : 'Upload Icon'}
               </button>
-            </div>
-
-            {/* Preview */}
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-white mb-3">PREVIEW</h4>
-              <div className="p-4 bg-white/10 rounded-lg">
-                <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-                  <span>{dialSettings.keywords[0] || 'min'}</span>
-                  <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
-                </div>
-                {dialSettings.presentation === 'horizontal' && (
-                  <div className="w-full h-2 bg-white/20 rounded-full">
-                    <div className="w-1/2 h-full bg-white rounded-full" />
-                  </div>
-                )}
-                {dialSettings.presentation === 'buttons' && (
-                  <div className="flex gap-2">
-                    {dialSettings.keywords.map((keyword, index) => (
-                      <button
-                        key={index}
-                        className="px-3 py-1 bg-white/20 text-white text-xs rounded-full"
-                      >
-                        {keyword}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {dialSettings.presentation === 'circular' && (
-                  <div className="w-16 h-16 mx-auto border-4 border-white/20 rounded-full relative">
-                    <div className="absolute top-0 left-1/2 w-1 h-8 bg-white rounded-full transform -translate-x-1/2" />
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="flex gap-3">

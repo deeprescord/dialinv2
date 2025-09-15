@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Slider } from '../ui/slider';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Trash2, Share2, Send, Settings, X, Check } from 'lucide-react';
+import { Trash2, Move, Plus, Send, Users, Settings, X, Check } from 'lucide-react';
 
 interface DialControlPanelProps {
   isOpen: boolean;
@@ -25,17 +27,30 @@ interface DialControlPanelProps {
   onSettings?: () => void;
 }
 
-const dialSets = [
-  { id: 'food', name: 'Food', icon: '🍕', color: 'from-orange-500 to-red-500' },
-  { id: 'posts', name: 'Posts', icon: 'MY\nPOST', color: 'from-gray-100 to-white', textColor: 'text-black' },
-  { id: 'town-square', name: 'Town Square', icon: '🏛️', color: 'from-gray-600 to-gray-800' },
-  { id: 'news', name: 'News', icon: '📰', color: 'from-blue-500 to-blue-700' },
-  { id: 'video', name: 'Video', icon: '🎬', color: 'from-purple-500 to-pink-500' },
+const dialEmojis = [
+  { emoji: '🤝', label: 'HANDSHAKE' },
+  { emoji: '👍', label: 'THUMBS UP' },
+  { emoji: '👎', label: 'THUMBS DOWN' },
+  { emoji: '❓', label: 'QUESTION' },
+  { emoji: '🔥', label: 'FIRE' },
+  { emoji: '❗', label: 'EXCLAMATION' },
+  { emoji: '😱', label: 'SHOCKED' },
+  { emoji: '😊', label: 'HAPPY' },
+  { emoji: '🤔', label: 'THINKING' },
+  { emoji: '😭', label: 'CRYING' },
+  { emoji: '🙏', label: 'PRAY' },
+  { emoji: '🚀', label: 'ROCKET' },
 ];
 
-const dialEmojis = [
-  '🤝', '👍', '👎', '❓', '🔥', '❗',
-  '😱', '😊', '🤔', '😭', '🙏', '🚀',
+const mockPeople = [
+  { id: '1', name: 'Alice', avatar: '/placeholder.svg' },
+  { id: '2', name: 'Bob', avatar: '/placeholder.svg' },
+  { id: '3', name: 'Charlie', avatar: '/placeholder.svg' },
+  { id: '4', name: 'Diana', avatar: '/placeholder.svg' },
+  { id: '5', name: 'Eve', avatar: '/placeholder.svg' },
+  { id: '6', name: 'Frank', avatar: '/placeholder.svg' },
+  { id: '7', name: 'Grace', avatar: '/placeholder.svg' },
+  { id: '8', name: 'Henry', avatar: '/placeholder.svg' },
 ];
 
 export function DialControlPanel({
@@ -49,29 +64,31 @@ export function DialControlPanel({
   onPost,
   onSettings
 }: DialControlPanelProps) {
-  const [selectedSets, setSelectedSets] = useState<string[]>([]);
   const [selectedDials, setSelectedDials] = useState<string[]>([]);
+  const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
+  const [newDialKeyword, setNewDialKeyword] = useState('');
+  const [newDialIntensity, setNewDialIntensity] = useState([50]);
 
   if (!item) return null;
 
-  const toggleSet = (setId: string) => {
-    setSelectedSets(prev => 
-      prev.includes(setId) 
-        ? prev.filter(id => id !== setId)
-        : [...prev, setId]
+  const toggleDial = (emoji: string) => {
+    setSelectedDials(prev => 
+      prev.includes(emoji) 
+        ? prev.filter(d => d !== emoji)
+        : [...prev, emoji]
     );
   };
 
-  const toggleDial = (dial: string) => {
-    setSelectedDials(prev => 
-      prev.includes(dial) 
-        ? prev.filter(d => d !== dial)
-        : [...prev, dial]
+  const togglePerson = (personId: string) => {
+    setSelectedPeople(prev => 
+      prev.includes(personId) 
+        ? prev.filter(id => id !== personId)
+        : [...prev, personId]
     );
   };
 
   const handleSelect = () => {
-    onSelect(selectedDials, selectedSets);
+    onSelect(selectedDials, []);
     onClose();
   };
 
@@ -84,7 +101,7 @@ export function DialControlPanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -93,14 +110,14 @@ export function DialControlPanel({
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
-            className="relative z-10 w-full max-w-md mx-4 md:max-w-lg bg-background/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl border border-border/50 overflow-hidden max-h-[90vh] flex flex-col"
+            className="relative z-10 w-full max-w-md mx-4 md:max-w-lg bg-black/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl border border-white/10 overflow-hidden max-h-[90vh] flex flex-col text-white"
           >
             {/* Header */}
             <div className="p-6 pb-4">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h2 className="text-xl font-semibold mb-1">{item.title}</h2>
-                  <p className="text-sm text-muted-foreground">
+                  <h2 className="text-xl font-semibold mb-1 text-white">{item.title}</h2>
+                  <p className="text-sm text-gray-400">
                     {item.dateCreated || 'August 30th, 2025'}
                   </p>
                 </div>
@@ -114,7 +131,7 @@ export function DialControlPanel({
                       <AvatarImage src={item.owner.avatar} alt={item.owner.name} />
                       <AvatarFallback>{item.owner.name[0]}</AvatarFallback>
                     </Avatar>
-                    <span className="text-xs text-muted-foreground">{item.owner.name}</span>
+                    <span className="text-xs text-gray-400">{item.owner.name}</span>
                   </button>
                 )}
               </div>
@@ -122,114 +139,146 @@ export function DialControlPanel({
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6">
-              {/* Sets Section */}
+              {/* New Dial Section */}
               <div className="mb-8">
-                <h3 className="text-lg font-medium mb-4 text-center">sets</h3>
-                <div className="flex justify-center space-x-4 flex-wrap gap-y-4">
-                  {dialSets.map((set) => (
-                    <button
-                      key={set.id}
-                      onClick={() => toggleSet(set.id)}
-                      className="flex flex-col items-center space-y-2 group"
-                    >
-                      <div
-                        className={`
-                          w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xs
-                          bg-gradient-to-br ${set.color} ${set.textColor || 'text-white'}
-                          ${selectedSets.includes(set.id) ? 'ring-4 ring-primary' : ''}
-                          group-hover:scale-110 transition-all duration-200
-                        `}
-                      >
-                        {set.icon.includes('\n') ? (
-                          <div className="text-center leading-tight">
-                            {set.icon.split('\n').map((line, i) => (
-                              <div key={i}>{line}</div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-2xl">{set.icon}</span>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{set.name}</span>
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white">NEW DIAL</h3>
+                  <Plus className="w-6 h-6 text-white" />
+                </div>
+                
+                <div className="space-y-4">
+                  <Input
+                    value={newDialKeyword}
+                    onChange={(e) => setNewDialKeyword(e.target.value)}
+                    placeholder="KEYWORD"
+                    className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-full px-6 py-3"
+                  />
+                  
+                  <div className="px-2">
+                    <Slider
+                      value={newDialIntensity}
+                      onValueChange={setNewDialIntensity}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Dials Section */}
               <div className="mb-8">
-                <h3 className="text-lg font-medium mb-4 text-center">dials</h3>
-                <div className="grid grid-cols-6 gap-4 justify-items-center">
-                  {dialEmojis.map((emoji, index) => (
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white">DIALS</h3>
+                  <Plus className="w-6 h-6 text-white" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {dialEmojis.map((dial, index) => (
                     <button
                       key={index}
-                      onClick={() => toggleDial(emoji)}
-                      className={`
-                        w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center text-xl
-                        ${selectedDials.includes(emoji) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}
-                        transition-all duration-200 hover:scale-110
-                      `}
+                      onClick={() => toggleDial(dial.emoji)}
+                      className="flex flex-col items-center space-y-2 group"
                     >
-                      {emoji}
+                      <div
+                        className={`
+                          w-20 h-20 rounded-full flex items-center justify-center text-3xl bg-white/20
+                          ${selectedDials.includes(dial.emoji) ? 'ring-4 ring-white' : ''}
+                          group-hover:scale-110 transition-all duration-200
+                        `}
+                      >
+                        {dial.emoji}
+                      </div>
+                      <span className="text-xs text-gray-300 text-center font-medium">
+                        {dial.label}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-around py-6 border-t border-border/50">
-                <button
-                  onClick={onDelete}
-                  className="flex flex-col items-center space-y-1 p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <Trash2 size={24} className="text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">delete</span>
-                </button>
+              {/* People Section */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white">PEOPLE</h3>
+                  <Plus className="w-6 h-6 text-white" />
+                </div>
                 
-                <button
-                  onClick={onShare}
-                  className="flex flex-col items-center space-y-1 p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <Share2 size={24} className="text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">share</span>
-                </button>
-                
-                <button
-                  onClick={onPost}
-                  className="flex flex-col items-center space-y-1 p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <Send size={24} className="text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">post</span>
-                </button>
-                
-                <button
-                  onClick={onSettings}
-                  className="flex flex-col items-center space-y-1 p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <Settings size={24} className="text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">settings</span>
-                </button>
+                <div className="grid grid-cols-4 gap-4">
+                  {mockPeople.map((person) => (
+                    <button
+                      key={person.id}
+                      onClick={() => togglePerson(person.id)}
+                      className="flex flex-col items-center space-y-1 group"
+                    >
+                      <Avatar 
+                        className={`w-16 h-16 ${selectedPeople.includes(person.id) ? 'ring-4 ring-white' : ''} group-hover:scale-110 transition-all duration-200`}
+                      >
+                        <AvatarImage src={person.avatar} alt={person.name} />
+                        <AvatarFallback className="bg-white/20 text-white">{person.name[0]}</AvatarFallback>
+                      </Avatar>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Bottom Action Buttons */}
-            <div className="flex p-4 space-x-4 bg-muted/20 border-t border-border/50">
-              <Button
-                onClick={onClose}
-                variant="outline"
-                className="flex-1 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
-              >
-                <X className="mr-2" size={16} />
-                CANCEL
-              </Button>
-              
-              <Button
-                onClick={handleSelect}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Check className="mr-2" size={16} />
-                SELECT
-              </Button>
+            <div className="grid grid-cols-4 gap-2 p-4 bg-black/50 border-t border-white/10">
+              <div className="col-span-4 grid grid-cols-7 gap-2">
+                <button
+                  onClick={onDelete}
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Trash2 size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">DELETE</span>
+                </button>
+                
+                <button
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Move size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">MOVE</span>
+                </button>
+                
+                <button
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Plus size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">ADD</span>
+                </button>
+                
+                <button
+                  onClick={onPost}
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Send size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">POST</span>
+                </button>
+                
+                <button
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Users size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">CONNECT</span>
+                </button>
+                
+                <button
+                  onClick={onSettings}
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Settings size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">SETTINGS</span>
+                </button>
+                
+                <button
+                  onClick={handleSelect}
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Check size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">SELECT</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>

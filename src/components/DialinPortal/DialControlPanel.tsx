@@ -72,7 +72,8 @@ export function DialControlPanel({
   const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
   const [newDialKeyword, setNewDialKeyword] = useState('');
   const [newDialIntensity, setNewDialIntensity] = useState([50]);
-  const [customDials, setCustomDials] = useState<Array<{emoji: string, label: string, votes: number}>>([]);
+  const [customDials, setCustomDials] = useState<Array<{emoji: string, label: string, votes: number, intensity: number}>>([]);
+  const [editingDialIndex, setEditingDialIndex] = useState<number | null>(null);
   const [votingResults, setVotingResults] = useState<Array<{dial: string, votes: number, percentage: number}>>([
     { dial: '🤝', votes: 12, percentage: 35 },
     { dial: '👍', votes: 8, percentage: 24 },
@@ -106,15 +107,34 @@ export function DialControlPanel({
 
   const saveNewDial = () => {
     if (newDialKeyword.trim()) {
-      const newDial = {
+      const dialData = {
         emoji: '🎭', // Default emoji for custom dials
         label: newDialKeyword.toUpperCase(),
-        votes: 0
+        votes: 0,
+        intensity: newDialIntensity[0]
       };
-      setCustomDials(prev => [...prev, newDial]);
+      
+      if (editingDialIndex !== null) {
+        // Update existing dial
+        setCustomDials(prev => prev.map((dial, index) => 
+          index === editingDialIndex ? dialData : dial
+        ));
+        setEditingDialIndex(null);
+      } else {
+        // Create new dial
+        setCustomDials(prev => [...prev, dialData]);
+      }
+      
       setNewDialKeyword('');
       setNewDialIntensity([50]);
     }
+  };
+
+  const editCustomDial = (index: number) => {
+    const dial = customDials[index];
+    setNewDialKeyword(dial.label);
+    setNewDialIntensity([dial.intensity]);
+    setEditingDialIndex(index);
   };
 
   return (
@@ -171,7 +191,9 @@ export function DialControlPanel({
               {/* New Dial Section */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-white">NEW DIAL</h3>
+                  <h3 className="text-lg font-bold text-white">
+                    {editingDialIndex !== null ? 'EDIT DIAL' : 'NEW DIAL'}
+                  </h3>
                   <Plus className="w-6 h-6 text-white" />
                 </div>
                 
@@ -188,7 +210,7 @@ export function DialControlPanel({
                       disabled={!newDialKeyword.trim()}
                       className="bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full px-6"
                     >
-                      SAVE
+                      {editingDialIndex !== null ? 'UPDATE' : 'SAVE'}
                     </Button>
                   </div>
                   
@@ -242,28 +264,29 @@ export function DialControlPanel({
                     <h3 className="text-lg font-bold text-white">CUSTOM DIALS</h3>
                   </div>
                   
-                  <div className="grid grid-cols-8 gap-3">
-                    {customDials.map((dial, index) => (
-                      <button
-                        key={index}
-                        onClick={() => toggleDial(dial.emoji)}
-                        className="flex flex-col items-center space-y-1 group"
-                      >
-                        <div
-                          className={`
-                            w-16 h-16 rounded-full flex items-center justify-center text-2xl bg-white/20
-                            ${selectedDials.includes(dial.emoji) ? 'ring-4 ring-white' : ''}
-                            group-hover:scale-110 transition-all duration-200
-                          `}
-                        >
-                          {dial.emoji}
-                        </div>
-                        <span className="text-xs text-gray-300 text-center font-medium">
-                          {dial.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                   <div className="grid grid-cols-8 gap-3">
+                     {customDials.map((dial, index) => (
+                       <button
+                         key={index}
+                         onClick={() => editCustomDial(index)}
+                         className="flex flex-col items-center space-y-1 group"
+                       >
+                         <div
+                           className={`
+                             w-16 h-16 rounded-full flex items-center justify-center text-2xl bg-white/20
+                             ${editingDialIndex === index ? 'ring-4 ring-blue-400' : ''}
+                             ${selectedDials.includes(dial.emoji) ? 'ring-4 ring-white' : ''}
+                             group-hover:scale-110 transition-all duration-200
+                           `}
+                         >
+                           {dial.emoji}
+                         </div>
+                         <span className="text-xs text-gray-300 text-center font-medium">
+                           {dial.label}
+                         </span>
+                       </button>
+                     ))}
+                   </div>
                 </div>
               )}
 

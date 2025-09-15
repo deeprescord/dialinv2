@@ -110,7 +110,7 @@ export function DialControlPanel({
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
-            className="relative z-10 w-full max-w-md mx-4 md:max-w-lg bg-black/95 backdrop-blur-md rounded-t-3xl md:rounded-3xl border border-white/10 overflow-hidden max-h-[90vh] flex flex-col text-white"
+            className="relative z-10 w-full max-w-lg mx-4 md:max-w-2xl bg-black/70 backdrop-blur-xl rounded-t-3xl md:rounded-3xl border border-white/20 overflow-hidden max-h-[90vh] flex flex-col text-white"
           >
             {/* Header */}
             <div className="p-6 pb-4">

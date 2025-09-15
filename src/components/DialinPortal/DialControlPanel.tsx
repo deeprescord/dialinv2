@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Trash2, Move, Plus, Send, Users, Settings, X, Check } from 'lucide-react';
+import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image } from 'lucide-react';
 
 interface DialControlPanelProps {
   isOpen: boolean;
@@ -77,6 +77,13 @@ export function DialControlPanel({
   const [editingDialIndex, setEditingDialIndex] = useState<number | null>(null);
   const [selectedEmojiForIntensity, setSelectedEmojiForIntensity] = useState<{emoji: string, label: string} | null>(null);
   const [emojiIntensity, setEmojiIntensity] = useState([50]);
+  const [showDialSettings, setShowDialSettings] = useState(false);
+  const [dialSettings, setDialSettings] = useState({
+    keywords: ['min', 'max'],
+    presentation: 'horizontal' as 'horizontal' | 'vertical' | 'buttons' | 'circular' | 'xy-pad',
+    icon: null as string | null,
+    keywordImages: {} as Record<string, string>
+  });
   const [votingResults, setVotingResults] = useState<Array<{dial: string, votes: number, percentage: number, avgIntensity: number, userVotes: Array<{userId: string, intensity: number}>}>>([
     { dial: '🤝', votes: 12, percentage: 35, avgIntensity: 75, userVotes: [
       {userId: '1', intensity: 80}, {userId: '2', intensity: 70}, {userId: '3', intensity: 75}
@@ -280,7 +287,12 @@ export function DialControlPanel({
                   <h3 className="text-lg font-bold text-white">
                     {editingDialIndex !== null ? 'EDIT DIAL' : 'NEW DIAL'}
                   </h3>
-                  <Plus className="w-6 h-6 text-white" />
+                  <button
+                    onClick={() => setShowDialSettings(true)}
+                    className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-6 h-6 text-white" />
+                  </button>
                 </div>
                 
                 <div className="space-y-4">
@@ -301,6 +313,10 @@ export function DialControlPanel({
                   </div>
                   
                   <div className="px-2">
+                    <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                      <span>{dialSettings.keywords[0] || 'min'}</span>
+                      <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                    </div>
                     <Slider
                       value={newDialIntensity}
                       onValueChange={setNewDialIntensity}
@@ -328,6 +344,10 @@ export function DialControlPanel({
                   </div>
                   
                   <div className="px-2">
+                    <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                      <span>min</span>
+                      <span>max</span>
+                    </div>
                     <Slider
                       value={emojiIntensity}
                       onValueChange={setEmojiIntensity}
@@ -524,6 +544,182 @@ export function DialControlPanel({
                   <span className="text-xs text-white font-medium">SELECT</span>
                 </button>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Dial Settings Modal */}
+      {showDialSettings && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowDialSettings(false)}
+          />
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="relative z-10 w-full max-w-lg bg-white/[0.08] backdrop-blur-3xl rounded-3xl border border-white/[0.12] shadow-2xl p-6 text-white max-h-[80vh] overflow-y-auto"
+            style={{
+              backdropFilter: 'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">DIAL SETTINGS</h3>
+              <button
+                onClick={() => setShowDialSettings(false)}
+                className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            {/* Keywords Section */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-white mb-3">KEYWORDS</h4>
+              <div className="space-y-2">
+                {dialSettings.keywords.map((keyword, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      value={keyword}
+                      onChange={(e) => setDialSettings(prev => ({
+                        ...prev,
+                        keywords: prev.keywords.map((k, i) => i === index ? e.target.value : k)
+                      }))}
+                      placeholder={`Keyword ${index + 1}`}
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-lg px-4 py-2 flex-1"
+                    />
+                    <button
+                      onClick={() => setDialSettings(prev => ({
+                        ...prev,
+                        keywordImages: { ...prev.keywordImages, [keyword]: '/placeholder-image.jpg' }
+                      }))}
+                      className="p-2 bg-white/20 hover:bg-white/30 rounded-lg border border-white/30"
+                    >
+                      <Image className="w-4 h-4 text-white" />
+                    </button>
+                    {dialSettings.keywords.length > 2 && (
+                      <button
+                        onClick={() => setDialSettings(prev => ({
+                          ...prev,
+                          keywords: prev.keywords.filter((_, i) => i !== index)
+                        }))}
+                        className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg border border-red-500/30"
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={() => setDialSettings(prev => ({
+                    ...prev,
+                    keywords: [...prev.keywords, `Level ${prev.keywords.length + 1}`]
+                  }))}
+                  className="w-full p-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Keyword
+                </button>
+              </div>
+            </div>
+
+            {/* Presentation Type */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-white mb-3">PRESENTATION</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'horizontal', label: 'Horizontal' },
+                  { value: 'vertical', label: 'Vertical' },
+                  { value: 'buttons', label: 'Buttons' },
+                  { value: 'circular', label: 'Circular' },
+                  { value: 'xy-pad', label: 'XY Pad' }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setDialSettings(prev => ({ ...prev, presentation: option.value as any }))}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-colors ${
+                      dialSettings.presentation === option.value
+                        ? 'bg-white/30 border-white/50 text-white'
+                        : 'bg-white/10 border-white/20 text-gray-300 hover:bg-white/20'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dial Icon */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-white mb-3">DIAL ICON</h4>
+              <button
+                onClick={() => {
+                  // File upload simulation
+                  setDialSettings(prev => ({ ...prev, icon: '/placeholder-icon.png' }));
+                }}
+                className="w-full p-4 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-lg flex items-center justify-center gap-2"
+              >
+                <Upload className="w-5 h-5" />
+                {dialSettings.icon ? 'Change Icon' : 'Upload Icon'}
+              </button>
+            </div>
+
+            {/* Preview */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-white mb-3">PREVIEW</h4>
+              <div className="p-4 bg-white/10 rounded-lg">
+                <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                  <span>{dialSettings.keywords[0] || 'min'}</span>
+                  <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                </div>
+                {dialSettings.presentation === 'horizontal' && (
+                  <div className="w-full h-2 bg-white/20 rounded-full">
+                    <div className="w-1/2 h-full bg-white rounded-full" />
+                  </div>
+                )}
+                {dialSettings.presentation === 'buttons' && (
+                  <div className="flex gap-2">
+                    {dialSettings.keywords.map((keyword, index) => (
+                      <button
+                        key={index}
+                        className="px-3 py-1 bg-white/20 text-white text-xs rounded-full"
+                      >
+                        {keyword}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {dialSettings.presentation === 'circular' && (
+                  <div className="w-16 h-16 mx-auto border-4 border-white/20 rounded-full relative">
+                    <div className="absolute top-0 left-1/2 w-1 h-8 bg-white rounded-full transform -translate-x-1/2" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowDialSettings(false)}
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowDialSettings(false);
+                  // Apply settings logic here
+                }}
+                className="flex-1 bg-white/30 hover:bg-white/40 text-white border border-white/40 rounded-full"
+              >
+                Apply Settings
+              </Button>
             </div>
           </motion.div>
         </div>

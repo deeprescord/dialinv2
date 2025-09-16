@@ -16,12 +16,12 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
         id: i,
         x: Math.random() * 100 - 50,
         y: Math.random() * 100 - 50,
-        delay: Math.random() * 0.5
+        delay: Math.random() * 0.25
       }));
       setParticles(newParticles);
 
       // Auto-complete after animation
-      const timer = setTimeout(onComplete, 3000);
+      const timer = setTimeout(onComplete, 1500);
       return () => clearTimeout(timer);
     }
   }, [isVisible, onComplete]);
@@ -43,7 +43,7 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+            transition={{ duration: 0.25, type: "spring", bounce: 0.4 }}
             className="relative bg-gradient-to-br from-dialin-purple to-dialin-gold rounded-2xl p-8 shadow-2xl"
           >
             {/* +1 Point Text */}
@@ -51,7 +51,7 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.1 }}
                 className="text-6xl font-bold text-white mb-2"
               >
                 +1
@@ -59,7 +59,7 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.15 }}
                 className="text-xl text-white/90 font-medium"
               >
                 Point Earned!
@@ -67,7 +67,7 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.2 }}
                 className="text-sm text-white/70 mt-2"
               >
                 Dial saved successfully
@@ -91,7 +91,7 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
                   rotate: [0, 180, 360] 
                 }}
                 transition={{ 
-                  duration: 2, 
+                  duration: 1, 
                   delay: particle.delay,
                   ease: "easeOut"
                 }}
@@ -113,8 +113,8 @@ export function CelebrationAnimation({ isVisible, onComplete }: CelebrationAnima
                   rotate: [0, 360]
                 }}
                 transition={{ 
-                  duration: 1.5, 
-                  delay: 0.5 + i * 0.1,
+                  duration: 0.75, 
+                  delay: 0.25 + i * 0.05,
                   repeat: 1
                 }}
                 className="absolute w-2 h-2 bg-white rounded-full"

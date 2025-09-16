@@ -726,6 +726,7 @@ export function DialControlPanel({
               <Input
                 value={dialSettings.name}
                 onChange={(e) => setDialSettings(prev => ({ ...prev, name: e.target.value }))}
+                onFocus={(e) => e.target.select()}
                 placeholder="Enter dial name"
                 className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-lg px-4 py-2 w-full"
               />
@@ -743,6 +744,7 @@ export function DialControlPanel({
                         ...prev,
                         keywords: prev.keywords.map((k, i) => i === index ? e.target.value : k)
                       }))}
+                      onFocus={(e) => e.target.select()}
                       placeholder={`Keyword ${index + 1}`}
                       className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-lg px-4 py-2 flex-1"
                     />

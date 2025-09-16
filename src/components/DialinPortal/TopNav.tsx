@@ -14,6 +14,7 @@ interface TopNavProps {
   dialCount: number;
   show360?: boolean;
   onOpen360Settings?: () => void;
+  userPoints?: number;
 }
 
 const tabs = [
@@ -26,7 +27,7 @@ const tabs = [
 
 const filterTabs = ['videos', 'music', 'locations'];
 
-export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings }: TopNavProps) {
+export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0 }: TopNavProps) {
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -130,6 +131,15 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
                 <Settings size={18} className="sm:w-5 sm:h-5" />
               </Button>
             )}
+
+            {/* Points Badge */}
+            <motion.div 
+              className="hidden sm:flex items-center space-x-2 px-2 sm:px-3 py-1 bg-dialin-purple/20 text-dialin-purple rounded-full text-xs sm:text-sm"
+              animate={{ scale: userPoints > 0 ? [1, 1.1, 1] : 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span className="font-bold">🏆 {userPoints} pts</span>
+            </motion.div>
 
             {/* $DIAL Badge */}
             <div className="hidden sm:flex items-center space-x-2 px-2 sm:px-3 py-1 bg-dialin-gold/20 text-dialin-gold rounded-full text-xs sm:text-sm">

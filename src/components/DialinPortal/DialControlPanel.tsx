@@ -25,6 +25,7 @@ interface DialControlPanelProps {
   onShare?: () => void;
   onPost?: () => void;
   onSettings?: () => void;
+  onDialSaved?: () => void;
 }
 
 const dialEmojis = [
@@ -58,16 +59,17 @@ const mockPeople = [
   { id: '8', name: 'Henry', avatar: '/public/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png' },
 ];
 
-export function DialControlPanel({
-  isOpen,
-  item,
-  onClose,
-  onSelect,
-  onOwnerClick,
-  onDelete,
-  onShare,
-  onPost,
-  onSettings
+export function DialControlPanel({ 
+  isOpen, 
+  item, 
+  onClose, 
+  onSelect, 
+  onOwnerClick, 
+  onDelete, 
+  onShare, 
+  onPost, 
+  onSettings,
+  onDialSaved 
 }: DialControlPanelProps) {
   const [selectedDials, setSelectedDials] = useState<string[]>([]);
   const [selectedPeople, setSelectedPeople] = useState<string[]>(['all']);
@@ -136,6 +138,9 @@ export function DialControlPanel({
         votes: 1,
         intensity: newDialIntensity[0]
       };
+      
+      // Trigger celebration animation
+      onDialSaved?.();
       
       if (editingDialIndex !== null) {
         setCustomDials(prev => prev.map((dial, index) => 

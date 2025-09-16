@@ -19,6 +19,7 @@ import { ChatWindow } from './ChatWindow';
 import { AIChat } from './AIChat';
 import { AddContactPanel } from './AddContactPanel';
 import { Settings360Modal } from './Settings360Modal';
+import { CelebrationAnimation } from './CelebrationAnimation';
 
 import { 
   videoCatalog, 
@@ -45,6 +46,13 @@ export function DialinPortal() {
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
+  const [userPoints, setUserPoints] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const handleDialSaved = () => {
+    setUserPoints(prev => prev + 1);
+    setShowCelebration(true);
+  };
   const [spaces, setSpaces] = useState<Space[]>([
     { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: appBackground },
     ...initialSpaces
@@ -400,6 +408,7 @@ export function DialinPortal() {
         dialCount={1240}
         show360={show360}
         onOpen360Settings={handleOpen360Settings}
+        userPoints={userPoints}
       />
 
       <MobileTabBar
@@ -557,6 +566,7 @@ export function DialinPortal() {
           setShow360Settings(true);
           setShowDialControlPanel(false);
         }}
+        onDialSaved={handleDialSaved}
       />
 
       <CreateSpaceModal
@@ -601,6 +611,11 @@ export function DialinPortal() {
         isMuted={lobbySpace?.isMuted || false}
         onVolumeChange={(volume) => handle360VolumeChange('lobby', volume)}
         onMuteToggle={() => handle360MuteToggle('lobby', !lobbySpace?.isMuted)}
+      />
+
+      <CelebrationAnimation
+        isVisible={showCelebration}
+        onComplete={() => setShowCelebration(false)}
       />
     </div>
   );

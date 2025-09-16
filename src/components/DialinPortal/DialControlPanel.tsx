@@ -110,6 +110,8 @@ export function DialControlPanel({
   const toggleDial = (emoji: string, label: string) => {
     setSelectedEmojiForIntensity({emoji, label});
     setEmojiIntensity([50]);
+    // Trigger celebration for emoji interaction
+    onDialSaved?.();
   };
 
   const togglePerson = (personId: string) => {
@@ -172,6 +174,9 @@ export function DialControlPanel({
         votes: 1,
         intensity: emojiIntensity[0]
       };
+      
+      // Trigger celebration for saving emoji intensity
+      onDialSaved?.();
       
       setCustomDials(prev => [...prev, dialData]);
       

@@ -307,13 +307,40 @@ export function DialControlPanel({
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex gap-3">
+                  {/* Single line layout: keyword input, slider, and save button */}
+                  <div className="flex items-center gap-3">
                     <Input
                       value={newDialKeyword}
                       onChange={(e) => setNewDialKeyword(e.target.value)}
                       placeholder="KEYWORD"
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-full px-6 py-3 flex-1"
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 rounded-full px-6 py-3 w-32"
                     />
+                    
+                    {/* Horizontal slider with labels */}
+                    <div className="flex-1 px-2">
+                      {dialSettings.presentation === 'horizontal' && (
+                        <>
+                          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                            <span>{dialSettings.keywords[0] || 'min'}</span>
+                            <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
+                          </div>
+                          <Slider
+                            value={newDialIntensity}
+                            onValueChange={setNewDialIntensity}
+                            max={100}
+                            step={1}
+                            className="w-full"
+                          />
+                        </>
+                      )}
+                      
+                      {dialSettings.presentation !== 'horizontal' && (
+                        <div className="text-center text-white text-sm py-2">
+                          Intensity: {newDialIntensity[0]}%
+                        </div>
+                      )}
+                    </div>
+                    
                     <Button
                       onClick={saveNewDial}
                       disabled={!newDialKeyword.trim()}
@@ -324,24 +351,11 @@ export function DialControlPanel({
                   </div>
                   
                    <div className="px-2">
-                     {/* Dynamic Dial Rendering */}
-                     {dialSettings.presentation === 'horizontal' && (
-                       <>
-                         <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-                           <span>{dialSettings.keywords[0] || 'min'}</span>
-                           <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
-                         </div>
-                         <Slider
-                           value={newDialIntensity}
-                           onValueChange={setNewDialIntensity}
-                           max={100}
-                           step={1}
-                           className="w-full"
-                         />
-                       </>
-                     )}
-                     
-                     {dialSettings.presentation === 'vertical' && (
+                     {/* Dynamic Dial Rendering for non-horizontal presentations */}
+                     {dialSettings.presentation !== 'horizontal' && (
+                       <div>
+                      
+                        {dialSettings.presentation === 'vertical' && (
                        <div className="flex items-center gap-4">
                          <div className="flex flex-col items-center">
                            <span className="text-xs text-gray-400 mb-2">{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
@@ -473,9 +487,11 @@ export function DialControlPanel({
                            <span>{dialSettings.keywords[dialSettings.keywords.length - 1] || 'max'}</span>
                          </div>
                        </div>
+                      )}
+                       </div>
                      )}
                    </div>
-                </div>
+                 </div>
               </div>
 
               {/* Selected Emoji Intensity Section */}

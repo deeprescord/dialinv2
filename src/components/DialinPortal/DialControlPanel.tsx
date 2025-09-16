@@ -495,33 +495,40 @@ export function DialControlPanel({
               {/* Selected Emoji Intensity Section */}
               {selectedEmojiForIntensity && (
                 <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">
-                      {selectedEmojiForIntensity.emoji} {selectedEmojiForIntensity.label}
-                    </h3>
+                  <h3 className="text-lg font-bold text-white mb-4">
+                    {selectedEmojiForIntensity.emoji} {selectedEmojiForIntensity.label}
+                  </h3>
+                  
+                  {/* Single line layout: emoji display, slider, and add button */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl bg-white/20">
+                      {selectedEmojiForIntensity.emoji}
+                    </div>
+                    
+                    {/* Horizontal slider with labels */}
+                    <div className="flex-1 px-2">
+                      <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <span>min</span>
+                        <span>max</span>
+                      </div>
+                      <Slider
+                        value={emojiIntensity}
+                        onValueChange={setEmojiIntensity}
+                        max={100}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="text-center mt-1 text-white text-sm">
+                        {emojiIntensity[0]}%
+                      </div>
+                    </div>
+                    
                     <Button
                       onClick={saveEmojiIntensity}
                       className="bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full px-6"
                     >
                       ADD
                     </Button>
-                  </div>
-                  
-                  <div className="px-2">
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-                      <span>min</span>
-                      <span>max</span>
-                    </div>
-                    <Slider
-                      value={emojiIntensity}
-                      onValueChange={setEmojiIntensity}
-                      max={100}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="text-center mt-2 text-white text-sm">
-                      Intensity: {emojiIntensity[0]}%
-                    </div>
                   </div>
                 </div>
               )}

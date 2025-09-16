@@ -33,8 +33,17 @@ export function PinnedContactsRow({ contacts, onContactClick, title = "Pinned Co
             >
               <div className="relative">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={contact.avatar} />
-                  <AvatarFallback>{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  <AvatarImage 
+                    src={contact.avatar} 
+                    alt={contact.name}
+                    onError={(e) => {
+                      console.log('Avatar load error for:', contact.name, contact.avatar);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <AvatarFallback className="bg-primary/20 text-primary">
+                    {contact.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
                 </Avatar>
                 <div 
                   className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${

@@ -39,8 +39,17 @@ export function ContactHeader({ contact, onContactClick }: ContactHeaderProps) {
       <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
         <div className="flex items-center space-x-3">
           <Avatar className="h-12 w-12 ring-2 ring-white/20">
-            <AvatarImage src={contact.avatar} />
-            <AvatarFallback>{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            <AvatarImage 
+              src={contact.avatar} 
+              alt={contact.name}
+              onError={(e) => {
+                console.log('Avatar load error in ContactHeader for:', contact.name, contact.avatar);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <AvatarFallback className="bg-primary/20 text-primary">
+              {contact.name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
           </Avatar>
           <div>
             <h3 className="text-white font-semibold text-lg">{contact.name}</h3>

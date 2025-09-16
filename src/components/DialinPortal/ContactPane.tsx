@@ -112,8 +112,17 @@ export function ContactPane({
                   <div className="flex flex-col items-center space-y-1">
                     <h2 className="text-sm font-semibold text-white">{contact.name}</h2>
                     <Avatar className="h-12 w-12 ring-2 ring-white/30">
-                      <AvatarImage src={contact.avatar} />
-                      <AvatarFallback className="text-sm">{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      <AvatarImage 
+                        src={contact.avatar} 
+                        alt={contact.name}
+                        onError={(e) => {
+                          console.log('Avatar load error in ContactPane for:', contact.name, contact.avatar);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                        {contact.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
                     </Avatar>
                   </div>
                   

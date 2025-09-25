@@ -390,6 +390,27 @@ export function DialinPortal() {
     setShow360Settings(true);
   };
 
+  // Handle file drop
+  const handleFilesDrop = (files: File[], spaceId: string) => {
+    console.log(`Files dropped in space ${spaceId}:`, files);
+    // TODO: Implement file upload logic to backend
+    // For now, just log the action
+    files.forEach(file => {
+      console.log(`File: ${file.name}, Size: ${file.size}, Type: ${file.type}`);
+    });
+  };
+
+  // Handle creating new space from file drop
+  const handleCreateSpaceFromDrop = (name: string) => {
+    const newSpace: Space = {
+      id: Date.now().toString(),
+      name,
+      thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' // Default thumbnail
+    };
+    setSpaces(prev => [...prev, newSpace]);
+    console.log(`Created new space: ${name}`);
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -431,6 +452,9 @@ export function DialinPortal() {
             yAxisOffset={lobbySpace?.yAxis}
             volume={lobbySpace?.volume}
             isMuted={lobbySpace?.isMuted}
+            spaces={spaces}
+            onFilesDrop={handleFilesDrop}
+            onCreateSpace={handleCreateSpaceFromDrop}
           />
         )}
 

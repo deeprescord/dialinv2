@@ -4,8 +4,10 @@ import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
+import { DragDropZone } from './DragDropZone';
+import { SpaceSelectionModal } from './SpaceSelectionModal';
 import { videoCatalog, musicCatalog, friendsPosts, friends } from '@/data/catalogs';
-import { Friend } from '@/data/catalogs';
+import { Friend, Space } from '@/data/catalogs';
 import lobbyBackground from '@/assets/lobby-background.jpg';
 import appBackground from '@/assets/app-background.jpg';
 
@@ -23,6 +25,9 @@ interface HomeViewProps {
   yAxisOffset?: number;
   volume?: number;
   isMuted?: boolean;
+  spaces?: Space[];
+  onFilesDrop?: (files: File[], spaceId: string) => void;
+  onCreateSpace?: (name: string) => void;
 }
 
 export function HomeView({ 
@@ -38,21 +43,50 @@ export function HomeView({
   xAxisOffset,
   yAxisOffset,
   volume,
-  isMuted
+  isMuted,
+  spaces = [],
+  onFilesDrop,
+  onCreateSpace
 }: HomeViewProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
 
   const handleAddOptionSelect = (optionId: string) => {
     console.log('Selected option:', optionId);
     // TODO: Handle different add options
   };
+
+  const handleFilesDropped = (files: File[]) => {
+    setDroppedFiles(files);
+    setShowSpaceSelectionModal(true);
+  };
+
+  const handleSpaceSelect = (spaceId: string) => {
+    if (onFilesDrop && droppedFiles.length > 0) {
+      onFilesDrop(droppedFiles, spaceId);
+    }
+    setShowSpaceSelectionModal(false);
+    setDroppedFiles([]);
+  };
+
+  const handleCreateNewSpace = (name: string) => {
+    if (onCreateSpace) {
+      onCreateSpace(name);
+      // After creating the space, we'll need to get its ID to add files
+      // For now, we'll just close the modal
+      setShowSpaceSelectionModal(false);
+      setDroppedFiles([]);
+    }
+  };
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="pb-32"
-    >
+    <DragDropZone onFilesDropped={handleFilesDropped}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="pb-32"
+      >
       {/* Hero Header */}
       <HeroHeaderVideo
         videoSrc={isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined}
@@ -153,6 +187,19 @@ export function HomeView({
         onClose={() => setIsAddModalOpen(false)}
         onOptionSelect={handleAddOptionSelect}
       />
-    </motion.div>
+
+      <SpaceSelectionModal
+        isOpen={showSpaceSelectionModal}
+        onClose={() => {
+          setShowSpaceSelectionModal(false);
+          setDroppedFiles([]);
+        }}
+        onSpaceSelect={handleSpaceSelect}
+        onCreateNewSpace={handleCreateNewSpace}
+        spaces={spaces}
+        droppedFiles={droppedFiles}
+      />
+      </motion.div>
+    </DragDropZone>
   );
 }

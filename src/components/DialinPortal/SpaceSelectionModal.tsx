@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Folder, FolderOpen } from 'lucide-react';
+import { X, Plus, Folder, FolderOpen, MapPin } from 'lucide-react';
 import { Space } from '@/data/catalogs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface SpaceSelectionModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function SpaceSelectionModal({
 }: SpaceSelectionModalProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState('');
+  const [includeLocation, setIncludeLocation] = useState(false);
 
   const handleCreateSpace = () => {
     if (newSpaceName.trim()) {
@@ -120,6 +122,31 @@ export function SpaceSelectionModal({
                   </div>
                 </button>
               ))}
+            </div>
+
+            {/* Location Toggle */}
+            <div className="mb-4 p-3 bg-muted/30 rounded-lg border border-border">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="include-location"
+                  checked={includeLocation}
+                  onCheckedChange={(checked) => setIncludeLocation(checked === true)}
+                />
+                <div className="flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <label 
+                    htmlFor="include-location" 
+                    className="text-sm font-medium text-foreground cursor-pointer"
+                  >
+                    Include current location
+                  </label>
+                </div>
+              </div>
+              {includeLocation && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Files will be tagged with your current location
+                </div>
+              )}
             </div>
 
             {/* Create New Space */}

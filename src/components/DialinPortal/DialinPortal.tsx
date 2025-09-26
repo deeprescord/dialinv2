@@ -54,7 +54,7 @@ export function DialinPortal() {
     setShowCelebration(true);
   };
   const [spaces, setSpaces] = useState<Space[]>([
-    { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: appBackground },
+    { id: 'lobby', name: 'Lobby', thumb: lobbyPoster },
     ...initialSpaces
   ]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);

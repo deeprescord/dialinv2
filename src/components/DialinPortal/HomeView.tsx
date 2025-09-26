@@ -104,14 +104,6 @@ export function HomeView({
 
       {isLobby ? (
         <>
-          {/* Pinned Contacts - Hidden on mobile, requires scroll on desktop */}
-          <div className="hidden md:block mt-8">
-            <PinnedContactsRow 
-              contacts={pinnedContacts}
-              onContactClick={onContactClick}
-            />
-          </div>
-
           {/* Content Rows */}
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between mb-4">

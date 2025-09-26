@@ -10,7 +10,7 @@ interface PinnedContactsRowProps {
   title?: string;
 }
 
-export function PinnedContactsRow({ contacts, onContactClick, title = "Pinned Contacts" }: PinnedContactsRowProps) {
+export function PinnedContactsRow({ contacts, onContactClick, title = "Shared With" }: PinnedContactsRowProps) {
   if (contacts.length === 0) return null;
 
   return (

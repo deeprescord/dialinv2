@@ -61,6 +61,7 @@ export function DialinPortal() {
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -408,7 +409,15 @@ export function DialinPortal() {
       thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' // Default thumbnail
     };
     setSpaces(prev => [...prev, newSpace]);
-    console.log(`Created new space: ${name}`);
+  };
+
+  // Handle add option selection
+  const handleAddOptionSelect = (optionId: string) => {
+    if (optionId === 'space') {
+      setShowCreateSpaceModal(true);
+    }
+    console.log('Selected option:', optionId);
+    setIsAddModalOpen(false);
   };
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
@@ -455,6 +464,9 @@ export function DialinPortal() {
             spaces={spaces}
             onFilesDrop={handleFilesDrop}
             onCreateSpace={handleCreateSpaceFromDrop}
+            isAddModalOpen={isAddModalOpen}
+            onCloseAddModal={() => setIsAddModalOpen(false)}
+            onAddOptionSelect={handleAddOptionSelect}
           />
         )}
 
@@ -513,7 +525,7 @@ export function DialinPortal() {
           <CombinedBottomBar
             spaces={spaces}
             currentSpaceId="lobby"
-            onCreateSpace={() => setShowCreateSpaceModal(true)}
+            onCreateSpace={() => setIsAddModalOpen(true)}
             onDeleteSpace={handleDeleteSpace}
             onRenameSpace={handleRenameSpace}
             onUpdateSpaceDescription={handleUpdateSpaceDescription}

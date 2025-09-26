@@ -28,6 +28,9 @@ interface HomeViewProps {
   spaces?: Space[];
   onFilesDrop?: (files: File[], spaceId: string) => void;
   onCreateSpace?: (name: string) => void;
+  isAddModalOpen?: boolean;
+  onCloseAddModal?: () => void;
+  onAddOptionSelect?: (optionId: string) => void;
 }
 
 export function HomeView({ 
@@ -46,16 +49,20 @@ export function HomeView({
   isMuted,
   spaces = [],
   onFilesDrop,
-  onCreateSpace
+  onCreateSpace,
+  isAddModalOpen = false,
+  onCloseAddModal,
+  onAddOptionSelect
 }: HomeViewProps) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
 
   const handleAddOptionSelect = (optionId: string) => {
-    console.log('Selected option:', optionId);
-    // TODO: Handle different add options
+    if (onAddOptionSelect) {
+      onAddOptionSelect(optionId);
+    }
   };
+
 
   const handleFilesDropped = (files: File[]) => {
     setDroppedFiles(files);
@@ -105,16 +112,8 @@ export function HomeView({
       {isLobby ? (
         <>
           {/* Who's Here */}
-          <div className="px-4 mb-4 mt-2">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-medium">Who's Here</h2>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
-              >
-                <span className="text-lg font-semibold">+</span>
-              </button>
-            </div>
+          <div className="px-4 mb-2 mt-1">
+            <h2 className="text-lg font-medium mb-2">Who's Here</h2>
           </div>
           
           <PinnedContactsRow 
@@ -140,16 +139,8 @@ export function HomeView({
       ) : (
         <>
           {/* Who's Here */}
-          <div className="px-4 mb-4 mt-2">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-medium">Who's Here</h2>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
-              >
-                <span className="text-lg font-semibold">+</span>
-              </button>
-            </div>
+          <div className="px-4 mb-2 mt-1">
+            <h2 className="text-lg font-medium mb-2">Who's Here</h2>
           </div>
           
           <PinnedContactsRow 
@@ -176,7 +167,7 @@ export function HomeView({
 
       <AddOptionsModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={onCloseAddModal || (() => {})}
         onOptionSelect={handleAddOptionSelect}
       />
 

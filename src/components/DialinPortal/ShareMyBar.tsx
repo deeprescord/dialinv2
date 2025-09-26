@@ -61,7 +61,7 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
             
             return (
               <div key={toggle.key} className="flex flex-col items-center">
-                <div className="relative">
+                <div className="relative pt-2 pb-1">
                   <Button
                     variant="ghost"
                     className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${getButtonColor(toggle.key)}`}
@@ -70,7 +70,7 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
                     <IconComponent size={31} className="text-white" />
                   </Button>
                   {isActive && (
-                    <div className="absolute -top-1 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center border-2 border-black">
+                    <div className="absolute top-0 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center border-2 border-black">
                       <Check size={14} className="text-black font-bold" />
                     </div>
                   )}

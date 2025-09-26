@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Close } from '../icons';
 import { Card } from '../ui/card';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Sparkles } from 'lucide-react';
 
 interface CreateSpaceModalProps {
   isOpen: boolean;
@@ -23,6 +23,8 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
   const [spaceName, setSpaceName] = useState('');
   const [selectedCover, setSelectedCover] = useState(coverOptions[0]);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,12 +47,41 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleGenerateWithAI = async () => {
+    if (!aiPrompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      // TODO: Replace with actual AI image generation service
+      // For now, we'll simulate with a placeholder
+      setTimeout(() => {
+        const generatedImage = `data:image/svg+xml,${encodeURIComponent(
+          `<svg width="200" height="120" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="hsl(280, 100%, 70%)"/>
+            <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="12">
+              AI Generated: ${aiPrompt.slice(0, 20)}...
+            </text>
+          </svg>`
+        )}`;
+        
+        setUploadedImages(prev => [...prev, generatedImage]);
+        setSelectedCover(generatedImage);
+        setAiPrompt('');
+        setIsGenerating(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+      setIsGenerating(false);
+    }
+  };
+
   const handleCreate = () => {
     if (spaceName.trim()) {
       onCreate(spaceName.trim(), selectedCover);
       setSpaceName('');
       setSelectedCover(coverOptions[0]);
       setUploadedImages([]);
+      setAiPrompt('');
       onClose();
     }
   };
@@ -118,6 +149,32 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
                     onChange={handleImageUpload}
                     className="hidden"
                   />
+
+                  {/* AI Generation Section */}
+                  <div className="mb-3 p-3 glass-card border border-white/10 rounded-lg">
+                    <label className="block text-sm font-medium mb-2">Generate with AI</label>
+                    <div className="flex space-x-2">
+                      <Input
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        placeholder="Describe the space background you want..."
+                        className="flex-1 glass-card bg-white/5 border-white/10 text-sm"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="glass-card border-white/20 hover:bg-white/5 px-3"
+                        onClick={handleGenerateWithAI}
+                        disabled={!aiPrompt.trim() || isGenerating}
+                      >
+                        {isGenerating ? (
+                          <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                        ) : (
+                          <Sparkles size={16} />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
 
                   {/* Combined Image Grid */}
                   <div className="grid grid-cols-2 gap-2">

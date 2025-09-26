@@ -6,6 +6,7 @@ import { Close } from '../icons';
 import { Card } from '../ui/card';
 import { Upload, X, Sparkles } from 'lucide-react';
 import { Switch } from '../ui/switch';
+import { GradientLoader } from './GradientLoader';
 
 interface CreateSpaceModalProps {
   isOpen: boolean;
@@ -109,11 +110,14 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
             className="relative z-10 w-96"
           >
             <Card className="glass-card border border-white/10 rounded-xl">
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-lg font-semibold">Create New Space</h2>
-                <Button variant="ghost" size="sm" onClick={onClose}>
-                  <Close size={20} />
-                </Button>
+              <div className="relative">
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                  <h2 className="text-lg font-semibold">Create New Space</h2>
+                  <Button variant="ghost" size="sm" onClick={onClose}>
+                    <Close size={20} />
+                  </Button>
+                </div>
+                <GradientLoader isLoading={isGenerating} />
               </div>
 
               <div className="p-4">

@@ -17,7 +17,7 @@ interface AddOptionsModalProps {
 }
 
 const addOptions: AddOption[] = [
-  { id: 'floor', title: 'FLOOR', icon: Layers },
+  { id: 'space', title: 'SPACE', icon: Layers },
   { id: 'post', title: 'POST', icon: Plus },
   { id: 'group', title: 'GROUP', icon: MessageSquare },
   { id: 'contact', title: 'CONTACT', icon: Users },
@@ -50,7 +50,7 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect }: AddOptionsM
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Add to Floor</h2>
+              <h2 className="text-lg font-semibold">Add to Space</h2>
               <Button
                 variant="ghost"
                 size="sm"

@@ -397,8 +397,8 @@ export default function SpacePage() {
               onMediaClick={handleMediaClick}
               onMediaLongPress={handleMediaLongPress}
               backgroundImage={backgroundImage}
-              floorName={currentSpace?.name || 'Lobby'}
-              floorDescription={currentSpace?.description}
+              spaceName={currentSpace?.name || 'Lobby'}
+              spaceDescription={currentSpace?.description}
               isLobby={spaceId === 'lobby'}
               show360={show360}
               xAxisOffset={currentSpace?.xAxis}

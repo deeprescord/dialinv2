@@ -17,8 +17,8 @@ interface HomeViewProps {
   onMediaClick: (item: any) => void;
   onMediaLongPress: (item: any) => void;
   backgroundImage?: string;
-  floorName?: string;
-  floorDescription?: string;
+  spaceName?: string;
+  spaceDescription?: string;
   isLobby?: boolean;
   show360?: boolean;
   xAxisOffset?: number;
@@ -36,8 +36,8 @@ export function HomeView({
   onMediaClick, 
   onMediaLongPress,
   backgroundImage,
-  floorName,
-  floorDescription,
+  spaceName,
+  spaceDescription,
   isLobby = false,
   show360 = false,
   xAxisOffset,
@@ -91,8 +91,8 @@ export function HomeView({
       <HeroHeaderVideo
         videoSrc={isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined}
         posterSrc={backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
-        title={floorName || "Lobby"}
-        subtitle={floorDescription || "Welcome back"}
+        title={spaceName || "Lobby"}
+        subtitle={spaceDescription || "Welcome back"}
         backgroundImage={backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
         showVideo={isLobby}
         show360={show360}
@@ -105,14 +105,14 @@ export function HomeView({
       {isLobby ? (
         <>
           {/* Who's Here */}
-          <div className="px-4 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Who's Here</h2>
+          <div className="px-4 mb-4 mt-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-medium">Who's Here</h2>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
-                className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
+                className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
               >
-                <span className="text-xl font-semibold">+</span>
+                <span className="text-lg font-semibold">+</span>
               </button>
             </div>
           </div>
@@ -140,14 +140,14 @@ export function HomeView({
       ) : (
         <>
           {/* Who's Here */}
-          <div className="px-4 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Who's Here</h2>
+          <div className="px-4 mb-4 mt-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-medium">Who's Here</h2>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
-                className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
+                className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
               >
-                <span className="text-xl font-semibold">+</span>
+                <span className="text-lg font-semibold">+</span>
               </button>
             </div>
           </div>

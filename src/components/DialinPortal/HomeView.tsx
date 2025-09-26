@@ -104,23 +104,29 @@ export function HomeView({
 
       {isLobby ? (
         <>
-          {/* Shared With */}
+          {/* Who's Here */}
+          <div className="px-4 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Who's Here</h2>
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
+              >
+                <span className="text-xl font-semibold">+</span>
+              </button>
+            </div>
+          </div>
+          
           <PinnedContactsRow 
             contacts={pinnedContacts.slice(0, 3)}
             onContactClick={onContactClick}
-            title="here"
+            title=""
           />
 
-          {/* Contents Section */}
+          {/* Items Section */}
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Items</h2>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors"
-              >
-                <span className="text-lg font-semibold">+</span>
-              </button>
             </div>
           </div>
 
@@ -133,23 +139,29 @@ export function HomeView({
         </>
       ) : (
         <>
-          {/* Shared With */}
+          {/* Who's Here */}
+          <div className="px-4 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Who's Here</h2>
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 transition-colors"
+              >
+                <span className="text-xl font-semibold">+</span>
+              </button>
+            </div>
+          </div>
+          
           <PinnedContactsRow 
             contacts={pinnedContacts.slice(0, 3)}
             onContactClick={onContactClick}
-            title="here"
+            title=""
           />
 
-          {/* Contents Section */}
+          {/* Items Section */}
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Items</h2>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors"
-              >
-                <span className="text-lg font-semibold">+</span>
-              </button>
             </div>
           </div>
 

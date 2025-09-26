@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Close } from '../icons';
 import { Card } from '../ui/card';
 import { Upload, X, Sparkles } from 'lucide-react';
+import { Switch } from '../ui/switch';
 
 interface CreateSpaceModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [is360Mode, setIs360Mode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,7 +61,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
           `<svg width="200" height="120" xmlns="http://www.w3.org/2000/svg">
             <rect width="100%" height="100%" fill="hsl(280, 100%, 70%)"/>
             <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="12">
-              AI Generated: ${aiPrompt.slice(0, 20)}...
+              ${is360Mode ? '360° ' : ''}AI Generated: ${aiPrompt.slice(0, 15)}...
             </text>
           </svg>`
         )}`;
@@ -152,12 +154,22 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
 
                   {/* AI Generation Section */}
                   <div className="mb-3 p-3 glass-card border border-white/10 rounded-lg">
-                    <label className="block text-sm font-medium mb-2">Generate with AI</label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium">Generate with AI</label>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-muted-foreground">360°</span>
+                        <Switch
+                          checked={is360Mode}
+                          onCheckedChange={setIs360Mode}
+                          className="scale-75"
+                        />
+                      </div>
+                    </div>
                     <div className="flex space-x-2">
                       <Input
                         value={aiPrompt}
                         onChange={(e) => setAiPrompt(e.target.value)}
-                        placeholder="Describe the space background you want..."
+                        placeholder={is360Mode ? "Describe the 360° environment you want..." : "Describe the space background you want..."}
                         className="flex-1 glass-card bg-white/5 border-white/10 text-sm"
                       />
                       <Button

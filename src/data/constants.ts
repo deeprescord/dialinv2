@@ -54,4 +54,9 @@ export const SHARE_TOGGLES: ShareToggle[] = [
   { key: 'workPhone', label: 'Work Phone', color: 'share-work-phone', icon: 'Phone' },
   { key: 'workEmail', label: 'Work Email', color: 'share-work-email', icon: 'Mail' },
   { key: 'homeAddress', label: 'Home Address', color: 'share-home-address', icon: 'Home' },
+  { key: 'resume', label: 'Resume', color: 'share-resume', icon: 'FileText' },
+  { key: 'instagram', label: 'Instagram', color: 'share-instagram', icon: 'Instagram' },
+  { key: 'driversLicense', label: 'Driver\'s License', color: 'share-drivers-license', icon: 'CreditCard' },
+  { key: 'medicalHistory', label: 'Medical History', color: 'share-medical', icon: 'Heart' },
+  { key: 'insurance', label: 'Insurance', color: 'share-insurance', icon: 'Shield' },
 ];

@@ -48,7 +48,6 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
               switch (key) {
                 case 'personal': return 'bg-emerald-500';
                 case 'workAddress': return 'bg-violet-500';
-                case 'workPhone': return 'bg-cyan-500';
                 case 'workEmail': return 'bg-blue-500';
                 case 'homeAddress': return 'bg-orange-500';
                 case 'resume': return 'bg-indigo-500';
@@ -68,7 +67,7 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
                     className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${getButtonColor(toggle.key)}`}
                     onClick={() => onToggleChange(toggle.key)}
                   >
-                    <IconComponent size={24} className="text-white" />
+                    <IconComponent size={31} className="text-white" />
                   </Button>
                   {isActive && (
                     <div className="absolute -top-1 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center border-2 border-black">

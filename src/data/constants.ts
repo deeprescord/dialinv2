@@ -51,7 +51,6 @@ export interface ShareToggle {
 export const SHARE_TOGGLES: ShareToggle[] = [
   { key: 'personal', label: 'Personal Cell', color: 'share-personal', icon: 'Smartphone' },
   { key: 'workAddress', label: 'Work Address', color: 'share-work-address', icon: 'Building' },
-  { key: 'workPhone', label: 'Work Phone', color: 'share-work-phone', icon: 'Phone' },
   { key: 'workEmail', label: 'Work Email', color: 'share-work-email', icon: 'Mail' },
   { key: 'homeAddress', label: 'Home Address', color: 'share-home-address', icon: 'Home' },
   { key: 'resume', label: 'Resume', color: 'share-resume', icon: 'FileText' },

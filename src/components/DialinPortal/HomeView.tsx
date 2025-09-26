@@ -108,13 +108,13 @@ export function HomeView({
           <PinnedContactsRow 
             contacts={pinnedContacts.slice(0, 3)}
             onContactClick={onContactClick}
-            title="Shared With"
+            title="here"
           />
 
           {/* Contents Section */}
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Contents</h2>
+              <h2 className="text-xl font-semibold">Items</h2>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
                 className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors"
@@ -137,13 +137,13 @@ export function HomeView({
           <PinnedContactsRow 
             contacts={pinnedContacts.slice(0, 3)}
             onContactClick={onContactClick}
-            title="Shared With"
+            title="here"
           />
 
           {/* Contents Section */}
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Contents</h2>
+              <h2 className="text-xl font-semibold">Items</h2>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
                 className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors"

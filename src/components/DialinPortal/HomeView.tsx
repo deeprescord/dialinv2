@@ -104,10 +104,17 @@ export function HomeView({
 
       {isLobby ? (
         <>
-          {/* Content Rows */}
+          {/* Shared With */}
+          <PinnedContactsRow 
+            contacts={pinnedContacts.slice(0, 3)}
+            onContactClick={onContactClick}
+            title="Shared With"
+          />
+
+          {/* Contents Section */}
           <div className="px-4 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">FRIENDS</h2>
+              <h2 className="text-xl font-semibold">Contents</h2>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
                 className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary/30 transition-colors"
@@ -119,26 +126,7 @@ export function HomeView({
 
           <MediaRow
             title=""
-            items={friendsPosts}
-            onItemClick={onMediaClick}
-            onItemLongPress={onMediaLongPress}
-          />
-
-          <MediaRow
-            title="VIDEOS"
-            items={videoCatalog.slice(0, 8)}
-            onItemClick={onMediaClick}
-            onItemLongPress={onMediaLongPress}
-          />
-
-          <MediaRow
-            title="MUSIC"
-            items={musicCatalog.slice(0, 6).map(item => ({
-              ...item,
-              thumb: item.art,
-              sharedBy: item.artist,
-              sharedByAvatar: undefined
-            }))}
+            items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
             onItemClick={onMediaClick}
             onItemLongPress={onMediaLongPress}
           />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Users, Globe, UserPlus, Layers, MessageSquare, Zap } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -27,6 +27,23 @@ const addOptions: AddOption[] = [
 ];
 
 export function AddOptionsModal({ isOpen, onClose, onOptionSelect }: AddOptionsModalProps) {
+  // ESC key handling
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
+
   const handleOptionClick = (optionId: string) => {
     onOptionSelect(optionId);
     onClose();

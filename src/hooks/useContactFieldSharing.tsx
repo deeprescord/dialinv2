@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useProfile } from './useProfile';
 
+// Helper to validate UUID format
+const isValidUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 export interface ProfileFieldToggle {
   key: string;
   label: string;
@@ -86,6 +92,13 @@ export function useContactFieldSharing(contactUserId?: string) {
       return;
     }
 
+    // Skip if contact ID is not a valid UUID (e.g., mock data)
+    if (!isValidUUID(contactUserId)) {
+      console.log('Skipping field sharing fetch - invalid UUID:', contactUserId);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -113,6 +126,12 @@ export function useContactFieldSharing(contactUserId?: string) {
   const toggleFieldShare = async (fieldName: string) => {
     if (!contactUserId) {
       toast.error('No contact selected');
+      return;
+    }
+
+    // Skip if contact ID is not a valid UUID (e.g., mock data)
+    if (!isValidUUID(contactUserId)) {
+      toast.error('Cannot share with mock contacts. This feature works with real user contacts only.');
       return;
     }
 

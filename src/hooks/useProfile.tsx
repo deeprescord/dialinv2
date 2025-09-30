@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export interface CustomField {
+  id: string;
+  label: string;
+  value: string;
+  isPublic: boolean;
+}
+
 export interface Profile {
   id: string;
   user_id: string;
@@ -18,6 +25,7 @@ export interface Profile {
   address_public: boolean;
   bio_public: boolean;
   profile_media_public: boolean;
+  custom_fields?: CustomField[];
   created_at: string;
   updated_at: string;
 }
@@ -43,7 +51,14 @@ export function useProfile() {
         return;
       }
 
-      setProfile(data as Profile);
+      if (data) {
+        const profileData: Profile = {
+          ...data,
+          profile_media_type: data.profile_media_type as 'image' | 'video' | null,
+          custom_fields: Array.isArray(data.custom_fields) ? (data.custom_fields as unknown as CustomField[]) : []
+        };
+        setProfile(profileData);
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -59,12 +74,15 @@ export function useProfile() {
         return false;
       }
 
+      // Prepare the updates with proper typing
+      const updateData: any = {
+        user_id: user.id,
+        ...updates,
+      };
+
       const { data, error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          ...updates,
-        }, {
+        .upsert(updateData, {
           onConflict: 'user_id'
         })
         .select()
@@ -76,7 +94,14 @@ export function useProfile() {
         return false;
       }
 
-      setProfile(data as Profile);
+      if (data) {
+        const profileData: Profile = {
+          ...data,
+          profile_media_type: data.profile_media_type as 'image' | 'video' | null,
+          custom_fields: Array.isArray(data.custom_fields) ? (data.custom_fields as unknown as CustomField[]) : []
+        };
+        setProfile(profileData);
+      }
       toast.success('Profile updated successfully');
       return true;
     } catch (error) {

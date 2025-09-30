@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Camera, Video, User, X } from 'lucide-react';
-import { useProfile } from '@/hooks/useProfile';
+import { Upload, Camera, Video, User, X, Plus, Trash2 } from 'lucide-react';
+import { useProfile, CustomField } from '@/hooks/useProfile';
 import { VideoTrimmer } from './VideoTrimmer';
 import { toast } from 'sonner';
 
@@ -28,6 +28,7 @@ export const UserSettings: React.FC = () => {
     profile_media_public: profile?.profile_media_public ?? true,
   });
   
+  const [customFields, setCustomFields] = useState<CustomField[]>(profile?.custom_fields || []);
   const [showVideoTrimmer, setShowVideoTrimmer] = useState(false);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +48,7 @@ export const UserSettings: React.FC = () => {
         bio_public: profile.bio_public,
         profile_media_public: profile.profile_media_public,
       });
+      setCustomFields(profile.custom_fields || []);
     }
   }, [profile]);
 
@@ -55,12 +57,35 @@ export const UserSettings: React.FC = () => {
   };
 
   const handleSave = async () => {
-    const success = await updateProfile(formData);
+    const success = await updateProfile({
+      ...formData,
+      custom_fields: customFields,
+    });
     if (success) {
       toast.success('Settings saved successfully');
       // Navigate back to home after successful save
       setTimeout(() => navigate('/'), 1000);
     }
+  };
+
+  const addCustomField = () => {
+    const newField: CustomField = {
+      id: `field_${Date.now()}`,
+      label: '',
+      value: '',
+      isPublic: false,
+    };
+    setCustomFields([...customFields, newField]);
+  };
+
+  const updateCustomField = (id: string, updates: Partial<CustomField>) => {
+    setCustomFields(customFields.map(field => 
+      field.id === id ? { ...field, ...updates } : field
+    ));
+  };
+
+  const removeCustomField = (id: string) => {
+    setCustomFields(customFields.filter(field => field.id !== id));
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,6 +256,63 @@ export const UserSettings: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Custom Fields Section */}
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex justify-between items-center">
+              <Label className="text-base font-semibold">Custom Fields</Label>
+              <Button
+                onClick={addCustomField}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Field
+              </Button>
+            </div>
+
+            {customFields.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No custom fields yet. Click "Add Field" to create one.</p>
+            ) : (
+              <div className="space-y-3">
+                {customFields.map((field) => (
+                  <div key={field.id} className="flex items-start gap-2 p-3 border rounded-lg">
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        placeholder="Field label"
+                        value={field.label}
+                        onChange={(e) => updateCustomField(field.id, { label: e.target.value })}
+                        className="font-medium"
+                      />
+                      <Input
+                        placeholder="Field value"
+                        value={field.value}
+                        onChange={(e) => updateCustomField(field.id, { value: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex flex-col items-center gap-2 pt-1">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={field.isPublic}
+                          onCheckedChange={(checked) => updateCustomField(field.id, { isPublic: checked })}
+                        />
+                        <Label className="text-sm">Public</Label>
+                      </div>
+                      <Button
+                        onClick={() => removeCustomField(field.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <Button onClick={handleSave} className="w-full">

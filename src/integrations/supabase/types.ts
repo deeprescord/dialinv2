@@ -136,6 +136,7 @@ export type Database = {
           bio: string | null
           bio_public: boolean | null
           created_at: string
+          custom_fields: Json | null
           email: string | null
           email_public: boolean | null
           full_name: string | null
@@ -155,6 +156,7 @@ export type Database = {
           bio?: string | null
           bio_public?: boolean | null
           created_at?: string
+          custom_fields?: Json | null
           email?: string | null
           email_public?: boolean | null
           full_name?: string | null
@@ -174,6 +176,7 @@ export type Database = {
           bio?: string | null
           bio_public?: boolean | null
           created_at?: string
+          custom_fields?: Json | null
           email?: string | null
           email_public?: boolean | null
           full_name?: string | null

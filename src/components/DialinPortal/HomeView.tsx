@@ -222,6 +222,7 @@ export function HomeView({
         isOpen={isAddModalOpen}
         onClose={onCloseAddModal || (() => {})}
         onOptionSelect={handleAddOptionSelect}
+        onUploadClick={handleFilesDropped}
       />
 
       <SpaceSelectionModal

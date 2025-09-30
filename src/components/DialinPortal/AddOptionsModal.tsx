@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Users, Globe, UserPlus, Layers, MessageSquare, Zap } from 'lucide-react';
+import { X, Plus, Users, Globe, UserPlus, Layers, MessageSquare, Zap, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface AddOption {
@@ -14,10 +14,12 @@ interface AddOptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOptionSelect: (optionId: string) => void;
+  onUploadClick?: (files: File[]) => void;
 }
 
 const addOptions: AddOption[] = [
   { id: 'space', title: 'SPACE', icon: Layers },
+  { id: 'upload', title: 'UPLOAD', icon: Upload },
   { id: 'post', title: 'POST', icon: Plus },
   { id: 'group', title: 'GROUP', icon: MessageSquare },
   { id: 'contact', title: 'CONTACT', icon: Users },
@@ -26,7 +28,9 @@ const addOptions: AddOption[] = [
   { id: 'web', title: 'WEB', icon: Globe },
 ];
 
-export function AddOptionsModal({ isOpen, onClose, onOptionSelect }: AddOptionsModalProps) {
+export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick }: AddOptionsModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // ESC key handling
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
@@ -45,8 +49,30 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect }: AddOptionsM
   }, [isOpen, onClose]);
 
   const handleOptionClick = (optionId: string) => {
-    onOptionSelect(optionId);
+    if (optionId === 'upload') {
+      fileInputRef.current?.click();
+    } else {
+      onOptionSelect(optionId);
+      onClose();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    
+    if (onUploadClick) {
+      onUploadClick(fileArray);
+    }
+    
     onClose();
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -77,6 +103,15 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect }: AddOptionsM
                 <X className="h-4 w-4" />
               </Button>
             </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
+              onChange={handleFileChange}
+              className="hidden"
+            />
 
             <div className="grid grid-cols-2 gap-3">
               {addOptions.map((option) => {

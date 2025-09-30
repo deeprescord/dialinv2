@@ -6,14 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Camera, Video, User, X, Plus, Trash2 } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Upload, Camera, Video, User, X, Plus, Trash2, Check } from 'lucide-react';
 import { useProfile, CustomField } from '@/hooks/useProfile';
 import { VideoTrimmer } from './VideoTrimmer';
 import { toast } from 'sonner';
 
 export const UserSettings: React.FC = () => {
   const navigate = useNavigate();
-  const { profile, loading, uploading, updateProfile, uploadProfileMedia } = useProfile();
+  const { profile, loading, uploading, updateProfile, uploadProfileMedia, mediaHistory, selectMediaFromHistory } = useProfile();
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     email: profile?.email || '',
@@ -130,6 +131,10 @@ export const UserSettings: React.FC = () => {
     handleMediaUpload(trimmedFile, 'video');
   };
 
+  const handleSelectFromHistory = async (mediaUrl: string, mediaType: 'image' | 'video') => {
+    await selectMediaFromHistory(mediaUrl, mediaType);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -207,6 +212,53 @@ export const UserSettings: React.FC = () => {
               className="hidden"
             />
           </div>
+
+          {/* Previous Profile Pictures Carousel */}
+          {mediaHistory.length > 0 && (
+            <div className="space-y-4">
+              <Label>Previous Profile Pictures</Label>
+              <Carousel className="w-full">
+                <CarouselContent className="-ml-2">
+                  {mediaHistory.map((media) => (
+                    <CarouselItem key={media.id} className="pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5">
+                      <div 
+                        className="relative group cursor-pointer aspect-square rounded-lg overflow-hidden bg-muted"
+                        onClick={() => handleSelectFromHistory(media.media_url, media.media_type)}
+                      >
+                        {media.media_type === 'video' ? (
+                          <video
+                            src={media.media_url}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                            playsInline
+                            onMouseEnter={(e) => e.currentTarget.play()}
+                            onMouseLeave={(e) => e.currentTarget.pause()}
+                          />
+                        ) : (
+                          <img
+                            src={media.media_url}
+                            alt="Previous profile"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Check className="w-8 h-8 text-white" />
+                        </div>
+                        {profile?.profile_media_url === media.media_url && (
+                          <div className="absolute top-1 right-1 bg-primary rounded-full p-1">
+                            <Check className="w-3 h-3 text-primary-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </div>
+          )}
 
           {/* Personal Information Fields */}
           <div className="grid gap-4">

@@ -9,6 +9,14 @@ export interface CustomField {
   isPublic: boolean;
 }
 
+export interface ProfileMediaHistory {
+  id: string;
+  user_id: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  created_at: string;
+}
+
 export interface Profile {
   id: string;
   user_id: string;
@@ -34,6 +42,7 @@ export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [mediaHistory, setMediaHistory] = useState<ProfileMediaHistory[]>([]);
 
   const fetchProfile = async () => {
     try {
@@ -63,6 +72,30 @@ export function useProfile() {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMediaHistory = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profile_media_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching media history:', error);
+        return;
+      }
+
+      if (data) {
+        setMediaHistory(data as ProfileMediaHistory[]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -123,7 +156,7 @@ export function useProfile() {
 
       // Generate unique filename
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/profile.${fileExt}`;
+      const fileName = `${user.id}/profile-${Date.now()}.${fileExt}`;
       
       // Upload to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -141,6 +174,19 @@ export function useProfile() {
         .from('profile-media')
         .getPublicUrl(uploadData.path);
 
+      // Save to history
+      const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+      await supabase
+        .from('profile_media_history')
+        .insert({
+          user_id: user.id,
+          media_url: data.publicUrl,
+          media_type: mediaType,
+        });
+
+      // Refresh history
+      await fetchMediaHistory();
+
       return data.publicUrl;
 
     } catch (error) {
@@ -152,8 +198,41 @@ export function useProfile() {
     }
   };
 
+  const selectMediaFromHistory = async (mediaUrl: string, mediaType: 'image' | 'video') => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in');
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          profile_media_url: mediaUrl,
+          profile_media_type: mediaType,
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        toast.error('Failed to update profile');
+        return false;
+      }
+
+      await fetchProfile();
+      toast.success('Profile picture updated');
+      return true;
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('An error occurred');
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
+    fetchMediaHistory();
   }, []);
 
   return {
@@ -163,5 +242,7 @@ export function useProfile() {
     updateProfile,
     uploadProfileMedia,
     refetch: fetchProfile,
+    mediaHistory,
+    selectMediaFromHistory,
   };
 }

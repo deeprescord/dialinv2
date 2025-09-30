@@ -14,7 +14,187 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      file_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          file_id: string
+          id: string
+          timestamp_seconds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          file_id: string
+          id?: string
+          timestamp_seconds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          file_id?: string
+          id?: string
+          timestamp_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_comments_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_shares: {
+        Row: {
+          access_level: string
+          created_at: string
+          file_id: string
+          id: string
+          shared_by: string
+          shared_with: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string
+          file_id: string
+          id?: string
+          shared_by: string
+          shared_with: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          file_id?: string
+          id?: string
+          shared_by?: string
+          shared_with?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_shares_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      files: {
+        Row: {
+          created_at: string
+          duration: number | null
+          file_size: number
+          file_type: string
+          id: string
+          mime_type: string | null
+          original_name: string
+          owner_id: string
+          storage_path: string
+          thumbnail_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: number | null
+          file_size: number
+          file_type: string
+          id?: string
+          mime_type?: string | null
+          original_name: string
+          owner_id: string
+          storage_path: string
+          thumbnail_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number | null
+          file_size?: number
+          file_type?: string
+          id?: string
+          mime_type?: string | null
+          original_name?: string
+          owner_id?: string
+          storage_path?: string
+          thumbnail_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      space_files: {
+        Row: {
+          added_at: string
+          added_by: string
+          file_id: string
+          id: string
+          space_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by: string
+          file_id: string
+          id?: string
+          space_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string
+          file_id?: string
+          id?: string
+          space_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "space_files_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "space_files_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spaces: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

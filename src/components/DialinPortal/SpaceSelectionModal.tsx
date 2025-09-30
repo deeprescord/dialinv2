@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Folder, FolderOpen, MapPin } from 'lucide-react';
-import { Space } from '@/data/catalogs';
 import { Checkbox } from '@/components/ui/checkbox';
+
+interface SpaceOption {
+  id: string;
+  name: string;
+  fileCount?: number;
+}
 
 interface SpaceSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSpaceSelect: (spaceId: string) => void;
   onCreateNewSpace: (name: string) => void;
-  spaces: Space[];
+  spaces: SpaceOption[];
   droppedFiles: File[];
+  loading?: boolean;
 }
 
 export function SpaceSelectionModal({
@@ -113,25 +119,17 @@ export function SpaceSelectionModal({
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      {space.thumb ? (
-                        <img
-                          src={space.thumb}
-                          alt={space.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                      )}
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-foreground truncate">
                         {space.name}
                       </div>
-                      {space.description && (
+                      {space.fileCount !== undefined && (
                         <div className="text-sm text-muted-foreground truncate">
-                          {space.description}
+                          {space.fileCount} files
                         </div>
                       )}
                     </div>

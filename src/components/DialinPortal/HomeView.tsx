@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { PinnedContactsRow } from './PinnedContactsRow';
@@ -6,6 +6,10 @@ import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
 import { DragDropZone } from './DragDropZone';
 import { SpaceSelectionModal } from './SpaceSelectionModal';
+import { AuthModal } from './AuthModal';
+import { useSpaces } from '@/hooks/useSpaces';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { supabase } from '@/integrations/supabase/client';
 import { videoCatalog, musicCatalog, friendsPosts, friends } from '@/data/catalogs';
 import { Friend, Space } from '@/data/catalogs';
 import lobbyBackground from '@/assets/lobby-background.jpg';
@@ -57,7 +61,29 @@ export function HomeView({
   onOpenAddPanel
 }: HomeViewProps) {
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [user, setUser] = useState<any>(null);
+
+  const { spaces: userSpaces, createSpace, loading: spacesLoading } = useSpaces();
+  const { uploadMultipleFiles, uploading } = useFileUpload();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleAddOptionSelect = (optionId: string) => {
     if (onAddOptionSelect) {
@@ -67,25 +93,49 @@ export function HomeView({
 
 
   const handleFilesDropped = (files: File[]) => {
+    if (!user) {
+      setShowAuthModal(true);
+      setDroppedFiles(files); // Store files for after auth
+      return;
+    }
+    
     setDroppedFiles(files);
     setShowSpaceSelectionModal(true);
   };
 
-  const handleSpaceSelect = (spaceId: string) => {
-    if (onFilesDrop && droppedFiles.length > 0) {
-      onFilesDrop(droppedFiles, spaceId);
-    }
-    setShowSpaceSelectionModal(false);
-    setDroppedFiles([]);
-  };
-
-  const handleCreateNewSpace = (name: string) => {
-    if (onCreateSpace) {
-      onCreateSpace(name);
-      // After creating the space, we'll need to get its ID to add files
-      // For now, we'll just close the modal
+  const handleSpaceSelect = async (spaceId: string) => {
+    try {
+      if (droppedFiles.length > 0) {
+        await uploadMultipleFiles(droppedFiles, spaceId);
+        if (onFilesDrop) {
+          onFilesDrop(droppedFiles, spaceId);
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+    } finally {
       setShowSpaceSelectionModal(false);
       setDroppedFiles([]);
+    }
+  };
+
+  const handleCreateNewSpace = async (name: string) => {
+    const newSpace = await createSpace(name);
+    if (newSpace && droppedFiles.length > 0) {
+      await handleSpaceSelect(newSpace.id);
+    } else {
+      setShowSpaceSelectionModal(false);
+      setDroppedFiles([]);
+    }
+    if (onCreateSpace) {
+      onCreateSpace(name);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    // User is now authenticated, continue with file drop if files were dropped
+    if (droppedFiles.length > 0) {
+      setShowSpaceSelectionModal(true);
     }
   };
   return (
@@ -182,8 +232,19 @@ export function HomeView({
         }}
         onSpaceSelect={handleSpaceSelect}
         onCreateNewSpace={handleCreateNewSpace}
-        spaces={spaces}
+        spaces={userSpaces.map(space => ({
+          id: space.id,
+          name: space.name,
+          fileCount: 0, // TODO: Add file count query
+        }))}
         droppedFiles={droppedFiles}
+        loading={spacesLoading || uploading}
+      />
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
       />
       </motion.div>
     </DragDropZone>

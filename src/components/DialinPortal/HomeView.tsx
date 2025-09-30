@@ -31,6 +31,7 @@ interface HomeViewProps {
   isAddModalOpen?: boolean;
   onCloseAddModal?: () => void;
   onAddOptionSelect?: (optionId: string) => void;
+  onOpenAddPanel?: () => void;
 }
 
 export function HomeView({ 
@@ -52,7 +53,8 @@ export function HomeView({
   onCreateSpace,
   isAddModalOpen = false,
   onCloseAddModal,
-  onAddOptionSelect
+  onAddOptionSelect,
+  onOpenAddPanel
 }: HomeViewProps) {
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
@@ -107,6 +109,7 @@ export function HomeView({
         yAxisOffset={yAxisOffset}
         volume={volume}
         isMuted={isMuted}
+        onOpenAddPanel={onOpenAddPanel}
       />
 
       {isLobby ? (

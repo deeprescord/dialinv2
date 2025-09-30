@@ -468,6 +468,7 @@ export function DialinPortal() {
             isAddModalOpen={isAddModalOpen}
             onCloseAddModal={() => setIsAddModalOpen(false)}
             onAddOptionSelect={handleAddOptionSelect}
+            onOpenAddPanel={() => setIsAddModalOpen(true)}
           />
         )}
 

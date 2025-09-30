@@ -14,6 +14,7 @@ interface HeroHeaderVideoProps {
   yAxisOffset?: number;
   volume?: number;
   isMuted?: boolean;
+  onOpenAddPanel?: () => void;
 }
 
 export function HeroHeaderVideo({ 
@@ -27,10 +28,12 @@ export function HeroHeaderVideo({
   xAxisOffset,
   yAxisOffset,
   volume,
-  isMuted
+  isMuted,
+  onOpenAddPanel
 }: HeroHeaderVideoProps) {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -62,8 +65,37 @@ export function HeroHeaderVideo({
     };
   }, [videoLoaded]);
 
+  const handleMouseDown = () => {
+    if (!onOpenAddPanel) return;
+    const timer = setTimeout(() => {
+      onOpenAddPanel();
+    }, 800);
+    setPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
   return (
-    <div className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
+    <div 
+      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20 cursor-pointer select-none"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleMouseDown}
+      onTouchEnd={handleMouseUp}
+    >
       {/* Video Background - only show for lobby */}
       {showVideo && videoSrc && !videoError && (
         <video

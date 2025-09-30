@@ -64,6 +64,8 @@ export function useProfile() {
         .upsert({
           user_id: user.id,
           ...updates,
+        }, {
+          onConflict: 'user_id'
         })
         .select()
         .single();

@@ -32,8 +32,6 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
     }
   ]);
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState(!aiService.hasApiKey());
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -126,14 +124,6 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
     }
   };
 
-  const handleApiKeySubmit = () => {
-    if (apiKey.trim()) {
-      aiService.setApiKey(apiKey.trim());
-      setShowApiKeyInput(false);
-      setApiKey('');
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -188,33 +178,6 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {showApiKeyInput && (
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-4">
-                    <h4 className="text-yellow-400 font-medium mb-2">OpenAI API Key Required</h4>
-                    <p className="text-white/70 text-sm mb-3">
-                      Enter your OpenAI API key to enable AI chat functionality.
-                    </p>
-                    <div className="flex space-x-2">
-                      <Input
-                        type="password"
-                        placeholder="sk-..."
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        className="flex-1 bg-white/5 border-yellow-500/30 text-white placeholder:text-white/50"
-                        onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
-                      />
-                      <Button
-                        onClick={handleApiKeySubmit}
-                        disabled={!apiKey.trim()}
-                        size="sm"
-                        className="bg-yellow-500 hover:bg-yellow-600 text-black"
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                
                 {messages.map((msg) => (
                   <motion.div
                     key={msg.id}
@@ -267,7 +230,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!message.trim() || showApiKeyInput}
+                    disabled={!message.trim()}
                     size="sm"
                     className="px-3 h-10 shrink-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
                   >

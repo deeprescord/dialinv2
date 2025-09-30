@@ -129,6 +129,66 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          address: string | null
+          address_public: boolean | null
+          bio: string | null
+          bio_public: boolean | null
+          created_at: string
+          email: string | null
+          email_public: boolean | null
+          full_name: string | null
+          full_name_public: boolean | null
+          id: string
+          phone: string | null
+          phone_public: boolean | null
+          profile_media_public: boolean | null
+          profile_media_type: string | null
+          profile_media_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          address_public?: boolean | null
+          bio?: string | null
+          bio_public?: boolean | null
+          created_at?: string
+          email?: string | null
+          email_public?: boolean | null
+          full_name?: string | null
+          full_name_public?: boolean | null
+          id?: string
+          phone?: string | null
+          phone_public?: boolean | null
+          profile_media_public?: boolean | null
+          profile_media_type?: string | null
+          profile_media_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          address_public?: boolean | null
+          bio?: string | null
+          bio_public?: boolean | null
+          created_at?: string
+          email?: string | null
+          email_public?: boolean | null
+          full_name?: string | null
+          full_name_public?: boolean | null
+          id?: string
+          phone?: string | null
+          phone_public?: boolean | null
+          profile_media_public?: boolean | null
+          profile_media_type?: string | null
+          profile_media_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       space_files: {
         Row: {
           added_at: string

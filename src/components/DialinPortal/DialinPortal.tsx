@@ -174,17 +174,8 @@ export function DialinPortal() {
   };
 
   const handleMediaLongPress = (item: any) => {
-    // Add owner information for the control panel
-    const itemWithOwner = {
-      ...item,
-      owner: {
-        name: 'Deep',
-        avatar: '/lovable-uploads/4a081491-5093-440d-993f-14bf495c4380.png'
-      },
-      dateCreated: 'August 30th, 2025'
-    };
-    setDialControlItem(itemWithOwner);
-    setShowDialControlPanel(true);
+    setDialPopupItem(item);
+    setShowDialPopup(true);
   };
 
   // Handle dial popup

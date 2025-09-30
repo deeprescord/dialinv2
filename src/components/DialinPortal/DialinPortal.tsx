@@ -439,6 +439,7 @@ export function DialinPortal() {
         show360={show360}
         onOpen360Settings={handleOpen360Settings}
         userPoints={userPoints}
+        onOpenAddPanel={() => setIsAddModalOpen(true)}
       />
 
       <MobileTabBar

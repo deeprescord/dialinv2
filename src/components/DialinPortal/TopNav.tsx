@@ -15,6 +15,7 @@ interface TopNavProps {
   show360?: boolean;
   onOpen360Settings?: () => void;
   userPoints?: number;
+  onOpenAddPanel?: () => void;
 }
 
 const tabs = [
@@ -27,9 +28,10 @@ const tabs = [
 
 const filterTabs = ['videos', 'music', 'locations'];
 
-export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0 }: TopNavProps) {
+export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel }: TopNavProps) {
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +58,27 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
+  const handleMouseDown = () => {
+    const timer = setTimeout(() => {
+      onOpenAddPanel?.();
+    }, 800);
+    setPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
   return (
     <motion.div 
       className="fixed top-4 left-4 right-4 z-50"
@@ -64,7 +87,14 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
       transition={{ duration: 0.3 }}
     >
       {/* Main Navigation */}
-      <nav className="glass-nav px-3 sm:px-6 py-3">
+      <nav 
+        className="glass-nav px-3 sm:px-6 py-3 cursor-pointer select-none"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleMouseDown}
+        onTouchEnd={handleMouseUp}
+      >
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2 sm:space-x-8">

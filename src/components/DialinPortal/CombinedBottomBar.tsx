@@ -191,7 +191,7 @@ export function CombinedBottomBar({
                     onClick={onCreateSpace}
                   >
                     <PlusCircle size={20} className="text-green-400" />
-                    <span className="text-xs">New</span>
+                    <span className="text-xs">Add</span>
                   </Button>
                 </motion.div>
 

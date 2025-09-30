@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ImageFallback } from '../ui/image-fallback';
@@ -14,6 +15,8 @@ import {
 } from '../ui/dropdown-menu';
 
 export function UserDropdown() {
+  const navigate = useNavigate();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,7 +29,10 @@ export function UserDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 bg-background border-white/10">
-        <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
+        <DropdownMenuItem 
+          className="flex items-center space-x-2 cursor-pointer"
+          onClick={() => navigate('/settings')}
+        >
           <Settings size={16} />
           <span>Settings</span>
         </DropdownMenuItem>

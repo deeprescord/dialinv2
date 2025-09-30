@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ImageFallback } from '../ui/image-fallback';
 import { Settings, HardDrive, Database, Wallet, ChevronDown } from '../icons';
+import { useProfile } from '@/hooks/useProfile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +17,29 @@ import {
 
 export function UserDropdown() {
   const navigate = useNavigate();
+  const { profile } = useProfile();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center space-x-2 p-2">
           <Avatar className="h-8 w-8">
-            <ImageFallback src="https://i.pravatar.cc/150?img=1" alt="User avatar" />
-            <AvatarFallback>ME</AvatarFallback>
+            {profile?.profile_media_url ? (
+              profile.profile_media_type === 'video' ? (
+                <video
+                  src={profile.profile_media_url}
+                  className="w-full h-full object-cover"
+                  muted
+                  autoPlay
+                  loop
+                />
+              ) : (
+                <AvatarImage src={profile.profile_media_url} alt="User avatar" />
+              )
+            ) : (
+              <ImageFallback src="https://i.pravatar.cc/150?img=1" alt="User avatar" />
+            )}
+            <AvatarFallback>{profile?.full_name?.[0] || 'ME'}</AvatarFallback>
           </Avatar>
           <ChevronDown size={16} className="text-muted-foreground" />
         </Button>

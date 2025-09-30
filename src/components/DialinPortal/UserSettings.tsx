@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { VideoTrimmer } from './VideoTrimmer';
 import { toast } from 'sonner';
 
 export const UserSettings: React.FC = () => {
+  const navigate = useNavigate();
   const { profile, loading, uploading, updateProfile, uploadProfileMedia } = useProfile();
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
@@ -56,6 +58,8 @@ export const UserSettings: React.FC = () => {
     const success = await updateProfile(formData);
     if (success) {
       toast.success('Settings saved successfully');
+      // Navigate back to home after successful save
+      setTimeout(() => navigate('/'), 1000);
     }
   };
 

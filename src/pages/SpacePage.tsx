@@ -18,6 +18,7 @@ import { Settings360Modal } from '@/components/DialinPortal/Settings360Modal';
 import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { AIChat } from '@/components/DialinPortal/AIChat';
 import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
+import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -42,12 +43,16 @@ export default function SpacePage() {
   const [selectedDials, setSelectedDials] = useState<Record<string, string[]>>({});
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
-  const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
   const [spaces, setSpaces] = useState<Space[]>([
     { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
     ...initialSpaces
   ]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
+  
+  // Use contact field sharing for the selected contact
+  const { toggleableFields, sharedFields, toggleFieldShare } = useContactFieldSharing(
+    selectedContact?.id
+  );
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [floatingPlayer, setFloatingPlayer] = useState<{
@@ -200,14 +205,6 @@ export default function SpacePage() {
     setDialPopupItem(null);
   };
 
-  // Handle share toggle
-  const handleShareToggleChange = (toggleKey: string) => {
-    setActiveShareToggles(prev => 
-      prev.includes(toggleKey) 
-        ? prev.filter(t => t !== toggleKey)
-        : [...prev, toggleKey]
-    );
-  };
 
   // Handle space creation
   const handleCreateSpace = (name: string, coverUrl: string) => {
@@ -455,8 +452,9 @@ export default function SpacePage() {
         {/* Bottom Bar */}
         {isViewingContact ? (
           <ShareMyBar
-            activeToggles={activeShareToggles}
-            onToggleChange={handleShareToggleChange}
+            fields={toggleableFields}
+            sharedFields={sharedFields}
+            onToggleChange={toggleFieldShare}
           />
         ) : showSpacesBar ? (
           <div className="fixed bottom-0 left-0 right-0 z-30">
@@ -488,7 +486,7 @@ export default function SpacePage() {
           isOpen={isViewingContact}
           contact={selectedContact}
           isPinned={isPinned}
-          sharedToggles={activeShareToggles}
+          sharedToggles={[]}
           onClose={() => setSelectedContact(null)}
           onPin={handleContactPin}
           onUnpin={handleContactUnpin}

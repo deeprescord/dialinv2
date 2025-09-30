@@ -20,6 +20,7 @@ import { AIChat } from './AIChat';
 import { AddContactPanel } from './AddContactPanel';
 import { Settings360Modal } from './Settings360Modal';
 import { CelebrationAnimation } from './CelebrationAnimation';
+import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 
 import { 
   videoCatalog, 
@@ -45,9 +46,13 @@ export function DialinPortal() {
   const [selectedDials, setSelectedDials] = useState<Record<string, string[]>>({});
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
-  const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['personal', 'workEmail']);
   const [userPoints, setUserPoints] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  
+  // Use contact field sharing for the selected contact
+  const { toggleableFields, sharedFields, toggleFieldShare } = useContactFieldSharing(
+    selectedContact?.id
+  );
 
   const handleDialSaved = () => {
     setUserPoints(prev => prev + 1);
@@ -241,14 +246,6 @@ export function DialinPortal() {
     setShowDialControlPanel(false);
   };
 
-  // Handle share toggle
-  const handleShareToggleChange = (toggleKey: string) => {
-    setActiveShareToggles(prev => 
-      prev.includes(toggleKey) 
-        ? prev.filter(t => t !== toggleKey)
-        : [...prev, toggleKey]
-    );
-  };
 
   // Handle space creation
   const handleCreateSpace = (name: string, coverUrl: string) => {
@@ -510,8 +507,9 @@ export function DialinPortal() {
       {/* Bottom Bar */}
       {isViewingContact ? (
         <ShareMyBar
-          activeToggles={activeShareToggles}
-          onToggleChange={handleShareToggleChange}
+          fields={toggleableFields}
+          sharedFields={sharedFields}
+          onToggleChange={toggleFieldShare}
         />
       ) : showSpacesBar ? (
         <div className="fixed bottom-0 left-0 right-0 z-30">
@@ -543,7 +541,7 @@ export function DialinPortal() {
         isOpen={isViewingContact}
         contact={selectedContact}
         isPinned={isPinned}
-        sharedToggles={activeShareToggles}
+        sharedToggles={[]}
         onClose={() => setSelectedContact(null)}
         onPin={handleContactPin}
         onUnpin={handleContactUnpin}

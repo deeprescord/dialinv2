@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_field_shares: {
+        Row: {
+          contact_user_id: string
+          created_at: string | null
+          field_name: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          contact_user_id: string
+          created_at?: string | null
+          field_name: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          contact_user_id?: string
+          created_at?: string | null
+          field_name?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       file_comments: {
         Row: {
           comment: string

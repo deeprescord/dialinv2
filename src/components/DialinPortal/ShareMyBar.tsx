@@ -1,17 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Check, Smartphone, Building, Phone, Mail, Home, FileText, Instagram, CreditCard, Heart, Shield } from 'lucide-react';
-import { SHARE_TOGGLES } from '@/data/constants';
+import { Check, Smartphone, Building, Phone, Mail, Home, FileText, Instagram, CreditCard, Heart, Shield, User } from 'lucide-react';
+
+interface ProfileFieldToggle {
+  key: string;
+  label: string;
+  isPublic: boolean;
+  icon: string;
+  color: string;
+}
 
 interface ShareMyBarProps {
-  activeToggles: string[];
+  fields: ProfileFieldToggle[];
+  sharedFields: string[];
   onToggleChange: (toggleKey: string) => void;
 }
 
-export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
+export function ShareMyBar({ fields, sharedFields, onToggleChange }: ShareMyBarProps) {
   const getIcon = (iconName: string) => {
     switch (iconName) {
+      case 'User': return User;
       case 'Smartphone': return Smartphone;
       case 'Building': return Building;
       case 'Phone': return Phone;
@@ -22,9 +31,12 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
       case 'CreditCard': return CreditCard;
       case 'Heart': return Heart;
       case 'Shield': return Shield;
-      default: return Smartphone;
+      default: return FileText;
     }
   };
+
+  // Only show private (non-public) fields as toggleable options
+  const toggleableFields = fields.filter(field => !field.isPublic);
 
   return (
     <motion.div 
@@ -39,48 +51,36 @@ export function ShareMyBar({ activeToggles, onToggleChange }: ShareMyBarProps) {
       
       <div className="flex justify-center gap-3 overflow-x-auto pb-2">
         <div className="flex gap-3 min-w-max px-2">
-          {SHARE_TOGGLES.map((toggle) => {
-            const isActive = activeToggles.includes(toggle.key);
-            const IconComponent = getIcon(toggle.icon);
-            
-            // Define colors to match the screenshot
-            const getButtonColor = (key: string) => {
-              switch (key) {
-                case 'personal': return 'bg-emerald-500';
-                case 'workAddress': return 'bg-violet-500';
-                case 'workEmail': return 'bg-blue-500';
-                case 'homeAddress': return 'bg-orange-500';
-                case 'resume': return 'bg-indigo-500';
-                case 'instagram': return 'bg-pink-500';
-                case 'driversLicense': return 'bg-yellow-500';
-                case 'medicalHistory': return 'bg-red-500';
-                case 'insurance': return 'bg-teal-500';
-                default: return 'bg-gray-500';
-              }
-            };
-            
-            return (
-              <div key={toggle.key} className="flex flex-col items-center">
-                <div className="relative pt-2 pb-1">
-                  <Button
-                    variant="ghost"
-                    className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${getButtonColor(toggle.key)}`}
-                    onClick={() => onToggleChange(toggle.key)}
-                  >
-                    <IconComponent size={31} className="text-white" />
-                  </Button>
-                  {isActive && (
-                    <div className="absolute top-0 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center border-2 border-black">
-                      <Check size={14} className="text-black font-bold" />
-                    </div>
-                  )}
+          {toggleableFields.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No private fields to share. All fields are public or no fields available.</p>
+          ) : (
+            toggleableFields.map((field) => {
+              const isActive = sharedFields.includes(field.key);
+              const IconComponent = getIcon(field.icon);
+              
+              return (
+                <div key={field.key} className="flex flex-col items-center">
+                  <div className="relative pt-2 pb-1">
+                    <Button
+                      variant="ghost"
+                      className={`w-16 h-16 p-0 rounded-xl border-none transition-all duration-200 hover:scale-105 ${field.color}`}
+                      onClick={() => onToggleChange(field.key)}
+                    >
+                      <IconComponent size={31} className="text-white" />
+                    </Button>
+                    {isActive && (
+                      <div className="absolute top-0 -right-1 bg-green-400 rounded-full w-6 h-6 flex items-center justify-center border-2 border-black">
+                        <Check size={14} className="text-black font-bold" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-center mt-2 text-white max-w-16 leading-tight">
+                    {field.label}
+                  </p>
                 </div>
-                <p className="text-xs text-center mt-2 text-white max-w-16 leading-tight">
-                  {toggle.label}
-                </p>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </motion.div>

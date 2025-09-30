@@ -4,10 +4,11 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Close, Pin, MessageSquare, Bot, PlusCircle } from '../icons';
 import { Friend } from '@/data/catalogs';
-import { SHARE_TOGGLES } from '@/data/constants';
 import { MediaRow } from './MediaRow';
 import { ShareMyBar } from './ShareMyBar';
 import * as Icons from '../icons';
+import { FileText } from 'lucide-react';
+import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 
 interface ContactPaneProps {
   isOpen: boolean;
@@ -34,17 +35,17 @@ export function ContactPane({
   onAIClick,
   onAddClick
 }: ContactPaneProps) {
-  const [activeShareToggles, setActiveShareToggles] = useState<string[]>(['workPhone', 'workEmail']);
   const [currentSection, setCurrentSection] = useState('posts');
+  
+  // Use the contact field sharing hook - TODO: Map Friend to actual user_id
+  const { toggleableFields, visibleFields, sharedFields, toggleFieldShare } = useContactFieldSharing(
+    contact?.id // This assumes contact.id is the user_id, adjust as needed
+  );
   
   if (!contact) return null;
 
-  const handleToggleChange = (toggleKey: string) => {
-    setActiveShareToggles(prev => 
-      prev.includes(toggleKey) 
-        ? prev.filter(key => key !== toggleKey)
-        : [...prev, toggleKey]
-    );
+  const handleToggleChange = (fieldKey: string) => {
+    toggleFieldShare(fieldKey);
   };
 
   // Mock data for contact's content
@@ -126,21 +127,26 @@ export function ContactPane({
                     </Avatar>
                   </div>
                   
-                  {/* Contact Info Icons */}
+                  {/* Contact Info Icons - Show public + shared fields */}
                   <div className="flex space-x-2">
-                    {SHARE_TOGGLES.map((toggle) => {
-                      if (!sharedToggles.includes(toggle.key)) return null;
-                      const IconComponent = Icons[toggle.icon as keyof typeof Icons] as React.ComponentType<any>;
+                    {visibleFields.slice(0, 5).map((field) => {
+                      const IconComponent = (Icons[field.icon as keyof typeof Icons] as React.ComponentType<any>) || FileText;
                       
                       return (
                         <div
-                          key={toggle.key}
+                          key={field.key}
                           className="w-8 h-8 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30"
+                          title={field.label}
                         >
                           <IconComponent size={14} className="text-white" />
                         </div>
                       );
                     })}
+                    {visibleFields.length > 5 && (
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/30">
+                        <span className="text-xs text-white">+{visibleFields.length - 5}</span>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Pin Button */}
@@ -227,7 +233,8 @@ export function ContactPane({
 
           {/* Share My Bar Footer */}
           <ShareMyBar
-            activeToggles={activeShareToggles}
+            fields={toggleableFields}
+            sharedFields={sharedFields}
             onToggleChange={handleToggleChange}
           />
         </motion.div>

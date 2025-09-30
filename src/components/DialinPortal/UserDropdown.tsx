@@ -28,10 +28,11 @@ export function UserDropdown() {
               profile.profile_media_type === 'video' ? (
                 <video
                   src={profile.profile_media_url}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-full"
                   muted
                   autoPlay
                   loop
+                  playsInline
                 />
               ) : (
                 <AvatarImage src={profile.profile_media_url} alt="User avatar" />

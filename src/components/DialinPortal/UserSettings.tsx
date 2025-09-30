@@ -161,6 +161,7 @@ export const UserSettings: React.FC = () => {
                       muted
                       autoPlay
                       loop
+                      playsInline
                     />
                   ) : (
                     <img

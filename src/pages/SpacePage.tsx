@@ -12,7 +12,7 @@ import { CombinedBottomBar } from '@/components/DialinPortal/CombinedBottomBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
-import { DialPopup } from '@/components/DialinPortal/DialPopup';
+import { DialControlPanel } from '@/components/DialinPortal/DialControlPanel';
 import { CreateSpaceModal } from '@/components/DialinPortal/CreateSpaceModal';
 import { Settings360Modal } from '@/components/DialinPortal/Settings360Modal';
 import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
@@ -508,11 +508,35 @@ export default function SpacePage() {
           onClose={handlePlayerClose}
         />
 
-        <DialPopup
+        <DialControlPanel
           isOpen={showDialPopup}
           item={dialPopupItem}
           onClose={() => setShowDialPopup(false)}
-          onUseAsFilters={handleUseAsFilters}
+          onSelect={(selectedDials, selectedSets) => {
+            console.log('Selected dials:', selectedDials, 'sets:', selectedSets);
+            setShowDialPopup(false);
+          }}
+          onOwnerClick={(ownerId) => {
+            console.log('Owner clicked:', ownerId);
+          }}
+          onDelete={() => {
+            console.log('Delete item:', dialPopupItem?.id);
+            setShowDialPopup(false);
+          }}
+          onShare={() => {
+            console.log('Share item:', dialPopupItem?.id);
+            setShowDialPopup(false);
+          }}
+          onPost={() => {
+            console.log('Post item:', dialPopupItem?.id);
+            setShowDialPopup(false);
+          }}
+          onSettings={() => {
+            console.log('Settings for item:', dialPopupItem?.id);
+          }}
+          onDialSaved={() => {
+            console.log('Dial saved for item:', dialPopupItem?.id);
+          }}
         />
 
         <CreateSpaceModal

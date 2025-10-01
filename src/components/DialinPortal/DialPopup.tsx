@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Close } from '../icons';
+import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
 
 interface DialPopupProps {
@@ -17,6 +17,12 @@ interface DialPopupProps {
   } | null;
   onClose: () => void;
   onUseAsFilters: () => void;
+}
+
+interface ActionOption {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
 export function DialPopup({ isOpen, item, onClose, onUseAsFilters }: DialPopupProps) {
@@ -39,12 +45,18 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters }: DialPopupPr
 
   if (!item) return null;
 
-  const dials = [
-    { label: 'Type', value: item.type },
-    { label: 'Vibe', value: item.vibe },
-    { label: 'Decade', value: item.decade },
-    { label: 'Energy', value: item.energy },
-  ].filter(dial => dial.value);
+  const actionOptions: ActionOption[] = [
+    { id: 'share', label: 'Share', icon: Share },
+    { id: 'connect', label: 'Connect', icon: Users },
+    { id: 'emojis', label: 'Emojis', icon: Smile },
+    { id: 'create-dial', label: 'Create new dial', icon: Plus },
+  ];
+
+  const handleActionClick = (actionId: string) => {
+    console.log('Action clicked:', actionId, 'for item:', item.id);
+    // TODO: Implement action handlers
+    onClose();
+  };
 
   return (
     <AnimatePresence>
@@ -88,26 +100,20 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters }: DialPopupPr
               <div className="p-4">
                 <h3 className="font-semibold mb-4">{item.title}</h3>
 
-                {/* Detected Dials */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium mb-2 text-muted-foreground">Detected Dials:</h4>
-                  <div className="space-y-2">
-                    {dials.map((dial, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{dial.label}:</span>
-                        <span className="font-medium">{dial.value}</span>
-                      </div>
-                    ))}
-                  </div>
+                {/* Action Options */}
+                <div className="space-y-2">
+                  {actionOptions.map((option) => (
+                    <Button
+                      key={option.id}
+                      variant="ghost"
+                      className="w-full justify-start gap-3 h-12"
+                      onClick={() => handleActionClick(option.id)}
+                    >
+                      <option.icon size={18} />
+                      <span>{option.label}</span>
+                    </Button>
+                  ))}
                 </div>
-
-                {/* Action Button */}
-                <Button
-                  onClick={onUseAsFilters}
-                  className="w-full bg-dialin-purple hover:bg-dialin-purple-dark"
-                >
-                  Use as filters
-                </Button>
               </div>
             </Card>
           </motion.div>

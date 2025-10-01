@@ -15,6 +15,7 @@ interface SpaceSelectionModalProps {
   onSpaceSelect: (spaceId: string) => void;
   onCreateNewSpace: (name: string) => void;
   spaces: SpaceOption[];
+  footerSpaces?: SpaceOption[];
   droppedFiles: File[];
   loading?: boolean;
 }
@@ -25,6 +26,7 @@ export function SpaceSelectionModal({
   onSpaceSelect,
   onCreateNewSpace,
   spaces,
+  footerSpaces = [],
   droppedFiles
 }: SpaceSelectionModalProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -163,6 +165,41 @@ export function SpaceSelectionModal({
                 </div>
               )}
             </div>
+
+            {/* Footer Spaces */}
+            {footerSpaces.length > 0 && (
+              <div className="border-t border-border pt-4 mb-4">
+                <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Main Spaces</div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {footerSpaces.map((space) => (
+                    <button
+                      key={space.id}
+                      onClick={() => onSpaceSelect(space.id)}
+                      className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground truncate">
+                            {space.name}
+                          </div>
+                          {space.fileCount !== undefined && (
+                            <div className="text-sm text-muted-foreground truncate">
+                              {space.fileCount} files
+                            </div>
+                          )}
+                        </div>
+                        <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Create New Space */}
             <div className="border-t border-border pt-4">

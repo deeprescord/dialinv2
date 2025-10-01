@@ -52,6 +52,15 @@ export default function SpacePage() {
     ...initialSpaces
   ]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
+
+  // Footer spaces (main navigation spaces)
+  const footerSpaces = [
+    { id: 'lobby', name: 'Lobby' },
+    { id: 'videos', name: 'Videos' },
+    { id: 'music', name: 'Music' },
+    { id: 'locations', name: 'Locations' },
+    { id: 'friends', name: 'Friends' }
+  ];
   
   // Use contact field sharing for the selected contact
   const { toggleableFields, sharedFields, toggleFieldShare } = useContactFieldSharing(
@@ -632,6 +641,7 @@ export default function SpacePage() {
           onSpaceSelect={handleSpaceSelect}
           onCreateNewSpace={handleCreateNewSpace}
           spaces={spaces.map(s => ({ id: s.id, name: s.name }))}
+          footerSpaces={footerSpaces.map(s => ({ id: s.id, name: s.name }))}
           droppedFiles={droppedFiles}
           loading={uploading}
         />

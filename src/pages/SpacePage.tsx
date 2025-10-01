@@ -18,7 +18,11 @@ import { Settings360Modal } from '@/components/DialinPortal/Settings360Modal';
 import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { AIChat } from '@/components/DialinPortal/AIChat';
 import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
+import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
+import { SpaceSelectionModal } from '@/components/DialinPortal/SpaceSelectionModal';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { useSpaces } from '@/hooks/useSpaces';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -70,6 +74,12 @@ export default function SpacePage() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
+  const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+
+  // File upload hook
+  const { uploadMultipleFiles, uploading } = useFileUpload();
+  const { spaces: dbSpaces } = useSpaces();
 
   // Find current space
   const currentSpace = spaces.find(space => space.id === spaceId);
@@ -242,6 +252,35 @@ export default function SpacePage() {
     ));
   };
 
+  // Drag and drop handlers
+  const handleFilesDropped = (files: File[]) => {
+    setDroppedFiles(files);
+    setShowSpaceSelectionModal(true);
+  };
+
+  const handleSpaceSelect = async (selectedSpaceId: string) => {
+    if (droppedFiles.length > 0) {
+      await uploadMultipleFiles(droppedFiles, selectedSpaceId);
+      setShowSpaceSelectionModal(false);
+      setDroppedFiles([]);
+    }
+  };
+
+  const handleCreateNewSpace = async (name: string) => {
+    const newSpace: Space = {
+      id: `space-${Date.now()}`,
+      name,
+      thumb: '/placeholder.svg'
+    };
+    setSpaces(prev => [...prev, newSpace]);
+    
+    if (droppedFiles.length > 0) {
+      await uploadMultipleFiles(droppedFiles, newSpace.id);
+      setShowSpaceSelectionModal(false);
+      setDroppedFiles([]);
+    }
+  };
+
   // Handle space reordering
   const handleReorderSpace = (spaceId: string, direction: 'left' | 'right') => {
     setSpaces(prev => {
@@ -356,7 +395,8 @@ export default function SpacePage() {
   const show360 = currentSpace?.show360 || false;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <DragDropZone onFilesDropped={handleFilesDropped}>
+      <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background Image - only show when not using 360° view */}
       {!show360 && (
         <div 
@@ -582,7 +622,21 @@ export default function SpacePage() {
           onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
         />
+
+        <SpaceSelectionModal
+          isOpen={showSpaceSelectionModal}
+          onClose={() => {
+            setShowSpaceSelectionModal(false);
+            setDroppedFiles([]);
+          }}
+          onSpaceSelect={handleSpaceSelect}
+          onCreateNewSpace={handleCreateNewSpace}
+          spaces={spaces.map(s => ({ id: s.id, name: s.name }))}
+          droppedFiles={droppedFiles}
+          loading={uploading}
+        />
       </div>
-    </div>
+      </div>
+    </DragDropZone>
   );
 }

@@ -119,6 +119,20 @@ export default function SpacePage() {
     }
   }, [currentSpace, spaceId, navigate]);
 
+  // Keep breadcrumb in sync with route (on direct loads/refresh)
+  useEffect(() => {
+    if (!spaceId || spaceId === 'lobby') {
+      setNavigationPath(['lobby']);
+    } else {
+      setNavigationPath(prev => {
+        if (prev.includes(spaceId)) {
+          return prev.slice(0, prev.indexOf(spaceId) + 1);
+        }
+        return ['lobby', spaceId];
+      });
+    }
+  }, [spaceId]);
+
   // Filter content based on selected dials
   const filteredVideos = applyDials(
     videoCatalog,
@@ -332,14 +346,13 @@ export default function SpacePage() {
       setNavigationPath(['lobby']);
     } else {
       navigate(`/space/${space.id}`);
-      // Check if space is already in path
       const existingIndex = navigationPath.indexOf(space.id);
       if (existingIndex >= 0) {
         // Navigate back to this space, trim path
         setNavigationPath(navigationPath.slice(0, existingIndex + 1));
       } else {
-        // When clicking a new space from SpacesBar, replace everything after lobby
-        setNavigationPath(['lobby', space.id]);
+        // Append new nested space to breadcrumb path
+        setNavigationPath([...navigationPath, space.id]);
       }
     }
     setSelectedItemId(undefined);

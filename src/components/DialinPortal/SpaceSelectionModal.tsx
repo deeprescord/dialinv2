@@ -173,10 +173,28 @@ export function SpaceSelectionModal({
                   <div className="text-xs font-medium text-purple-300 mb-2">
                     ✨ {autoDetectedDials.length} Dials Detected:
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {autoDetectedDials.map((dial, index) => (
-                      <div key={index} className="text-xs text-muted-foreground">
-                        • {dial.name} ({dial.minLabel} → {dial.maxLabel})
+                      <div key={index} className="flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/10 hover:border-purple-400/30 transition-colors group">
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-white">{dial.name}</p>
+                          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                            <span>{dial.minLabel}</span>
+                            <span>{dial.maxLabel}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-purple-300 font-medium mr-2">
+                          {dial.defaultValue}%
+                        </div>
+                        <button
+                          onClick={() => {
+                            toast.success(`${dial.name} will be added to this space!`);
+                          }}
+                          className="bg-purple-500/30 hover:bg-purple-500/50 text-white border border-purple-400/40 rounded-full px-3 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Plus className="w-3 h-3 mr-1 inline" />
+                          Add
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -239,35 +257,25 @@ export function SpaceSelectionModal({
               )}
             </div>
 
-            {/* Footer Spaces */}
+            {/* Footer Spaces - Horizontal Scroll */}
             {footerSpaces.length > 0 && (
               <div className="border-t border-border pt-4 mb-4">
                 <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Main Spaces</div>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <div className="flex items-center space-x-3 overflow-x-auto pb-2 scrollbar-thin">
                   {footerSpaces.map((space) => (
                     <button
                       key={space.id}
                       onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                      className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
+                      className="flex-shrink-0 flex flex-col items-center space-y-2 group"
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                          </div>
+                      <div className="w-16 h-10 rounded-lg overflow-hidden bg-muted border border-border group-hover:border-primary transition-all group-hover:scale-105">
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground truncate">
-                            {space.name}
-                          </div>
-                          {space.fileCount !== undefined && (
-                            <div className="text-sm text-muted-foreground truncate">
-                              {space.fileCount} files
-                            </div>
-                          )}
-                        </div>
-                        <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
+                      <span className="text-xs font-medium text-center text-foreground group-hover:text-primary transition-colors max-w-[64px] truncate">
+                        {space.name}
+                      </span>
                     </button>
                   ))}
                 </div>

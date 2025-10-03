@@ -61,6 +61,14 @@ export default function SpacePage() {
     { id: 'locations', name: 'Locations' },
     { id: 'friends', name: 'Friends' }
   ];
+
+  const floors = [
+    { id: 'floor-1', name: 'Floor 1' },
+    { id: 'floor-2', name: 'Floor 2' },
+    { id: 'floor-3', name: 'Floor 3' },
+    { id: 'floor-4', name: 'Floor 4' },
+    { id: 'floor-5', name: 'Floor 5' }
+  ];
   
   // Use contact field sharing for the selected contact
   const { toggleableFields, sharedFields, toggleFieldShare } = useContactFieldSharing(
@@ -642,6 +650,7 @@ export default function SpacePage() {
           onCreateNewSpace={handleCreateNewSpace}
           spaces={spaces.map(s => ({ id: s.id, name: s.name }))}
           footerSpaces={footerSpaces.map(s => ({ id: s.id, name: s.name }))}
+          floors={floors.map(f => ({ id: f.id, name: f.name }))}
           droppedFiles={droppedFiles}
           loading={uploading}
         />

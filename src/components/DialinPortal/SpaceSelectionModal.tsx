@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Folder, FolderOpen, MapPin } from 'lucide-react';
+import { X, Plus, Folder, FolderOpen, MapPin, Building2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface SpaceOption {
@@ -16,6 +16,7 @@ interface SpaceSelectionModalProps {
   onCreateNewSpace: (name: string) => void;
   spaces: SpaceOption[];
   footerSpaces?: SpaceOption[];
+  floors?: SpaceOption[];
   droppedFiles: File[];
   loading?: boolean;
 }
@@ -27,6 +28,7 @@ export function SpaceSelectionModal({
   onCreateNewSpace,
   spaces,
   footerSpaces = [],
+  floors = [],
   droppedFiles
 }: SpaceSelectionModalProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -194,6 +196,41 @@ export function SpaceSelectionModal({
                           )}
                         </div>
                         <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Floors */}
+            {floors.length > 0 && (
+              <div className="border-t border-border pt-4 mb-4">
+                <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Floors</div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {floors.map((floor) => (
+                    <button
+                      key={floor.id}
+                      onClick={() => onSpaceSelect(floor.id)}
+                      className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground truncate">
+                            {floor.name}
+                          </div>
+                          {floor.fileCount !== undefined && (
+                            <div className="text-sm text-muted-foreground truncate">
+                              {floor.fileCount} files
+                            </div>
+                          )}
+                        </div>
+                        <Building2 className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
                     </button>
                   ))}

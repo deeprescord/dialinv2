@@ -7,6 +7,8 @@ import { AddOptionsModal } from './AddOptionsModal';
 import { DragDropZone } from './DragDropZone';
 import { SpaceSelectionModal } from './SpaceSelectionModal';
 import { AuthModal } from './AuthModal';
+import { DialControlPanel } from './DialControlPanel';
+import { CelebrationAnimation } from './CelebrationAnimation';
 import { useSpaces } from '@/hooks/useSpaces';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,6 +66,9 @@ export function HomeView({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [showDialControlPanel, setShowDialControlPanel] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const { spaces: userSpaces, createSpace, loading: spacesLoading } = useSpaces();
   const { uploadMultipleFiles, uploading } = useFileUpload();
@@ -138,6 +143,21 @@ export function HomeView({
       setShowSpaceSelectionModal(true);
     }
   };
+
+  const handleItemLongPress = (item: any) => {
+    setSelectedItem(item);
+    setShowDialControlPanel(true);
+  };
+
+  const handleDialControlPanelClose = () => {
+    setShowDialControlPanel(false);
+    setSelectedItem(null);
+  };
+
+  const handleDialSaved = () => {
+    setShowCelebration(true);
+    setTimeout(() => setShowCelebration(false), 3000);
+  };
   return (
     <DragDropZone onFilesDropped={handleFilesDropped}>
       <motion.div
@@ -186,7 +206,7 @@ export function HomeView({
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
             onItemClick={onMediaClick}
-            onItemLongPress={onMediaLongPress}
+            onItemLongPress={handleItemLongPress}
           />
         </>
       ) : (
@@ -213,7 +233,7 @@ export function HomeView({
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
             onItemClick={onMediaClick}
-            onItemLongPress={onMediaLongPress}
+            onItemLongPress={handleItemLongPress}
           />
         </>
       )}
@@ -247,6 +267,16 @@ export function HomeView({
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
+
+      <DialControlPanel
+        isOpen={showDialControlPanel}
+        item={selectedItem}
+        onClose={handleDialControlPanelClose}
+        onSelect={() => {}}
+        onDialSaved={handleDialSaved}
+      />
+
+      <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
       </motion.div>
     </DragDropZone>
   );

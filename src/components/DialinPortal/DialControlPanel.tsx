@@ -4,7 +4,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image } from 'lucide-react';
+import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image, Sparkles } from 'lucide-react';
+import { aiService } from '@/lib/ai-service';
+import { useToast } from '@/hooks/use-toast';
 
 interface DialControlPanelProps {
   isOpen: boolean;
@@ -71,6 +73,7 @@ export function DialControlPanel({
   onSettings,
   onDialSaved 
 }: DialControlPanelProps) {
+  const { toast } = useToast();
   const [selectedDials, setSelectedDials] = useState<string[]>([]);
   const [selectedPeople, setSelectedPeople] = useState<string[]>(['all']);
   const [newDialKeyword, setNewDialKeyword] = useState('');
@@ -87,6 +90,8 @@ export function DialControlPanel({
     icon: null as string | null,
     keywordImages: {} as Record<string, string>
   });
+  const [aiDescription, setAiDescription] = useState('');
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [votingResults, setVotingResults] = useState<Array<{dial: string, votes: number, percentage: number, avgIntensity: number, userVotes: Array<{userId: string, intensity: number}>}>>([
     { dial: '🤝', votes: 12, percentage: 35, avgIntensity: 75, userVotes: [
       {userId: '1', intensity: 80}, {userId: '2', intensity: 70}, {userId: '3', intensity: 75}
@@ -211,6 +216,30 @@ export function DialControlPanel({
     setEditingDialIndex(index);
   };
 
+  const generateAIDescription = async () => {
+    if (!item) return;
+    
+    setIsGeneratingDescription(true);
+    try {
+      const response = await aiService.sendMessage([
+        {
+          role: 'user',
+          content: `Generate a brief, engaging description (2-3 sentences) for this item: "${item.title}". Make it informative and appealing.`
+        }
+      ]);
+      setAiDescription(response);
+    } catch (error) {
+      console.error('Error generating description:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate description. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingDescription(false);
+    }
+  };
+
   const getFilteredVotingResults = () => {
     if (selectedPeople.includes('all')) {
       return votingResults.map(result => ({
@@ -290,6 +319,31 @@ export function DialControlPanel({
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6">
+              {/* AI Description Section */}
+              <div className="mb-6">
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-purple-400" />
+                      <h3 className="text-sm font-semibold text-white">AI Description</h3>
+                    </div>
+                    <Button
+                      onClick={generateAIDescription}
+                      disabled={isGeneratingDescription}
+                      className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 rounded-full px-4 py-1 text-xs"
+                    >
+                      {isGeneratingDescription ? 'Generating...' : 'Generate'}
+                    </Button>
+                  </div>
+                  {aiDescription && (
+                    <p className="text-sm text-gray-300 leading-relaxed">{aiDescription}</p>
+                  )}
+                  {!aiDescription && !isGeneratingDescription && (
+                    <p className="text-xs text-gray-500 italic">Click Generate to create an AI-powered description of this item</p>
+                  )}
+                </div>
+              </div>
+
               {/* New Dial Section */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">

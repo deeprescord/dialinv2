@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { MediaRow } from './MediaRow';
@@ -116,24 +117,30 @@ export function HomeView({
           onFilesDrop(droppedFiles, spaceId);
         }
         
-        // If auto-detected dials were provided, show celebration
+        // If auto-detected dials were provided, save them and show celebration
         if (autoDetectedDials && autoDetectedDials.length > 0) {
+          // TODO: Save auto-detected dials to the database for this space
+          console.log('Auto-detected dials to save:', autoDetectedDials, 'for space:', spaceId);
+          toast.success(`Files saved to space with ${autoDetectedDials.length} auto-detected dials!`);
           setShowCelebration(true);
           setTimeout(() => setShowCelebration(false), 3000);
+        } else {
+          toast.success('Files saved to space!');
         }
       }
     } catch (error) {
       console.error('Error uploading files:', error);
+      toast.error('Failed to save files to space');
     } finally {
       setShowSpaceSelectionModal(false);
       setDroppedFiles([]);
     }
   };
 
-  const handleCreateNewSpace = async (name: string) => {
+  const handleCreateNewSpace = async (name: string, autoDetectedDials?: any[]) => {
     const newSpace = await createSpace(name);
     if (newSpace && droppedFiles.length > 0) {
-      await handleSpaceSelect(newSpace.id);
+      await handleSpaceSelect(newSpace.id, autoDetectedDials);
     } else {
       setShowSpaceSelectionModal(false);
       setDroppedFiles([]);

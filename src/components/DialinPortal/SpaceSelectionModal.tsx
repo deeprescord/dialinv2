@@ -17,7 +17,7 @@ interface SpaceSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSpaceSelect: (spaceId: string, autoDetectedDials?: any[]) => void;
-  onCreateNewSpace: (name: string) => void;
+  onCreateNewSpace: (name: string, autoDetectedDials?: any[]) => void;
   spaces: SpaceOption[];
   footerSpaces?: SpaceOption[];
   floors?: SpaceOption[];
@@ -60,7 +60,7 @@ export function SpaceSelectionModal({
 
   const handleCreateSpace = () => {
     if (newSpaceName.trim()) {
-      onCreateNewSpace(newSpaceName.trim());
+      onCreateNewSpace(newSpaceName.trim(), autoDetectedDials.length > 0 ? autoDetectedDials : undefined);
       setNewSpaceName('');
       setShowCreateForm(false);
     }

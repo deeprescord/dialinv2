@@ -332,14 +332,14 @@ export default function SpacePage() {
       setNavigationPath(['lobby']);
     } else {
       navigate(`/space/${space.id}`);
-      // Add to navigation path if not already there
+      // Check if space is already in path
       const existingIndex = navigationPath.indexOf(space.id);
       if (existingIndex >= 0) {
         // Navigate back to this space, trim path
         setNavigationPath(navigationPath.slice(0, existingIndex + 1));
       } else {
-        // Add this space to the path (for nested navigation)
-        setNavigationPath([...navigationPath, space.id]);
+        // When clicking a new space from SpacesBar, replace everything after lobby
+        setNavigationPath(['lobby', space.id]);
       }
     }
     setSelectedItemId(undefined);

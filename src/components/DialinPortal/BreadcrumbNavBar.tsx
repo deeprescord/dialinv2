@@ -150,10 +150,10 @@ export function BreadcrumbNavBar({
               );
             })}
             
-            {/* Separator line */}
+            {/* Separator line before items */}
             {currentSpaceItems.length > 0 && (
               <>
-                <div className="h-12 w-px bg-white/20 mx-2 flex-shrink-0" />
+                <div className="h-12 w-px bg-white/30 mx-3 flex-shrink-0" />
                 
                 {/* Current space items */}
                 {currentSpaceItems.map((item, index) => {

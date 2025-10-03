@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Folder, FolderOpen, MapPin, Building2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ImageFallback } from '@/components/ui/image-fallback';
 import { aiService } from '@/lib/ai-service';
 import { toast } from 'sonner';
 
@@ -9,6 +10,7 @@ interface SpaceOption {
   id: string;
   name: string;
   fileCount?: number;
+  thumb?: string;
 }
 
 interface SpaceSelectionModalProps {
@@ -119,7 +121,7 @@ export function SpaceSelectionModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden"
+            className="bg-card border border-border rounded-2xl p-6 max-w-md w-full max-h-[85vh] flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -202,120 +204,131 @@ export function SpaceSelectionModal({
               )}
             </div>
 
-            {/* Spaces List */}
-            <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
-              {spaces.map((space) => (
-                <button
-                  key={space.id}
-                  onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                  className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-foreground truncate">
-                        {space.name}
-                      </div>
-                      {space.fileCount !== undefined && (
-                        <div className="text-sm text-muted-foreground truncate">
-                          {space.fileCount} files
-                        </div>
-                      )}
-                    </div>
-                    <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Location Toggle */}
-            <div className="mb-4 p-3 bg-muted/30 rounded-lg border border-border">
-              <div className="flex items-center space-x-3">
-                <Checkbox
-                  id="include-location"
-                  checked={includeLocation}
-                  onCheckedChange={(checked) => setIncludeLocation(checked === true)}
-                />
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <label 
-                    htmlFor="include-location" 
-                    className="text-sm font-medium text-foreground cursor-pointer"
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+              {/* Spaces List */}
+              <div className="space-y-2">
+                {spaces.map((space) => (
+                  <button
+                    key={space.id}
+                    onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
+                    className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
                   >
-                    Include current location
-                  </label>
-                </div>
-              </div>
-              {includeLocation && (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  Files will be tagged with your current location
-                </div>
-              )}
-            </div>
-
-            {/* Footer Spaces - Horizontal Scroll */}
-            {footerSpaces.length > 0 && (
-              <div className="border-t border-border pt-4 mb-4">
-                <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Main Spaces</div>
-                <div className="flex items-center space-x-3 overflow-x-auto pb-2 scrollbar-thin">
-                  {footerSpaces.map((space) => (
-                    <button
-                      key={space.id}
-                      onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                      className="flex-shrink-0 flex flex-col items-center space-y-2 group"
-                    >
-                      <div className="w-16 h-10 rounded-lg overflow-hidden bg-muted border border-border group-hover:border-primary transition-all group-hover:scale-105">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         <div className="w-full h-full flex items-center justify-center">
                           <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
                       </div>
-                      <span className="text-xs font-medium text-center text-foreground group-hover:text-primary transition-colors max-w-[64px] truncate">
-                        {space.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Floors */}
-            {floors.length > 0 && (
-              <div className="border-t border-border pt-4 mb-4">
-                <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Floors</div>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {floors.map((floor) => (
-                    <button
-                      key={floor.id}
-                      onClick={() => onSpaceSelect(floor.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                      className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Building2 className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                          </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-foreground truncate">
+                          {space.name}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground truncate">
-                            {floor.name}
+                        {space.fileCount !== undefined && (
+                          <div className="text-sm text-muted-foreground truncate">
+                            {space.fileCount} files
                           </div>
-                          {floor.fileCount !== undefined && (
-                            <div className="text-sm text-muted-foreground truncate">
-                              {floor.fileCount} files
+                        )}
+                      </div>
+                      <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Location Toggle */}
+              <div className="p-3 bg-muted/30 rounded-lg border border-border">
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="include-location"
+                    checked={includeLocation}
+                    onCheckedChange={(checked) => setIncludeLocation(checked === true)}
+                  />
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    <label 
+                      htmlFor="include-location" 
+                      className="text-sm font-medium text-foreground cursor-pointer"
+                    >
+                      Include current location
+                    </label>
+                  </div>
+                </div>
+                {includeLocation && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    Files will be tagged with your current location
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Spaces - Horizontal Scroll */}
+              {footerSpaces.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Main Spaces</div>
+                  <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                    {footerSpaces.map((space) => (
+                      <button
+                        key={space.id}
+                        onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
+                        className="flex-shrink-0 flex flex-col items-center space-y-2 group"
+                      >
+                        <div className="w-16 h-10 rounded-lg overflow-hidden bg-muted border border-border group-hover:border-primary transition-all group-hover:scale-105">
+                          {space.thumb ? (
+                            <ImageFallback 
+                              src={space.thumb} 
+                              alt={space.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Folder className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                             </div>
                           )}
                         </div>
-                        <Building2 className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                    </button>
-                  ))}
+                        <span className="text-xs font-medium text-center text-foreground group-hover:text-primary transition-colors max-w-[64px] truncate">
+                          {space.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Floors */}
+              {floors.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <div className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Floors</div>
+                  <div className="space-y-2">
+                    {floors.map((floor) => (
+                      <button
+                        key={floor.id}
+                        onClick={() => onSpaceSelect(floor.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
+                        className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Building2 className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-foreground truncate">
+                              {floor.name}
+                            </div>
+                            {floor.fileCount !== undefined && (
+                              <div className="text-sm text-muted-foreground truncate">
+                                {floor.fileCount} files
+                              </div>
+                            )}
+                          </div>
+                          <Building2 className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Create New Space */}
             <div className="border-t border-border pt-4">

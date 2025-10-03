@@ -39,6 +39,7 @@ interface HomeViewProps {
   onCloseAddModal?: () => void;
   onAddOptionSelect?: (optionId: string) => void;
   onOpenAddPanel?: () => void;
+  selectedItem?: any;
 }
 
 export function HomeView({ 
@@ -61,13 +62,14 @@ export function HomeView({
   isAddModalOpen = false,
   onCloseAddModal,
   onAddOptionSelect,
-  onOpenAddPanel
+  onOpenAddPanel,
+  selectedItem
 }: HomeViewProps) {
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -158,13 +160,13 @@ export function HomeView({
   };
 
   const handleItemLongPress = (item: any) => {
-    setSelectedItem(item);
+    setLocalSelectedItem(item);
     setShowDialControlPanel(true);
   };
 
   const handleDialControlPanelClose = () => {
     setShowDialControlPanel(false);
-    setSelectedItem(null);
+    setLocalSelectedItem(null);
   };
 
   const handleDialSaved = () => {
@@ -181,12 +183,12 @@ export function HomeView({
       >
       {/* Hero Header */}
       <HeroHeaderVideo
-        videoSrc={isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined}
-        posterSrc={backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
-        title={spaceName || "Lobby"}
-        subtitle={spaceDescription || "Welcome back"}
-        backgroundImage={backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-        showVideo={isLobby}
+        videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
+        posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
+        title={selectedItem?.title || selectedItem?.name || spaceName || "Lobby"}
+        subtitle={selectedItem?.artist || selectedItem?.type || spaceDescription || "Welcome back"}
+        backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
+        showVideo={selectedItem?.duration && !selectedItem?.artist ? true : isLobby}
         show360={show360}
         xAxisOffset={xAxisOffset}
         yAxisOffset={yAxisOffset}

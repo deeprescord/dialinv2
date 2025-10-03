@@ -303,3 +303,9 @@ export const Smile = ({ size = 24, className = '' }: { size?: number; className?
     <line x1="15" y1="9" x2="15.01" y2="9"/>
   </svg>
 );
+
+export const ChevronRight = ({ size = 24, className = '' }: { size?: number; className?: string }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9,18 15,12 9,6"/>
+  </svg>
+);

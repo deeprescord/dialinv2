@@ -8,7 +8,7 @@ import { FriendsView } from '@/components/DialinPortal/FriendsView';
 import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
-import { CombinedBottomBar } from '@/components/DialinPortal/CombinedBottomBar';
+import { BreadcrumbNavBar } from '@/components/DialinPortal/BreadcrumbNavBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
@@ -93,6 +93,11 @@ export default function SpacePage() {
   const [show360Settings, setShow360Settings] = useState(false);
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  
+  // Navigation breadcrumb path (e.g., ['lobby', 'space-1', 'space-2'])
+  const [navigationPath, setNavigationPath] = useState<string[]>(['lobby']);
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
+  const [selectedItemData, setSelectedItemData] = useState<any>(null);
 
   // File upload hook
   const { uploadMultipleFiles, uploading } = useFileUpload();
@@ -318,9 +323,35 @@ export default function SpacePage() {
   const handleSpaceClick = (space: Space) => {
     if (space.id === 'lobby') {
       navigate('/');
+      setNavigationPath(['lobby']);
     } else {
       navigate(`/space/${space.id}`);
+      // Add to navigation path if not already there
+      const existingIndex = navigationPath.indexOf(space.id);
+      if (existingIndex >= 0) {
+        // Navigate back to this space, trim path
+        setNavigationPath(navigationPath.slice(0, existingIndex + 1));
+      } else {
+        // Navigate forward to new space
+        setNavigationPath([...navigationPath, space.id]);
+      }
     }
+    setSelectedItemId(undefined);
+    setSelectedItemData(null);
+  };
+
+  // Handle navigation via breadcrumb
+  const handleBreadcrumbNavigate = (spaceId: string) => {
+    const space = spaces.find(s => s.id === spaceId) || { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
+    handleSpaceClick(space);
+  };
+
+  // Handle item selection
+  const handleItemSelect = (itemId: string) => {
+    setSelectedItemId(itemId);
+    // Find the item data from catalogs
+    const item = [...videoCatalog, ...musicCatalog, ...locations].find(i => i.id === itemId);
+    setSelectedItemData(item);
   };
 
   // Handle floating player actions
@@ -459,6 +490,7 @@ export default function SpacePage() {
               yAxisOffset={currentSpace?.yAxis}
               volume={currentSpace?.volume}
               isMuted={currentSpace?.isMuted}
+              selectedItem={selectedItemData}
             />
           )}
 
@@ -515,9 +547,11 @@ export default function SpacePage() {
           />
         ) : showSpacesBar ? (
           <div className="fixed bottom-0 left-0 right-0 z-30">
-            <CombinedBottomBar 
-              spaces={spaces} 
-              currentSpaceId={currentSpace?.id}
+            <BreadcrumbNavBar 
+              navigationPath={navigationPath}
+              spaces={spaces}
+              currentSpaceItems={spaces.filter(s => s.id !== 'lobby')}
+              selectedItemId={selectedItemId}
               onCreateSpace={() => setShowCreateSpaceModal(true)}
               onDeleteSpace={handleDeleteSpace}
               onRenameSpace={handleRenameSpace}
@@ -528,7 +562,8 @@ export default function SpacePage() {
               on360AxisChange={handle360AxisChange}
               on360VolumeChange={handle360VolumeChange}
               on360MuteToggle={handle360MuteToggle}
-              onSpaceClick={handleSpaceClick}
+              onNavigate={handleBreadcrumbNavigate}
+              onItemSelect={handleItemSelect}
               showChatWindow={showChatWindow}
               onToggleChatWindow={handleToggleChatWindow}
               showCreateSpaceModal={showCreateSpaceModal}

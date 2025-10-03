@@ -171,7 +171,8 @@ export function BreadcrumbNavBar({
                         className="flex flex-col items-center space-y-1 cursor-pointer group select-none relative"
                         onClick={() => {
                           if (item.type === 'space' || item.id?.startsWith('space-')) {
-                            handleSpaceClick(item);
+                            // For spaces in the items section, navigate to them (will add to breadcrumb)
+                            onNavigate(item.id);
                           } else {
                             onItemSelect(item.id);
                           }

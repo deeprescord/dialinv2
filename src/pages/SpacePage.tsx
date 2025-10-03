@@ -338,12 +338,8 @@ export default function SpacePage() {
         // Navigate back to this space, trim path
         setNavigationPath(navigationPath.slice(0, existingIndex + 1));
       } else {
-        // Only add to path if navigating from current location
-        const currentSpaceIndex = navigationPath.length - 1;
-        const currentSpaceId = navigationPath[currentSpaceIndex];
-        
-        // Replace all after lobby with just this space
-        setNavigationPath(['lobby', space.id]);
+        // Add this space to the path (for nested navigation)
+        setNavigationPath([...navigationPath, space.id]);
       }
     }
     setSelectedItemId(undefined);
@@ -352,8 +348,17 @@ export default function SpacePage() {
 
   // Handle navigation via breadcrumb
   const handleBreadcrumbNavigate = (spaceId: string) => {
-    const space = spaces.find(s => s.id === spaceId) || { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
-    handleSpaceClick(space);
+    if (spaceId === 'lobby') {
+      navigate('/');
+      setNavigationPath(['lobby']);
+      setSelectedItemId(undefined);
+      setSelectedItemData(null);
+    } else {
+      const space = spaces.find(s => s.id === spaceId);
+      if (space) {
+        handleSpaceClick(space);
+      }
+    }
   };
 
   // Handle item selection

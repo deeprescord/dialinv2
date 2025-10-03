@@ -40,6 +40,7 @@ export function SpaceSelectionModal({
   const [includeLocation, setIncludeLocation] = useState(false);
   const [autoDetecting, setAutoDetecting] = useState(false);
   const [autoDetectedDials, setAutoDetectedDials] = useState<any[]>([]);
+  const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
 
   // ESC key handling
   useEffect(() => {
@@ -63,6 +64,7 @@ export function SpaceSelectionModal({
       onCreateNewSpace(newSpaceName.trim(), autoDetectedDials.length > 0 ? autoDetectedDials : undefined);
       setNewSpaceName('');
       setShowCreateForm(false);
+      setSelectedSpaceId(null);
     }
   };
 
@@ -70,6 +72,18 @@ export function SpaceSelectionModal({
     if (e.key === 'Enter') {
       handleCreateSpace();
     }
+  };
+
+  const handleSave = () => {
+    if (selectedSpaceId) {
+      onSpaceSelect(selectedSpaceId, autoDetectedDials.length > 0 ? autoDetectedDials : undefined);
+    }
+  };
+
+  const handleCancel = () => {
+    setSelectedSpaceId(null);
+    setAutoDetectedDials([]);
+    onClose();
   };
 
   const handleAutoDetect = async () => {
@@ -211,8 +225,12 @@ export function SpaceSelectionModal({
                 {spaces.map((space) => (
                   <button
                     key={space.id}
-                    onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                    className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
+                    onClick={() => setSelectedSpaceId(space.id)}
+                    className={`w-full p-3 text-left rounded-lg transition-colors border group ${
+                      selectedSpaceId === space.id 
+                        ? 'bg-primary/10 border-primary' 
+                        : 'border-transparent hover:border-border hover:bg-muted'
+                    }`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -269,10 +287,14 @@ export function SpaceSelectionModal({
                     {footerSpaces.map((space) => (
                       <button
                         key={space.id}
-                        onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                        className="flex-shrink-0 flex flex-col items-center space-y-2 group"
+                        onClick={() => setSelectedSpaceId(space.id)}
+                        className={`flex-shrink-0 flex flex-col items-center space-y-2 group ${
+                          selectedSpaceId === space.id ? 'opacity-100' : ''
+                        }`}
                       >
-                        <div className="w-16 h-10 rounded-lg overflow-hidden bg-muted border border-border group-hover:border-primary transition-all group-hover:scale-105">
+                        <div className={`w-16 h-10 rounded-lg overflow-hidden bg-muted border transition-all group-hover:scale-105 ${
+                          selectedSpaceId === space.id ? 'border-primary ring-2 ring-primary' : 'border-border group-hover:border-primary'
+                        }`}>
                           {space.thumb ? (
                             <ImageFallback 
                               src={space.thumb} 
@@ -302,8 +324,12 @@ export function SpaceSelectionModal({
                     {floors.map((floor) => (
                       <button
                         key={floor.id}
-                        onClick={() => onSpaceSelect(floor.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
-                        className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
+                        onClick={() => setSelectedSpaceId(floor.id)}
+                        className={`w-full p-3 text-left rounded-lg transition-colors border group ${
+                          selectedSpaceId === floor.id 
+                            ? 'bg-primary/10 border-primary' 
+                            : 'border-transparent hover:border-border hover:bg-muted'
+                        }`}
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -377,6 +403,23 @@ export function SpaceSelectionModal({
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Save and Cancel Buttons */}
+            <div className="border-t border-border pt-4 flex space-x-3">
+              <button
+                onClick={handleCancel}
+                className="flex-1 px-4 py-3 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!selectedSpaceId}
+                className="flex-1 px-4 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Save to Space
+              </button>
             </div>
           </motion.div>
         </motion.div>

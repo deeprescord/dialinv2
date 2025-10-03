@@ -14,6 +14,7 @@ interface DialControlPanelProps {
     id: string;
     title: string;
     thumb: string;
+    type?: string;
     owner?: {
       name: string;
       avatar: string;
@@ -91,6 +92,12 @@ export function DialControlPanel({
     keywordImages: {} as Record<string, string>
   });
   const [aiDescription, setAiDescription] = useState('');
+  const [suggestedDials, setSuggestedDials] = useState<Array<{
+    name: string;
+    minLabel: string;
+    maxLabel: string;
+    defaultValue: number;
+  }>>([]);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [votingResults, setVotingResults] = useState<Array<{dial: string, votes: number, percentage: number, avgIntensity: number, userVotes: Array<{userId: string, intensity: number}>}>>([
     { dial: '🤝', votes: 12, percentage: 35, avgIntensity: 75, userVotes: [
@@ -221,13 +228,18 @@ export function DialControlPanel({
     
     setIsGeneratingDescription(true);
     try {
-      const response = await aiService.sendMessage([
-        {
-          role: 'user',
-          content: `Generate a brief, engaging description (2-3 sentences) for this item: "${item.title}". Make it informative and appealing.`
-        }
-      ]);
-      setAiDescription(response);
+      const result = await aiService.describeItemWithDials(
+        item.title,
+        item.type
+      );
+      
+      setAiDescription(result.description);
+      setSuggestedDials(result.dials);
+      
+      toast({
+        title: "Description & Dials generated!",
+        description: `AI created a description and ${result.dials.length} contextual dials.`,
+      });
     } catch (error) {
       console.error('Error generating description:', error);
       toast({
@@ -336,10 +348,34 @@ export function DialControlPanel({
                     </Button>
                   </div>
                   {aiDescription && (
-                    <p className="text-sm text-gray-300 leading-relaxed">{aiDescription}</p>
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-300 leading-relaxed">{aiDescription}</p>
+                      
+                      {suggestedDials.length > 0 && (
+                        <div className="pt-3 border-t border-white/10">
+                          <p className="text-xs text-purple-300 mb-2 font-medium">Suggested Dials:</p>
+                          <div className="space-y-2">
+                            {suggestedDials.map((dial, index) => (
+                              <div key={index} className="flex items-center gap-3 p-2 bg-white/5 rounded-lg border border-white/10">
+                                <div className="flex-1">
+                                  <p className="text-xs font-medium text-white">{dial.name}</p>
+                                  <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                                    <span>{dial.minLabel}</span>
+                                    <span>{dial.maxLabel}</span>
+                                  </div>
+                                </div>
+                                <div className="text-xs text-purple-300 font-medium">
+                                  {dial.defaultValue}%
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {!aiDescription && !isGeneratingDescription && (
-                    <p className="text-xs text-gray-500 italic">Click Generate to create an AI-powered description of this item</p>
+                    <p className="text-xs text-gray-500 italic">Click Generate to create an AI-powered description and contextual dials for this item</p>
                   )}
                 </div>
               </div>

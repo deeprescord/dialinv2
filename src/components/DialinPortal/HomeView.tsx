@@ -108,12 +108,18 @@ export function HomeView({
     setShowSpaceSelectionModal(true);
   };
 
-  const handleSpaceSelect = async (spaceId: string) => {
+  const handleSpaceSelect = async (spaceId: string, autoDetectedDials?: any[]) => {
     try {
       if (droppedFiles.length > 0) {
         await uploadMultipleFiles(droppedFiles, spaceId);
         if (onFilesDrop) {
           onFilesDrop(droppedFiles, spaceId);
+        }
+        
+        // If auto-detected dials were provided, show celebration
+        if (autoDetectedDials && autoDetectedDials.length > 0) {
+          setShowCelebration(true);
+          setTimeout(() => setShowCelebration(false), 3000);
         }
       }
     } catch (error) {

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Folder, FolderOpen, MapPin, Building2 } from 'lucide-react';
+import { X, Plus, Folder, FolderOpen, MapPin, Building2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { aiService } from '@/lib/ai-service';
+import { toast } from 'sonner';
 
 interface SpaceOption {
   id: string;
@@ -12,7 +14,7 @@ interface SpaceOption {
 interface SpaceSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSpaceSelect: (spaceId: string) => void;
+  onSpaceSelect: (spaceId: string, autoDetectedDials?: any[]) => void;
   onCreateNewSpace: (name: string) => void;
   spaces: SpaceOption[];
   footerSpaces?: SpaceOption[];
@@ -34,6 +36,8 @@ export function SpaceSelectionModal({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState('');
   const [includeLocation, setIncludeLocation] = useState(false);
+  const [autoDetecting, setAutoDetecting] = useState(false);
+  const [autoDetectedDials, setAutoDetectedDials] = useState<any[]>([]);
 
   // ESC key handling
   useEffect(() => {
@@ -63,6 +67,38 @@ export function SpaceSelectionModal({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleCreateSpace();
+    }
+  };
+
+  const handleAutoDetect = async () => {
+    setAutoDetecting(true);
+    try {
+      // Get the first file (for simplicity, we'll analyze the first one)
+      const firstFile = droppedFiles[0];
+      if (!firstFile) {
+        toast.error('No files to analyze');
+        return;
+      }
+
+      // Determine file type for better context
+      let fileType = 'item';
+      if (firstFile.type.startsWith('image/')) fileType = 'image';
+      else if (firstFile.type.startsWith('video/')) fileType = 'video';
+      else if (firstFile.type.startsWith('audio/')) fileType = 'audio';
+
+      const result = await aiService.describeItemWithDials(firstFile.name, fileType);
+      
+      if (result.dials && result.dials.length > 0) {
+        setAutoDetectedDials(result.dials);
+        toast.success(`Auto-detected ${result.dials.length} relevant dials!`);
+      } else {
+        toast.info('No specific dials detected for this item');
+      }
+    } catch (error) {
+      console.error('Auto-detect error:', error);
+      toast.error('Failed to auto-detect dials');
+    } finally {
+      setAutoDetecting(false);
     }
   };
 
@@ -113,12 +149,47 @@ export function SpaceSelectionModal({
               </div>
             </div>
 
+            {/* Auto Detect Button */}
+            <div className="mb-6">
+              <button
+                onClick={handleAutoDetect}
+                disabled={autoDetecting || droppedFiles.length === 0}
+                className="w-full p-4 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:border-purple-500/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-center space-x-3">
+                  <Sparkles className={`w-5 h-5 text-purple-400 ${autoDetecting ? 'animate-spin' : 'group-hover:scale-110 transition-transform'}`} />
+                  <span className="font-medium text-foreground">
+                    {autoDetecting ? 'Analyzing...' : 'Auto Detect Dials'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  AI will detect location, objects, or features and add relevant dials
+                </p>
+              </button>
+
+              {/* Show Auto-Detected Dials */}
+              {autoDetectedDials.length > 0 && (
+                <div className="mt-3 p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                  <div className="text-xs font-medium text-purple-300 mb-2">
+                    ✨ {autoDetectedDials.length} Dials Detected:
+                  </div>
+                  <div className="space-y-1">
+                    {autoDetectedDials.map((dial, index) => (
+                      <div key={index} className="text-xs text-muted-foreground">
+                        • {dial.name} ({dial.minLabel} → {dial.maxLabel})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Spaces List */}
             <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
               {spaces.map((space) => (
                 <button
                   key={space.id}
-                  onClick={() => onSpaceSelect(space.id)}
+                  onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
                   className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
                 >
                   <div className="flex items-center space-x-3">
@@ -176,7 +247,7 @@ export function SpaceSelectionModal({
                   {footerSpaces.map((space) => (
                     <button
                       key={space.id}
-                      onClick={() => onSpaceSelect(space.id)}
+                      onClick={() => onSpaceSelect(space.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
                       className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
                     >
                       <div className="flex items-center space-x-3">
@@ -211,7 +282,7 @@ export function SpaceSelectionModal({
                   {floors.map((floor) => (
                     <button
                       key={floor.id}
-                      onClick={() => onSpaceSelect(floor.id)}
+                      onClick={() => onSpaceSelect(floor.id, autoDetectedDials.length > 0 ? autoDetectedDials : undefined)}
                       className="w-full p-3 text-left rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border group"
                     >
                       <div className="flex items-center space-x-3">

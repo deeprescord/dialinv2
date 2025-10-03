@@ -8,7 +8,7 @@ import { FriendsView } from './FriendsView';
 import { VideosView } from './VideosView';
 import { MusicView } from './MusicView';
 import { LocationsView } from './LocationsView';
-import { CombinedBottomBar } from './CombinedBottomBar';
+import { BreadcrumbNavBar } from './BreadcrumbNavBar';
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
 import { ContactPane } from './ContactPane';
@@ -83,6 +83,11 @@ export function DialinPortal() {
     isPlaying: false,
     progress: 25
   });
+  
+  // Navigation breadcrumb path (e.g., ['lobby', 'space-1', 'space-2'])
+  const [navigationPath, setNavigationPath] = useState<string[]>(['lobby']);
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
+  const [selectedItemData, setSelectedItemData] = useState<any>(null);
 
   // Filter content based on selected dials
   const filteredVideos = applyDials(
@@ -457,6 +462,7 @@ export function DialinPortal() {
             onCloseAddModal={() => setIsAddModalOpen(false)}
             onAddOptionSelect={handleAddOptionSelect}
             onOpenAddPanel={() => setIsAddModalOpen(true)}
+            selectedItem={selectedItemData}
           />
         )}
 
@@ -513,9 +519,11 @@ export function DialinPortal() {
         />
       ) : showSpacesBar ? (
         <div className="fixed bottom-0 left-0 right-0 z-30">
-          <CombinedBottomBar
+          <BreadcrumbNavBar
+            navigationPath={navigationPath}
             spaces={spaces}
-            currentSpaceId="lobby"
+            currentSpaceItems={spaces.filter(s => s.id !== 'lobby')}
+            selectedItemId={selectedItemId}
             onCreateSpace={() => setIsAddModalOpen(true)}
             onDeleteSpace={handleDeleteSpace}
             onRenameSpace={handleRenameSpace}
@@ -526,7 +534,25 @@ export function DialinPortal() {
             on360AxisChange={handle360AxisChange}
             on360VolumeChange={handle360VolumeChange}
             on360MuteToggle={handle360MuteToggle}
-            onSpaceClick={handleSpaceClick}
+            onNavigate={(spaceId) => {
+              if (spaceId === 'lobby') {
+                setNavigationPath(['lobby']);
+              } else {
+                const existingIndex = navigationPath.indexOf(spaceId);
+                if (existingIndex >= 0) {
+                  setNavigationPath(navigationPath.slice(0, existingIndex + 1));
+                } else {
+                  setNavigationPath([...navigationPath, spaceId]);
+                }
+              }
+              setSelectedItemId(undefined);
+              setSelectedItemData(null);
+            }}
+            onItemSelect={(itemId) => {
+              setSelectedItemId(itemId);
+              const item = [...videoCatalog, ...musicCatalog, ...locations].find(i => i.id === itemId);
+              setSelectedItemData(item);
+            }}
             showChatWindow={showChatWindow}
             onToggleChatWindow={() => setShowChatWindow(!showChatWindow)}
             showCreateSpaceModal={showCreateSpaceModal}

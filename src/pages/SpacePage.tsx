@@ -98,6 +98,9 @@ export default function SpacePage() {
   const [navigationPath, setNavigationPath] = useState<string[]>(['lobby']);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
   const [selectedItemData, setSelectedItemData] = useState<any>(null);
+  
+  // Get current space items (spaces and media items in this space)
+  const currentSpaceItems = [...spaces.filter(s => s.id !== 'lobby'), ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)];
 
   // File upload hook
   const { uploadMultipleFiles, uploading } = useFileUpload();
@@ -332,8 +335,12 @@ export default function SpacePage() {
         // Navigate back to this space, trim path
         setNavigationPath(navigationPath.slice(0, existingIndex + 1));
       } else {
-        // Navigate forward to new space
-        setNavigationPath([...navigationPath, space.id]);
+        // Only add to path if navigating from current location
+        const currentSpaceIndex = navigationPath.length - 1;
+        const currentSpaceId = navigationPath[currentSpaceIndex];
+        
+        // Replace all after lobby with just this space
+        setNavigationPath(['lobby', space.id]);
       }
     }
     setSelectedItemId(undefined);
@@ -352,6 +359,9 @@ export default function SpacePage() {
     // Find the item data from catalogs
     const item = [...videoCatalog, ...musicCatalog, ...locations].find(i => i.id === itemId);
     setSelectedItemData(item);
+    
+    // Update hero header to show selected item
+    console.log('Selected item:', item);
   };
 
   // Handle floating player actions
@@ -550,7 +560,7 @@ export default function SpacePage() {
             <BreadcrumbNavBar 
               navigationPath={navigationPath}
               spaces={spaces}
-              currentSpaceItems={spaces.filter(s => s.id !== 'lobby')}
+              currentSpaceItems={currentSpaceItems}
               selectedItemId={selectedItemId}
               onCreateSpace={() => setShowCreateSpaceModal(true)}
               onDeleteSpace={handleDeleteSpace}

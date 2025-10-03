@@ -99,8 +99,11 @@ export default function SpacePage() {
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
   const [selectedItemData, setSelectedItemData] = useState<any>(null);
   
-  // Get current space items (spaces and media items in this space)
-  const currentSpaceItems = [...spaces.filter(s => s.id !== 'lobby'), ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)];
+  // Get current space items - only items/spaces within the selected space
+  const currentSpaceId = navigationPath[navigationPath.length - 1];
+  const currentSpaceItems = currentSpaceId === 'lobby' 
+    ? [] // Lobby shows nothing after separator
+    : [...spaces.filter(s => s.id !== 'lobby' && s.id !== currentSpaceId), ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)];
 
   // File upload hook
   const { uploadMultipleFiles, uploading } = useFileUpload();

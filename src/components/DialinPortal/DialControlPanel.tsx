@@ -356,7 +356,7 @@ export function DialControlPanel({
                           <p className="text-xs text-purple-300 mb-2 font-medium">Suggested Dials:</p>
                           <div className="space-y-2">
                             {suggestedDials.map((dial, index) => (
-                              <div key={index} className="flex items-center gap-3 p-2 bg-white/5 rounded-lg border border-white/10">
+                              <div key={index} className="flex items-center gap-3 p-2 bg-white/5 rounded-lg border border-white/10 hover:border-purple-400/30 transition-colors group">
                                 <div className="flex-1">
                                   <p className="text-xs font-medium text-white">{dial.name}</p>
                                   <div className="flex justify-between text-[10px] text-gray-400 mt-1">
@@ -364,9 +364,40 @@ export function DialControlPanel({
                                     <span>{dial.maxLabel}</span>
                                   </div>
                                 </div>
-                                <div className="text-xs text-purple-300 font-medium">
+                                <div className="text-xs text-purple-300 font-medium mr-2">
                                   {dial.defaultValue}%
                                 </div>
+                                <Button
+                                  onClick={() => {
+                                    // Add the suggested dial as a custom dial
+                                    const dialData = {
+                                      emoji: '✨',
+                                      label: dial.name.toUpperCase(),
+                                      votes: 1,
+                                      intensity: dial.defaultValue
+                                    };
+                                    
+                                    setCustomDials(prev => [...prev, dialData]);
+                                    setVotingResults(prev => [...prev, {
+                                      dial: dialData.emoji,
+                                      votes: 1,
+                                      percentage: Math.round(100 / (prev.length + 1)),
+                                      avgIntensity: dialData.intensity,
+                                      userVotes: [{userId: '1', intensity: dialData.intensity}]
+                                    }]);
+                                    
+                                    onDialSaved?.();
+                                    
+                                    toast({
+                                      title: "Dial Added!",
+                                      description: `${dial.name} has been added to your dials.`,
+                                    });
+                                  }}
+                                  className="bg-purple-500/30 hover:bg-purple-500/50 text-white border border-purple-400/40 rounded-full px-3 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Plus className="w-3 h-3 mr-1 inline" />
+                                  Add
+                                </Button>
                               </div>
                             ))}
                           </div>

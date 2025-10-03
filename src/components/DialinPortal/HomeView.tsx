@@ -258,6 +258,19 @@ export function HomeView({
           name: space.name,
           fileCount: 0, // TODO: Add file count query
         }))}
+        footerSpaces={[
+          { id: 'lobby', name: 'Lobby' },
+          { id: 'music-den', name: 'Music Den' },
+          { id: 'locations', name: 'Locations' },
+          { id: 'friends', name: 'Friends' }
+        ]}
+        floors={[
+          { id: 'floor-1', name: 'Floor 1' },
+          { id: 'floor-2', name: 'Floor 2' },
+          { id: 'floor-3', name: 'Floor 3' },
+          { id: 'floor-4', name: 'Floor 4' },
+          { id: 'floor-5', name: 'Floor 5' }
+        ]}
         droppedFiles={droppedFiles}
         loading={spacesLoading || uploading}
       />

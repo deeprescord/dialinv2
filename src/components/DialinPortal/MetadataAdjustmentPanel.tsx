@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { X, Plus, Trash2, Check, Sparkles, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Plus, Trash2, Check, Sparkles, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,12 +8,22 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
+
+interface DialSuggestion {
+  key: string;
+  label: string;
+  type: 'slider' | 'select';
+  value: any;
+  options?: string[];
+}
 
 interface MetadataAdjustmentPanelProps {
   fileName: string;
   fileType: string;
   initialHashtags?: string[];
   initialDialValues?: Record<string, any>;
+  suggestedDials?: DialSuggestion[];
   suggestedSpaces?: string[];
   availableSpaces: Array<{ id: string; name: string }>;
   confidence?: number;
@@ -22,6 +32,7 @@ interface MetadataAdjustmentPanelProps {
     hashtags: string[];
     dialValues: Record<string, any>;
     selectedSpaceId: string;
+    location?: { lat: number; lng: number; address?: string };
   }) => void;
   onCancel: () => void;
 }
@@ -31,6 +42,7 @@ export function MetadataAdjustmentPanel({
   fileType,
   initialHashtags = [],
   initialDialValues = {},
+  suggestedDials = [],
   suggestedSpaces = [],
   availableSpaces,
   confidence = 0,
@@ -41,9 +53,57 @@ export function MetadataAdjustmentPanel({
   const [hashtags, setHashtags] = useState<string[]>(initialHashtags);
   const [newHashtag, setNewHashtag] = useState('');
   const [dialValues, setDialValues] = useState<Record<string, any>>(initialDialValues);
+  const [activeDials, setActiveDials] = useState<DialSuggestion[]>([]);
+  const [availableDials, setAvailableDials] = useState<DialSuggestion[]>([]);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(
     suggestedSpaces[0] || availableSpaces[0]?.id || 'lobby'
   );
+  const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
+  const moodOptions = ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'];
+  const vibeOptions = ['chill', 'energetic', 'dark', 'uplifting', 'contemplative', 'futuristic', 'neutral'];
+
+  // Initialize dials from suggestions
+  useEffect(() => {
+    if (suggestedDials.length > 0) {
+      const top3 = suggestedDials.slice(0, 3);
+      const remaining = suggestedDials.slice(3);
+      setActiveDials(top3);
+      setAvailableDials(remaining);
+      
+      // Initialize dial values
+      const initialValues: Record<string, any> = {};
+      top3.forEach(dial => {
+        initialValues[dial.key] = dial.value;
+      });
+      setDialValues(prev => ({ ...prev, ...initialValues }));
+    }
+  }, [suggestedDials]);
+
+  // Auto-capture location
+  useEffect(() => {
+    setLoadingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const loc = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setLocation(loc);
+          setLoadingLocation(false);
+          toast.success('Location captured');
+        },
+        (error) => {
+          console.error('Location error:', error);
+          setLoadingLocation(false);
+        }
+      );
+    } else {
+      setLoadingLocation(false);
+    }
+  }, []);
 
   const handleAddHashtag = () => {
     if (newHashtag.trim() && !hashtags.includes(newHashtag.trim())) {
@@ -60,16 +120,46 @@ export function MetadataAdjustmentPanel({
     setDialValues(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleAddDial = (dial: DialSuggestion) => {
+    // Add to active dials
+    setActiveDials(prev => [...prev, dial]);
+    // Add its value to dialValues
+    setDialValues(prev => ({ ...prev, [dial.key]: dial.value }));
+    // Remove from available and add next one if exists
+    const remainingDials = availableDials.filter(d => d.key !== dial.key);
+    setAvailableDials(remainingDials);
+  };
+
+  const handleCloseDial = (dialKey: string) => {
+    // Remove from active dials
+    const removedDial = activeDials.find(d => d.key === dialKey);
+    setActiveDials(prev => prev.filter(d => d.key !== dialKey));
+    // Remove from dialValues
+    const { [dialKey]: _, ...rest } = dialValues;
+    setDialValues(rest);
+    // Add next available dial if exists
+    if (removedDial && availableDials.length > 0) {
+      const nextDial = availableDials[0];
+      setActiveDials(prev => [...prev, nextDial]);
+      setDialValues(prev => ({ ...prev, [nextDial.key]: nextDial.value }));
+      setAvailableDials(prev => prev.slice(1));
+    }
+  };
+
   const handleSave = () => {
     onSave({
       hashtags,
       dialValues,
-      selectedSpaceId
+      selectedSpaceId,
+      location: location || undefined
     });
   };
 
-  const moodOptions = ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'];
-  const vibeOptions = ['chill', 'energetic', 'dark', 'uplifting', 'contemplative', 'futuristic', 'neutral'];
+  const getDialOptions = (dial: DialSuggestion) => {
+    if (dial.key === 'mood') return moodOptions;
+    if (dial.key === 'vibe') return vibeOptions;
+    return dial.options || [];
+  };
 
   return (
     <motion.div
@@ -135,92 +225,96 @@ export function MetadataAdjustmentPanel({
             </div>
           </div>
 
-          {/* Dial Values Section */}
+          {/* Location */}
+          {location && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4" />
+              <span>Location captured: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
+            </div>
+          )}
+
+          {/* Active Dials */}
           <div className="space-y-4">
-            <Label>Dial Values</Label>
+            <div className="flex items-center justify-between">
+              <Label>Active Dials</Label>
+              <span className="text-xs text-muted-foreground">{activeDials.length} active</span>
+            </div>
             
-            {/* Energy */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm">Energy</span>
-                <span className="text-sm font-mono">{dialValues.energy || 5}/10</span>
-              </div>
-              <Slider
-                value={[dialValues.energy || 5]}
-                onValueChange={([value]) => handleDialChange('energy', value)}
-                max={10}
-                step={1}
-              />
-            </div>
-
-            {/* Mood */}
-            <div className="space-y-2">
-              <Label className="text-sm">Mood</Label>
-              <Select
-                value={dialValues.mood || 'neutral'}
-                onValueChange={(value) => handleDialChange('mood', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {moodOptions.map((mood) => (
-                    <SelectItem key={mood} value={mood}>
-                      {mood}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Vibe */}
-            <div className="space-y-2">
-              <Label className="text-sm">Vibe</Label>
-              <Select
-                value={dialValues.vibe || 'neutral'}
-                onValueChange={(value) => handleDialChange('vibe', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {vibeOptions.map((vibe) => (
-                    <SelectItem key={vibe} value={vibe}>
-                      {vibe}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Complexity */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm">Complexity</span>
-                <span className="text-sm font-mono">{dialValues.complexity || 5}/10</span>
-              </div>
-              <Slider
-                value={[dialValues.complexity || 5]}
-                onValueChange={([value]) => handleDialChange('complexity', value)}
-                max={10}
-                step={1}
-              />
-            </div>
-
-            {/* Professionalism */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm">Professionalism</span>
-                <span className="text-sm font-mono">{dialValues.professionalism || 5}/10</span>
-              </div>
-              <Slider
-                value={[dialValues.professionalism || 5]}
-                onValueChange={([value]) => handleDialChange('professionalism', value)}
-                max={10}
-                step={1}
-              />
-            </div>
+            <AnimatePresence mode="popLayout">
+              {activeDials.map((dial) => (
+                <motion.div
+                  key={dial.key}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-2 p-3 rounded-lg border border-primary/20 bg-background/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">{dial.label}</Label>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleCloseDial(dial.key)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  
+                  {dial.type === 'slider' ? (
+                    <>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Value</span>
+                        <span className="font-mono">{dialValues[dial.key] || dial.value}/10</span>
+                      </div>
+                      <Slider
+                        value={[dialValues[dial.key] || dial.value]}
+                        onValueChange={([value]) => handleDialChange(dial.key, value)}
+                        max={10}
+                        step={1}
+                      />
+                    </>
+                  ) : (
+                    <Select
+                      value={dialValues[dial.key] || dial.value}
+                      onValueChange={(value) => handleDialChange(dial.key, value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getDialOptions(dial).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
+
+          {/* Suggested Dials */}
+          {availableDials.length > 0 && (
+            <div className="space-y-3">
+              <Label className="text-sm text-muted-foreground">Suggested Dials</Label>
+              <div className="flex flex-wrap gap-2">
+                {availableDials.slice(0, 3).map((dial) => (
+                  <Badge
+                    key={dial.key}
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary/10 transition-colors gap-1"
+                    onClick={() => handleAddDial(dial)}
+                  >
+                    <Plus className="w-3 h-3" />
+                    {dial.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Space Selection */}
           <div className="space-y-2">

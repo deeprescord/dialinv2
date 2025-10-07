@@ -84,9 +84,15 @@ Return ONLY valid JSON, no explanation.`;
           energy: 5,
           mood: 'neutral',
           vibe: 'neutral',
-          complexity: 5,
-          professionalism: 5
         },
+        suggested_dials: [
+          { key: 'energy', label: 'Energy', type: 'slider', value: 5 },
+          { key: 'mood', label: 'Mood', type: 'select', value: 'neutral' },
+          { key: 'vibe', label: 'Vibe', type: 'select', value: 'neutral' },
+          { key: 'complexity', label: 'Complexity', type: 'slider', value: 5 },
+          { key: 'professionalism', label: 'Professionalism', type: 'slider', value: 5 },
+          { key: 'spiciness', label: 'Spiciness', type: 'slider', value: 5 },
+        ],
         confidence: 0.3,
         suggested_spaces: ['lobby'],
         fallback: true
@@ -117,9 +123,15 @@ Return ONLY valid JSON, no explanation.`;
           energy: 5,
           mood: 'neutral',
           vibe: 'neutral',
-          complexity: 5,
-          professionalism: 5
         },
+        suggested_dials: [
+          { key: 'energy', label: 'Energy', type: 'slider', value: 5 },
+          { key: 'mood', label: 'Mood', type: 'select', value: 'neutral' },
+          { key: 'vibe', label: 'Vibe', type: 'select', value: 'neutral' },
+          { key: 'complexity', label: 'Complexity', type: 'slider', value: 5 },
+          { key: 'professionalism', label: 'Professionalism', type: 'slider', value: 5 },
+          { key: 'spiciness', label: 'Spiciness', type: 'slider', value: 5 },
+        ],
         confidence: 0.3,
         suggested_spaces: ['lobby'],
         fallback: true

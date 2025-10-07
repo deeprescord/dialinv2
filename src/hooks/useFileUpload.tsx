@@ -13,9 +13,18 @@ export interface FileUploadResult {
   duration?: number;
 }
 
+export interface DialSuggestion {
+  key: string;
+  label: string;
+  type: 'slider' | 'select';
+  value: any;
+  options?: string[];
+}
+
 export interface AIMetadata {
   hashtags: string[];
   dial_values: Record<string, any>;
+  suggested_dials: DialSuggestion[];
   confidence: number;
   suggested_spaces: string[];
   fallback?: boolean;

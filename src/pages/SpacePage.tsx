@@ -24,6 +24,7 @@ import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjus
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpaces } from '@/hooks/useSpaces';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
   musicCatalog, 
@@ -95,12 +96,10 @@ export default function SpacePage() {
   const [show360Settings, setShow360Settings] = useState(false);
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
-  const [pendingFileData, setPendingFileData] = useState<{
-    file: File;
-    fileId: string;
-    aiMetadata: AIMetadata | null;
+  const [pendingFile, setPendingFile] = useState<{
+    file: { id: string; original_name: string; file_type: string };
+    metadata: AIMetadata;
   } | null>(null);
-  const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   
   // Navigation breadcrumb path (e.g., ['lobby', 'space-1', 'space-2'])
   const [navigationPath, setNavigationPath] = useState<string[]>(['lobby']);
@@ -118,8 +117,18 @@ export default function SpacePage() {
     : [...nestedSpaces, ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Show nested spaces and content items
 
   // File upload hook
-  const { uploadFile, uploadMultipleFiles, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
+  const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces } = useSpaces();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    getUser();
+  }, []);
 
   // Find current space
   const currentSpace = spaces.find(space => space.id === spaceId);
@@ -307,30 +316,45 @@ export default function SpacePage() {
   };
 
   // Drag and drop handlers
-  const handleFilesDropped = (files: File[]) => {
-    setDroppedFiles(files);
-    setShowSpaceSelectionModal(true);
-  };
+  const handleFilesDropped = async (files: File[]) => {
+    if (files.length === 0 || !currentUser) return;
 
-  const handleSpaceSelect = async (selectedSpaceId: string) => {
-    if (droppedFiles.length > 0) {
-      // Upload first file with AI analysis
-      const firstFile = droppedFiles[0];
-      toast.info('Uploading and analyzing with AI...');
-      
-      const fileResult = await uploadFile(firstFile, selectedSpaceId);
-      if (fileResult) {
-        // Analyze with AI
-        const aiMetadata = await analyzeWithAI(firstFile, fileResult.id);
+    const currentSpaceId = navigationPath[navigationPath.length - 1];
+
+    for (const file of files) {
+      try {
+        // Auto-upload file first
+        toast.info('Uploading and analyzing...');
+        const uploadResult = await uploadFile(file, currentSpaceId);
         
-        // Show metadata panel for review
-        setPendingFileData({
-          file: firstFile,
-          fileId: fileResult.id,
-          aiMetadata
-        });
-        setShowSpaceSelectionModal(false);
-        setShowMetadataPanel(true);
+        if (uploadResult) {
+          // Auto-trigger AI analysis
+          const aiMetadata = await analyzeWithAI(file, uploadResult.id);
+          
+          if (aiMetadata) {
+            // Show adjustment panel with AI results
+            setPendingFile({
+              file: uploadResult,
+              metadata: aiMetadata
+            });
+          } else {
+            // If AI fails, show panel with defaults
+            setPendingFile({
+              file: uploadResult,
+              metadata: {
+                hashtags: ['untagged'],
+                dial_values: {},
+                suggested_dials: [],
+                confidence: 0,
+                suggested_spaces: [currentSpaceId],
+                fallback: true
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error('File processing error:', error);
+        toast.error(`Failed to process ${file.name}`);
       }
     }
   };
@@ -339,42 +363,52 @@ export default function SpacePage() {
     hashtags: string[];
     dialValues: Record<string, any>;
     selectedSpaceId: string;
+    location?: { lat: number; lng: number; address?: string };
   }) => {
-    if (!pendingFileData) return;
+    if (!pendingFile) return;
 
-    // Save metadata to database
-    await saveMetadata(
-      pendingFileData.fileId,
-      metadata.hashtags,
-      metadata.dialValues,
-      !!pendingFileData.aiMetadata,
-      pendingFileData.aiMetadata?.confidence || 0
-    );
+    try {
+      // Save metadata with location
+      const dialValuesWithLocation = {
+        ...metadata.dialValues,
+        ...(metadata.location && { location: metadata.location })
+      };
 
-    toast.success('File metadata saved!');
-    setShowMetadataPanel(false);
-    setPendingFileData(null);
-    setDroppedFiles([]);
-  };
+      await saveMetadata(
+        pendingFile.file.id,
+        metadata.hashtags,
+        dialValuesWithLocation,
+        !pendingFile.metadata.fallback,
+        pendingFile.metadata.confidence
+      );
 
-  const handleMetadataCancel = () => {
-    setShowMetadataPanel(false);
-    setPendingFileData(null);
-    setDroppedFiles([]);
-  };
+      // If space changed, move the file
+      const currentSpaceId = navigationPath[navigationPath.length - 1];
+      if (metadata.selectedSpaceId !== currentSpaceId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Remove from current space
+        await supabase
+          .from('space_files')
+          .delete()
+          .eq('file_id', pendingFile.file.id)
+          .eq('space_id', currentSpaceId);
 
-  const handleCreateNewSpace = async (name: string) => {
-    const newSpace: Space = {
-      id: `space-${Date.now()}`,
-      name,
-      thumb: '/placeholder.svg'
-    };
-    setSpaces(prev => [...prev, newSpace]);
-    
-    if (droppedFiles.length > 0) {
-      await uploadMultipleFiles(droppedFiles, newSpace.id);
-      setShowSpaceSelectionModal(false);
-      setDroppedFiles([]);
+        // Add to new space
+        await supabase
+          .from('space_files')
+          .insert({
+            space_id: metadata.selectedSpaceId,
+            file_id: pendingFile.file.id,
+            added_by: user?.id
+          });
+      }
+
+      toast.success('File organized with Dial OS');
+      setPendingFile(null);
+    } catch (error) {
+      console.error('Failed to save metadata:', error);
+      toast.error('Failed to save metadata');
     }
   };
 
@@ -761,35 +795,21 @@ export default function SpacePage() {
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
         />
 
-        <SpaceSelectionModal
-          isOpen={showSpaceSelectionModal}
-          onClose={() => {
-            setShowSpaceSelectionModal(false);
-            setDroppedFiles([]);
-          }}
-          onSpaceSelect={handleSpaceSelect}
-          onCreateNewSpace={handleCreateNewSpace}
-          spaces={spaces.map(s => ({ id: s.id, name: s.name }))}
-          footerSpaces={footerSpaces.map(s => ({ id: s.id, name: s.name }))}
-          floors={floors.map(f => ({ id: f.id, name: f.name }))}
-          droppedFiles={droppedFiles}
-          loading={uploading || analyzingWithAI}
-        />
-
         {/* Metadata Adjustment Panel */}
         <AnimatePresence>
-          {showMetadataPanel && pendingFileData && (
+          {pendingFile && (
             <MetadataAdjustmentPanel
-              fileName={pendingFileData.file.name}
-              fileType={pendingFileData.file.type}
-              initialHashtags={pendingFileData.aiMetadata?.hashtags || []}
-              initialDialValues={pendingFileData.aiMetadata?.dial_values || {}}
-              suggestedSpaces={pendingFileData.aiMetadata?.suggested_spaces || []}
+              fileName={pendingFile.file.original_name}
+              fileType={pendingFile.file.file_type}
+              initialHashtags={pendingFile.metadata.hashtags}
+              initialDialValues={pendingFile.metadata.dial_values}
+              suggestedDials={pendingFile.metadata.suggested_dials}
+              suggestedSpaces={pendingFile.metadata.suggested_spaces}
               availableSpaces={spaces.map(s => ({ id: s.id, name: s.name }))}
-              confidence={pendingFileData.aiMetadata?.confidence || 0}
-              isAiGenerated={!!pendingFileData.aiMetadata}
+              confidence={pendingFile.metadata.confidence}
+              isAiGenerated={!pendingFile.metadata.fallback}
               onSave={handleMetadataSave}
-              onCancel={handleMetadataCancel}
+              onCancel={() => setPendingFile(null)}
             />
           )}
         </AnimatePresence>

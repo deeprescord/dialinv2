@@ -103,7 +103,7 @@ export default function SpacePage() {
   const currentSpaceId = navigationPath[navigationPath.length - 1];
   const currentSpaceItems = currentSpaceId === 'lobby' 
     ? [] // Lobby shows nothing after separator
-    : [...spaces.filter(s => s.id !== 'lobby' && s.id !== currentSpaceId), ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)];
+    : [...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Only show content items, not other spaces
 
   // File upload hook
   const { uploadMultipleFiles, uploading } = useFileUpload();

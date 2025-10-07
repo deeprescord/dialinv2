@@ -240,6 +240,17 @@ export default function SpacePage() {
 
   // Handle media interactions
   const handleMediaClick = (item: any) => {
+    // Clear selection if null is passed
+    if (!item) {
+      setSelectedItemData(null);
+      setFloatingPlayer(prev => ({ ...prev, isVisible: false }));
+      return;
+    }
+    
+    // Set the selected item data for hero header display
+    setSelectedItemData(item);
+    
+    // Also show in floating player for convenience
     setFloatingPlayer({
       isVisible: true,
       item,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
+import { ContentViewer } from './ContentViewer';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
@@ -181,21 +182,40 @@ export function HomeView({
         transition={{ duration: 0.3 }}
         className="pb-32"
       >
-      {/* Hero Header */}
-      <HeroHeaderVideo
-        videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
-        posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
-        title={selectedItem?.title || selectedItem?.name || spaceName || "Lobby"}
-        subtitle={selectedItem?.artist || selectedItem?.type || spaceDescription || "Welcome back"}
-        backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-        showVideo={selectedItem?.duration && !selectedItem?.artist ? true : isLobby}
-        show360={show360}
-        xAxisOffset={xAxisOffset}
-        yAxisOffset={yAxisOffset}
-        volume={volume}
-        isMuted={isMuted}
-        onOpenAddPanel={onOpenAddPanel}
-      />
+      {/* Hero Header - Show ContentViewer if item has file data, otherwise show HeroHeaderVideo */}
+      {selectedItem?.storage_path ? (
+        <ContentViewer
+          content={{
+            id: selectedItem.id || selectedItem.thumb,
+            storage_path: selectedItem.storage_path,
+            file_type: selectedItem.file_type || (selectedItem.artist ? 'audio' : 'video'),
+            mime_type: selectedItem.mime_type,
+            original_name: selectedItem.title || selectedItem.name || 'Untitled',
+            thumbnail_path: selectedItem.thumbnail_path || selectedItem.thumb,
+            duration: selectedItem.duration
+          }}
+          onClose={() => {
+            setLocalSelectedItem(null);
+            // Also clear the parent's selected item if the handler is available
+            onMediaClick?.(null);
+          }}
+        />
+      ) : (
+        <HeroHeaderVideo
+          videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
+          posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
+          title={selectedItem?.title || selectedItem?.name || spaceName || "Lobby"}
+          subtitle={selectedItem?.artist || selectedItem?.type || spaceDescription || "Welcome back"}
+          backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
+          showVideo={selectedItem?.duration && !selectedItem?.artist ? true : isLobby}
+          show360={show360}
+          xAxisOffset={xAxisOffset}
+          yAxisOffset={yAxisOffset}
+          volume={volume}
+          isMuted={isMuted}
+          onOpenAddPanel={onOpenAddPanel}
+        />
+      )}
 
       {isLobby ? (
         <>

@@ -344,55 +344,57 @@ export function MetadataAdjustmentPanel({
           )}
 
           {/* Space Selection */}
-          <div className="space-y-3">
-            <Label>Place in Space</Label>
-            {suggestedSpaces.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                AI suggests: {suggestedSpaces.join(', ')}
-              </p>
-            )}
+          <div className="space-y-4">
+            <Label>Select Space</Label>
             
             {/* Main Spaces */}
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">Main Spaces:</p>
-              <div className="space-y-2">
-                {mainSpaces.map((space) => (
-                  <div
-                    key={space.id}
-                    onClick={() => handleSelectMainSpace(space.id)}
-                    className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      currentParentSpace === space.id
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:bg-accent'
-                    }`}
-                  >
-                    <div className="text-sm font-medium">{space.name}</div>
-                  </div>
-                ))}
-              </div>
+              {mainSpaces.map((space) => (
+                <div
+                  key={space.id}
+                  onClick={() => handleSelectMainSpace(space.id)}
+                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                    currentParentSpace === space.id
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:bg-accent'
+                  }`}
+                >
+                  <div className="text-sm font-medium">{space.name}</div>
+                  {currentParentSpace === space.id && (
+                    <Check className="w-4 h-4 text-primary" />
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Child Spaces - shown when a main space is selected */}
-            {currentParentSpace && childSpaces.length > 0 && (
-              <div className="space-y-2">
+            {/* Child Spaces - only shown when a main space is selected */}
+            {currentParentSpace && (
+              <div className="space-y-2 pl-4 border-l-2 border-primary/20">
                 <p className="text-xs text-muted-foreground">
                   Spaces within {mainSpaces.find(s => s.id === currentParentSpace)?.name}:
                 </p>
-                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
-                  {childSpaces.map((space) => (
-                    <div
-                      key={space.id}
-                      onClick={() => handleSelectChildSpace(space.id)}
-                      className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
-                        selectedSpaceId === space.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:bg-accent'
-                      }`}
-                    >
-                      <div className="text-sm">{space.name}</div>
-                    </div>
-                  ))}
-                </div>
+                {childSpaces.length > 0 ? (
+                  <div className="space-y-2">
+                    {childSpaces.map((space) => (
+                      <div
+                        key={space.id}
+                        onClick={() => handleSelectChildSpace(space.id)}
+                        className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-colors ${
+                          selectedSpaceId === space.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:bg-accent'
+                        }`}
+                      >
+                        <div className="text-sm">{space.name}</div>
+                        {selectedSpaceId === space.id && (
+                          <Check className="w-4 h-4 text-primary" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">No sub-spaces yet</p>
+                )}
               </div>
             )}
 
@@ -400,7 +402,7 @@ export function MetadataAdjustmentPanel({
             {onCreateSpace && (
               <div className="flex gap-2">
                 <Input
-                  placeholder={currentParentSpace ? "New sub-space name..." : "New main space name..."}
+                  placeholder={currentParentSpace ? "Create sub-space..." : "Create new space..."}
                   value={newSpaceName}
                   onChange={(e) => setNewSpaceName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleCreateChildSpace()}

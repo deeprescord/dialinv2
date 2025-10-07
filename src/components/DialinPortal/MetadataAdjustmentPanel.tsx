@@ -60,7 +60,7 @@ export function MetadataAdjustmentPanel({
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(
     suggestedSpaces[0] || availableSpaces[0]?.id || 'lobby'
   );
-  const [spaceNavigationPath, setSpaceNavigationPath] = useState<string[]>([selectedSpaceId]);
+  const [currentParentSpace, setCurrentParentSpace] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState('');
@@ -125,29 +125,19 @@ export function MetadataAdjustmentPanel({
   };
 
   const handleAddDial = (dial: DialSuggestion) => {
-    // Add to active dials
     setActiveDials(prev => [...prev, dial]);
-    // Add its value to dialValues
     setDialValues(prev => ({ ...prev, [dial.key]: dial.value }));
-    // Remove from available and add next one if exists
-    const remainingDials = availableDials.filter(d => d.key !== dial.key);
-    setAvailableDials(remainingDials);
+    setAvailableDials(prev => prev.filter(d => d.key !== dial.key));
+  };
+
+  const handleRemoveSuggestedDial = (dialKey: string) => {
+    setAvailableDials(prev => prev.filter(d => d.key !== dialKey));
   };
 
   const handleCloseDial = (dialKey: string) => {
-    // Remove from active dials
-    const removedDial = activeDials.find(d => d.key === dialKey);
     setActiveDials(prev => prev.filter(d => d.key !== dialKey));
-    // Remove from dialValues
     const { [dialKey]: _, ...rest } = dialValues;
     setDialValues(rest);
-    // Add next available dial if exists
-    if (removedDial && availableDials.length > 0) {
-      const nextDial = availableDials[0];
-      setActiveDials(prev => [...prev, nextDial]);
-      setDialValues(prev => ({ ...prev, [nextDial.key]: nextDial.value }));
-      setAvailableDials(prev => prev.slice(1));
-    }
   };
 
   const handleSave = () => {
@@ -165,25 +155,26 @@ export function MetadataAdjustmentPanel({
     return dial.options || [];
   };
 
-  // Get child spaces of currently selected space in navigation
-  const currentNavSpaceId = spaceNavigationPath[spaceNavigationPath.length - 1];
-  const childSpaces = availableSpaces.filter(s => s.parent_id === currentNavSpaceId);
+  // Get main spaces (no parent) and child spaces based on selection
+  const mainSpaces = availableSpaces.filter(s => !s.parent_id);
+  const childSpaces = currentParentSpace 
+    ? availableSpaces.filter(s => s.parent_id === currentParentSpace)
+    : [];
 
-  const handleSpaceNavigate = (spaceId: string) => {
-    const existingIndex = spaceNavigationPath.indexOf(spaceId);
-    if (existingIndex >= 0) {
-      // Navigate back
-      setSpaceNavigationPath(spaceNavigationPath.slice(0, existingIndex + 1));
-    } else {
-      // Navigate forward
-      setSpaceNavigationPath([...spaceNavigationPath, spaceId]);
-    }
+  const handleSelectMainSpace = (spaceId: string) => {
+    setCurrentParentSpace(spaceId);
+    setSelectedSpaceId(spaceId);
+  };
+
+  const handleSelectChildSpace = (spaceId: string) => {
+    setSelectedSpaceId(spaceId);
   };
 
   const handleCreateChildSpace = async () => {
     if (!newSpaceName.trim() || !onCreateSpace) return;
     
-    await onCreateSpace(newSpaceName.trim(), currentNavSpaceId);
+    const parentId = currentParentSpace || 'lobby';
+    await onCreateSpace(newSpaceName.trim(), parentId);
     setNewSpaceName('');
     toast.success('Space created');
   };
@@ -329,21 +320,30 @@ export function MetadataAdjustmentPanel({
               <Label className="text-sm text-muted-foreground">Suggested Dials</Label>
               <div className="flex flex-wrap gap-2">
                 {availableDials.slice(0, 3).map((dial) => (
-                  <Badge
-                    key={dial.key}
-                    variant="outline"
-                    className="cursor-pointer hover:bg-primary/10 transition-colors gap-1"
-                    onClick={() => handleAddDial(dial)}
-                  >
-                    <Plus className="w-3 h-3" />
-                    {dial.label}
-                  </Badge>
+                  <div key={dial.key} className="flex items-center gap-1">
+                    <Badge
+                      variant="outline"
+                      className="cursor-pointer hover:bg-primary/10 transition-colors gap-1"
+                      onClick={() => handleAddDial(dial)}
+                    >
+                      <Plus className="w-3 h-3" />
+                      {dial.label}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleRemoveSuggestedDial(dial.key)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Space Selection with Navigation */}
+          {/* Space Selection */}
           <div className="space-y-3">
             <Label>Place in Space</Label>
             {suggestedSpaces.length > 0 && (
@@ -352,38 +352,45 @@ export function MetadataAdjustmentPanel({
               </p>
             )}
             
-            {/* Space breadcrumb */}
-            <div className="flex items-center gap-2 text-sm">
-              {spaceNavigationPath.map((spaceId, idx) => {
-                const space = availableSpaces.find(s => s.id === spaceId);
-                return (
-                  <React.Fragment key={spaceId}>
-                    {idx > 0 && <span className="text-muted-foreground">/</span>}
-                    <button
-                      onClick={() => handleSpaceNavigate(spaceId)}
-                      className="text-primary hover:underline"
-                    >
-                      {space?.name || spaceId}
-                    </button>
-                  </React.Fragment>
-                );
-              })}
+            {/* Main Spaces */}
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">Main Spaces:</p>
+              <div className="space-y-2">
+                {mainSpaces.map((space) => (
+                  <div
+                    key={space.id}
+                    onClick={() => handleSelectMainSpace(space.id)}
+                    className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      currentParentSpace === space.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:bg-accent'
+                    }`}
+                  >
+                    <div className="text-sm font-medium">{space.name}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Child spaces */}
-            {childSpaces.length > 0 && (
+            {/* Child Spaces - shown when a main space is selected */}
+            {currentParentSpace && childSpaces.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Spaces within {availableSpaces.find(s => s.id === currentNavSpaceId)?.name}:</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-xs text-muted-foreground">
+                  Spaces within {mainSpaces.find(s => s.id === currentParentSpace)?.name}:
+                </p>
+                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
                   {childSpaces.map((space) => (
-                    <Badge
+                    <div
                       key={space.id}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-primary/10 transition-colors"
-                      onClick={() => handleSpaceNavigate(space.id)}
+                      onClick={() => handleSelectChildSpace(space.id)}
+                      className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+                        selectedSpaceId === space.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:bg-accent'
+                      }`}
                     >
-                      {space.name}
-                    </Badge>
+                      <div className="text-sm">{space.name}</div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -393,7 +400,7 @@ export function MetadataAdjustmentPanel({
             {onCreateSpace && (
               <div className="flex gap-2">
                 <Input
-                  placeholder="New space name..."
+                  placeholder={currentParentSpace ? "New sub-space name..." : "New main space name..."}
                   value={newSpaceName}
                   onChange={(e) => setNewSpaceName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleCreateChildSpace()}
@@ -403,23 +410,6 @@ export function MetadataAdjustmentPanel({
                 </Button>
               </div>
             )}
-
-            {/* Final selection */}
-            <div className="pt-2 border-t">
-              <p className="text-xs text-muted-foreground mb-2">Place item in:</p>
-              <Select value={selectedSpaceId} onValueChange={setSelectedSpaceId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSpaces.map((space) => (
-                    <SelectItem key={space.id} value={space.id}>
-                      {space.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           {/* Actions */}

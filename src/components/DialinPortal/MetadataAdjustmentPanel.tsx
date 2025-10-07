@@ -25,7 +25,7 @@ interface MetadataAdjustmentPanelProps {
   initialDialValues?: Record<string, any>;
   suggestedDials?: DialSuggestion[];
   suggestedSpaces?: string[];
-  availableSpaces: Array<{ id: string; name: string }>;
+  availableSpaces: Array<{ id: string; name: string; parent_id?: string | null }>;
   confidence?: number;
   isAiGenerated?: boolean;
   onSave: (metadata: {
@@ -35,6 +35,7 @@ interface MetadataAdjustmentPanelProps {
     location?: { lat: number; lng: number; address?: string };
   }) => void;
   onCancel: () => void;
+  onCreateSpace?: (name: string, parentId: string) => Promise<void>;
 }
 
 export function MetadataAdjustmentPanel({
@@ -48,7 +49,8 @@ export function MetadataAdjustmentPanel({
   confidence = 0,
   isAiGenerated = true,
   onSave,
-  onCancel
+  onCancel,
+  onCreateSpace
 }: MetadataAdjustmentPanelProps) {
   const [hashtags, setHashtags] = useState<string[]>(initialHashtags);
   const [newHashtag, setNewHashtag] = useState('');
@@ -58,8 +60,10 @@ export function MetadataAdjustmentPanel({
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(
     suggestedSpaces[0] || availableSpaces[0]?.id || 'lobby'
   );
+  const [spaceNavigationPath, setSpaceNavigationPath] = useState<string[]>([selectedSpaceId]);
   const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [newSpaceName, setNewSpaceName] = useState('');
 
   const moodOptions = ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'];
   const vibeOptions = ['chill', 'energetic', 'dark', 'uplifting', 'contemplative', 'futuristic', 'neutral'];
@@ -159,6 +163,29 @@ export function MetadataAdjustmentPanel({
     if (dial.key === 'mood') return moodOptions;
     if (dial.key === 'vibe') return vibeOptions;
     return dial.options || [];
+  };
+
+  // Get child spaces of currently selected space in navigation
+  const currentNavSpaceId = spaceNavigationPath[spaceNavigationPath.length - 1];
+  const childSpaces = availableSpaces.filter(s => s.parent_id === currentNavSpaceId);
+
+  const handleSpaceNavigate = (spaceId: string) => {
+    const existingIndex = spaceNavigationPath.indexOf(spaceId);
+    if (existingIndex >= 0) {
+      // Navigate back
+      setSpaceNavigationPath(spaceNavigationPath.slice(0, existingIndex + 1));
+    } else {
+      // Navigate forward
+      setSpaceNavigationPath([...spaceNavigationPath, spaceId]);
+    }
+  };
+
+  const handleCreateChildSpace = async () => {
+    if (!newSpaceName.trim() || !onCreateSpace) return;
+    
+    await onCreateSpace(newSpaceName.trim(), currentNavSpaceId);
+    setNewSpaceName('');
+    toast.success('Space created');
   };
 
   return (
@@ -316,26 +343,83 @@ export function MetadataAdjustmentPanel({
             </div>
           )}
 
-          {/* Space Selection */}
-          <div className="space-y-2">
+          {/* Space Selection with Navigation */}
+          <div className="space-y-3">
             <Label>Place in Space</Label>
             {suggestedSpaces.length > 0 && (
               <p className="text-xs text-muted-foreground">
                 AI suggests: {suggestedSpaces.join(', ')}
               </p>
             )}
-            <Select value={selectedSpaceId} onValueChange={setSelectedSpaceId}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availableSpaces.map((space) => (
-                  <SelectItem key={space.id} value={space.id}>
-                    {space.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            
+            {/* Space breadcrumb */}
+            <div className="flex items-center gap-2 text-sm">
+              {spaceNavigationPath.map((spaceId, idx) => {
+                const space = availableSpaces.find(s => s.id === spaceId);
+                return (
+                  <React.Fragment key={spaceId}>
+                    {idx > 0 && <span className="text-muted-foreground">/</span>}
+                    <button
+                      onClick={() => handleSpaceNavigate(spaceId)}
+                      className="text-primary hover:underline"
+                    >
+                      {space?.name || spaceId}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Child spaces */}
+            {childSpaces.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Spaces within {availableSpaces.find(s => s.id === currentNavSpaceId)?.name}:</p>
+                <div className="flex flex-wrap gap-2">
+                  {childSpaces.map((space) => (
+                    <Badge
+                      key={space.id}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-primary/10 transition-colors"
+                      onClick={() => handleSpaceNavigate(space.id)}
+                    >
+                      {space.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Create new space */}
+            {onCreateSpace && (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="New space name..."
+                  value={newSpaceName}
+                  onChange={(e) => setNewSpaceName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateChildSpace()}
+                />
+                <Button onClick={handleCreateChildSpace} size="icon">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Final selection */}
+            <div className="pt-2 border-t">
+              <p className="text-xs text-muted-foreground mb-2">Place item in:</p>
+              <Select value={selectedSpaceId} onValueChange={setSelectedSpaceId}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSpaces.map((space) => (
+                    <SelectItem key={space.id} value={space.id}>
+                      {space.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Actions */}

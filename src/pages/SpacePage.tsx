@@ -805,11 +805,39 @@ export default function SpacePage() {
               initialDialValues={pendingFile.metadata.dial_values}
               suggestedDials={pendingFile.metadata.suggested_dials}
               suggestedSpaces={pendingFile.metadata.suggested_spaces}
-              availableSpaces={spaces.map(s => ({ id: s.id, name: s.name }))}
+              availableSpaces={[
+                { id: 'lobby', name: 'Lobby', parent_id: null },
+                ...dbSpaces.map(s => ({ 
+                  id: s.id, 
+                  name: s.name,
+                  parent_id: (s as any).parent_id || null
+                }))
+              ]}
               confidence={pendingFile.metadata.confidence}
               isAiGenerated={!pendingFile.metadata.fallback}
               onSave={handleMetadataSave}
               onCancel={() => setPendingFile(null)}
+              onCreateSpace={async (name: string, parentId: string) => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+                
+                const { error } = await supabase
+                  .from('spaces')
+                  .insert({
+                    user_id: user.id,
+                    name,
+                    parent_id: parentId
+                  });
+                
+                if (!error) {
+                  // Refetch spaces to update the list
+                  const { data } = await supabase
+                    .from('spaces')
+                    .select('*')
+                    .eq('user_id', user.id);
+                  // This will trigger useSpaces to refetch
+                }
+              }}
             />
           )}
         </AnimatePresence>

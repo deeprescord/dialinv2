@@ -57,6 +57,7 @@ export interface Space {
   yAxis?: number;
   volume?: number;
   isMuted?: boolean;
+  parentId?: string; // For nested spaces
 }
 
 export interface Post {
@@ -255,6 +256,15 @@ export const initialSpaces: Space[] = [
     yAxis: -10,
     volume: 50,
     isMuted: false
+  },
+  {
+    id: 'demo-space-1',
+    name: 'Demo Vault',
+    thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[4]}?q=80&w=400&h=225&fit=crop&auto=format`,
+    backgroundImage: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[4]}?q=80&w=400&h=225&fit=crop&auto=format`,
+    show360: false,
+    description: 'A nested demo space within Music Den',
+    parentId: '2' // This space is nested within Music Den
   },
 ];
 

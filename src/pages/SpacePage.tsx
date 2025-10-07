@@ -101,9 +101,13 @@ export default function SpacePage() {
   
   // Get current space items - only items/spaces within the selected space
   const currentSpaceId = navigationPath[navigationPath.length - 1];
+  
+  // Get nested spaces that belong to the current space
+  const nestedSpaces = spaces.filter(s => s.parentId === currentSpaceId);
+  
   const currentSpaceItems = currentSpaceId === 'lobby' 
     ? [] // Lobby shows nothing after separator
-    : [...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Only show content items, not other spaces
+    : [...nestedSpaces, ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Show nested spaces and content items
 
   // File upload hook
   const { uploadMultipleFiles, uploading } = useFileUpload();

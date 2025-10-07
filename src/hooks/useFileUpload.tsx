@@ -13,8 +13,71 @@ export interface FileUploadResult {
   duration?: number;
 }
 
+export interface AIMetadata {
+  hashtags: string[];
+  dial_values: Record<string, any>;
+  confidence: number;
+  suggested_spaces: string[];
+  fallback?: boolean;
+}
+
 export function useFileUpload() {
   const [uploading, setUploading] = useState(false);
+  const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
+
+  const analyzeWithAI = async (file: File, fileId: string): Promise<AIMetadata | null> => {
+    setAnalyzingWithAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-item', {
+        body: {
+          fileId,
+          fileName: file.name,
+          fileType: getFileType(file.type),
+          mimeType: file.type
+        }
+      });
+
+      if (error) {
+        console.error('AI analysis error:', error);
+        toast.error('AI analysis failed, using defaults');
+        return null;
+      }
+
+      return data as AIMetadata;
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      return null;
+    } finally {
+      setAnalyzingWithAI(false);
+    }
+  };
+
+  const saveMetadata = async (
+    fileId: string,
+    hashtags: string[],
+    dialValues: Record<string, any>,
+    aiGenerated: boolean,
+    confidence: number
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('item_metadata')
+      .insert({
+        file_id: fileId,
+        user_id: user.id,
+        hashtags,
+        dial_values: dialValues,
+        ai_generated: aiGenerated,
+        ai_confidence: confidence
+      });
+
+    if (error) {
+      console.error('Failed to save metadata:', error);
+      toast.error('Failed to save metadata');
+    }
+  };
 
   const uploadFile = async (file: File, spaceId: string): Promise<FileUploadResult | null> => {
     setUploading(true);
@@ -109,6 +172,9 @@ export function useFileUpload() {
     uploadFile,
     uploadMultipleFiles,
     uploading,
+    analyzingWithAI,
+    analyzeWithAI,
+    saveMetadata,
   };
 }
 

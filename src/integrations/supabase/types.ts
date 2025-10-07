@@ -153,6 +153,50 @@ export type Database = {
         }
         Relationships: []
       }
+      item_metadata: {
+        Row: {
+          ai_confidence: number | null
+          ai_generated: boolean | null
+          created_at: string
+          dial_values: Json | null
+          file_id: string
+          hashtags: string[] | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
+          created_at?: string
+          dial_values?: Json | null
+          file_id: string
+          hashtags?: string[] | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
+          created_at?: string
+          dial_values?: Json | null
+          file_id?: string
+          hashtags?: string[] | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_metadata_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: true
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_media_history: {
         Row: {
           created_at: string

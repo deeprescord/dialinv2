@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TopNav } from '@/components/DialinPortal/TopNav';
 import { MobileTabBar } from '@/components/DialinPortal/MobileTabBar';
 import { HomeView } from '@/components/DialinPortal/HomeView';
@@ -20,8 +20,9 @@ import { AIChat } from '@/components/DialinPortal/AIChat';
 import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
 import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { SpaceSelectionModal } from '@/components/DialinPortal/SpaceSelectionModal';
+import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjustmentPanel';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
-import { useFileUpload } from '@/hooks/useFileUpload';
+import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpaces } from '@/hooks/useSpaces';
 import { 
   videoCatalog, 
@@ -38,6 +39,7 @@ import {
 } from '@/data/catalogs';
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
+import { toast } from 'sonner';
 
 export default function SpacePage() {
   const { spaceId } = useParams();
@@ -93,6 +95,12 @@ export default function SpacePage() {
   const [show360Settings, setShow360Settings] = useState(false);
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [pendingFileData, setPendingFileData] = useState<{
+    file: File;
+    fileId: string;
+    aiMetadata: AIMetadata | null;
+  } | null>(null);
+  const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   
   // Navigation breadcrumb path (e.g., ['lobby', 'space-1', 'space-2'])
   const [navigationPath, setNavigationPath] = useState<string[]>(['lobby']);
@@ -110,7 +118,7 @@ export default function SpacePage() {
     : [...nestedSpaces, ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Show nested spaces and content items
 
   // File upload hook
-  const { uploadMultipleFiles, uploading } = useFileUpload();
+  const { uploadFile, uploadMultipleFiles, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces } = useSpaces();
 
   // Find current space
@@ -306,10 +314,53 @@ export default function SpacePage() {
 
   const handleSpaceSelect = async (selectedSpaceId: string) => {
     if (droppedFiles.length > 0) {
-      await uploadMultipleFiles(droppedFiles, selectedSpaceId);
-      setShowSpaceSelectionModal(false);
-      setDroppedFiles([]);
+      // Upload first file with AI analysis
+      const firstFile = droppedFiles[0];
+      toast.info('Uploading and analyzing with AI...');
+      
+      const fileResult = await uploadFile(firstFile, selectedSpaceId);
+      if (fileResult) {
+        // Analyze with AI
+        const aiMetadata = await analyzeWithAI(firstFile, fileResult.id);
+        
+        // Show metadata panel for review
+        setPendingFileData({
+          file: firstFile,
+          fileId: fileResult.id,
+          aiMetadata
+        });
+        setShowSpaceSelectionModal(false);
+        setShowMetadataPanel(true);
+      }
     }
+  };
+
+  const handleMetadataSave = async (metadata: {
+    hashtags: string[];
+    dialValues: Record<string, any>;
+    selectedSpaceId: string;
+  }) => {
+    if (!pendingFileData) return;
+
+    // Save metadata to database
+    await saveMetadata(
+      pendingFileData.fileId,
+      metadata.hashtags,
+      metadata.dialValues,
+      !!pendingFileData.aiMetadata,
+      pendingFileData.aiMetadata?.confidence || 0
+    );
+
+    toast.success('File metadata saved!');
+    setShowMetadataPanel(false);
+    setPendingFileData(null);
+    setDroppedFiles([]);
+  };
+
+  const handleMetadataCancel = () => {
+    setShowMetadataPanel(false);
+    setPendingFileData(null);
+    setDroppedFiles([]);
   };
 
   const handleCreateNewSpace = async (name: string) => {
@@ -722,8 +773,26 @@ export default function SpacePage() {
           footerSpaces={footerSpaces.map(s => ({ id: s.id, name: s.name }))}
           floors={floors.map(f => ({ id: f.id, name: f.name }))}
           droppedFiles={droppedFiles}
-          loading={uploading}
+          loading={uploading || analyzingWithAI}
         />
+
+        {/* Metadata Adjustment Panel */}
+        <AnimatePresence>
+          {showMetadataPanel && pendingFileData && (
+            <MetadataAdjustmentPanel
+              fileName={pendingFileData.file.name}
+              fileType={pendingFileData.file.type}
+              initialHashtags={pendingFileData.aiMetadata?.hashtags || []}
+              initialDialValues={pendingFileData.aiMetadata?.dial_values || {}}
+              suggestedSpaces={pendingFileData.aiMetadata?.suggested_spaces || []}
+              availableSpaces={spaces.map(s => ({ id: s.id, name: s.name }))}
+              confidence={pendingFileData.aiMetadata?.confidence || 0}
+              isAiGenerated={!!pendingFileData.aiMetadata}
+              onSave={handleMetadataSave}
+              onCancel={handleMetadataCancel}
+            />
+          )}
+        </AnimatePresence>
       </div>
       </div>
     </DragDropZone>

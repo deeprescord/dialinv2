@@ -2,3 +2,6 @@ project_id = "dkhpfwgejjyheixkpvpr"
 
 [functions.ai-chat]
 verify_jwt = false
+
+[functions.analyze-item]
+verify_jwt = false

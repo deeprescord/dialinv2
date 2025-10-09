@@ -23,6 +23,7 @@ interface SpacesBarProps {
   on360VolumeChange?: (spaceId: string, volume: number) => void;
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   onSpaceClick?: (space: Space) => void;
+  breadcrumbs?: Array<{ id: string; name: string }>;
 }
 
 export function SpacesBar({
@@ -38,7 +39,8 @@ export function SpacesBar({
   on360AxisChange,
   on360VolumeChange,
   on360MuteToggle,
-  onSpaceClick 
+  onSpaceClick,
+  breadcrumbs 
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -102,9 +104,40 @@ export function SpacesBar({
     <div className="mb-4 relative">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
       <div className="relative flex items-center justify-between px-4 py-3 overflow-x-auto scrollbar-thin">
-        {/* Spaces on the left */}
+        {/* Breadcrumb Navigation or Spaces */}
         <div className="flex items-center space-x-3">
-          {allSpaces.map((space, index) => {
+          {breadcrumbs && breadcrumbs.length > 0 ? (
+            // Show breadcrumb navigation
+            <div className="flex items-center gap-2">
+              {breadcrumbs.map((crumb, index) => (
+                <React.Fragment key={crumb.id}>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Button
+                      variant={index === breadcrumbs.length - 1 ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => {
+                        const space = allSpaces.find(s => s.id === crumb.id);
+                        if (space) handleSpaceClick(space);
+                      }}
+                      className={index === breadcrumbs.length - 1 ? "pointer-events-none" : ""}
+                    >
+                      {crumb.name}
+                    </Button>
+                  </motion.div>
+                  {index < breadcrumbs.length - 1 && (
+                    <span className="text-muted-foreground">/</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            // Show space thumbnails
+            <>
+              {allSpaces.map((space, index) => {
             const isLobby = space.id === 'lobby';
             const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
             
@@ -149,6 +182,8 @@ export function SpacesBar({
                 </div>
               </motion.div>
             )})}
+            </>
+          )}
         </div>
 
         {/* Action buttons on the right */}

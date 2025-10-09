@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2, Check, Sparkles, MapPin } from 'lucide-react';
+import { X, Plus, Trash2, Check, Sparkles, MapPin, ChevronRight, FolderTree } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
 
 interface DialSuggestion {
   key: string;
@@ -64,6 +65,7 @@ export function MetadataAdjustmentPanel({
   const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState('');
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
   const moodOptions = ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'];
   const vibeOptions = ['chill', 'energetic', 'dark', 'uplifting', 'contemplative', 'futuristic', 'neutral'];
@@ -141,6 +143,11 @@ export function MetadataAdjustmentPanel({
   };
 
   const handleSave = () => {
+    if (!selectedSpaceId) {
+      toast.error('Please select a space');
+      setCurrentStep(3);
+      return;
+    }
     onSave({
       hashtags,
       dialValues,
@@ -148,6 +155,9 @@ export function MetadataAdjustmentPanel({
       location: location || undefined
     });
   };
+
+  const canProceedToStep2 = hashtags.length > 0;
+  const canProceedToStep3 = activeDials.length > 0;
 
   const getDialOptions = (dial: DialSuggestion) => {
     if (dial.key === 'mood') return moodOptions;
@@ -179,6 +189,23 @@ export function MetadataAdjustmentPanel({
     toast.success('Space created');
   };
 
+  // Group dials by category for better organization
+  const dialsByCategory = activeDials.reduce((acc, dial) => {
+    const category = dial.key.includes('mood') || dial.key.includes('vibe') || dial.key.includes('energy') 
+      ? 'Mood & Energy' 
+      : dial.key.includes('tempo') || dial.key.includes('genre') || dial.key.includes('acousticness')
+      ? 'Music Properties'
+      : dial.key.includes('spiciness') || dial.key.includes('richness') || dial.key.includes('presentation')
+      ? 'Food & Taste'
+      : dial.key.includes('atmosphere') || dial.key.includes('noise') || dial.key.includes('crowd')
+      ? 'Location Context'
+      : 'General';
+    
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(dial);
+    return acc;
+  }, {} as Record<string, DialSuggestion[]>);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -186,25 +213,28 @@ export function MetadataAdjustmentPanel({
       exit={{ opacity: 0, scale: 0.95 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
     >
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background/95 border-primary/20">
+      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-background/95 border-primary/20">
         <div className="p-6 space-y-6">
           {/* Header */}
           <div className="flex items-start justify-between">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold">AI Analysis Results</h2>
+                <h2 className="text-2xl font-bold">Organize & Place Item</h2>
                 {isAiGenerated && (
                   <Badge variant="secondary" className="gap-1">
                     <Sparkles className="w-3 h-3" />
-                    AI Generated
+                    AI Analyzed
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{fileName}</p>
               {confidence > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Confidence: {(confidence * 100).toFixed(0)}%
-                </p>
+                <div className="flex items-center gap-2">
+                  <Progress value={confidence * 100} className="w-24 h-2" />
+                  <span className="text-xs text-muted-foreground">
+                    {(confidence * 100).toFixed(0)}% confident
+                  </span>
+                </div>
               )}
             </div>
             <Button variant="ghost" size="icon" onClick={onCancel}>
@@ -212,218 +242,373 @@ export function MetadataAdjustmentPanel({
             </Button>
           </div>
 
-          {/* Hashtags Section */}
-          <div className="space-y-3">
-            <Label>Hashtags</Label>
-            <div className="flex flex-wrap gap-2">
-              {hashtags.map((tag) => (
-                <Badge key={tag} variant="outline" className="gap-1 pl-2 pr-1">
-                  #{tag}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-4 w-4 p-0 hover:bg-destructive/20"
-                    onClick={() => handleRemoveHashtag(tag)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add hashtag..."
-                value={newHashtag}
-                onChange={(e) => setNewHashtag(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddHashtag()}
-              />
-              <Button onClick={handleAddHashtag} size="icon">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Location */}
-          {location && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="w-4 h-4" />
-              <span>Location captured: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
-            </div>
-          )}
-
-          {/* Active Dials */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Active Dials</Label>
-              <span className="text-xs text-muted-foreground">{activeDials.length} active</span>
-            </div>
-            
-            <AnimatePresence mode="popLayout">
-              {activeDials.map((dial) => (
-                <motion.div
-                  key={dial.key}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-2 p-3 rounded-lg border border-primary/20 bg-background/50"
-                >
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">{dial.label}</Label>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => handleCloseDial(dial.key)}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  
-                  {dial.type === 'slider' ? (
-                    <>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Value</span>
-                        <span className="font-mono">{dialValues[dial.key] || dial.value}/10</span>
-                      </div>
-                      <Slider
-                        value={[dialValues[dial.key] || dial.value]}
-                        onValueChange={([value]) => handleDialChange(dial.key, value)}
-                        max={10}
-                        step={1}
-                      />
-                    </>
-                  ) : (
-                    <Select
-                      value={dialValues[dial.key] || dial.value}
-                      onValueChange={(value) => handleDialChange(dial.key, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getDialOptions(dial).map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Suggested Dials */}
-          {availableDials.length > 0 && (
-            <div className="space-y-3">
-              <Label className="text-sm text-muted-foreground">Suggested Dials</Label>
-              <div className="flex flex-wrap gap-2">
-                {availableDials.slice(0, 3).map((dial) => (
-                  <div key={dial.key} className="flex items-center gap-1">
-                    <Badge
-                      variant="outline"
-                      className="cursor-pointer hover:bg-primary/10 transition-colors gap-1"
-                      onClick={() => handleAddDial(dial)}
-                    >
-                      <Plus className="w-3 h-3" />
-                      {dial.label}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => handleRemoveSuggestedDial(dial.key)}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Space Selection */}
-          <div className="space-y-4">
-            <Label>Select Space</Label>
-            
-            {/* Main Spaces */}
-            <div className="space-y-2">
-              {mainSpaces.map((space) => (
-                <div
-                  key={space.id}
-                  onClick={() => handleSelectMainSpace(space.id)}
-                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                    currentParentSpace === space.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:bg-accent'
+          {/* 3-Step Progress Indicator */}
+          <div className="flex items-center justify-between px-4">
+            {[1, 2, 3].map((step) => (
+              <React.Fragment key={step}>
+                <div 
+                  className={`flex items-center gap-2 cursor-pointer ${
+                    currentStep === step ? 'opacity-100' : 'opacity-50'
                   }`}
+                  onClick={() => setCurrentStep(step as 1 | 2 | 3)}
                 >
-                  <div className="text-sm font-medium">{space.name}</div>
-                  {currentParentSpace === space.id && (
-                    <Check className="w-4 h-4 text-primary" />
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                    currentStep === step 
+                      ? 'bg-primary text-primary-foreground' 
+                      : currentStep > step
+                      ? 'bg-primary/50 text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {currentStep > step ? <Check className="w-4 h-4" /> : step}
+                  </div>
+                  <span className="text-sm font-medium hidden sm:block">
+                    {step === 1 ? 'Tags' : step === 2 ? 'Dials' : 'Space'}
+                  </span>
+                </div>
+                {step < 3 && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Step 1: Hashtags & Location */}
+          {currentStep === 1 && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-lg font-semibold">Hashtags</Label>
+                  <Badge variant="outline">{hashtags.length} tags</Badge>
+                </div>
+                <div className="flex flex-wrap gap-2 min-h-[60px] p-3 rounded-lg border border-dashed border-primary/30 bg-muted/20">
+                  {hashtags.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic">Add hashtags to categorize this item...</p>
+                  ) : (
+                    hashtags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="gap-1 pl-2 pr-1 text-sm">
+                        #{tag}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 p-0 hover:bg-destructive/20"
+                          onClick={() => handleRemoveHashtag(tag)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </Badge>
+                    ))
                   )}
                 </div>
-              ))}
-            </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add hashtag (e.g., vacation, food, music)..."
+                    value={newHashtag}
+                    onChange={(e) => setNewHashtag(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddHashtag()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddHashtag} size="icon" disabled={!newHashtag.trim()}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
 
-            {/* Child Spaces - only shown when a main space is selected */}
-            {currentParentSpace && (
-              <div className="space-y-2 pl-4 border-l-2 border-primary/20">
-                <p className="text-xs text-muted-foreground">
-                  Spaces within {mainSpaces.find(s => s.id === currentParentSpace)?.name}:
-                </p>
-                {childSpaces.length > 0 ? (
+              {/* Location Capture */}
+              <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-primary/20">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <Label className="text-base font-semibold">Location</Label>
+                </div>
+                {loadingLocation ? (
+                  <p className="text-sm text-muted-foreground">Capturing location...</p>
+                ) : location ? (
                   <div className="space-y-2">
-                    {childSpaces.map((space) => (
-                      <div
-                        key={space.id}
-                        onClick={() => handleSelectChildSpace(space.id)}
-                        className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-colors ${
-                          selectedSpaceId === space.id
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border hover:bg-accent'
-                        }`}
-                      >
-                        <div className="text-sm">{space.name}</div>
-                        {selectedSpaceId === space.id && (
-                          <Check className="w-4 h-4 text-primary" />
-                        )}
-                      </div>
-                    ))}
+                    <div className="p-3 rounded bg-background/50 border border-primary/10">
+                      <p className="text-sm font-mono">
+                        📍 {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                      </p>
+                      {location.address && (
+                        <p className="text-sm text-muted-foreground mt-1">{location.address}</p>
+                      )}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => setLocation(null)}
+                    >
+                      Clear Location
+                    </Button>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">No sub-spaces yet</p>
+                  <p className="text-sm text-muted-foreground">Location not available</p>
                 )}
               </div>
-            )}
 
-            {/* Create new space */}
-            {onCreateSpace && (
-              <div className="flex gap-2">
-                <Input
-                  placeholder={currentParentSpace ? "Create sub-space..." : "Create new space..."}
-                  value={newSpaceName}
-                  onChange={(e) => setNewSpaceName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateChildSpace()}
-                />
-                <Button onClick={handleCreateChildSpace} size="icon">
-                  <Plus className="w-4 h-4" />
+              <div className="flex justify-end pt-4">
+                <Button 
+                  onClick={() => setCurrentStep(2)} 
+                  disabled={!canProceedToStep2}
+                  className="gap-2"
+                >
+                  Next: Adjust Dials
+                  <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-            )}
-          </div>
+            </motion.div>
+          )}
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} className="gap-2">
-              <Check className="w-4 h-4" />
-              Save & Place
-            </Button>
-          </div>
+          {/* Step 2: Dials */}
+          {currentStep === 2 && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              {/* Active Dials - Grouped by Category */}
+              {Object.entries(dialsByCategory).map(([category, dials]) => (
+                <div key={category} className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    {category}
+                    <Badge variant="outline" className="text-xs">{dials.length}</Badge>
+                  </Label>
+                  <div className="space-y-3">
+                    {dials.map((dial) => (
+                      <motion.div
+                        key={dial.key}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="p-4 rounded-lg border border-primary/20 bg-gradient-to-br from-background/50 to-muted/20"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <Label className="text-sm font-medium">{dial.label}</Label>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 hover:bg-destructive/20"
+                            onClick={() => handleCloseDial(dial.key)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        
+                        {dial.type === 'slider' ? (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground">Intensity</span>
+                              <span className="text-lg font-bold text-primary">
+                                {dialValues[dial.key] || dial.value}/10
+                              </span>
+                            </div>
+                            <Slider
+                              value={[dialValues[dial.key] || dial.value]}
+                              onValueChange={([value]) => handleDialChange(dial.key, value)}
+                              max={10}
+                              step={1}
+                              className="py-2"
+                            />
+                          </div>
+                        ) : (
+                          <Select
+                            value={dialValues[dial.key] || dial.value}
+                            onValueChange={(value) => handleDialChange(dial.key, value)}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getDialOptions(dial).map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Suggested Dials */}
+              {availableDials.length > 0 && (
+                <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-dashed border-primary/30">
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    AI Suggested Dials
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {availableDials.map((dial) => (
+                      <Badge
+                        key={dial.key}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all gap-1 px-3 py-1"
+                        onClick={() => handleAddDial(dial)}
+                      >
+                        <Plus className="w-3 h-3" />
+                        {dial.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between pt-4">
+                <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                  Back
+                </Button>
+                <Button 
+                  onClick={() => setCurrentStep(3)}
+                  disabled={!canProceedToStep3}
+                  className="gap-2"
+                >
+                  Next: Select Space
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Space Selection */}
+          {currentStep === 3 && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FolderTree className="w-5 h-5 text-primary" />
+                  <Label className="text-lg font-semibold">Select Destination Space</Label>
+                </div>
+                
+                {/* Main Spaces Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {mainSpaces.map((space) => (
+                    <div
+                      key={space.id}
+                      onClick={() => handleSelectMainSpace(space.id)}
+                      className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        currentParentSpace === space.id
+                          ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
+                          : 'border-border hover:border-primary/50 hover:bg-accent'
+                      }`}
+                    >
+                      <div className="text-sm font-semibold">{space.name}</div>
+                      {currentParentSpace === space.id && (
+                        <div className="absolute top-2 right-2">
+                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="w-4 h-4 text-primary-foreground" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Child Spaces - Hierarchical View */}
+                {currentParentSpace && (
+                  <div className="space-y-3 p-4 rounded-lg bg-muted/30 border-l-4 border-primary">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                      <ChevronRight className="w-4 h-4" />
+                      <span>Spaces in {mainSpaces.find(s => s.id === currentParentSpace)?.name}</span>
+                    </div>
+                    {childSpaces.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2">
+                        {childSpaces.map((space) => (
+                          <div
+                            key={space.id}
+                            onClick={() => handleSelectChildSpace(space.id)}
+                            className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
+                              selectedSpaceId === space.id
+                                ? 'border-primary bg-primary/10 shadow-md'
+                                : 'border-border hover:border-primary/50 hover:bg-accent'
+                            }`}
+                          >
+                            <div className="text-sm font-medium">{space.name}</div>
+                            {selectedSpaceId === space.id && (
+                              <Check className="w-4 h-4 text-primary" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic pl-4">
+                        No sub-spaces yet. Create one below.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Create New Space */}
+                {onCreateSpace && (
+                  <div className="space-y-2 p-4 rounded-lg bg-muted/20 border border-dashed border-primary/30">
+                    <Label className="text-sm font-medium">Create New Space</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={currentParentSpace ? "Sub-space name..." : "Space name..."}
+                        value={newSpaceName}
+                        onChange={(e) => setNewSpaceName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleCreateChildSpace()}
+                        className="flex-1"
+                      />
+                      <Button 
+                        onClick={handleCreateChildSpace} 
+                        size="icon"
+                        disabled={!newSpaceName.trim()}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected Space Breadcrumb */}
+                {selectedSpaceId && (
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+                    <p className="text-xs text-muted-foreground mb-1">Item will be placed in:</p>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <FolderTree className="w-4 h-4 text-primary" />
+                      {currentParentSpace && selectedSpaceId !== currentParentSpace ? (
+                        <>
+                          <span>{mainSpaces.find(s => s.id === currentParentSpace)?.name}</span>
+                          <ChevronRight className="w-4 h-4" />
+                          <span className="text-primary">
+                            {availableSpaces.find(s => s.id === selectedSpaceId)?.name}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-primary">
+                          {availableSpaces.find(s => s.id === selectedSpaceId)?.name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between pt-4">
+                <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                  Back
+                </Button>
+                <Button 
+                  onClick={handleSave} 
+                  className="gap-2"
+                  disabled={!selectedSpaceId}
+                >
+                  <Check className="w-4 h-4" />
+                  Save & Place Item
+                </Button>
+              </div>
+            </motion.div>
+          )}
         </div>
       </Card>
     </motion.div>

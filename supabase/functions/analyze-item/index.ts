@@ -1,5 +1,72 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+
+// Contextual prompt generator based on file type
+function getContextualPrompt(category: string, fileName: string, fileType: string, mimeType: string): string {
+  const baseContext = `Analyzing file: "${fileName}" (Type: ${fileType}, MIME: ${mimeType})`;
+  
+  switch (category) {
+    case 'image':
+      return `${baseContext}
+
+Please analyze this image and provide:
+1. 3-5 relevant hashtags
+2. Contextual dials based on the content:
+   - If it's FOOD/RESTAURANT: spiciness (1-10), richness (1-10), presentation (1-10), price_range ($-$$$$), cuisine type
+   - If it's PEOPLE/SOCIAL: group_size (1-10), activity type (casual/sports/celebration/work), formality (1-10), mood, vibe
+   - If it's LOCATION/TRAVEL: atmosphere (1-10), noise_level (1-10), lighting (1-10), crowd_size (1-10), location_type
+   - Otherwise: mood, vibe, energy (1-10), quality (1-10), subject type
+3. Suggested spaces where this would fit
+4. Your confidence level (0.0-1.0)
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "hashtags": ["tag1", "tag2", "tag3"],
+  "dial_values": {"dial_name": value},
+  "suggested_dials": [{"key": "dial_name", "label": "Display Name", "type": "slider|select", "value": defaultValue, "options": ["opt1", "opt2"]}],
+  "confidence": 0.85,
+  "suggested_spaces": ["space-id-1"]
+}`;
+
+    case 'audio':
+      return `${baseContext}
+
+Analyze this audio file and provide:
+1. 3-5 relevant hashtags
+2. Music-specific dials: tempo (1-10), genre, acousticness (1-10), danceability (1-10), decade, mood, vibe, energy (1-10)
+3. Suggested spaces
+4. Confidence level
+
+Respond ONLY with valid JSON in the specified format.`;
+
+    case 'video':
+      return `${baseContext}
+
+Analyze this video file and provide:
+1. 3-5 relevant hashtags
+2. Video-specific dials: production_quality (1-10), video_type (documentary/vlog/tutorial/music-video), decade, mood, vibe, energy (1-10)
+3. Suggested spaces
+4. Confidence level
+
+Respond ONLY with valid JSON in the specified format.`;
+
+    case 'document':
+      return `${baseContext}
+
+Analyze this document and provide:
+1. 3-5 relevant hashtags
+2. Document-specific dials: importance (1-10), document_type (personal/work/financial/legal), urgency (1-10)
+3. Suggested spaces
+4. Confidence level
+
+Respond ONLY with valid JSON in the specified format.`;
+
+    default:
+      return `${baseContext}
+
+Analyze this file and provide relevant hashtags, dials, suggested spaces, and confidence level.
+Respond ONLY with valid JSON.`;
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,37 +90,13 @@ serve(async (req) => {
     let category = 'general';
     if (mimeType?.startsWith('image/')) category = 'image';
     else if (mimeType?.startsWith('video/')) category = 'video';
-    else if (mimeType?.startsWith('audio/')) category = 'music';
+    else if (mimeType?.startsWith('audio/')) category = 'audio';
     else if (fileName.match(/\.(pdf|doc|docx|txt)$/i)) category = 'document';
 
-    // Build context-aware prompt for AI
-    const prompt = `Analyze this ${category} file: "${fileName}"
+    // Get contextual prompt
+    const contextualPrompt = getContextualPrompt(category, fileName, fileType, mimeType);
 
-Generate intelligent metadata in the following JSON structure:
-{
-  "hashtags": ["tag1", "tag2", "tag3"],
-  "dial_values": {
-    "energy": 0-10,
-    "mood": "happy|sad|calm|excited|angry|peaceful",
-    "vibe": "chill|energetic|dark|uplifting|contemplative|futuristic",
-    "complexity": 0-10,
-    "professionalism": 0-10
-  },
-  "confidence": 0.0-1.0,
-  "suggested_spaces": ["space_name1", "space_name2"]
-}
-
-Rules:
-- For images/videos: Consider visual mood, energy, color palette
-- For music/audio: Focus on tempo, mood, genre
-- For documents: Consider topic, formality, purpose
-- Generate 3-7 relevant hashtags
-- All dial values must be numeric (0-10) or specific string values as shown
-- Confidence reflects how certain you are about the analysis
-- Suggest 1-3 spaces where this item would fit best
-
-Return ONLY valid JSON, no explanation.`;
-
+    // Call AI gateway for analysis
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -67,9 +110,8 @@ Return ONLY valid JSON, no explanation.`;
             role: 'system', 
             content: 'You are an expert at analyzing files and generating metadata. Always respond with valid JSON only.' 
           },
-          { role: 'user', content: prompt }
+          { role: 'user', content: contextualPrompt }
         ],
-        temperature: 0.7,
       }),
     });
 
@@ -90,8 +132,6 @@ Return ONLY valid JSON, no explanation.`;
           { key: 'mood', label: 'Mood', type: 'select', value: 'neutral' },
           { key: 'vibe', label: 'Vibe', type: 'select', value: 'neutral' },
           { key: 'complexity', label: 'Complexity', type: 'slider', value: 5 },
-          { key: 'professionalism', label: 'Professionalism', type: 'slider', value: 5 },
-          { key: 'spiciness', label: 'Spiciness', type: 'slider', value: 5 },
         ],
         confidence: 0.3,
         suggested_spaces: ['lobby'],
@@ -128,9 +168,6 @@ Return ONLY valid JSON, no explanation.`;
           { key: 'energy', label: 'Energy', type: 'slider', value: 5 },
           { key: 'mood', label: 'Mood', type: 'select', value: 'neutral' },
           { key: 'vibe', label: 'Vibe', type: 'select', value: 'neutral' },
-          { key: 'complexity', label: 'Complexity', type: 'slider', value: 5 },
-          { key: 'professionalism', label: 'Professionalism', type: 'slider', value: 5 },
-          { key: 'spiciness', label: 'Spiciness', type: 'slider', value: 5 },
         ],
         confidence: 0.3,
         suggested_spaces: ['lobby'],

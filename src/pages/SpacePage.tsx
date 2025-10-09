@@ -65,13 +65,7 @@ export default function SpacePage() {
     { id: 'friends', name: 'Friends' }
   ];
 
-  const floors = [
-    { id: 'floor-1', name: 'Floor 1' },
-    { id: 'floor-2', name: 'Floor 2' },
-    { id: 'floor-3', name: 'Floor 3' },
-    { id: 'floor-4', name: 'Floor 4' },
-    { id: 'floor-5', name: 'Floor 5' }
-  ];
+  // Floors removed - using hierarchical space navigation instead
   
   // Use contact field sharing for the selected contact
   const { toggleableFields, sharedFields, toggleFieldShare } = useContactFieldSharing(

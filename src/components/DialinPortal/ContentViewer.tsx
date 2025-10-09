@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, X } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, X, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
@@ -121,6 +121,19 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
     }
   };
 
+  const handleFullscreen = () => {
+    const elem = videoRef.current;
+    if (elem) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if ((elem as any).webkitRequestFullscreen) {
+        (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+        (elem as any).mozRequestFullScreen();
+      }
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -155,13 +168,16 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
 
       {/* Video Content */}
       {isVideo && contentUrl && (
-        <video
-          ref={videoRef}
-          src={contentUrl}
-          className="absolute inset-0 w-full h-full object-contain bg-black"
-          poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
-          playsInline
-        />
+        <div className="absolute inset-0">
+          <video
+            ref={videoRef}
+            src={contentUrl}
+            className="w-full h-full object-contain bg-black"
+            poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
+            playsInline
+            onClick={togglePlay}
+          />
+        </div>
       )}
 
       {/* Audio Content */}
@@ -220,9 +236,13 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
         </div>
       )}
 
-      {/* Media Controls */}
+      {/* Enhanced Media Controls */}
       {(isVideo || isAudio) && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 space-y-4"
+        >
           {/* Progress Bar */}
           <div className="space-y-2">
             <Slider
@@ -230,44 +250,59 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
               max={duration || 100}
               step={0.1}
               onValueChange={handleSeek}
-              className="w-full"
+              className="w-full cursor-pointer"
             />
-            <div className="flex justify-between text-xs text-white/80">
+            <div className="flex justify-between text-xs text-white/80 font-mono">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20"
-              onClick={togglePlay}
-            >
-              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-            </Button>
-
-            <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
-                onClick={toggleMute}
+                className="text-white hover:bg-white/20 h-12 w-12"
+                onClick={togglePlay}
               >
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
               </Button>
-              <Slider
-                value={[isMuted ? 0 : volume]}
-                max={1}
-                step={0.01}
-                onValueChange={handleVolumeChange}
-                className="w-24"
-              />
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20"
+                  onClick={toggleMute}
+                >
+                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </Button>
+                <Slider
+                  value={[isMuted ? 0 : volume]}
+                  max={1}
+                  step={0.01}
+                  onValueChange={handleVolumeChange}
+                  className="w-24"
+                />
+              </div>
+              
+              {isVideo && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20"
+                  onClick={handleFullscreen}
+                >
+                  <Maximize className="w-5 h-5" />
+                </Button>
+              )}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Content Info */}
@@ -277,10 +312,10 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2">
+          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2 drop-shadow-lg">
             {content.original_name}
           </h1>
-          <p className="text-lg lg:text-xl text-white/80 capitalize">
+          <p className="text-lg lg:text-xl text-white/80 capitalize drop-shadow-md">
             {content.file_type}
           </p>
         </motion.div>

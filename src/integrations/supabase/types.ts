@@ -158,6 +158,9 @@ export type Database = {
           ai_confidence: number | null
           ai_generated: boolean | null
           created_at: string
+          detected_location: Json | null
+          detected_objects: Json | null
+          detected_people: Json | null
           dial_values: Json | null
           file_id: string
           hashtags: string[] | null
@@ -169,6 +172,9 @@ export type Database = {
           ai_confidence?: number | null
           ai_generated?: boolean | null
           created_at?: string
+          detected_location?: Json | null
+          detected_objects?: Json | null
+          detected_people?: Json | null
           dial_values?: Json | null
           file_id: string
           hashtags?: string[] | null
@@ -180,6 +186,9 @@ export type Database = {
           ai_confidence?: number | null
           ai_generated?: boolean | null
           created_at?: string
+          detected_location?: Json | null
+          detected_objects?: Json | null
+          detected_people?: Json | null
           dial_values?: Json | null
           file_id?: string
           hashtags?: string[] | null

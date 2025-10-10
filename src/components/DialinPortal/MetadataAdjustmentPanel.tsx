@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
+import { SpacesBar } from './SpacesBar';
 
 interface DialSuggestion {
   key: string;
@@ -37,6 +38,10 @@ interface MetadataAdjustmentPanelProps {
   }) => void;
   onCancel: () => void;
   onCreateSpace?: (name: string, parentId: string) => Promise<void>;
+  onDeleteSpace?: (id: string) => void;
+  onRenameSpace?: (id: string, newName: string) => void;
+  onReorderSpaces?: (spaceIds: string[]) => void;
+  onToggle360?: (spaceId: string) => void;
 }
 
 export function MetadataAdjustmentPanel({
@@ -51,7 +56,11 @@ export function MetadataAdjustmentPanel({
   isAiGenerated = true,
   onSave,
   onCancel,
-  onCreateSpace
+  onCreateSpace,
+  onDeleteSpace,
+  onRenameSpace,
+  onReorderSpaces,
+  onToggle360
 }: MetadataAdjustmentPanelProps) {
   const [hashtags, setHashtags] = useState<string[]>(initialHashtags);
   const [newHashtag, setNewHashtag] = useState('');
@@ -61,10 +70,8 @@ export function MetadataAdjustmentPanel({
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(
     suggestedSpaces[0] || availableSpaces[0]?.id || 'lobby'
   );
-  const [currentParentSpace, setCurrentParentSpace] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
-  const [newSpaceName, setNewSpaceName] = useState('');
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
   const moodOptions = ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'];
@@ -165,28 +172,8 @@ export function MetadataAdjustmentPanel({
     return dial.options || [];
   };
 
-  // Get main spaces (no parent) and child spaces based on selection
-  const mainSpaces = availableSpaces.filter(s => !s.parent_id);
-  const childSpaces = currentParentSpace 
-    ? availableSpaces.filter(s => s.parent_id === currentParentSpace)
-    : [];
-
-  const handleSelectMainSpace = (spaceId: string) => {
-    setCurrentParentSpace(spaceId);
+  const handleSpaceClick = (spaceId: string) => {
     setSelectedSpaceId(spaceId);
-  };
-
-  const handleSelectChildSpace = (spaceId: string) => {
-    setSelectedSpaceId(spaceId);
-  };
-
-  const handleCreateChildSpace = async () => {
-    if (!newSpaceName.trim() || !onCreateSpace) return;
-    
-    const parentId = currentParentSpace || 'lobby';
-    await onCreateSpace(newSpaceName.trim(), parentId);
-    setNewSpaceName('');
-    toast.success('Space created');
   };
 
   // Group dials by category for better organization
@@ -489,106 +476,45 @@ export function MetadataAdjustmentPanel({
                   <Label className="text-lg font-semibold">Select Destination Space</Label>
                 </div>
                 
-                {/* Main Spaces Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {mainSpaces.map((space) => (
-                    <div
-                      key={space.id}
-                      onClick={() => handleSelectMainSpace(space.id)}
-                      className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        currentParentSpace === space.id
-                          ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
-                          : 'border-border hover:border-primary/50 hover:bg-accent'
-                      }`}
-                    >
-                      <div className="text-sm font-semibold">{space.name}</div>
-                      {currentParentSpace === space.id && (
-                        <div className="absolute top-2 right-2">
-                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="w-4 h-4 text-primary-foreground" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                {/* SpacesBar Integration with glow on selected */}
+                <div className="relative">
+                  <style>{`
+                    .space-selected-glow {
+                      box-shadow: 0 0 20px 4px hsl(var(--primary) / 0.6),
+                                  0 0 40px 8px hsl(var(--primary) / 0.3),
+                                  inset 0 0 15px hsl(var(--primary) / 0.2);
+                      border: 2px solid hsl(var(--primary));
+                    }
+                  `}</style>
+                  <SpacesBar
+                    spaces={availableSpaces.map(s => ({
+                      id: s.id,
+                      name: s.name,
+                      thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+                      parentId: s.parent_id || undefined
+                    }))}
+                    currentSpaceId={selectedSpaceId}
+                    onSpaceClick={(space) => handleSpaceClick(space.id)}
+                    onCreateSpace={onCreateSpace ? () => {
+                      // Will be triggered from SpacesBar's create modal
+                    } : () => {}}
+                    onDeleteSpace={onDeleteSpace || (() => {})}
+                    onRenameSpace={onRenameSpace || (() => {})}
+                    onUpdateSpaceDescription={() => {}}
+                    onReorderSpace={() => {}}
+                    onToggle360={onToggle360 || (() => {})}
+                  />
                 </div>
 
-                {/* Child Spaces - Hierarchical View */}
-                {currentParentSpace && (
-                  <div className="space-y-3 p-4 rounded-lg bg-muted/30 border-l-4 border-primary">
-                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                      <ChevronRight className="w-4 h-4" />
-                      <span>Spaces in {mainSpaces.find(s => s.id === currentParentSpace)?.name}</span>
-                    </div>
-                    {childSpaces.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-2">
-                        {childSpaces.map((space) => (
-                          <div
-                            key={space.id}
-                            onClick={() => handleSelectChildSpace(space.id)}
-                            className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
-                              selectedSpaceId === space.id
-                                ? 'border-primary bg-primary/10 shadow-md'
-                                : 'border-border hover:border-primary/50 hover:bg-accent'
-                            }`}
-                          >
-                            <div className="text-sm font-medium">{space.name}</div>
-                            {selectedSpaceId === space.id && (
-                              <Check className="w-4 h-4 text-primary" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground italic pl-4">
-                        No sub-spaces yet. Create one below.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Create New Space */}
-                {onCreateSpace && (
-                  <div className="space-y-2 p-4 rounded-lg bg-muted/20 border border-dashed border-primary/30">
-                    <Label className="text-sm font-medium">Create New Space</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder={currentParentSpace ? "Sub-space name..." : "Space name..."}
-                        value={newSpaceName}
-                        onChange={(e) => setNewSpaceName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleCreateChildSpace()}
-                        className="flex-1"
-                      />
-                      <Button 
-                        onClick={handleCreateChildSpace} 
-                        size="icon"
-                        disabled={!newSpaceName.trim()}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Selected Space Breadcrumb */}
+                {/* Selected Space Indicator */}
                 {selectedSpaceId && (
                   <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
                     <p className="text-xs text-muted-foreground mb-1">Item will be placed in:</p>
                     <div className="flex items-center gap-2 text-sm font-semibold">
                       <FolderTree className="w-4 h-4 text-primary" />
-                      {currentParentSpace && selectedSpaceId !== currentParentSpace ? (
-                        <>
-                          <span>{mainSpaces.find(s => s.id === currentParentSpace)?.name}</span>
-                          <ChevronRight className="w-4 h-4" />
-                          <span className="text-primary">
-                            {availableSpaces.find(s => s.id === selectedSpaceId)?.name}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-primary">
-                          {availableSpaces.find(s => s.id === selectedSpaceId)?.name}
-                        </span>
-                      )}
+                      <span className="text-primary">
+                        {availableSpaces.find(s => s.id === selectedSpaceId)?.name || 'Lobby'}
+                      </span>
                     </div>
                   </div>
                 )}

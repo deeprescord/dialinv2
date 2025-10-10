@@ -79,7 +79,7 @@ serve(async (req) => {
   }
 
   try {
-    const { fileId, fileName, fileType, mimeType } = await req.json();
+    const { fileId, fileName, fileType, mimeType, imageData } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -97,6 +97,35 @@ serve(async (req) => {
     const contextualPrompt = getContextualPrompt(category, fileName, fileType, mimeType);
 
     // Call AI gateway for analysis
+    const messages: any[] = [
+      { 
+        role: 'system', 
+        content: 'You are an expert at analyzing files and generating metadata. Always respond with valid JSON only.' 
+      }
+    ];
+
+    // For images with actual image data, use vision analysis
+    if (category === 'image' && imageData) {
+      messages.push({
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: contextualPrompt
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: imageData // base64 data URL
+            }
+          }
+        ]
+      });
+    } else {
+      // For other files or images without data, use text-based analysis
+      messages.push({ role: 'user', content: contextualPrompt });
+    }
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -105,13 +134,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert at analyzing files and generating metadata. Always respond with valid JSON only.' 
-          },
-          { role: 'user', content: contextualPrompt }
-        ],
+        messages
       }),
     });
 

@@ -73,6 +73,8 @@ export function HomeView({
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [aiMetadata, setAiMetadata] = useState<any>(null);
+  const [analyzingFile, setAnalyzingFile] = useState(false);
 
   const { spaces: userSpaces, createSpace, loading: spacesLoading } = useSpaces();
   const { uploadMultipleFiles, uploading } = useFileUpload();
@@ -101,7 +103,7 @@ export function HomeView({
   };
 
 
-  const handleFilesDropped = (files: File[]) => {
+  const handleFilesDropped = async (files: File[]) => {
     if (!user) {
       setShowAuthModal(true);
       setDroppedFiles(files); // Store files for after auth
@@ -109,6 +111,42 @@ export function HomeView({
     }
     
     setDroppedFiles(files);
+    setAnalyzingFile(true);
+    
+    // Analyze the first file with AI if it's an image
+    const firstFile = files[0];
+    if (firstFile.type.startsWith('image/')) {
+      try {
+        // Convert image to base64
+        const reader = new FileReader();
+        const imageDataPromise = new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(firstFile);
+        });
+        
+        const imageData = await imageDataPromise;
+        
+        // Call analyze-item function with image data
+        const { data, error } = await supabase.functions.invoke('analyze-item', {
+          body: {
+            fileId: 'temp-' + Date.now(),
+            fileName: firstFile.name,
+            fileType: firstFile.type.split('/')[0],
+            mimeType: firstFile.type,
+            imageData
+          }
+        });
+        
+        if (!error && data) {
+          setAiMetadata(data);
+        }
+      } catch (error) {
+        console.error('Error analyzing image:', error);
+        toast.error('Failed to analyze image');
+      }
+    }
+    
+    setAnalyzingFile(false);
     setShowMetadataPanel(true);
   };
 
@@ -282,21 +320,22 @@ export function HomeView({
         <MetadataAdjustmentPanel
           fileName={droppedFiles[0].name}
           fileType={droppedFiles[0].type}
-          initialHashtags={[]}
-          initialDialValues={{}}
-          suggestedDials={[]}
-          suggestedSpaces={[]}
+          initialHashtags={aiMetadata?.hashtags || []}
+          initialDialValues={aiMetadata?.dial_values || {}}
+          suggestedDials={aiMetadata?.suggested_dials || []}
+          suggestedSpaces={aiMetadata?.suggested_spaces || []}
           availableSpaces={userSpaces.map(space => ({
             id: space.id,
             name: space.name,
             parent_id: null
           }))}
-          confidence={0}
-          isAiGenerated={false}
+          confidence={aiMetadata?.confidence || 0}
+          isAiGenerated={!!aiMetadata}
           onSave={handleMetadataSave}
           onCancel={() => {
             setShowMetadataPanel(false);
             setDroppedFiles([]);
+            setAiMetadata(null);
           }}
           onCreateSpace={handleCreateNewSpace}
         />

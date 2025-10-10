@@ -54,6 +54,33 @@ export default function SpacePage() {
     { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
     ...initialSpaces
   ]);
+  
+  // File upload hook
+  const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
+  const { spaces: dbSpaces } = useSpaces();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Merge database spaces with UI spaces
+  useEffect(() => {
+    if (dbSpaces.length > 0) {
+      // Convert db spaces to UI Space format
+      const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
+        id: dbSpace.id,
+        name: dbSpace.name,
+        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png', // default thumbnail
+        parentId: dbSpace.parent_id || undefined,
+        backgroundImage: undefined,
+        show360: false
+      }));
+      
+      // Merge with existing spaces, avoiding duplicates
+      setSpaces(prev => {
+        const existingIds = new Set(prev.map(s => s.id));
+        const newSpaces = convertedDbSpaces.filter(s => !existingIds.has(s.id));
+        return [...prev, ...newSpaces];
+      });
+    }
+  }, [dbSpaces]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
   // Footer spaces (main navigation spaces)
@@ -109,11 +136,6 @@ export default function SpacePage() {
   const currentSpaceItems = currentSpaceId === 'lobby' 
     ? [] // Lobby shows nothing after separator
     : [...nestedSpaces, ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Show nested spaces and content items
-
-  // File upload hook
-  const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
-  const { spaces: dbSpaces } = useSpaces();
-  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Get current user
   useEffect(() => {

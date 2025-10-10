@@ -7,6 +7,7 @@ import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
 import { DialPopup } from './DialPopup';
+import { AddOptionsModal } from './AddOptionsModal';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 
@@ -61,6 +62,7 @@ export function SpacesBar({
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
+  const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -87,6 +89,14 @@ export function SpacesBar({
   const handleUseAsFilters = () => {
     setShowDialPopup(false);
     setDialPopupItem(null);
+  };
+
+  const handleAddOptionSelect = (optionId: string) => {
+    if (optionId === 'space') {
+      onCreateSpace();
+    }
+    // Handle other options as needed
+    console.log('Add option selected:', optionId);
   };
 
   const handleMouseUp = () => {
@@ -229,10 +239,10 @@ export function SpacesBar({
                     variant="outline"
                     size="sm"
                     className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                    onClick={onCreateSpace}
+                    onClick={() => setShowAddOptionsModal(true)}
                   >
                     <PlusCircle size={20} className="text-green-400" />
-                    <span className="text-xs">New</span>
+                    <span className="text-xs">Add</span>
                   </Button>
                 </motion.div>
               )}
@@ -304,6 +314,13 @@ export function SpacesBar({
         item={dialPopupItem}
         onClose={() => setShowDialPopup(false)}
         onUseAsFilters={handleUseAsFilters}
+      />
+
+      {/* Add Options Modal */}
+      <AddOptionsModal
+        isOpen={showAddOptionsModal}
+        onClose={() => setShowAddOptionsModal(false)}
+        onOptionSelect={handleAddOptionSelect}
       />
 
       {/* AI Chat */}

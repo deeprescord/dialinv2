@@ -24,7 +24,10 @@ interface SpacesBarProps {
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   onSpaceClick?: (space: Space) => void;
   breadcrumbs?: Array<{ id: string; name: string }>;
-  hideActionButtons?: boolean; // Hide New, AI, Chat buttons
+  hideActionButtons?: boolean; // Hide New, AI, Chat buttons (deprecated - use individual hide props)
+  hideNewButton?: boolean; // Hide New button
+  hideAIButton?: boolean; // Hide AI button
+  hideChatButton?: boolean; // Hide Chat button
 }
 
 export function SpacesBar({
@@ -42,7 +45,10 @@ export function SpacesBar({
   on360MuteToggle,
   onSpaceClick,
   breadcrumbs,
-  hideActionButtons = false
+  hideActionButtons = false,
+  hideNewButton = false,
+  hideAIButton = false,
+  hideChatButton = false
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -194,55 +200,61 @@ export function SpacesBar({
           {!hideActionButtons && (
             <>
               {/* New Space Button */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: allSpaces.length * 0.05 }}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                  onClick={onCreateSpace}
+              {!hideNewButton && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: allSpaces.length * 0.05 }}
                 >
-                  <PlusCircle size={20} className="text-green-400" />
-                  <span className="text-xs">New</span>
-                </Button>
-              </motion.div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    onClick={onCreateSpace}
+                  >
+                    <PlusCircle size={20} className="text-green-400" />
+                    <span className="text-xs">New</span>
+                  </Button>
+                </motion.div>
+              )}
 
               {/* AI Bot Button */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: (allSpaces.length + 1) * 0.05 }}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                  onClick={() => setShowAIChat(true)}
+              {!hideAIButton && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: (allSpaces.length + 1) * 0.05 }}
                 >
-                  <Bot size={20} className="text-blue-400" />
-                  <span className="text-xs">AI</span>
-                </Button>
-              </motion.div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    onClick={() => setShowAIChat(true)}
+                  >
+                    <Bot size={20} className="text-blue-400" />
+                    <span className="text-xs">AI</span>
+                  </Button>
+                </motion.div>
+              )}
 
               {/* Chat Button */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: (allSpaces.length + 2) * 0.05 }}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                  onClick={() => setShowChatWindow(true)}
+              {!hideChatButton && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: (allSpaces.length + 2) * 0.05 }}
                 >
-                  <MessageSquare size={20} className="text-purple-400" />
-                  <span className="text-xs">Chat</span>
-                </Button>
-              </motion.div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    onClick={() => setShowChatWindow(true)}
+                  >
+                    <MessageSquare size={20} className="text-purple-400" />
+                    <span className="text-xs">Chat</span>
+                  </Button>
+                </motion.div>
+              )}
             </>
           )}
         </div>

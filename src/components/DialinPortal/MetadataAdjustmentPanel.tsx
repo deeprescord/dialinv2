@@ -568,6 +568,9 @@ export function MetadataAdjustmentPanel({
                     onReorderSpace={() => {}}
                     onToggle360={onToggle360 || (() => {})}
                     breadcrumbs={currentParentId ? buildBreadcrumbs(currentParentId) : undefined}
+                    hideNewButton={false}
+                    hideAIButton={true}
+                    hideChatButton={true}
                   />
                 </div>
 

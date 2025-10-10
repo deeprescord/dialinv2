@@ -58,7 +58,7 @@ export default function SpacePage() {
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
-  const { spaces: dbSpaces } = useSpaces();
+  const { spaces: dbSpaces, loading: spacesLoading } = useSpaces();
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   // Merge database spaces with UI spaces
@@ -152,10 +152,10 @@ export default function SpacePage() {
   
   // Redirect if space not found
   useEffect(() => {
-    if (!currentSpace && spaceId !== 'lobby') {
+    if (!spacesLoading && spaceId !== 'lobby' && !currentSpace) {
       navigate('/');
     }
-  }, [currentSpace, spaceId, navigate]);
+  }, [currentSpace, spaceId, spacesLoading, navigate]);
 
   // Keep breadcrumb in sync with route (on direct loads/refresh)
   useEffect(() => {

@@ -7,7 +7,7 @@ import { PinnedContactsRow } from './PinnedContactsRow';
 import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
 import { DragDropZone } from './DragDropZone';
-import { SpaceSelectionModal } from './SpaceSelectionModal';
+import { MetadataAdjustmentPanel } from './MetadataAdjustmentPanel';
 import { AuthModal } from './AuthModal';
 import { DialControlPanel } from './DialControlPanel';
 import { CelebrationAnimation } from './CelebrationAnimation';
@@ -66,7 +66,7 @@ export function HomeView({
   onOpenAddPanel,
   selectedItem
 }: HomeViewProps) {
-  const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
+  const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [user, setUser] = useState<any>(null);
@@ -109,22 +109,26 @@ export function HomeView({
     }
     
     setDroppedFiles(files);
-    setShowSpaceSelectionModal(true);
+    setShowMetadataPanel(true);
   };
 
-  const handleSpaceSelect = async (spaceId: string, autoDetectedDials?: any[]) => {
+  const handleMetadataSave = async (metadata: {
+    hashtags: string[];
+    dialValues: Record<string, any>;
+    selectedSpaceId: string;
+    location?: { lat: number; lng: number; address?: string };
+  }) => {
     try {
       if (droppedFiles.length > 0) {
-        await uploadMultipleFiles(droppedFiles, spaceId);
+        await uploadMultipleFiles(droppedFiles, metadata.selectedSpaceId);
         if (onFilesDrop) {
-          onFilesDrop(droppedFiles, spaceId);
+          onFilesDrop(droppedFiles, metadata.selectedSpaceId);
         }
         
-        // If auto-detected dials were provided, save them and show celebration
-        if (autoDetectedDials && autoDetectedDials.length > 0) {
-          // TODO: Save auto-detected dials to the database for this space
-          console.log('Auto-detected dials to save:', autoDetectedDials, 'for space:', spaceId);
-          toast.success(`Files saved to space with ${autoDetectedDials.length} auto-detected dials!`);
+        // Show celebration with dial values
+        const dialCount = Object.keys(metadata.dialValues).length;
+        if (dialCount > 0) {
+          toast.success(`Files saved with ${dialCount} dial${dialCount > 1 ? 's' : ''} and ${metadata.hashtags.length} hashtag${metadata.hashtags.length !== 1 ? 's' : ''}!`);
           setShowCelebration(true);
           setTimeout(() => setShowCelebration(false), 3000);
         } else {
@@ -135,19 +139,13 @@ export function HomeView({
       console.error('Error uploading files:', error);
       toast.error('Failed to save files to space');
     } finally {
-      setShowSpaceSelectionModal(false);
+      setShowMetadataPanel(false);
       setDroppedFiles([]);
     }
   };
 
-  const handleCreateNewSpace = async (name: string, autoDetectedDials?: any[]) => {
+  const handleCreateNewSpace = async (name: string, parentId: string): Promise<void> => {
     const newSpace = await createSpace(name);
-    if (newSpace && droppedFiles.length > 0) {
-      await handleSpaceSelect(newSpace.id, autoDetectedDials);
-    } else {
-      setShowSpaceSelectionModal(false);
-      setDroppedFiles([]);
-    }
     if (onCreateSpace) {
       onCreateSpace(name);
     }
@@ -156,7 +154,7 @@ export function HomeView({
   const handleAuthSuccess = () => {
     // User is now authenticated, continue with file drop if files were dropped
     if (droppedFiles.length > 0) {
-      setShowSpaceSelectionModal(true);
+      setShowMetadataPanel(true);
     }
   };
 
@@ -280,35 +278,29 @@ export function HomeView({
         onUploadClick={handleFilesDropped}
       />
 
-      <SpaceSelectionModal
-        isOpen={showSpaceSelectionModal}
-        onClose={() => {
-          setShowSpaceSelectionModal(false);
-          setDroppedFiles([]);
-        }}
-        onSpaceSelect={handleSpaceSelect}
-        onCreateNewSpace={handleCreateNewSpace}
-        spaces={userSpaces.map(space => ({
-          id: space.id,
-          name: space.name,
-          fileCount: 0, // TODO: Add file count query
-        }))}
-        footerSpaces={[
-          { id: 'lobby', name: 'Lobby' },
-          { id: 'music-den', name: 'Music Den' },
-          { id: 'locations', name: 'Locations' },
-          { id: 'friends', name: 'Friends' }
-        ]}
-        floors={[
-          { id: 'floor-1', name: 'Floor 1' },
-          { id: 'floor-2', name: 'Floor 2' },
-          { id: 'floor-3', name: 'Floor 3' },
-          { id: 'floor-4', name: 'Floor 4' },
-          { id: 'floor-5', name: 'Floor 5' }
-        ]}
-        droppedFiles={droppedFiles}
-        loading={spacesLoading || uploading}
-      />
+      {showMetadataPanel && droppedFiles.length > 0 && (
+        <MetadataAdjustmentPanel
+          fileName={droppedFiles[0].name}
+          fileType={droppedFiles[0].type}
+          initialHashtags={[]}
+          initialDialValues={{}}
+          suggestedDials={[]}
+          suggestedSpaces={[]}
+          availableSpaces={userSpaces.map(space => ({
+            id: space.id,
+            name: space.name,
+            parent_id: null
+          }))}
+          confidence={0}
+          isAiGenerated={false}
+          onSave={handleMetadataSave}
+          onCancel={() => {
+            setShowMetadataPanel(false);
+            setDroppedFiles([]);
+          }}
+          onCreateSpace={handleCreateNewSpace}
+        />
+      )}
 
       <AuthModal
         isOpen={showAuthModal}

@@ -54,7 +54,7 @@ export function SpaceContextMenu({
   const [newName, setNewName] = useState(space.name);
   const [newDescription, setNewDescription] = useState(space.description || 'Welcome back');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [show360Advanced, setShow360Advanced] = useState(false);
+  const [show360Advanced, setShow360Advanced] = useState(true);
   const [xAxis, setXAxis] = useState(space.xAxis || 0);
   const [yAxis, setYAxis] = useState(space.yAxis || 0);
   const [volume, setVolume] = useState(space.volume || 50);

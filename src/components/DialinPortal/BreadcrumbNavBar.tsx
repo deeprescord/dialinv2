@@ -15,7 +15,7 @@ interface BreadcrumbNavBarProps {
   selectedItemId?: string;
   onNavigate: (spaceId: string) => void;
   onItemSelect: (itemId: string) => void;
-  onCreateSpace: () => void;
+  onCreateSpace: (parentId?: string) => void;
   onDeleteSpace: (spaceId: string) => void;
   onRenameSpace: (spaceId: string, newName: string) => void;
   onUpdateSpaceDescription: (spaceId: string, newDescription: string) => void;
@@ -346,7 +346,9 @@ export function BreadcrumbNavBar({
           onClose={() => setShowAddOptionsModal(false)}
           onOptionSelect={(optionId) => {
             if (optionId === 'space') {
-              onCreateSpace();
+              // Pass the current space ID as the parent
+              const currentParentId = navigationPath[navigationPath.length - 1];
+              onCreateSpace(currentParentId);
             }
             console.log('Add option selected:', optionId);
           }}

@@ -774,7 +774,14 @@ export default function SpacePage() {
               spaces={spaces}
               currentSpaceItems={currentSpaceItems}
               selectedItemId={selectedItemId}
-              onCreateSpace={() => setShowCreateSpaceModal(true)}
+              onCreateSpace={(parentId) => {
+                setShowCreateSpaceModal(true);
+                // Store the parent ID for when the modal creates the space
+                if (parentId) {
+                  // Pass it through the state
+                  (window as any).__pendingSpaceParentId = parentId;
+                }
+              }}
               onDeleteSpace={handleDeleteSpace}
               onRenameSpace={handleRenameSpace}
               onUpdateSpaceDescription={handleUpdateSpaceDescription}
@@ -855,8 +862,17 @@ export default function SpacePage() {
 
         <CreateSpaceModal
           isOpen={showCreateSpaceModal}
-          onClose={() => setShowCreateSpaceModal(false)}
-          onCreate={handleCreateSpace}
+          onClose={() => {
+            setShowCreateSpaceModal(false);
+            // Clean up the pending parent ID
+            delete (window as any).__pendingSpaceParentId;
+          }}
+          onCreate={(name, coverUrl) => {
+            // Get the pending parent ID if any
+            const parentId = (window as any).__pendingSpaceParentId || currentSpaceId;
+            handleCreateSpace(name, parentId);
+            delete (window as any).__pendingSpaceParentId;
+          }}
         />
 
         <ChatWindow

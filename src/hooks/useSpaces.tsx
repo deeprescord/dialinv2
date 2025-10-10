@@ -42,7 +42,7 @@ export function useSpaces() {
     }
   };
 
-  const createSpace = async (name: string, description?: string): Promise<Space | null> => {
+  const createSpace = async (name: string, description?: string, parentId?: string): Promise<Space | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -56,6 +56,7 @@ export function useSpaces() {
           user_id: user.id,
           name,
           description,
+          parent_id: parentId || null,
         })
         .select()
         .single();

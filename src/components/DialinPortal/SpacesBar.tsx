@@ -6,6 +6,7 @@ import { PlusCircle, MessageSquare, Bot } from '../icons';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
+import { DialPopup } from './DialPopup';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 
@@ -58,15 +59,34 @@ export function SpacesBar({
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
+  const [showDialPopup, setShowDialPopup] = useState(false);
+  const [dialPopupItem, setDialPopupItem] = useState<any>(null);
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
-      setContextMenu({
-        space,
-        position: { x: event.clientX, y: event.clientY }
+      // Show DialPopup on long press
+      setDialPopupItem({
+        id: space.id,
+        title: space.name,
+        thumb: space.thumb,
+        type: 'space'
       });
+      setShowDialPopup(true);
     }, 500); // 500ms press and hold
     setPressTimer(timer);
+  };
+
+  const handleContextMenu = (space: Space, event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({
+      space,
+      position: { x: event.clientX, y: event.clientY }
+    });
+  };
+
+  const handleUseAsFilters = () => {
+    setShowDialPopup(false);
+    setDialPopupItem(null);
   };
 
   const handleMouseUp = () => {
@@ -163,6 +183,7 @@ export function SpacesBar({
                   onMouseDown={(e) => handleMouseDown(space, e)}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseLeave}
+                  onContextMenu={(e) => handleContextMenu(space, e)}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
                     handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
@@ -276,6 +297,14 @@ export function SpacesBar({
           position={contextMenu.position}
         />
       )}
+
+      {/* Dial Popup */}
+      <DialPopup
+        isOpen={showDialPopup}
+        item={dialPopupItem}
+        onClose={() => setShowDialPopup(false)}
+        onUseAsFilters={handleUseAsFilters}
+      />
 
       {/* AI Chat */}
       <AIChat

@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, X, Maximize } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Pause, Volume2, VolumeX, X, Maximize, Settings, Edit, Share2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
+import { SkyboxViewer } from './SkyboxViewer';
 
 interface ContentViewerProps {
   content: {
@@ -14,23 +15,35 @@ interface ContentViewerProps {
     original_name: string;
     thumbnail_path?: string;
     duration?: number;
+    metadata?: {
+      is_360?: boolean;
+      x_axis_offset?: number;
+      y_axis_offset?: number;
+    };
   };
   onClose?: () => void;
+  onEditMetadata?: () => void;
+  onShare?: () => void;
+  onDelete?: () => void;
 }
 
-export function ContentViewer({ content, onClose }: ContentViewerProps) {
+export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDelete }: ContentViewerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
   const isImage = content.file_type === 'image' || content.mime_type?.startsWith('image/');
   const isPDF = content.mime_type === 'application/pdf';
+  const is360 = content.metadata?.is_360 || content.original_name.toLowerCase().includes('360');
 
   // Get the public URL for the content
   const getPublicUrl = async (path: string): Promise<string> => {
@@ -140,6 +153,33 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Press and hold handlers
+  const handlePressStart = () => {
+    const timer = setTimeout(() => {
+      setShowContextMenu(true);
+    }, 500); // 500ms hold to show menu
+    setPressTimer(timer);
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showContextMenu && containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowContextMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showContextMenu]);
+
   // Show loading state while fetching signed URL
   if (!contentUrl) {
     return (
@@ -153,7 +193,15 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
   }
 
   return (
-    <div className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20">
+    <div 
+      ref={containerRef}
+      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20"
+      onMouseDown={handlePressStart}
+      onMouseUp={handlePressEnd}
+      onMouseLeave={handlePressEnd}
+      onTouchStart={handlePressStart}
+      onTouchEnd={handlePressEnd}
+    >
       {/* Close Button */}
       {onClose && (
         <Button
@@ -166,8 +214,73 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
         </Button>
       )}
 
-      {/* Video Content */}
-      {isVideo && contentUrl && (
+      {/* Context Menu */}
+      <AnimatePresence>
+        {showContextMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute top-20 right-4 z-50 bg-background/95 backdrop-blur-lg rounded-xl shadow-2xl border border-border overflow-hidden"
+          >
+            <div className="p-2 space-y-1 min-w-[200px]">
+              {onEditMetadata && (
+                <button
+                  onClick={() => {
+                    setShowContextMenu(false);
+                    onEditMetadata();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span className="text-sm font-medium">Edit Metadata</span>
+                </button>
+              )}
+              {onShare && (
+                <button
+                  onClick={() => {
+                    setShowContextMenu(false);
+                    onShare();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Share</span>
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => {
+                    setShowContextMenu(false);
+                    onDelete();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-destructive/10 text-destructive transition-colors text-left"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Delete</span>
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 360° Video/Image Content */}
+      {is360 && (isVideo || isImage) && contentUrl && (
+        <div className="absolute inset-0">
+          <SkyboxViewer
+            mediaUrl={contentUrl}
+            enableGyroscope={true}
+            xAxisOffset={content.metadata?.x_axis_offset || 0}
+            yAxisOffset={content.metadata?.y_axis_offset || 0}
+            volume={volume * 100}
+            isMuted={isMuted}
+          />
+        </div>
+      )}
+
+      {/* Regular Video Content */}
+      {!is360 && isVideo && contentUrl && (
         <div className="absolute inset-0">
           <video
             ref={videoRef}
@@ -197,8 +310,8 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
         </div>
       )}
 
-      {/* Image Content */}
-      {isImage && contentUrl && (
+      {/* Regular Image Content */}
+      {!is360 && isImage && contentUrl && (
         <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center">
           <img
             src={contentUrl}
@@ -237,7 +350,7 @@ export function ContentViewer({ content, onClose }: ContentViewerProps) {
       )}
 
       {/* Enhanced Media Controls */}
-      {(isVideo || isAudio) && (
+      {!is360 && (isVideo || isAudio) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

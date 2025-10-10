@@ -307,13 +307,43 @@ export default function SpacePage() {
 
 
   // Handle space creation
-  const handleCreateSpace = (name: string, coverUrl: string) => {
-    const newSpace: Space = {
-      id: Date.now().toString(),
-      name,
-      thumb: coverUrl
-    };
-    setSpaces(prev => [...prev, newSpace]);
+  const handleCreateSpace = async (name: string, parentId?: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to create spaces');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('spaces')
+        .insert({
+          user_id: user.id,
+          name,
+          parent_id: parentId === 'lobby' ? null : parentId || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating space:', error);
+        toast.error('Failed to create space');
+        return;
+      }
+
+      const newSpace: Space = {
+        id: data.id,
+        name: data.name,
+        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        parentId: data.parent_id || undefined
+      };
+      
+      setSpaces(prev => [...prev, newSpace]);
+      toast.success(`Space "${name}" created successfully!`);
+    } catch (error) {
+      console.error('Error creating space:', error);
+      toast.error('Failed to create space');
+    }
   };
 
   // Handle space deletion

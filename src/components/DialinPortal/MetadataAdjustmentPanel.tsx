@@ -70,6 +70,7 @@ export function MetadataAdjustmentPanel({
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(
     suggestedSpaces[0] || availableSpaces[0]?.id || 'lobby'
   );
+  const [currentParentId, setCurrentParentId] = useState<string | null>(null); // Track current hierarchy level
   const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -172,8 +173,41 @@ export function MetadataAdjustmentPanel({
     return dial.options || [];
   };
 
-  const handleSpaceClick = (spaceId: string) => {
-    setSelectedSpaceId(spaceId);
+  const handleSpaceClick = (space: any) => {
+    // Check if this space has children
+    const hasChildren = availableSpaces.some(s => s.parent_id === space.id);
+    
+    if (hasChildren) {
+      // Drill down into this space
+      setCurrentParentId(space.id);
+    } else {
+      // Select this space as destination
+      setSelectedSpaceId(space.id);
+    }
+  };
+
+  // Build breadcrumb path
+  const buildBreadcrumbs = (parentId: string | null): Array<{ id: string; name: string }> => {
+    const breadcrumbs: Array<{ id: string; name: string }> = [];
+    
+    if (parentId === null) {
+      return breadcrumbs;
+    }
+    
+    let current = availableSpaces.find(s => s.id === parentId);
+    while (current) {
+      breadcrumbs.unshift({ id: current.id, name: current.name });
+      current = current.parent_id ? availableSpaces.find(s => s.id === current!.parent_id) : undefined;
+    }
+    
+    return breadcrumbs;
+  };
+
+  // Get spaces at current level
+  const getCurrentLevelSpaces = () => {
+    return availableSpaces.filter(s => 
+      (currentParentId === null && !s.parent_id) || s.parent_id === currentParentId
+    );
   };
 
   // Group dials by category for better organization
@@ -476,6 +510,33 @@ export function MetadataAdjustmentPanel({
                   <Label className="text-lg font-semibold">Select Destination Space</Label>
                 </div>
                 
+                {/* Breadcrumb Navigation */}
+                {currentParentId !== null && buildBreadcrumbs(currentParentId).length > 0 && (
+                  <div className="flex items-center gap-2 mb-3 text-sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentParentId(null)}
+                      className="h-8 px-2"
+                    >
+                      Lobby
+                    </Button>
+                    {buildBreadcrumbs(currentParentId).map((crumb, index) => (
+                      <React.Fragment key={crumb.id}>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCurrentParentId(crumb.id)}
+                          className="h-8 px-2"
+                        >
+                          {crumb.name}
+                        </Button>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+
                 {/* SpacesBar Integration with glow on selected */}
                 <div className="relative">
                   <style>{`
@@ -487,23 +548,26 @@ export function MetadataAdjustmentPanel({
                     }
                   `}</style>
                   <SpacesBar
-                    spaces={availableSpaces.map(s => ({
+                    spaces={getCurrentLevelSpaces().map(s => ({
                       id: s.id,
                       name: s.name,
                       thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
                       parentId: s.parent_id || undefined
                     }))}
                     currentSpaceId={selectedSpaceId}
-                    onSpaceClick={(space) => handleSpaceClick(space.id)}
-                    onCreateSpace={onCreateSpace ? () => {
-                      // Will be triggered from SpacesBar's create modal
+                    onSpaceClick={handleSpaceClick}
+                    onCreateSpace={onCreateSpace ? async () => {
+                      const spaceName = prompt('Enter space name:');
+                      if (spaceName && onCreateSpace) {
+                        await onCreateSpace(spaceName, currentParentId || 'lobby');
+                      }
                     } : () => {}}
                     onDeleteSpace={onDeleteSpace || (() => {})}
                     onRenameSpace={onRenameSpace || (() => {})}
                     onUpdateSpaceDescription={() => {}}
                     onReorderSpace={() => {}}
                     onToggle360={onToggle360 || (() => {})}
-                    hideActionButtons={true}
+                    breadcrumbs={currentParentId ? buildBreadcrumbs(currentParentId) : undefined}
                   />
                 </div>
 

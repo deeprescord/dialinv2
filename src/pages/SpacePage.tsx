@@ -147,15 +147,36 @@ export default function SpacePage() {
     getUser();
   }, []);
 
-  // Find current space
-  const currentSpace = spaces.find(space => space.id === spaceId);
+  // Determine if the requested space exists either in local UI state or backend
+  const spaceExists = React.useMemo(() => {
+    const id = spaceId as string | undefined;
+    if (!id || id === 'lobby') return true;
+    return spaces.some(s => s.id === id) || dbSpaces.some(s => s.id === id);
+  }, [spaceId, spaces, dbSpaces]);
   
-  // Redirect if space not found
+  // Find current space (prefer UI state, fall back to backend list for instant render)
+  const currentSpace = React.useMemo(() => {
+    const uiSpace = spaces.find(space => space.id === spaceId);
+    if (uiSpace) return uiSpace;
+    const dbSpace = dbSpaces.find(s => s.id === spaceId);
+    return dbSpace
+      ? {
+          id: dbSpace.id,
+          name: dbSpace.name,
+          thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+          parentId: dbSpace.parent_id || undefined,
+          backgroundImage: undefined,
+          show360: false,
+        }
+      : undefined;
+  }, [spaces, dbSpaces, spaceId]);
+  
+  // Redirect only if we've finished loading and the space truly doesn't exist
   useEffect(() => {
-    if (!spacesLoading && spaceId !== 'lobby' && !currentSpace) {
+    if (!spacesLoading && spaceId !== 'lobby' && !spaceExists) {
       navigate('/');
     }
-  }, [currentSpace, spaceId, spacesLoading, navigate]);
+  }, [spaceExists, spaceId, spacesLoading, navigate]);
 
   // Keep breadcrumb in sync with route (on direct loads/refresh)
   useEffect(() => {

@@ -5,6 +5,8 @@ import { PlusCircle, MessageSquare, Bot, Close, ChevronRight } from '../icons';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
+import { DialPopup } from './DialPopup';
+import { AddOptionsModal } from './AddOptionsModal';
 
 interface BreadcrumbNavBarProps {
   navigationPath: string[];
@@ -58,6 +60,9 @@ export function BreadcrumbNavBar({
     position: { x: number; y: number };
   } | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showDialPopup, setShowDialPopup] = useState(false);
+  const [dialPopupItem, setDialPopupItem] = useState<any>(null);
+  const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     if (space.id === 'lobby') return;
@@ -170,6 +175,7 @@ export function BreadcrumbNavBar({
                       <div 
                         className="flex flex-col items-center space-y-1 cursor-pointer group select-none relative"
                         onClick={() => {
+                          if (!pressTimer) return;
                           if (item.type === 'space' || item.id?.startsWith('space-')) {
                             // For spaces in the items section, navigate to them (will add to breadcrumb)
                             onNavigate(item.id);
@@ -177,6 +183,33 @@ export function BreadcrumbNavBar({
                             onItemSelect(item.id);
                           }
                         }}
+                        onMouseDown={() => {
+                          const timer = setTimeout(() => {
+                            setDialPopupItem({
+                              id: item.id,
+                              title: item.name || item.title,
+                              thumb: item.thumb || item.art,
+                              type: item.type
+                            });
+                            setShowDialPopup(true);
+                          }, 500);
+                          setPressTimer(timer);
+                        }}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchStart={() => {
+                          const timer = setTimeout(() => {
+                            setDialPopupItem({
+                              id: item.id,
+                              title: item.name || item.title,
+                              thumb: item.thumb || item.art,
+                              type: item.type
+                            });
+                            setShowDialPopup(true);
+                          }, 500);
+                          setPressTimer(timer);
+                        }}
+                        onTouchEnd={handleMouseUp}
                       >
                         {isSelected && (
                           <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
@@ -234,7 +267,7 @@ export function BreadcrumbNavBar({
                     variant="outline"
                     size="sm"
                     className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
-                    onClick={onCreateSpace}
+                    onClick={() => setShowAddOptionsModal(true)}
                   >
                     <PlusCircle size={20} className="text-green-400" />
                     <span className="text-xs">Add</span>
@@ -295,6 +328,29 @@ export function BreadcrumbNavBar({
             position={contextMenu.position}
           />
         )}
+
+        {/* Dial Popup */}
+        <DialPopup
+          isOpen={showDialPopup}
+          item={dialPopupItem}
+          onClose={() => setShowDialPopup(false)}
+          onUseAsFilters={() => {
+            setShowDialPopup(false);
+            setDialPopupItem(null);
+          }}
+        />
+
+        {/* Add Options Modal */}
+        <AddOptionsModal
+          isOpen={showAddOptionsModal}
+          onClose={() => setShowAddOptionsModal(false)}
+          onOptionSelect={(optionId) => {
+            if (optionId === 'space') {
+              onCreateSpace();
+            }
+            console.log('Add option selected:', optionId);
+          }}
+        />
       </div>
     </div>
   );

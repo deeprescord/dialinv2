@@ -75,10 +75,24 @@ useEffect(() => {
       backgroundImage: undefined,
       show360: false
     }));
+    
     setSpaces(prev => {
-      const existingIds = new Set(prev.map(s => s.id));
-      const newSpaces = convertedDbSpaces.filter(s => !existingIds.has(s.id));
-      return [...prev, ...newSpaces];
+      // Build a map of existing spaces for O(1) lookup
+      const existingMap = new Map(prev.map(s => [s.id, s]));
+      
+      // Update existing spaces and add new ones
+      const merged = convertedDbSpaces.map(dbSpace => 
+        existingMap.get(dbSpace.id) || dbSpace
+      );
+      
+      // Add any UI-only spaces that aren't in the database
+      prev.forEach(uiSpace => {
+        if (!convertedDbSpaces.some(db => db.id === uiSpace.id)) {
+          merged.push(uiSpace);
+        }
+      });
+      
+      return merged;
     });
   }
 }, [dbSpaces]);

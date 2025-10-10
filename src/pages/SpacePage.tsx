@@ -61,24 +61,35 @@ export default function SpacePage() {
   const { spaces: dbSpaces, loading: spacesLoading } = useSpaces();
   const [currentUser, setCurrentUser] = useState<any>(null);
   
-  // Merge database spaces with UI spaces
+  // Merge database spaces with UI spaces - optimized to prevent flashing
   useEffect(() => {
     if (dbSpaces.length > 0) {
-      // Convert db spaces to UI Space format
       const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
         id: dbSpace.id,
         name: dbSpace.name,
-        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png', // default thumbnail
+        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
         parentId: dbSpace.parent_id || undefined,
         backgroundImage: undefined,
         show360: false
       }));
       
-      // Merge with existing spaces, avoiding duplicates
       setSpaces(prev => {
-        const existingIds = new Set(prev.map(s => s.id));
-        const newSpaces = convertedDbSpaces.filter(s => !existingIds.has(s.id));
-        return [...prev, ...newSpaces];
+        // Build a map of existing spaces for O(1) lookup
+        const existingMap = new Map(prev.map(s => [s.id, s]));
+        
+        // Update existing spaces and add new ones
+        const merged = convertedDbSpaces.map(dbSpace => 
+          existingMap.get(dbSpace.id) || dbSpace
+        );
+        
+        // Add any UI-only spaces that aren't in the database
+        prev.forEach(uiSpace => {
+          if (!convertedDbSpaces.some(db => db.id === uiSpace.id)) {
+            merged.push(uiSpace);
+          }
+        });
+        
+        return merged;
       });
     }
   }, [dbSpaces]);
@@ -640,6 +651,18 @@ export default function SpacePage() {
   
   // Check if this space should show 360 view
   const show360 = currentSpace?.show360 || false;
+
+  // Show loading state while space is being confirmed
+  if (spacesLoading || (!currentSpace && spaceId !== 'lobby')) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
+          <p className="text-muted-foreground">Loading space...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DragDropZone onFilesDropped={handleFilesDropped}>

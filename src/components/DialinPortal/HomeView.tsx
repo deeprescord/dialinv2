@@ -327,7 +327,7 @@ export function HomeView({
           availableSpaces={userSpaces.map(space => ({
             id: space.id,
             name: space.name,
-            parent_id: null
+            parent_id: space.parent_id
           }))}
           confidence={aiMetadata?.confidence || 0}
           isAiGenerated={!!aiMetadata}

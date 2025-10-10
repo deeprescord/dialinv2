@@ -7,6 +7,7 @@ export interface Space {
   user_id: string;
   name: string;
   description?: string;
+  parent_id?: string | null;
   created_at: string;
   updated_at: string;
 }

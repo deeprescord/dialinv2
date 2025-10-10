@@ -21,6 +21,7 @@ import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
 import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { SpaceSelectionModal } from '@/components/DialinPortal/SpaceSelectionModal';
 import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjustmentPanel';
+import { UploadLoader } from '@/components/DialinPortal/UploadLoader';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpaces } from '@/hooks/useSpaces';
@@ -900,6 +901,7 @@ export default function SpacePage() {
         </AnimatePresence>
       </div>
       </div>
+      <UploadLoader isUploading={uploading} />
     </DragDropZone>
   );
 }

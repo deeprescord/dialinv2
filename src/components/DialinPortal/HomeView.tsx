@@ -11,6 +11,7 @@ import { MetadataAdjustmentPanel } from './MetadataAdjustmentPanel';
 import { AuthModal } from './AuthModal';
 import { DialControlPanel } from './DialControlPanel';
 import { CelebrationAnimation } from './CelebrationAnimation';
+import { UploadLoader } from './UploadLoader';
 import { useSpaces } from '@/hooks/useSpaces';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -357,6 +358,7 @@ export function HomeView({
 
       <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
       </motion.div>
+      <UploadLoader isUploading={uploading} />
     </DragDropZone>
   );
 }

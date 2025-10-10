@@ -189,16 +189,26 @@ export function SpacesBar({
               >
                 <div 
                   className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
-                  onClick={() => handleSpaceClick(space)}
+                  onClick={(e) => {
+                    if (!pressTimer) return; // Prevent click if long press happened
+                    handleSpaceClick(space);
+                  }}
                   onMouseDown={(e) => handleMouseDown(space, e)}
-                  onMouseUp={handleMouseUp}
+                  onMouseUp={(e) => {
+                    handleMouseUp();
+                    if (pressTimer) {
+                      handleSpaceClick(space);
+                    }
+                  }}
                   onMouseLeave={handleMouseLeave}
                   onContextMenu={(e) => handleContextMenu(space, e)}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
                     handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
                   }}
-                  onTouchEnd={handleMouseUp}
+                  onTouchEnd={(e) => {
+                    handleMouseUp();
+                  }}
                 >
                   {/* Triangle arrow for selected space */}
                   {isCurrentSpace && (

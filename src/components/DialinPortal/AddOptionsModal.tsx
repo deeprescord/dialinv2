@@ -82,25 +82,25 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-background/95 backdrop-blur-sm border border-white/10 rounded-2xl p-6 w-full max-w-md"
+            className="bg-gradient-to-b from-background/98 to-background/95 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Add to Space</h2>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-semibold">Add to Space</h2>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="h-8 w-8 p-0 hover:bg-white/10"
+                className="h-10 w-10 p-0 rounded-full hover:bg-white/10"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </Button>
             </div>
 
@@ -113,32 +113,30 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
               className="hidden"
             />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4 mb-6">
               {addOptions.map((option) => {
                 const Icon = option.icon;
                 return (
                   <Button
                     key={option.id}
-                    variant="outline"
-                    className="h-20 flex flex-col items-center space-y-2 glass-card hover:bg-white/10 border-white/10"
+                    variant="ghost"
+                    className="h-32 flex flex-col items-center justify-center space-y-3 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-2xl transition-all duration-200 group"
                     onClick={() => handleOptionClick(option.id)}
                   >
-                    <Icon className="h-6 w-6" />
-                    <span className="text-xs font-medium">{option.title}</span>
+                    <Icon className="h-8 w-8 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-medium tracking-wide">{option.title}</span>
                   </Button>
                 );
               })}
             </div>
 
-            <div className="mt-6">
-              <Button
-                variant="default"
-                className="w-full bg-primary hover:bg-primary/90"
-                onClick={onClose}
-              >
-                Close
-              </Button>
-            </div>
+            <Button
+              variant="default"
+              className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-lg font-medium rounded-2xl"
+              onClick={onClose}
+            >
+              Close
+            </Button>
           </motion.div>
         </motion.div>
       )}

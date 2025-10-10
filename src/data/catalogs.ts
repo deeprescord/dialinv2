@@ -209,64 +209,8 @@ export const starbudsProducts = [
   { id: '4', title: 'Merchandise', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-merchandise.jpg', type: 'merch' }
 ];
 
-export const initialSpaces: Space[] = [
-  { 
-    id: '2', 
-    name: 'Music Den', 
-    thumb: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png',
-    backgroundImage: '/lovable-uploads/ab5a802a-5c5c-4cb0-bea7-ee6349ad6e55.png',
-    show360: true,
-    description: 'All your Sessions in One Place.'
-  },
-  { 
-    id: '3', 
-    name: 'Future Studio', 
-    thumb: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png',
-    backgroundImage: '/lovable-uploads/58cee9e8-f4f9-40a4-9565-e582aca775f1.png',
-    show360: true,
-    description: 'Inspo from Artists and Ai'
-  },
-  { 
-    id: '4', 
-    name: 'Command Center', 
-    thumb: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
-    backgroundImage: '/lovable-uploads/86b1ac6d-e8b1-4a28-8402-41237c3384d4.png',
-    show360: true,
-    description: 'Workroom for Media and Content Strategies.',
-    xAxis: 41
-  },
-  { 
-    id: '6', 
-    name: 'Grand Theater', 
-    thumb: grandTheaterPoster,
-    backgroundImage: '/media/lobby2.mp4',
-    show360: true,
-    description: 'Recommendations from your family and friends.',
-    xAxis: -177,
-    isMuted: false
-  },
-  { 
-    id: '7', 
-    name: 'Starbuds', 
-    thumb: '/media/starbuds-thumb.jpg',
-    backgroundImage: '/media/starbuds-360.mp4',
-    show360: true,
-    description: 'Welcome to Westmont',
-    xAxis: -90,
-    yAxis: -10,
-    volume: 50,
-    isMuted: false
-  },
-  {
-    id: 'demo-space-1',
-    name: 'Demo Vault',
-    thumb: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[4]}?q=80&w=400&h=225&fit=crop&auto=format`,
-    backgroundImage: `https://images.unsplash.com/photo-${UNSPLASH_IDS.spaces[4]}?q=80&w=400&h=225&fit=crop&auto=format`,
-    show360: false,
-    description: 'A nested demo space within Music Den',
-    parentId: '2' // This space is nested within Music Den
-  },
-];
+// Only the Lobby space by default - users build their own spaces from scratch
+export const initialSpaces: Space[] = [];
 
 export const friendsPosts: Post[] = [
   { id: '1', title: 'Check out this cyberpunk setup', sharedBy: 'Alex Chen', sharedByAvatar: 'https://i.pravatar.cc/150?img=5', type: 'video', thumb: featuredVideoBg, duration: '2:34' },

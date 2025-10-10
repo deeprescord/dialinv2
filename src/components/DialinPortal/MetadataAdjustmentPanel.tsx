@@ -503,6 +503,7 @@ export function MetadataAdjustmentPanel({
                     onUpdateSpaceDescription={() => {}}
                     onReorderSpace={() => {}}
                     onToggle360={onToggle360 || (() => {})}
+                    hideActionButtons={true}
                   />
                 </div>
 

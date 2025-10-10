@@ -319,16 +319,18 @@ export function SpaceContextMenu({
                   style={{ display: 'none' }}
                 />
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start h-8 px-2 hover:bg-white/10"
-                  onClick={() => setIsRenaming(true)}
-                  disabled={isRenaming || isEditingDescription}
-                >
-                  <Edit3 size={14} className="mr-2" />
-                  Rename
-                </Button>
+                {space.id !== 'lobby' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start h-8 px-2 hover:bg-white/10"
+                    onClick={() => setIsRenaming(true)}
+                    disabled={isRenaming || isEditingDescription}
+                  >
+                    <Edit3 size={14} className="mr-2" />
+                    Rename
+                  </Button>
+                )}
 
                 <Button
                   variant="ghost"

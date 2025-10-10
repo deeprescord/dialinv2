@@ -160,14 +160,12 @@ export function SpacesBar({
                 <div 
                   className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
                   onClick={() => handleSpaceClick(space)}
-                  onMouseDown={(e) => !isLobby && handleMouseDown(space, e)}
+                  onMouseDown={(e) => handleMouseDown(space, e)}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseLeave}
                   onTouchStart={(e) => {
-                    if (!isLobby) {
-                      const touch = e.touches[0];
-                      handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
-                    }
+                    const touch = e.touches[0];
+                    handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
                   }}
                   onTouchEnd={handleMouseUp}
                 >

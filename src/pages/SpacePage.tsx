@@ -901,7 +901,7 @@ export default function SpacePage() {
         </AnimatePresence>
       </div>
       </div>
-      <UploadLoader isUploading={uploading} />
+      <UploadLoader isUploading={uploading || analyzingWithAI} />
     </DragDropZone>
   );
 }

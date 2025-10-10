@@ -78,7 +78,7 @@ export function HomeView({
   const [analyzingFile, setAnalyzingFile] = useState(false);
 
   const { spaces: userSpaces, createSpace, loading: spacesLoading } = useSpaces();
-  const { uploadMultipleFiles, uploading } = useFileUpload();
+  const { uploadMultipleFiles, uploading, analyzingWithAI } = useFileUpload();
 
   // Check authentication status
   useEffect(() => {
@@ -358,7 +358,7 @@ export function HomeView({
 
       <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
       </motion.div>
-      <UploadLoader isUploading={uploading} />
+      <UploadLoader isUploading={uploading || analyzingWithAI} />
     </DragDropZone>
   );
 }

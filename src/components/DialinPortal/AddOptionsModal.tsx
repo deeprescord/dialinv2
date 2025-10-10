@@ -89,18 +89,18 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gradient-to-b from-background/98 to-background/95 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-lg shadow-2xl"
+            className="bg-gradient-to-b from-background/98 to-background/95 backdrop-blur-xl border border-white/20 rounded-2xl p-5 w-full max-w-md shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-semibold">Add to Space</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold">Add to Space</h2>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="h-10 w-10 p-0 rounded-full hover:bg-white/10"
+                className="h-8 w-8 p-0 rounded-full hover:bg-white/10"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
 
@@ -113,18 +113,18 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
               className="hidden"
             />
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               {addOptions.map((option) => {
                 const Icon = option.icon;
                 return (
                   <Button
                     key={option.id}
                     variant="ghost"
-                    className="h-32 flex flex-col items-center justify-center space-y-3 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-2xl transition-all duration-200 group"
+                    className="h-24 flex flex-col items-center justify-center space-y-2 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
                     onClick={() => handleOptionClick(option.id)}
                   >
-                    <Icon className="h-8 w-8 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-medium tracking-wide">{option.title}</span>
+                    <Icon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-medium tracking-wide">{option.title}</span>
                   </Button>
                 );
               })}
@@ -132,7 +132,7 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
 
             <Button
               variant="default"
-              className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-lg font-medium rounded-2xl"
+              className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-medium rounded-xl"
               onClick={onClose}
             >
               Close

@@ -21,6 +21,7 @@ import { AddContactPanel } from './AddContactPanel';
 import { Settings360Modal } from './Settings360Modal';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
+import { useSpaces } from '@/hooks/useSpaces';
 
 import { 
   videoCatalog, 
@@ -62,7 +63,27 @@ export function DialinPortal() {
     { id: 'lobby', name: 'Lobby', thumb: lobbyPoster },
     ...initialSpaces
   ]);
-  const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
+const { spaces: dbSpaces } = useSpaces();
+
+useEffect(() => {
+  if (dbSpaces.length > 0) {
+    const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
+      id: dbSpace.id,
+      name: dbSpace.name,
+      thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+      parentId: dbSpace.parent_id || undefined,
+      backgroundImage: undefined,
+      show360: false
+    }));
+    setSpaces(prev => {
+      const existingIds = new Set(prev.map(s => s.id));
+      const newSpaces = convertedDbSpaces.filter(s => !existingIds.has(s.id));
+      return [...prev, ...newSpaces];
+    });
+  }
+}, [dbSpaces]);
+
+const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);

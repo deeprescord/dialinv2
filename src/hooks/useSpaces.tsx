@@ -126,8 +126,15 @@ export function useSpaces() {
 
   useEffect(() => {
     fetchSpaces();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchSpaces();
+      } else {
+        setSpaces([]);
+      }
+    });
+    return () => subscription.unsubscribe();
   }, []);
-
   return {
     spaces,
     loading,

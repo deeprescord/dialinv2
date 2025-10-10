@@ -348,12 +348,14 @@ export default function SpacePage() {
         return;
       }
 
+      console.log('Creating space with parent_id:', parentId);
+
       const { data, error } = await supabase
         .from('spaces')
         .insert({
           user_id: user.id,
           name,
-          parent_id: parentId === 'lobby' ? null : parentId || null,
+          parent_id: parentId || null,
         })
         .select()
         .single();
@@ -363,6 +365,8 @@ export default function SpacePage() {
         toast.error('Failed to create space');
         return;
       }
+
+      console.log('Created space:', data);
 
       const newSpace: Space = {
         id: data.id,
@@ -868,9 +872,11 @@ export default function SpacePage() {
             delete (window as any).__pendingSpaceParentId;
           }}
           onCreate={(name, coverUrl) => {
-            // Get the pending parent ID if any
-            const parentId = (window as any).__pendingSpaceParentId || currentSpaceId;
-            handleCreateSpace(name, parentId);
+            // Get the pending parent ID - prioritize the one set by BreadcrumbNavBar
+            const parentId = (window as any).__pendingSpaceParentId;
+            // Only pass parent if it's a valid space (not lobby)
+            const finalParentId = parentId && parentId !== 'lobby' ? parentId : undefined;
+            handleCreateSpace(name, finalParentId);
             delete (window as any).__pendingSpaceParentId;
           }}
         />

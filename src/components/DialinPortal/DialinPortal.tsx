@@ -63,7 +63,7 @@ export function DialinPortal() {
     { id: 'lobby', name: 'Lobby', thumb: lobbyPoster },
     ...initialSpaces
   ]);
-const { spaces: dbSpaces } = useSpaces();
+const { spaces: dbSpaces, createSpace: createDbSpace } = useSpaces();
 
 useEffect(() => {
   if (dbSpaces.length > 0) {
@@ -269,13 +269,18 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
 
   // Handle space creation
-  const handleCreateSpace = (name: string, coverUrl: string) => {
-    const newSpace: Space = {
-      id: Date.now().toString(),
-      name,
-      thumb: coverUrl
-    };
-    setSpaces(prev => [...prev, newSpace]);
+  const handleCreateSpace = async (name: string, coverUrl: string) => {
+    // Create space in database
+    const newDbSpace = await createDbSpace(name, coverUrl);
+    
+    if (newDbSpace) {
+      const newSpace: Space = {
+        id: newDbSpace.id,
+        name: newDbSpace.name,
+        thumb: coverUrl
+      };
+      setSpaces(prev => [...prev, newSpace]);
+    }
     setShowCreateSpaceModal(false);
   };
 

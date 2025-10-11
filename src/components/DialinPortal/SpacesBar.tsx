@@ -193,9 +193,9 @@ export function SpacesBar({
         onMouseDown={handleDragStart}
         onTouchStart={handleDragStart}
       >
-        <div className="flex flex-col items-center gap-0.5 px-2 py-0.5 bg-background/60 backdrop-blur-sm rounded-full border border-primary/20 hover:bg-background/70 hover:border-primary/40 transition-all">
-          <div className="w-6 h-0.5 bg-primary/40 rounded-full"></div>
-          <div className="w-6 h-0.5 bg-primary/40 rounded-full"></div>
+        <div className="flex flex-col items-center gap-0.5 px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 hover:bg-white/30 hover:border-white/50 transition-all">
+          <div className="w-6 h-0.5 bg-white/60 rounded-full"></div>
+          <div className="w-6 h-0.5 bg-white/60 rounded-full"></div>
         </div>
       </div>
       

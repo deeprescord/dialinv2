@@ -256,23 +256,11 @@ export function HomeView({
 
       {isLobby ? (
         <>
-          {/* Who's Here */}
-          <div className="px-4 mb-2 mt-1">
-            <h2 className="text-lg font-medium mb-2">Who's Here</h2>
-          </div>
-          
           <PinnedContactsRow 
             contacts={pinnedContacts.slice(0, 3)}
             onContactClick={onContactClick}
             title=""
           />
-
-          {/* Items Section */}
-          <div className="px-4 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Items</h2>
-            </div>
-          </div>
 
           <MediaRow
             title=""
@@ -283,23 +271,11 @@ export function HomeView({
         </>
       ) : (
         <>
-          {/* Who's Here */}
-          <div className="px-4 mb-2 mt-1">
-            <h2 className="text-lg font-medium mb-2">Who's Here</h2>
-          </div>
-          
           <PinnedContactsRow 
             contacts={pinnedContacts.slice(0, 3)}
             onContactClick={onContactClick}
             title=""
           />
-
-          {/* Items Section */}
-          <div className="px-4 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Items</h2>
-            </div>
-          </div>
 
           <MediaRow
             title=""

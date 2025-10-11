@@ -189,14 +189,13 @@ export function SpacesBar({
     <div className="relative pt-6">
       {/* Drag Handle */}
       <div 
-        className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-50 cursor-ns-resize"
+        className="absolute -top-1 left-1/2 transform -translate-x-1/2 z-50 cursor-ns-resize"
         onMouseDown={handleDragStart}
         onTouchStart={handleDragStart}
       >
-        <div className="flex flex-col items-center gap-0.5 px-4 py-1.5 bg-background/80 backdrop-blur-md rounded-full border border-primary/30 hover:bg-background/90 hover:border-primary/60 transition-all shadow-lg">
-          <div className="w-12 h-0.5 bg-primary/60 rounded-full"></div>
-          <div className="w-12 h-0.5 bg-primary/60 rounded-full"></div>
-          <div className="w-12 h-0.5 bg-primary/60 rounded-full"></div>
+        <div className="flex flex-col items-center gap-0.5 px-2 py-0.5 bg-background/60 backdrop-blur-sm rounded-full border border-primary/20 hover:bg-background/70 hover:border-primary/40 transition-all">
+          <div className="w-6 h-0.5 bg-primary/40 rounded-full"></div>
+          <div className="w-6 h-0.5 bg-primary/40 rounded-full"></div>
         </div>
       </div>
       

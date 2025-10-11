@@ -28,7 +28,6 @@ export function ItemsPeopleBar({ scale = 100 }: ItemsPeopleBarProps) {
 
   return (
     <div className="mb-4 relative">
-      <div className="absolute inset-0 bg-background/30 backdrop-blur-xl rounded-3xl border border-white/10 shadow-lg"></div>
       <div className="relative" style={{ padding: `${padding}px` }}>
         {/* Tab Headers */}
         <div className="flex items-center gap-2 mb-4 ml-2">

@@ -145,9 +145,8 @@ export default function SpacePage() {
   // Get nested spaces that belong to the current space
   const nestedSpaces = spaces.filter(s => s.parentId === currentSpaceId);
   
-  const currentSpaceItems = currentSpaceId === 'lobby' 
-    ? [] // Lobby shows nothing after separator
-    : [...nestedSpaces, ...videoCatalog.slice(0, 3), ...musicCatalog.slice(0, 3)]; // Show nested spaces and content items
+  // Only show nested spaces within the current space, not all user content
+  const currentSpaceItems = nestedSpaces;
 
   // Get current user
   useEffect(() => {
@@ -348,8 +347,6 @@ export default function SpacePage() {
         return;
       }
 
-      console.log('Creating space with parent_id:', parentId);
-
       const { data, error } = await supabase
         .from('spaces')
         .insert({
@@ -365,8 +362,6 @@ export default function SpacePage() {
         toast.error('Failed to create space');
         return;
       }
-
-      console.log('Created space:', data);
 
       const newSpace: Space = {
         id: data.id,
@@ -872,9 +867,7 @@ export default function SpacePage() {
             delete (window as any).__pendingSpaceParentId;
           }}
           onCreate={(name, coverUrl) => {
-            // Get the pending parent ID - prioritize the one set by BreadcrumbNavBar
             const parentId = (window as any).__pendingSpaceParentId;
-            // Only pass parent if it's a valid space (not lobby)
             const finalParentId = parentId && parentId !== 'lobby' ? parentId : undefined;
             handleCreateSpace(name, finalParentId);
             delete (window as any).__pendingSpaceParentId;

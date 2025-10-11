@@ -73,6 +73,7 @@ export function SpacesBar({
   const thumbHeight = getScaled(68);
   const buttonSize = getScaled(108);
   const iconSize = getScaled(34);
+  const actionButtonIconSize = getScaled(17); // Half size for action buttons
   const spacing = getScaled(7);
   const padding = getScaled(8);
   const fontSize = 'text-base';
@@ -270,7 +271,7 @@ export function SpacesBar({
                     style={{ width: `${buttonSize}px`, height: `${buttonSize}px`, gap: `${getScaled(2)}px` }}
                     onClick={() => setShowAddOptionsModal(true)}
                   >
-                    <PlusCircle size={iconSize} className="text-green-400" />
+                    <PlusCircle size={actionButtonIconSize} className="text-green-400" />
                     <span className={`${fontSize} font-medium`}>Add</span>
                   </Button>
                 </motion.div>
@@ -290,7 +291,7 @@ export function SpacesBar({
                     style={{ width: `${buttonSize}px`, height: `${buttonSize}px`, gap: `${getScaled(2)}px` }}
                     onClick={() => setShowAIChat(true)}
                   >
-                    <Bot size={iconSize} className="text-blue-400" />
+                    <Bot size={actionButtonIconSize} className="text-blue-400" />
                     <span className={`${fontSize} font-medium`}>AI</span>
                   </Button>
                 </motion.div>
@@ -310,7 +311,7 @@ export function SpacesBar({
                     style={{ width: `${buttonSize}px`, height: `${buttonSize}px`, gap: `${getScaled(2)}px` }}
                     onClick={() => setShowChatWindow(true)}
                   >
-                    <MessageSquare size={iconSize} className="text-purple-400" />
+                    <MessageSquare size={actionButtonIconSize} className="text-purple-400" />
                     <span className={`${fontSize} font-medium`}>Chat</span>
                   </Button>
                 </motion.div>

@@ -78,8 +78,6 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
-                      {/* Online indicator for items */}
-                      <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
                     </div>
                     <span className="text-xs font-medium text-foreground/80 max-w-full truncate px-2">
                       {item.title}
@@ -101,21 +99,19 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                       className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex items-center justify-center relative"
                       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                     >
-                      <div className="relative">
-                        <img 
-                          src={person.avatar} 
-                          alt={person.name}
-                          className="w-28 h-28 rounded-xl object-cover border-2 border-white/20"
-                        />
-                        {/* Status indicator */}
-                        <div 
-                          className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-background ${
-                            person.status === 'online' ? 'bg-green-500' : 
-                            person.status === 'away' ? 'bg-yellow-500' : 
-                            'bg-gray-500'
-                          }`}
-                        />
-                      </div>
+                      <img 
+                        src={person.avatar} 
+                        alt={person.name}
+                        className="w-full h-full rounded-2xl object-cover"
+                      />
+                      {/* Status indicator - bottom right corner */}
+                      <div 
+                        className={`absolute bottom-2 right-2 w-3 h-3 rounded-full border-2 border-white ${
+                          person.status === 'online' ? 'bg-green-500' : 
+                          person.status === 'away' ? 'bg-yellow-500' : 
+                          'bg-gray-500'
+                        }`}
+                      />
                     </div>
                     <span className="text-xs font-medium text-foreground/80 max-w-full truncate px-2">
                       {person.name}

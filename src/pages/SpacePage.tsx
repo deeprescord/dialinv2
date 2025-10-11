@@ -58,7 +58,7 @@ export default function SpacePage() {
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
-  const { spaces: dbSpaces, loading: spacesLoading } = useSpaces();
+  const { spaces: dbSpaces, loading: spacesLoading, updateSpace, refetch } = useSpaces();
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   // Merge database spaces with UI spaces - optimized to prevent flashing
@@ -384,24 +384,28 @@ export default function SpacePage() {
   };
 
   // Handle space renaming
-  const handleRenameSpace = (spaceId: string, newName: string) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId ? { ...space, name: newName } : space
-    ));
+  const handleRenameSpace = async (spaceId: string, newName: string) => {
+    const success = await updateSpace(spaceId, { name: newName });
+    if (!success) {
+      // Revert on failure
+      refetch();
+    }
   };
 
   // Handle space description update
-  const handleUpdateSpaceDescription = (spaceId: string, newDescription: string) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId ? { ...space, description: newDescription } : space
-    ));
+  const handleUpdateSpaceDescription = async (spaceId: string, newDescription: string) => {
+    const success = await updateSpace(spaceId, { description: newDescription });
+    if (!success) {
+      refetch();
+    }
   };
 
   // Handle space thumbnail update
-  const handleUpdateSpaceThumbnail = (spaceId: string, thumbnailUrl: string) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId ? { ...space, thumb: thumbnailUrl } : space
-    ));
+  const handleUpdateSpaceThumbnail = async (spaceId: string, thumbnailUrl: string) => {
+    const success = await updateSpace(spaceId, { cover_url: thumbnailUrl });
+    if (!success) {
+      refetch();
+    }
   };
 
   // Drag and drop handlers

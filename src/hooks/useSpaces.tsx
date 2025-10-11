@@ -8,6 +8,7 @@ export interface Space {
   name: string;
   description?: string;
   parent_id?: string | null;
+  cover_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -77,7 +78,7 @@ export function useSpaces() {
     }
   };
 
-  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description'>>): Promise<boolean> => {
+  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url'>>): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('spaces')

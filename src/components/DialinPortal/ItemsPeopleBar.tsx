@@ -13,10 +13,9 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
 
   // Scale-responsive sizing
   const getScaled = (base: number) => Math.round(base * (scale / 100));
-  const thumbWidth = getScaled(180);
-  const thumbHeight = getScaled(100);
-  const avatarSize = getScaled(80);
-  const spacing = getScaled(12);
+  const cardWidth = getScaled(200);
+  const cardHeight = getScaled(240);
+  const spacing = getScaled(16);
   const padding = getScaled(16);
 
   // Demo items
@@ -68,7 +67,7 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                   <div className="cursor-pointer group">
                     <div
                       className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50"
-                      style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                      style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                     >
                       {/* Placeholder for now - will be replaced with actual content */}
                     </div>
@@ -84,28 +83,30 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="flex-shrink-0"
                 >
-                  <div className="cursor-pointer group flex flex-col items-center gap-2">
-                    <div className="relative">
-                      <Avatar 
-                        className="group-hover:scale-105 transition-transform border-2 border-white/10"
-                        style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
-                      >
-                        <AvatarImage src={person.avatar} alt={person.name} />
-                        <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      {/* Status indicator */}
-                      <div 
-                        className={`absolute bottom-0 right-0 rounded-full border-2 border-background ${
-                          person.status === 'online' ? 'bg-green-500' : 
-                          person.status === 'away' ? 'bg-yellow-500' : 
-                          'bg-gray-500'
-                        }`}
-                        style={{ width: `${getScaled(16)}px`, height: `${getScaled(16)}px` }}
-                      />
+                  <div className="cursor-pointer group">
+                    <div
+                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex flex-col items-center justify-center gap-3 p-4 relative"
+                      style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
+                    >
+                      <div className="relative">
+                        <img 
+                          src={person.avatar} 
+                          alt={person.name}
+                          className="w-32 h-32 rounded-xl object-cover"
+                        />
+                        {/* Status indicator */}
+                        <div 
+                          className={`absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-background ${
+                            person.status === 'online' ? 'bg-green-500' : 
+                            person.status === 'away' ? 'bg-yellow-500' : 
+                            'bg-gray-500'
+                          }`}
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-foreground truncate max-w-full">
+                        {person.name}
+                      </span>
                     </div>
-                    <span className="text-xs text-foreground/80 max-w-[100px] truncate">
-                      {person.name}
-                    </span>
                   </div>
                 </motion.div>
               ))

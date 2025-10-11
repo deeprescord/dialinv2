@@ -12,7 +12,7 @@ interface ItemsPeopleBarProps {
   scale?: number; // Inherit scale from SpacesBar if needed
 }
 
-export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
+export function ItemsPeopleBar({ scale = 30 }: ItemsPeopleBarProps) {
   const [activeTab, setActiveTab] = useState<'items' | 'people'>('items');
 
   // Scale-responsive sizing (reduced by 25%)

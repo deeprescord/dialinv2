@@ -32,7 +32,6 @@ import {
   locations, 
   friends, 
   friendsPosts, 
-  initialSpaces,
   VideoItem,
   MusicItem,
   LocationItem,
@@ -53,45 +52,26 @@ export default function SpacePage() {
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([
     { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
-    ...initialSpaces
   ]);
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
-  const { spaces: dbSpaces, loading: spacesLoading, updateSpace, refetch } = useSpaces();
+  const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpaces();
   const [currentUser, setCurrentUser] = useState<any>(null);
   
-  // Merge database spaces with UI spaces - optimized to prevent flashing
+  // Sync UI spaces with database spaces (plus Lobby)
   useEffect(() => {
-    if (dbSpaces.length > 0) {
-      const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
-        id: dbSpace.id,
-        name: dbSpace.name,
-        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-        parentId: dbSpace.parent_id || undefined,
-        backgroundImage: undefined,
-        show360: false
-      }));
-      
-      setSpaces(prev => {
-        // Build a map of existing spaces for O(1) lookup
-        const existingMap = new Map(prev.map(s => [s.id, s]));
-        
-        // Update existing spaces and add new ones
-        const merged = convertedDbSpaces.map(dbSpace => 
-          existingMap.get(dbSpace.id) || dbSpace
-        );
-        
-        // Add any UI-only spaces that aren't in the database
-        prev.forEach(uiSpace => {
-          if (!convertedDbSpaces.some(db => db.id === uiSpace.id)) {
-            merged.push(uiSpace);
-          }
-        });
-        
-        return merged;
-      });
-    }
+    const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
+    const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
+      id: dbSpace.id,
+      name: dbSpace.name,
+      thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+      parentId: dbSpace.parent_id || undefined,
+      backgroundImage: undefined,
+      show360: false
+    }));
+
+    setSpaces([lobby, ...convertedDbSpaces]);
   }, [dbSpaces]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
@@ -378,9 +358,16 @@ export default function SpacePage() {
     }
   };
 
-  // Handle space deletion
-  const handleDeleteSpace = (spaceId: string) => {
-    setSpaces(prev => prev.filter(space => space.id !== spaceId));
+  const handleDeleteSpace = async (spaceId: string) => {
+    const success = await deleteSpace(spaceId);
+    if (success) {
+      setSpaces(prev => prev.filter(space => space.id !== spaceId));
+      if (navigationPath[navigationPath.length - 1] === spaceId) {
+        navigate('/');
+      }
+    } else {
+      toast.error('Failed to delete space');
+    }
   };
 
   // Handle space renaming

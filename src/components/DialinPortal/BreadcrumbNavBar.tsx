@@ -346,11 +346,10 @@ export function BreadcrumbNavBar({
           onClose={() => setShowAddOptionsModal(false)}
           onOptionSelect={(optionId) => {
             if (optionId === 'space') {
-              // Pass the current space ID as the parent
               const currentParentId = navigationPath[navigationPath.length - 1];
               onCreateSpace(currentParentId);
             }
-            console.log('Add option selected:', optionId);
+            // no-op for others
           }}
         />
       </div>

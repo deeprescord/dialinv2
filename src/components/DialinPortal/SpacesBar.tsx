@@ -116,15 +116,7 @@ export function SpacesBar({
   // Create spaces with lobby at the start, filtering out any existing lobby
   const lobbySpace: Space = { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
   const filteredSpaces = spaces.filter(space => space.id !== 'lobby');
-  
-  // If a specific space is selected (not lobby), only show lobby + that space
-  let allSpaces: Space[];
-  if (currentSpaceId && currentSpaceId !== 'lobby') {
-    const currentSpace = filteredSpaces.find(s => s.id === currentSpaceId);
-    allSpaces = currentSpace ? [lobbySpace, currentSpace] : [lobbySpace, ...filteredSpaces];
-  } else {
-    allSpaces = [lobbySpace, ...filteredSpaces];
-  }
+  const allSpaces: Space[] = [lobbySpace, ...filteredSpaces];
 
   const handleSpaceClick = (space: Space) => {
     if (onSpaceClick) {

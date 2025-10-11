@@ -21,7 +21,7 @@ import { AddContactPanel } from './AddContactPanel';
 import { Settings360Modal } from './Settings360Modal';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
-import { useSpaces } from '@/hooks/useSpaces';
+import { useSpacesContext } from '@/contexts/SpacesContext';
 
 import { 
   videoCatalog, 
@@ -62,7 +62,7 @@ export function DialinPortal() {
 const [spaces, setSpaces] = useState<Space[]>([
   { id: 'lobby', name: 'Lobby', thumb: lobbyPoster }
 ]);
-const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpaces();
+const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpacesContext();
 
 useEffect(() => {
   const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: lobbyPoster };

@@ -24,7 +24,7 @@ import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjus
 import { UploadLoader } from '@/components/DialinPortal/UploadLoader';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
-import { useSpaces } from '@/hooks/useSpaces';
+import { useSpacesContext } from '@/contexts/SpacesContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
@@ -56,7 +56,7 @@ export default function SpacePage() {
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
-  const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpaces();
+  const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   // Sync UI spaces with database spaces (plus Lobby)

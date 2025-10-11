@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ImageFallback } from '../ui/image-fallback';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { friends } from '@/data/catalogs';
+import { Image, Video, FileText, Link, Music, MapPin } from 'lucide-react';
 
 interface ItemsPeopleBarProps {
   scale?: number; // Inherit scale from SpacesBar if needed
@@ -18,14 +18,14 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
   const spacing = getScaled(16);
   const padding = getScaled(16);
 
-  // Demo items
+  // Demo items with social media-style content
   const demoItems = [
-    { id: '1', name: 'Item 1', thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' },
-    { id: '2', name: 'Item 2', thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' },
-    { id: '3', name: 'Item 3', thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' },
-    { id: '4', name: 'Item 4', thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' },
-    { id: '5', name: 'Item 5', thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' },
-    { id: '6', name: 'Item 6', thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' },
+    { id: '1', type: 'photo', title: 'Beach Sunset', color: 'from-orange-500 to-pink-500', icon: Image },
+    { id: '2', type: 'video', title: 'Concert Clips', color: 'from-purple-500 to-blue-500', icon: Video },
+    { id: '3', type: 'text', title: 'Life Update', color: 'from-green-500 to-teal-500', icon: FileText },
+    { id: '4', type: 'link', title: 'Article Share', color: 'from-blue-500 to-cyan-500', icon: Link },
+    { id: '5', type: 'music', title: 'Playlist', color: 'from-pink-500 to-purple-500', icon: Music },
+    { id: '6', type: 'location', title: 'Check-in', color: 'from-yellow-500 to-orange-500', icon: MapPin },
   ];
 
   return (
@@ -56,24 +56,28 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
         <div className="overflow-x-auto scrollbar-thin">
           <div className="flex items-center" style={{ gap: `${spacing}px` }}>
             {activeTab === 'items' ? (
-              demoItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="flex-shrink-0"
-                >
-                  <div className="cursor-pointer group">
-                    <div
-                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50"
-                      style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-                    >
-                      {/* Placeholder for now - will be replaced with actual content */}
+              demoItems.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="flex-shrink-0"
+                  >
+                    <div className="cursor-pointer group">
+                      <div
+                        className={`rounded-2xl overflow-hidden group-hover:scale-105 transition-transform border border-white/10 bg-gradient-to-br ${item.color} flex flex-col items-center justify-center gap-3 p-6`}
+                        style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
+                      >
+                        <IconComponent className="text-white" size={64} strokeWidth={1.5} />
+                        <span className="text-sm font-medium text-white">{item.title}</span>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))
+                  </motion.div>
+                );
+              })
             ) : (
               friends.map((person, index) => (
                 <motion.div
@@ -92,7 +96,7 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                         <img 
                           src={person.avatar} 
                           alt={person.name}
-                          className="w-32 h-32 rounded-xl object-cover"
+                          className="w-32 h-32 rounded-xl object-cover border-2 border-white/20"
                         />
                         {/* Status indicator */}
                         <div 

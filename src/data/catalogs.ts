@@ -135,6 +135,8 @@ export const friends: Friend[] = [
   { id: '4', name: 'James Park', status: 'online', avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop` },
   { id: '5', name: 'Aisha Patel', status: 'offline', avatar: `https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop` },
   { id: '6', name: 'David Kim', status: 'online', avatar: `https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=200&h=200&fit=crop` },
+  { id: '7', name: 'Lisa Wang', status: 'away', avatar: `https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop` },
+  { id: '8', name: 'Michael Torres', status: 'online', avatar: `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop` },
 ];
 
 export const locations: LocationItem[] = [];

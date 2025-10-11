@@ -15,11 +15,11 @@ interface ItemsPeopleBarProps {
 export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
   const [activeTab, setActiveTab] = useState<'items' | 'people'>('items');
 
-  // Scale-responsive sizing
+  // Scale-responsive sizing (reduced by 25%)
   const getScaled = (base: number) => Math.round(base * (scale / 100));
-  const cardWidth = getScaled(200);
-  const cardHeight = getScaled(240);
-  const spacing = getScaled(16);
+  const cardWidth = getScaled(150);
+  const cardHeight = getScaled(180);
+  const spacing = getScaled(12);
   const padding = getScaled(16);
 
   // Demo items with social media-style content
@@ -68,7 +68,7 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="flex-shrink-0"
                 >
-                  <div className="cursor-pointer group">
+                  <div className="cursor-pointer group flex flex-col items-center gap-2">
                     <div
                       className="rounded-2xl overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative"
                       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
@@ -78,10 +78,12 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <span className="text-sm font-medium text-white">{item.title}</span>
-                      </div>
+                      {/* Online indicator for items */}
+                      <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
                     </div>
+                    <span className="text-xs font-medium text-foreground/80 max-w-full truncate px-2">
+                      {item.title}
+                    </span>
                   </div>
                 </motion.div>
               ))
@@ -94,30 +96,30 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="flex-shrink-0"
                 >
-                  <div className="cursor-pointer group">
+                  <div className="cursor-pointer group flex flex-col items-center gap-2">
                     <div
-                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex flex-col items-center justify-center gap-3 p-6 relative"
+                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex items-center justify-center relative"
                       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                     >
-                      <div className="relative w-36 h-36 flex-shrink-0">
+                      <div className="relative">
                         <img 
                           src={person.avatar} 
                           alt={person.name}
-                          className="w-full h-full rounded-xl object-cover border-2 border-white/20"
+                          className="w-28 h-28 rounded-xl object-cover border-2 border-white/20"
                         />
                         {/* Status indicator */}
                         <div 
-                          className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-background ${
+                          className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-background ${
                             person.status === 'online' ? 'bg-green-500' : 
                             person.status === 'away' ? 'bg-yellow-500' : 
                             'bg-gray-500'
                           }`}
                         />
                       </div>
-                      <span className="text-sm font-medium text-foreground truncate max-w-full px-2">
-                        {person.name}
-                      </span>
                     </div>
+                    <span className="text-xs font-medium text-foreground/80 max-w-full truncate px-2">
+                      {person.name}
+                    </span>
                   </div>
                 </motion.div>
               ))

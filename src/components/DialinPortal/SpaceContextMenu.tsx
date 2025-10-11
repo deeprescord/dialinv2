@@ -5,7 +5,8 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles } from 'lucide-react';
+import { GradientLoader } from './GradientLoader';
 import { Space } from '@/data/catalogs';
 import {
   AlertDialog,
@@ -59,7 +60,19 @@ export function SpaceContextMenu({
   const [yAxis, setYAxis] = useState(space.yAxis || 0);
   const [volume, setVolume] = useState(space.volume || 50);
   const [isMuted, setIsMuted] = useState(space.isMuted !== undefined ? space.isMuted : true);
+  const [showCoverOptions, setShowCoverOptions] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [is360Mode, setIs360Mode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const coverOptions = [
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&h=120&fit=crop&auto=format',
+    'https://images.unsplash.com/photo-1629909613654-28e6c8816c9b?q=80&w=200&h=120&fit=crop&auto=format',
+    'https://images.unsplash.com/photo-1583847268964-a6f45e725dc3?q=80&w=200&h=120&fit=crop&auto=format',
+    'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=200&h=120&fit=crop&auto=format',
+  ];
 
   const handleRename = () => {
     if (newName.trim() && newName !== space.name) {
@@ -78,17 +91,58 @@ export function SpaceContextMenu({
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && onUpdateThumbnail) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          onUpdateThumbnail(space.id, result);
-          onClose();
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const result = event.target?.result as string;
+            setUploadedImages(prev => [...prev, result]);
+          };
+          reader.readAsDataURL(file);
         }
-      };
-      reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeUploadedImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!aiPrompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      // TODO: Replace with actual AI image generation service
+      setTimeout(() => {
+        const generatedImage = `data:image/svg+xml,${encodeURIComponent(
+          `<svg width="200" height="120" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="hsl(280, 100%, 70%)"/>
+            <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="white" font-family="Arial" font-size="12">
+              ${is360Mode ? '360° ' : ''}AI: ${aiPrompt.slice(0, 15)}...
+            </text>
+          </svg>`
+        )}`;
+        
+        setUploadedImages(prev => [...prev, generatedImage]);
+        if (onUpdateThumbnail) {
+          onUpdateThumbnail(space.id, generatedImage);
+        }
+        setAiPrompt('');
+        setIsGenerating(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+      setIsGenerating(false);
+    }
+  };
+
+  const selectCoverImage = (imageUrl: string) => {
+    if (onUpdateThumbnail) {
+      onUpdateThumbnail(space.id, imageUrl);
+      setShowCoverOptions(false);
     }
   };
 
@@ -127,14 +181,15 @@ export function SpaceContextMenu({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-lg shadow-lg min-w-48"
+            className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-lg shadow-lg min-w-48 max-h-[85vh] overflow-y-auto"
             style={{
-              left: Math.min(position.x, window.innerWidth - 200),
+              left: Math.min(position.x, window.innerWidth - 400),
               top: position.y + 350 > window.innerHeight 
                 ? Math.max(10, window.innerHeight - 460)
                 : position.y - 100,
             }}
           >
+            <GradientLoader isLoading={isGenerating} />
             <div className="p-2">
               {/* Header */}
               <div className="flex items-center justify-between mb-3 px-2">
@@ -301,23 +356,128 @@ export function SpaceContextMenu({
                   )}
                 </div>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start h-8 px-2 hover:bg-white/10"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Image size={14} className="mr-2" />
-                  Change Thumbnail
-                </Button>
+                <div className="border-b border-white/10 pb-2 mb-2">
+                  <div 
+                    className="flex items-center justify-between px-2 py-2 hover:bg-white/10 rounded cursor-pointer"
+                    onClick={() => setShowCoverOptions(!showCoverOptions)}
+                  >
+                    <div className="flex items-center">
+                      <Image size={14} className="mr-2" />
+                      <span className="text-sm">Change Cover</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCoverOptions(!showCoverOptions);
+                      }}
+                      className="p-1 hover:bg-white/10 rounded"
+                    >
+                      {showCoverOptions ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
+                  </div>
 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnailChange}
-                  style={{ display: 'none' }}
-                />
+                  {showCoverOptions && (
+                    <div className="px-2 py-3 space-y-3 bg-background/50 rounded-md mx-2 mt-2">
+                      {/* Upload Button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full glass-card border-white/20 hover:bg-white/5"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload size={14} className="mr-2" />
+                        Upload Image
+                      </Button>
+                      
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleThumbnailChange}
+                        className="hidden"
+                      />
+
+                      {/* AI Generation Section */}
+                      <div className="p-2 glass-card border border-white/10 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium">Generate with AI</label>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-[10px] text-muted-foreground">360°</span>
+                            <Switch
+                              checked={is360Mode}
+                              onCheckedChange={setIs360Mode}
+                              className="scale-75"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Input
+                            value={aiPrompt}
+                            onChange={(e) => setAiPrompt(e.target.value)}
+                            placeholder={is360Mode ? "360° environment..." : "Background..."}
+                            className="flex-1 glass-card bg-white/5 border-white/10 text-xs h-8"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="glass-card border-white/20 hover:bg-white/5 px-2 h-8"
+                            onClick={handleGenerateWithAI}
+                            disabled={!aiPrompt.trim() || isGenerating}
+                          >
+                            {isGenerating ? (
+                              <div className="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
+                            ) : (
+                              <Sparkles size={14} />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Image Grid */}
+                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                        {/* Uploaded Images */}
+                        {uploadedImages.map((image, index) => (
+                          <button
+                            key={`uploaded-${index}`}
+                            className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all"
+                            onClick={() => selectCoverImage(image)}
+                          >
+                            <img
+                              src={image}
+                              alt={`Uploaded ${index + 1}`}
+                              className="w-full h-16 object-cover"
+                            />
+                            <button
+                              className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeUploadedImage(index);
+                              }}
+                            >
+                              <X size={10} className="text-white" />
+                            </button>
+                          </button>
+                        ))}
+                        
+                        {/* Default Cover Options */}
+                        {coverOptions.map((cover, index) => (
+                          <button
+                            key={`default-${index}`}
+                            className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all"
+                            onClick={() => selectCoverImage(cover)}
+                          >
+                            <img
+                              src={cover}
+                              alt={`Cover ${index + 1}`}
+                              className="w-full h-16 object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {space.id !== 'lobby' && (
                   <Button

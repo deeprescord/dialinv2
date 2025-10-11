@@ -29,7 +29,6 @@ import {
   locations, 
   friends, 
   friendsPosts, 
-  initialSpaces,
   VideoItem,
   MusicItem,
   LocationItem,
@@ -40,6 +39,7 @@ import lobbyPoster from '@/assets/lobby-poster.jpg';
 import appBackground from '@/assets/app-background.jpg';
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
+import { toast } from 'sonner';
 
 export function DialinPortal() {
   const navigate = useNavigate();
@@ -59,42 +59,22 @@ export function DialinPortal() {
     setUserPoints(prev => prev + 1);
     setShowCelebration(true);
   };
-  const [spaces, setSpaces] = useState<Space[]>([
-    { id: 'lobby', name: 'Lobby', thumb: lobbyPoster },
-    ...initialSpaces
-  ]);
-const { spaces: dbSpaces, createSpace: createDbSpace } = useSpaces();
+const [spaces, setSpaces] = useState<Space[]>([
+  { id: 'lobby', name: 'Lobby', thumb: lobbyPoster }
+]);
+const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpaces();
 
 useEffect(() => {
-  if (dbSpaces.length > 0) {
-    const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
-      id: dbSpace.id,
-      name: dbSpace.name,
-      thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-      parentId: dbSpace.parent_id || undefined,
-      backgroundImage: undefined,
-      show360: false
-    }));
-    
-    setSpaces(prev => {
-      // Build a map of existing spaces for O(1) lookup
-      const existingMap = new Map(prev.map(s => [s.id, s]));
-      
-      // Update existing spaces and add new ones
-      const merged = convertedDbSpaces.map(dbSpace => 
-        existingMap.get(dbSpace.id) || dbSpace
-      );
-      
-      // Add any UI-only spaces that aren't in the database
-      prev.forEach(uiSpace => {
-        if (!convertedDbSpaces.some(db => db.id === uiSpace.id)) {
-          merged.push(uiSpace);
-        }
-      });
-      
-      return merged;
-    });
-  }
+  const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: lobbyPoster };
+  const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
+    id: dbSpace.id,
+    name: dbSpace.name,
+    thumb: (dbSpace as any).cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+    parentId: (dbSpace as any).parent_id || undefined,
+    backgroundImage: undefined,
+    show360: false
+  }));
+  setSpaces([lobby, ...convertedDbSpaces]);
 }, [dbSpaces]);
 
 const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
@@ -298,30 +278,41 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     setShowCreateSpaceModal(false);
   };
 
-  // Handle space deletion
-  const handleDeleteSpace = (spaceId: string) => {
-    setSpaces(prev => prev.filter(space => space.id !== spaceId));
+// Handle space deletion
+  const handleDeleteSpace = async (spaceId: string) => {
+    const success = await deleteSpace(spaceId);
+    if (success) {
+      setSpaces(prev => prev.filter(space => space.id !== spaceId));
+    } else {
+      toast.error('Failed to delete space');
+    }
   };
 
-  // Handle space renaming
-  const handleRenameSpace = (spaceId: string, newName: string) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId ? { ...space, name: newName } : space
-    ));
+// Handle space renaming
+  const handleRenameSpace = async (spaceId: string, newName: string) => {
+    const success = await updateSpace(spaceId, { name: newName });
+    if (!success) {
+      refetch();
+      toast.error('Failed to rename space');
+    }
   };
 
-  // Handle space description update
-  const handleUpdateSpaceDescription = (spaceId: string, newDescription: string) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId ? { ...space, description: newDescription } : space
-    ));
+// Handle space description update
+  const handleUpdateSpaceDescription = async (spaceId: string, newDescription: string) => {
+    const success = await updateSpace(spaceId, { description: newDescription });
+    if (!success) {
+      refetch();
+      toast.error('Failed to update description');
+    }
   };
 
-  // Handle space thumbnail update
-  const handleUpdateSpaceThumbnail = (spaceId: string, thumbnailUrl: string) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId ? { ...space, thumb: thumbnailUrl } : space
-    ));
+// Handle space thumbnail update
+  const handleUpdateSpaceThumbnail = async (spaceId: string, thumbnailUrl: string) => {
+    const success = await updateSpace(spaceId, { cover_url: thumbnailUrl } as any);
+    if (!success) {
+      refetch();
+      toast.error('Failed to update cover');
+    }
   };
 
   // Handle space reordering
@@ -554,7 +545,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
       ) : showSpacesBar ? (
         <div className="fixed bottom-0 left-0 right-0 z-30">
           <CombinedBottomBar
-            spaces={spaces}
+            spaces={spaces.filter(s => s.id === 'lobby' || s.parentId === undefined)}
             currentSpaceId="lobby"
             onCreateSpace={() => setIsAddModalOpen(true)}
             onDeleteSpace={handleDeleteSpace}

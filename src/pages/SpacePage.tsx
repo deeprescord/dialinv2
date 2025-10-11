@@ -660,19 +660,7 @@ export default function SpacePage() {
 
   return (
     <DragDropZone onFilesDropped={handleFilesDropped}>
-      <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background Image - only show when not using 360° view */}
-      {!show360 && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
-        >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="relative z-10">
+      <div className="min-h-screen bg-background">
         {/* Navigation */}
         <TopNav
           currentTab={currentTab}
@@ -754,14 +742,15 @@ export default function SpacePage() {
           )}
         </main>
 
-        {/* Bottom Bar */}
-        {isViewingContact ? (
-          <ShareMyBar
-            fields={toggleableFields}
-            sharedFields={sharedFields}
-            onToggleChange={toggleFieldShare}
-          />
-        ) : showSpacesBar ? (
+      {/* Bottom Bar */}
+      {isViewingContact ? (
+        <ShareMyBar
+          fields={toggleableFields}
+          sharedFields={sharedFields}
+          onToggleChange={toggleFieldShare}
+        />
+      ) : showSpacesBar ? (
+        <div className="fixed bottom-0 left-0 right-0 z-30">
           <CombinedBottomBar
             spaces={spaces}
             currentSpaceId={spaceId}
@@ -782,10 +771,11 @@ export default function SpacePage() {
             showAIChat={showAIChat}
             onToggleAIChat={handleToggleAIChat}
           />
-        ) : null}
+        </div>
+      ) : null}
 
-        {/* Overlays */}
-        <ContactPane
+      {/* Overlays */}
+      <ContactPane
           isOpen={isViewingContact}
           contact={selectedContact}
           isPinned={isPinned}
@@ -942,9 +932,9 @@ export default function SpacePage() {
             />
           )}
         </AnimatePresence>
+
+        <UploadLoader isUploading={uploading || analyzingWithAI} />
       </div>
-      </div>
-      <UploadLoader isUploading={uploading || analyzingWithAI} />
     </DragDropZone>
   );
 }

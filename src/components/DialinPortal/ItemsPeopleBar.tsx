@@ -70,7 +70,7 @@ export function ItemsPeopleBar({ scale = 30 }: ItemsPeopleBarProps) {
                 >
                   <div className="cursor-pointer group flex flex-col items-center gap-2">
                     <div
-                      className="rounded-2xl overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative"
+                      className="rounded-lg overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative"
                       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                     >
                       <img 
@@ -96,13 +96,13 @@ export function ItemsPeopleBar({ scale = 30 }: ItemsPeopleBarProps) {
                 >
                   <div className="cursor-pointer group flex flex-col items-center gap-2">
                     <div
-                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex items-center justify-center relative"
+                      className="rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex items-center justify-center relative"
                       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                     >
                       <img 
                         src={person.avatar} 
                         alt={person.name}
-                        className="w-full h-full rounded-2xl object-cover"
+                        className="w-full h-full rounded-lg object-cover"
                       />
                       {/* Status indicator - bottom right corner */}
                       <div 

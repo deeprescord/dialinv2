@@ -15,14 +15,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-gradient-to-br group-[.toaster]:from-background/60 group-[.toaster]:via-background/50 group-[.toaster]:to-background/40 group-[.toaster]:backdrop-blur-2xl group-[.toaster]:text-foreground group-[.toaster]:border-primary/50 group-[.toaster]:shadow-[0_0_40px_rgba(var(--primary-rgb),0.4)] group-[.toaster]:rounded-2xl group-[.toaster]:border-2 group-[.toaster]:px-8 group-[.toaster]:py-6 group-[.toaster]:text-lg group-[.toaster]:font-medium group-[.toaster]:min-w-[400px]",
-          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-base",
+            "group toast group-[.toaster]:bg-background/95 group-[.toaster]:backdrop-blur-xl group-[.toaster]:text-foreground group-[.toaster]:border-border/40 group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl group-[.toaster]:border group-[.toaster]:px-4 group-[.toaster]:py-3 group-[.toaster]:text-sm group-[.toaster]:font-normal group-[.toaster]:min-w-[320px] group-[.toaster]:max-w-[420px]",
+          description: "group-[.toast]:text-muted-foreground group-[.toast]:text-sm group-[.toast]:mt-1",
           actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg group-[.toast]:text-base",
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-md group-[.toast]:text-sm group-[.toast]:px-3 group-[.toast]:py-1.5 group-[.toast]:font-medium group-[.toast]:hover:bg-primary/90 group-[.toast]:transition-colors",
           cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:text-base",
-          success: "group-[.toaster]:border-primary group-[.toaster]:shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)]",
-          error: "group-[.toaster]:border-destructive group-[.toaster]:shadow-[0_0_50px_rgba(220,38,38,0.5)]",
+            "group-[.toast]:bg-secondary group-[.toast]:text-secondary-foreground group-[.toast]:rounded-md group-[.toast]:text-sm group-[.toast]:px-3 group-[.toast]:py-1.5 group-[.toast]:hover:bg-secondary/80 group-[.toast]:transition-colors",
+          success: "group-[.toaster]:border-primary/40 group-[.toaster]:bg-primary/5",
+          error: "group-[.toaster]:border-destructive/40 group-[.toaster]:bg-destructive/5",
         },
       }}
       {...props}

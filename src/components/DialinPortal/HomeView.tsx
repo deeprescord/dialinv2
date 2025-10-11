@@ -241,8 +241,8 @@ export function HomeView({
         <HeroHeaderVideo
           videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
           posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
-          title={selectedItem?.title || selectedItem?.name || spaceName || "Lobby"}
-          subtitle={selectedItem?.artist || selectedItem?.type || spaceDescription || "Welcome back"}
+          title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
+          subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
           backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : isLobby}
           show360={show360}

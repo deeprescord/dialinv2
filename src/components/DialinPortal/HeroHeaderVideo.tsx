@@ -155,21 +155,23 @@ export function HeroHeaderVideo({
       {/* Gradient Overlay - don't interfere with 360° view */}
       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
 
-      {/* Content */}
-      <div className={`absolute bottom-32 left-8 ${show360 ? 'z-30' : ''}`}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2">
-            {title}
-          </h1>
-          <p className="text-lg lg:text-xl text-white/80">
-            {subtitle}
-          </p>
-        </motion.div>
-      </div>
+      {/* Content - Only show for non-lobby spaces */}
+      {title && subtitle && (
+        <div className={`absolute bottom-32 left-8 ${show360 ? 'z-30' : ''}`}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2">
+              {title}
+            </h1>
+            <p className="text-lg lg:text-xl text-white/80">
+              {subtitle}
+            </p>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

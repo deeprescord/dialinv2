@@ -56,7 +56,9 @@ export function SpacesBar({
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const [scale, setScale] = useState(100); // Scale percentage (50-150)
-  const [showSizer, setShowSizer] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartScale, setDragStartScale] = useState(100);
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
     position: { x: number; y: number };
@@ -77,6 +79,45 @@ export function SpacesBar({
   const spacing = getScaled(7);
   const padding = getScaled(8);
   const fontSize = scale >= 80 ? 'text-base' : scale >= 60 ? 'text-sm' : 'text-xs';
+
+  // Handle drag events for resizing
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setDragStartY(clientY);
+    setDragStartScale(scale);
+  };
+
+  const handleDragMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+    
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const deltaY = dragStartY - clientY; // Inverted: drag up = increase, drag down = decrease
+    const scaleChange = Math.round(deltaY / 3); // 3px drag = 1% scale change
+    const newScale = Math.max(50, Math.min(150, dragStartScale + scaleChange));
+    setScale(newScale);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Add event listeners for drag
+  React.useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', handleDragMove);
+      window.addEventListener('touchend', handleDragEnd);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleDragMove);
+        window.removeEventListener('mouseup', handleDragEnd);
+        window.removeEventListener('touchmove', handleDragMove);
+        window.removeEventListener('touchend', handleDragEnd);
+      };
+    }
+  }, [isDragging, dragStartY, dragStartScale]);
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -146,6 +187,19 @@ export function SpacesBar({
 
   return (
     <div className="mb-8 relative">
+      {/* Drag Handle */}
+      <div 
+        className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10 cursor-ns-resize"
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
+      >
+        <div className="flex flex-col items-center gap-0.5 px-4 py-1.5 bg-background/60 backdrop-blur-md rounded-full border border-white/20 hover:bg-background/80 hover:border-primary/50 transition-all">
+          <div className="w-12 h-0.5 bg-foreground/40 rounded-full"></div>
+          <div className="w-12 h-0.5 bg-foreground/40 rounded-full"></div>
+          <div className="w-12 h-0.5 bg-foreground/40 rounded-full"></div>
+        </div>
+      </div>
+      
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
       <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
         {/* Breadcrumb Navigation or Spaces */}
@@ -249,36 +303,6 @@ export function SpacesBar({
               </motion.div>
             )})}
             </>
-          )}
-        </div>
-
-        {/* Size Control in the middle */}
-        <div className="flex items-center gap-2 mx-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={() => setShowSizer(!showSizer)}
-          >
-            {showSizer ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </Button>
-          {showSizer && (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 120 }}
-              exit={{ opacity: 0, width: 0 }}
-              className="flex items-center gap-2"
-            >
-              <Slider
-                value={[scale]}
-                onValueChange={(value) => setScale(value[0])}
-                min={50}
-                max={150}
-                step={10}
-                className="w-24"
-              />
-              <span className="text-xs text-muted-foreground w-10">{scale}%</span>
-            </motion.div>
           )}
         </div>
 

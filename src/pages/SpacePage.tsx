@@ -8,8 +8,8 @@ import { FriendsView } from '@/components/DialinPortal/FriendsView';
 import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
 import { LocationsView } from '@/components/DialinPortal/LocationsView';
-import { BreadcrumbNavBar } from '@/components/DialinPortal/BreadcrumbNavBar';
 import { ShareMyBar } from '@/components/DialinPortal/ShareMyBar';
+import { CombinedBottomBar } from '@/components/DialinPortal/CombinedBottomBar';
 import { FloatingPlayer } from '@/components/DialinPortal/FloatingPlayer';
 import { ContactPane } from '@/components/DialinPortal/ContactPane';
 import { DialControlPanel } from '@/components/DialinPortal/DialControlPanel';
@@ -762,38 +762,26 @@ export default function SpacePage() {
             onToggleChange={toggleFieldShare}
           />
         ) : showSpacesBar ? (
-          <div className="fixed bottom-0 left-0 right-0 z-30">
-            <BreadcrumbNavBar 
-              navigationPath={navigationPath}
-              spaces={spaces}
-              currentSpaceItems={currentSpaceItems}
-              selectedItemId={selectedItemId}
-              onCreateSpace={(parentId) => {
-                setShowCreateSpaceModal(true);
-                // Store the parent ID for when the modal creates the space
-                if (parentId) {
-                  // Pass it through the state
-                  (window as any).__pendingSpaceParentId = parentId;
-                }
-              }}
-              onDeleteSpace={handleDeleteSpace}
-              onRenameSpace={handleRenameSpace}
-              onUpdateSpaceDescription={handleUpdateSpaceDescription}
-              onUpdateSpaceThumbnail={handleUpdateSpaceThumbnail}
-              onReorderSpace={handleReorderSpace}
-              onToggle360={handleToggle360}
-              on360AxisChange={handle360AxisChange}
-              on360VolumeChange={handle360VolumeChange}
-              on360MuteToggle={handle360MuteToggle}
-              onNavigate={handleBreadcrumbNavigate}
-              onItemSelect={handleItemSelect}
-              showChatWindow={showChatWindow}
-              onToggleChatWindow={handleToggleChatWindow}
-              showCreateSpaceModal={showCreateSpaceModal}
-              showAIChat={showAIChat}
-              onToggleAIChat={handleToggleAIChat}
-            />
-          </div>
+          <CombinedBottomBar
+            spaces={spaces}
+            currentSpaceId={spaceId}
+            onCreateSpace={() => setShowCreateSpaceModal(true)}
+            onDeleteSpace={handleDeleteSpace}
+            onRenameSpace={handleRenameSpace}
+            onUpdateSpaceDescription={handleUpdateSpaceDescription}
+            onUpdateSpaceThumbnail={handleUpdateSpaceThumbnail}
+            onReorderSpace={handleReorderSpace}
+            onToggle360={handleToggle360}
+            on360AxisChange={handle360AxisChange}
+            on360VolumeChange={handle360VolumeChange}
+            on360MuteToggle={handle360MuteToggle}
+            onSpaceClick={handleSpaceClick}
+            showChatWindow={showChatWindow}
+            onToggleChatWindow={handleToggleChatWindow}
+            showCreateSpaceModal={showCreateSpaceModal}
+            showAIChat={showAIChat}
+            onToggleAIChat={handleToggleAIChat}
+          />
         ) : null}
 
         {/* Overlays */}

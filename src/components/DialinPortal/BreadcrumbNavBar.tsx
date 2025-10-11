@@ -175,11 +175,12 @@ export function BreadcrumbNavBar({
                       <div 
                         className="flex flex-col items-center space-y-1 cursor-pointer group select-none relative"
                         onClick={() => {
-                          if (!pressTimer) return;
-                          if (item.type === 'space' || item.id?.startsWith('space-')) {
-                            // For spaces in the items section, navigate to them (will add to breadcrumb)
+                          // Navigate to subspace or select item
+                          if (item.parentId !== undefined || item.id?.startsWith('space-')) {
+                            // This is a subspace, navigate to it
                             onNavigate(item.id);
                           } else {
+                            // This is a regular item, select it
                             onItemSelect(item.id);
                           }
                         }}

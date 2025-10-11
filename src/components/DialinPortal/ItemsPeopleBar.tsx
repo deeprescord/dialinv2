@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ImageFallback } from '../ui/image-fallback';
 import { friends } from '@/data/catalogs';
-import { Image, Video, FileText, Link, Music, MapPin } from 'lucide-react';
+import beachSunset from '@/assets/social-beach-sunset.jpg';
+import concert from '@/assets/social-concert.jpg';
+import cafe from '@/assets/social-cafe.jpg';
+import hiking from '@/assets/social-hiking.jpg';
+import music from '@/assets/social-music.jpg';
+import city from '@/assets/social-city.jpg';
 
 interface ItemsPeopleBarProps {
   scale?: number; // Inherit scale from SpacesBar if needed
@@ -20,12 +24,12 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
 
   // Demo items with social media-style content
   const demoItems = [
-    { id: '1', type: 'photo', title: 'Beach Sunset', color: 'from-orange-500 to-pink-500', icon: Image },
-    { id: '2', type: 'video', title: 'Concert Clips', color: 'from-purple-500 to-blue-500', icon: Video },
-    { id: '3', type: 'text', title: 'Life Update', color: 'from-green-500 to-teal-500', icon: FileText },
-    { id: '4', type: 'link', title: 'Article Share', color: 'from-blue-500 to-cyan-500', icon: Link },
-    { id: '5', type: 'music', title: 'Playlist', color: 'from-pink-500 to-purple-500', icon: Music },
-    { id: '6', type: 'location', title: 'Check-in', color: 'from-yellow-500 to-orange-500', icon: MapPin },
+    { id: '1', title: 'Beach Sunset', image: beachSunset },
+    { id: '2', title: 'Concert Clips', image: concert },
+    { id: '3', title: 'Life Update', image: cafe },
+    { id: '4', title: 'Article Share', image: hiking },
+    { id: '5', title: 'Playlist', image: music },
+    { id: '6', title: 'Check-in', image: city },
   ];
 
   return (
@@ -56,28 +60,31 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
         <div className="overflow-x-auto scrollbar-thin">
           <div className="flex items-center" style={{ gap: `${spacing}px` }}>
             {activeTab === 'items' ? (
-              demoItems.map((item, index) => {
-                const IconComponent = item.icon;
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="flex-shrink-0"
-                  >
-                    <div className="cursor-pointer group">
-                      <div
-                        className={`rounded-2xl overflow-hidden group-hover:scale-105 transition-transform border border-white/10 bg-gradient-to-br ${item.color} flex flex-col items-center justify-center gap-3 p-6`}
-                        style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-                      >
-                        <IconComponent className="text-white" size={64} strokeWidth={1.5} />
+              demoItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="flex-shrink-0"
+                >
+                  <div className="cursor-pointer group">
+                    <div
+                      className="rounded-2xl overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative"
+                      style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
+                    >
+                      <img 
+                        src={item.image} 
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                         <span className="text-sm font-medium text-white">{item.title}</span>
                       </div>
                     </div>
-                  </motion.div>
-                );
-              })
+                  </div>
+                </motion.div>
+              ))
             ) : (
               friends.map((person, index) => (
                 <motion.div
@@ -89,25 +96,25 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
                 >
                   <div className="cursor-pointer group">
                     <div
-                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex flex-col items-center justify-center gap-3 p-4 relative"
+                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex flex-col items-center justify-center gap-3 p-6 relative"
                       style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                     >
-                      <div className="relative">
+                      <div className="relative w-36 h-36 flex-shrink-0">
                         <img 
                           src={person.avatar} 
                           alt={person.name}
-                          className="w-32 h-32 rounded-xl object-cover border-2 border-white/20"
+                          className="w-full h-full rounded-xl object-cover border-2 border-white/20"
                         />
                         {/* Status indicator */}
                         <div 
-                          className={`absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-background ${
+                          className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-background ${
                             person.status === 'online' ? 'bg-green-500' : 
                             person.status === 'away' ? 'bg-yellow-500' : 
                             'bg-gray-500'
                           }`}
                         />
                       </div>
-                      <span className="text-sm font-medium text-foreground truncate max-w-full">
+                      <span className="text-sm font-medium text-foreground truncate max-w-full px-2">
                         {person.name}
                       </span>
                     </div>

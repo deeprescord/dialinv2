@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
+import { Session, User } from '@supabase/supabase-js';
+import { AuthModal } from './AuthModal';
 import { TopNav } from './TopNav';
 import { MobileTabBar } from './MobileTabBar';
 import { HomeView } from './HomeView';
@@ -43,12 +46,39 @@ import { toast } from 'sonner';
 
 export function DialinPortal() {
   const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedDials, setSelectedDials] = useState<Record<string, string[]>>({});
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [userPoints, setUserPoints] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  
+  // Auth session persistence
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        toast.success('Welcome back!');
+      }
+    });
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (!session) {
+        setShowAuthModal(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   // Use contact field sharing for the selected contact
   const { toggleableFields, sharedFields, toggleFieldShare } = useContactFieldSharing(
@@ -671,6 +701,14 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         isMuted={lobbySpace?.isMuted || false}
         onVolumeChange={(volume) => handle360VolumeChange('lobby', volume)}
         onMuteToggle={() => handle360MuteToggle('lobby', !lobbySpace?.isMuted)}
+      />
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          setShowAuthModal(false);
+        }}
       />
 
       <CelebrationAnimation

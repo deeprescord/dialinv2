@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
@@ -10,6 +11,7 @@ import { DialPopup } from './DialPopup';
 import { AddOptionsModal } from './AddOptionsModal';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
+import { Slider } from '../ui/slider';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -53,6 +55,8 @@ export function SpacesBar({
   hideChatButton = false
 }: SpacesBarProps) {
   const navigate = useNavigate();
+  const [scale, setScale] = useState(100); // Scale percentage (50-150)
+  const [showSizer, setShowSizer] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
     position: { x: number; y: number };
@@ -63,6 +67,16 @@ export function SpacesBar({
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
+
+  // Calculate scaled sizes
+  const getScaled = (base: number) => Math.round(base * (scale / 100));
+  const thumbWidth = getScaled(108);
+  const thumbHeight = getScaled(68);
+  const buttonSize = getScaled(108);
+  const iconSize = getScaled(34);
+  const spacing = getScaled(7);
+  const padding = getScaled(8);
+  const fontSize = scale >= 80 ? 'text-base' : scale >= 60 ? 'text-sm' : 'text-xs';
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -133,9 +147,9 @@ export function SpacesBar({
   return (
     <div className="mb-8 relative">
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
-      <div className="relative flex items-center justify-between px-8 py-7 overflow-x-auto scrollbar-thin">
+      <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
         {/* Breadcrumb Navigation or Spaces */}
-        <div className="flex items-center space-x-7">
+        <div className="flex items-center" style={{ gap: `${spacing}px` }}>
           {breadcrumbs && breadcrumbs.length > 0 ? (
             // Show breadcrumb navigation
             <div className="flex items-center gap-4">
@@ -204,18 +218,31 @@ export function SpacesBar({
                 >
                   {/* Triangle arrow for selected space */}
                   {isCurrentSpace && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-primary"></div>
+                    <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                      <div 
+                        className="border-l-transparent border-r-transparent border-b-primary" 
+                        style={{ 
+                          width: 0, 
+                          height: 0, 
+                          borderLeftWidth: `${getScaled(8)}px`,
+                          borderRightWidth: `${getScaled(8)}px`,
+                          borderBottomWidth: `${getScaled(8)}px`,
+                          borderStyle: 'solid'
+                        }}
+                      ></div>
                     </div>
                   )}
-                  <div className="w-[108px] h-[68px] rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10">
+                  <div 
+                    className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
+                    style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                  >
                     <ImageFallback 
                       src={space.thumb} 
                       alt={space.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className={`text-base font-medium text-center ${
+                  <span className={`${fontSize} font-medium text-center ${
                     isCurrentSpace ? 'text-primary' : ''
                   }`}>{space.name}</span>
                 </div>
@@ -225,8 +252,38 @@ export function SpacesBar({
           )}
         </div>
 
+        {/* Size Control in the middle */}
+        <div className="flex items-center gap-2 mx-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setShowSizer(!showSizer)}
+          >
+            {showSizer ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </Button>
+          {showSizer && (
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 120 }}
+              exit={{ opacity: 0, width: 0 }}
+              className="flex items-center gap-2"
+            >
+              <Slider
+                value={[scale]}
+                onValueChange={(value) => setScale(value[0])}
+                min={50}
+                max={150}
+                step={10}
+                className="w-24"
+              />
+              <span className="text-xs text-muted-foreground w-10">{scale}%</span>
+            </motion.div>
+          )}
+        </div>
+
         {/* Action buttons on the right */}
-        <div className="flex items-center space-x-7 flex-shrink-0">
+        <div className="flex items-center flex-shrink-0" style={{ gap: `${spacing}px` }}>
           {/* Action Buttons - Only show if not hidden */}
           {!hideActionButtons && (
             <>
@@ -240,11 +297,12 @@ export function SpacesBar({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex flex-col items-center space-y-2 w-[108px] h-[108px] glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-2xl"
+                    className="flex flex-col items-center glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-2xl"
+                    style={{ width: `${buttonSize}px`, height: `${buttonSize}px`, gap: `${getScaled(2)}px` }}
                     onClick={() => setShowAddOptionsModal(true)}
                   >
-                    <PlusCircle size={34} className="text-green-400" />
-                    <span className="text-base font-medium">Add</span>
+                    <PlusCircle size={iconSize} className="text-green-400" />
+                    <span className={`${fontSize} font-medium`}>Add</span>
                   </Button>
                 </motion.div>
               )}
@@ -259,11 +317,12 @@ export function SpacesBar({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex flex-col items-center space-y-2 w-[108px] h-[108px] glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-2xl"
+                    className="flex flex-col items-center glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-2xl"
+                    style={{ width: `${buttonSize}px`, height: `${buttonSize}px`, gap: `${getScaled(2)}px` }}
                     onClick={() => setShowAIChat(true)}
                   >
-                    <Bot size={34} className="text-blue-400" />
-                    <span className="text-base font-medium">AI</span>
+                    <Bot size={iconSize} className="text-blue-400" />
+                    <span className={`${fontSize} font-medium`}>AI</span>
                   </Button>
                 </motion.div>
               )}
@@ -278,11 +337,12 @@ export function SpacesBar({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex flex-col items-center space-y-2 w-[108px] h-[108px] glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-2xl"
+                    className="flex flex-col items-center glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-2xl"
+                    style={{ width: `${buttonSize}px`, height: `${buttonSize}px`, gap: `${getScaled(2)}px` }}
                     onClick={() => setShowChatWindow(true)}
                   >
-                    <MessageSquare size={34} className="text-purple-400" />
-                    <span className="text-base font-medium">Chat</span>
+                    <MessageSquare size={iconSize} className="text-purple-400" />
+                    <span className={`${fontSize} font-medium`}>Chat</span>
                   </Button>
                 </motion.div>
               )}

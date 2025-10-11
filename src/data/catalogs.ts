@@ -128,7 +128,14 @@ export const videoCatalog: VideoItem[] = [];
 
 export const musicCatalog: MusicItem[] = [];
 
-export const friends: Friend[] = [];
+export const friends: Friend[] = [
+  { id: '1', name: 'Sarah Chen', status: 'online', avatar: `https://images.unsplash.com/photo-1494790108755-2616c06e9c99?w=200&h=200&fit=crop` },
+  { id: '2', name: 'Marcus Johnson', status: 'online', avatar: `https://images.unsplash.com/photo-1507003211169-0a1dd7a838fa?w=200&h=200&fit=crop` },
+  { id: '3', name: 'Emily Rodriguez', status: 'away', avatar: `https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop` },
+  { id: '4', name: 'James Park', status: 'online', avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop` },
+  { id: '5', name: 'Aisha Patel', status: 'offline', avatar: `https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop` },
+  { id: '6', name: 'David Kim', status: 'online', avatar: `https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=200&h=200&fit=crop` },
+];
 
 export const locations: LocationItem[] = [];
 

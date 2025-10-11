@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ImageFallback } from '../ui/image-fallback';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { friends } from '@/data/catalogs';
 
 interface ItemsPeopleBarProps {
   scale?: number; // Inherit scale from SpacesBar if needed
@@ -13,6 +15,7 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
   const getScaled = (base: number) => Math.round(base * (scale / 100));
   const thumbWidth = getScaled(180);
   const thumbHeight = getScaled(100);
+  const avatarSize = getScaled(80);
   const spacing = getScaled(12);
   const padding = getScaled(16);
 
@@ -50,27 +53,63 @@ export function ItemsPeopleBar({ scale = 40 }: ItemsPeopleBarProps) {
           </button>
         </div>
 
-        {/* Scrollable Items List */}
+        {/* Scrollable Items/People List */}
         <div className="overflow-x-auto scrollbar-thin">
           <div className="flex items-center" style={{ gap: `${spacing}px` }}>
-            {demoItems.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="flex-shrink-0"
-              >
-                <div className="cursor-pointer group">
-                  <div
-                    className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50"
-                    style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-                  >
-                    {/* Placeholder for now - will be replaced with actual content */}
+            {activeTab === 'items' ? (
+              demoItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="flex-shrink-0"
+                >
+                  <div className="cursor-pointer group">
+                    <div
+                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50"
+                      style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                    >
+                      {/* Placeholder for now - will be replaced with actual content */}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            ) : (
+              friends.map((person, index) => (
+                <motion.div
+                  key={person.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="flex-shrink-0"
+                >
+                  <div className="cursor-pointer group flex flex-col items-center gap-2">
+                    <div className="relative">
+                      <Avatar 
+                        className="group-hover:scale-105 transition-transform border-2 border-white/10"
+                        style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
+                      >
+                        <AvatarImage src={person.avatar} alt={person.name} />
+                        <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      {/* Status indicator */}
+                      <div 
+                        className={`absolute bottom-0 right-0 rounded-full border-2 border-background ${
+                          person.status === 'online' ? 'bg-green-500' : 
+                          person.status === 'away' ? 'bg-yellow-500' : 
+                          'bg-gray-500'
+                        }`}
+                        style={{ width: `${getScaled(16)}px`, height: `${getScaled(16)}px` }}
+                      />
+                    </div>
+                    <span className="text-xs text-foreground/80 max-w-[100px] truncate">
+                      {person.name}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </div>

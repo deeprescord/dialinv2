@@ -55,7 +55,7 @@ export function SpacesBar({
   hideChatButton = false
 }: SpacesBarProps) {
   const navigate = useNavigate();
-  const scale = 130; // Fixed scale percentage
+  const scale = 87; // Fixed scale percentage (reduced by 1/3 from 130)
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
     position: { x: number; y: number };

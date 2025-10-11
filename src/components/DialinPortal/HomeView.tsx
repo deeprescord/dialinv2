@@ -256,12 +256,6 @@ export function HomeView({
 
       {isLobby ? (
         <>
-          <PinnedContactsRow 
-            contacts={pinnedContacts.slice(0, 3)}
-            onContactClick={onContactClick}
-            title=""
-          />
-
           <MediaRow
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
@@ -271,12 +265,6 @@ export function HomeView({
         </>
       ) : (
         <>
-          <PinnedContactsRow 
-            contacts={pinnedContacts.slice(0, 3)}
-            onContactClick={onContactClick}
-            title=""
-          />
-
           <MediaRow
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}

@@ -10,11 +10,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       position="top-center"
+      offset="50vh"
       className="toaster group"
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-gradient-to-br group-[.toaster]:from-background/95 group-[.toaster]:via-background/90 group-[.toaster]:to-background/80 group-[.toaster]:backdrop-blur-2xl group-[.toaster]:text-foreground group-[.toaster]:border-primary/50 group-[.toaster]:shadow-[0_0_40px_rgba(var(--primary-rgb),0.4)] group-[.toaster]:rounded-2xl group-[.toaster]:border-2 group-[.toaster]:px-8 group-[.toaster]:py-6 group-[.toaster]:text-lg group-[.toaster]:font-medium group-[.toaster]:min-w-[400px]",
+            "group toast group-[.toaster]:bg-gradient-to-br group-[.toaster]:from-background group-[.toaster]:via-background group-[.toaster]:to-background/95 group-[.toaster]:backdrop-blur-2xl group-[.toaster]:text-foreground group-[.toaster]:border-primary/50 group-[.toaster]:shadow-[0_0_40px_rgba(var(--primary-rgb),0.4)] group-[.toaster]:rounded-2xl group-[.toaster]:border-2 group-[.toaster]:px-8 group-[.toaster]:py-6 group-[.toaster]:text-lg group-[.toaster]:font-medium group-[.toaster]:min-w-[400px]",
           description: "group-[.toast]:text-muted-foreground group-[.toast]:text-base",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg group-[.toast]:text-base",

@@ -61,6 +61,7 @@ export function SpacesBar({
     position: { x: number; y: number };
   } | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [wasLongPress, setWasLongPress] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showDialPopup, setShowDialPopup] = useState(false);
@@ -79,8 +80,10 @@ export function SpacesBar({
   const fontSize = 'text-base';
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
+    setWasLongPress(false);
     const timer = setTimeout(() => {
       // Show DialPopup on long press
+      setWasLongPress(true);
       setDialPopupItem({
         id: space.id,
         title: space.name,
@@ -196,15 +199,12 @@ export function SpacesBar({
                 <div 
                   className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
                   onClick={(e) => {
-                    if (!pressTimer) return; // Prevent click if long press happened
+                    if (wasLongPress) return; // Prevent click if long press happened
                     handleSpaceClick(space);
                   }}
                   onMouseDown={(e) => handleMouseDown(space, e)}
                   onMouseUp={(e) => {
                     handleMouseUp();
-                    if (pressTimer) {
-                      handleSpaceClick(space);
-                    }
                   }}
                   onMouseLeave={handleMouseLeave}
                   onContextMenu={(e) => handleContextMenu(space, e)}

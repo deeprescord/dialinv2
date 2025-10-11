@@ -378,7 +378,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      file_shared_with_user: {
+        Args: { _file_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_owns_file: {
+        Args: { _file_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

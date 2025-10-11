@@ -55,7 +55,7 @@ export function SpacesBar({
   hideChatButton = false
 }: SpacesBarProps) {
   const navigate = useNavigate();
-  const [scale, setScale] = useState(100); // Scale percentage (50-150)
+  const [scale, setScale] = useState(130); // Scale percentage (50-150)
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [dragStartScale, setDragStartScale] = useState(100);

@@ -319,7 +319,7 @@ export default function SpacePage() {
 
 
   // Handle space creation
-  const handleCreateSpace = async (name: string, parentId?: string) => {
+  const handleCreateSpace = async (name: string, coverUrl: string, parentId?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -333,6 +333,7 @@ export default function SpacePage() {
           user_id: user.id,
           name,
           parent_id: parentId || null,
+          cover_url: coverUrl
         })
         .select()
         .single();
@@ -346,12 +347,13 @@ export default function SpacePage() {
       const newSpace: Space = {
         id: data.id,
         name: data.name,
-        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        thumb: coverUrl,
         parentId: data.parent_id || undefined
       };
       
       setSpaces(prev => [...prev, newSpace]);
       toast.success(`Space "${name}" created successfully!`);
+      setShowCreateSpaceModal(false);
     } catch (error) {
       console.error('Error creating space:', error);
       toast.error('Failed to create space');
@@ -515,14 +517,16 @@ export default function SpacePage() {
       setNavigationPath(['lobby']);
     } else {
       navigate(`/space/${space.id}`);
-      const existingIndex = navigationPath.indexOf(space.id);
-      if (existingIndex >= 0) {
-        // Navigate back to this space, trim path
-        setNavigationPath(navigationPath.slice(0, existingIndex + 1));
-      } else {
-        // Append new nested space to breadcrumb path
-        setNavigationPath([...navigationPath, space.id]);
-      }
+      // Build the path by checking parent relationships
+      const buildPath = (spaceId: string): string[] => {
+        const currentSpace = spaces.find(s => s.id === spaceId);
+        if (!currentSpace) return ['lobby', spaceId];
+        if (!currentSpace.parentId || currentSpace.parentId === 'lobby') {
+          return ['lobby', spaceId];
+        }
+        return [...buildPath(currentSpace.parentId), spaceId];
+      };
+      setNavigationPath(buildPath(space.id));
     }
     setSelectedItemId(undefined);
     setSelectedItemData(null);
@@ -852,15 +856,16 @@ export default function SpacePage() {
 
         <CreateSpaceModal
           isOpen={showCreateSpaceModal}
+          parentId={(window as any).__pendingSpaceParentId}
           onClose={() => {
             setShowCreateSpaceModal(false);
             // Clean up the pending parent ID
             delete (window as any).__pendingSpaceParentId;
           }}
-          onCreate={(name, coverUrl) => {
-            const parentId = (window as any).__pendingSpaceParentId;
-            const finalParentId = parentId && parentId !== 'lobby' ? parentId : undefined;
-            handleCreateSpace(name, finalParentId);
+          onCreate={(name, coverUrl, parentId) => {
+            const storedParentId = (window as any).__pendingSpaceParentId;
+            const finalParentId = parentId || (storedParentId && storedParentId !== 'lobby' ? storedParentId : undefined);
+            handleCreateSpace(name, coverUrl, finalParentId);
             delete (window as any).__pendingSpaceParentId;
           }}
         />

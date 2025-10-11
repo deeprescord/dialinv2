@@ -11,7 +11,8 @@ import { GradientLoader } from './GradientLoader';
 interface CreateSpaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (name: string, coverUrl: string) => void;
+  onCreate: (name: string, coverUrl: string, parentId?: string) => void;
+  parentId?: string;
 }
 
 const coverOptions = [
@@ -21,7 +22,7 @@ const coverOptions = [
   'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=200&h=120&fit=crop&auto=format',
 ];
 
-export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModalProps) {
+export function CreateSpaceModal({ isOpen, onClose, onCreate, parentId }: CreateSpaceModalProps) {
   const [spaceName, setSpaceName] = useState('');
   const [selectedCover, setSelectedCover] = useState(coverOptions[0]);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -97,7 +98,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
 
   const handleCreate = () => {
     if (spaceName.trim()) {
-      onCreate(spaceName.trim(), selectedCover);
+      onCreate(spaceName.trim(), selectedCover, parentId);
       setSpaceName('');
       setSelectedCover(coverOptions[0]);
       setUploadedImages([]);

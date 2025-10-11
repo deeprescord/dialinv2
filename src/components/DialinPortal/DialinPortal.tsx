@@ -263,15 +263,16 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
 
   // Handle space creation
-  const handleCreateSpace = async (name: string, coverUrl: string) => {
+  const handleCreateSpace = async (name: string, coverUrl: string, parentId?: string) => {
     // Create space in database
-    const newDbSpace = await createDbSpace(name, coverUrl);
+    const newDbSpace = await createDbSpace(name, undefined, parentId);
     
     if (newDbSpace) {
       const newSpace: Space = {
         id: newDbSpace.id,
         name: newDbSpace.name,
-        thumb: coverUrl
+        thumb: coverUrl,
+        parentId: newDbSpace.parent_id || undefined
       };
       setSpaces(prev => [...prev, newSpace]);
     }
@@ -631,6 +632,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         isOpen={showCreateSpaceModal}
         onClose={() => setShowCreateSpaceModal(false)}
         onCreate={handleCreateSpace}
+        parentId={undefined}
       />
 
       <ChatWindow

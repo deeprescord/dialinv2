@@ -55,10 +55,7 @@ export function SpacesBar({
   hideChatButton = false
 }: SpacesBarProps) {
   const navigate = useNavigate();
-  const [scale, setScale] = useState(130); // Scale percentage (50-150)
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartY, setDragStartY] = useState(0);
-  const [dragStartScale, setDragStartScale] = useState(100);
+  const scale = 130; // Fixed scale percentage
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
     position: { x: number; y: number };
@@ -78,46 +75,7 @@ export function SpacesBar({
   const iconSize = getScaled(34);
   const spacing = getScaled(7);
   const padding = getScaled(8);
-  const fontSize = scale >= 80 ? 'text-base' : scale >= 60 ? 'text-sm' : 'text-xs';
-
-  // Handle drag events for resizing
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    setIsDragging(true);
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    setDragStartY(clientY);
-    setDragStartScale(scale);
-  };
-
-  const handleDragMove = (e: MouseEvent | TouchEvent) => {
-    if (!isDragging) return;
-    
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    const deltaY = dragStartY - clientY; // Inverted: drag up = increase, drag down = decrease
-    const scaleChange = Math.round(deltaY / 3); // 3px drag = 1% scale change
-    const newScale = Math.max(50, Math.min(150, dragStartScale + scaleChange));
-    setScale(newScale);
-  };
-
-  const handleDragEnd = () => {
-    setIsDragging(false);
-  };
-
-  // Add event listeners for drag
-  React.useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleDragMove);
-      window.addEventListener('mouseup', handleDragEnd);
-      window.addEventListener('touchmove', handleDragMove);
-      window.addEventListener('touchend', handleDragEnd);
-      
-      return () => {
-        window.removeEventListener('mousemove', handleDragMove);
-        window.removeEventListener('mouseup', handleDragEnd);
-        window.removeEventListener('touchmove', handleDragMove);
-        window.removeEventListener('touchend', handleDragEnd);
-      };
-    }
-  }, [isDragging, dragStartY, dragStartScale]);
+  const fontSize = 'text-base';
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     const timer = setTimeout(() => {
@@ -186,19 +144,7 @@ export function SpacesBar({
   };
 
   return (
-    <div className="relative pt-6">
-      {/* Drag Handle */}
-      <div 
-        className="absolute -top-1 left-1/2 transform -translate-x-1/2 z-50 cursor-ns-resize"
-        onMouseDown={handleDragStart}
-        onTouchStart={handleDragStart}
-      >
-        <div className="flex flex-col items-center gap-0.5 px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 hover:bg-white/30 hover:border-white/50 transition-all">
-          <div className="w-6 h-0.5 bg-white/60 rounded-full"></div>
-          <div className="w-6 h-0.5 bg-white/60 rounded-full"></div>
-        </div>
-      </div>
-      
+    <div className="relative">
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
       <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
         {/* Breadcrumb Navigation or Spaces */}

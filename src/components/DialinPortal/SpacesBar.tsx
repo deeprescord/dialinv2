@@ -131,14 +131,14 @@ export function SpacesBar({
   };
 
   return (
-    <div className="mb-4 relative">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-md rounded-lg border border-white/10"></div>
-      <div className="relative flex items-center justify-between px-4 py-3 overflow-x-auto scrollbar-thin">
+    <div className="mb-6 relative">
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
+      <div className="relative flex items-center justify-between px-6 py-5 overflow-x-auto scrollbar-thin">(Reminder: You only invoked a single tool call. Remember that for the sake of efficiency, you should try to parallelize tool calls whenever possible.)
         {/* Breadcrumb Navigation or Spaces */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-5">
           {breadcrumbs && breadcrumbs.length > 0 ? (
             // Show breadcrumb navigation
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {breadcrumbs.map((crumb, index) => (
                 <React.Fragment key={crumb.id}>
                   <motion.div
@@ -204,18 +204,18 @@ export function SpacesBar({
                 >
                   {/* Triangle arrow for selected space */}
                   {isCurrentSpace && (
-                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                      <div className="w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-primary"></div>
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[6px] border-l-transparent border-r-transparent border-b-primary"></div>
                     </div>
                   )}
-                  <div className="w-16 h-10 rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform">
+                  <div className="w-[83px] h-[52px] rounded-xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10">
                     <ImageFallback 
                       src={space.thumb} 
                       alt={space.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className={`text-xs font-medium text-center ${
+                  <span className={`text-sm font-medium text-center ${
                     isCurrentSpace ? 'text-primary' : ''
                   }`}>{space.name}</span>
                 </div>
@@ -226,7 +226,7 @@ export function SpacesBar({
         </div>
 
         {/* Action buttons on the right */}
-        <div className="flex items-center space-x-3 flex-shrink-0">
+        <div className="flex items-center space-x-5 flex-shrink-0">
           {/* Action Buttons - Only show if not hidden */}
           {!hideActionButtons && (
             <>
@@ -240,11 +240,11 @@ export function SpacesBar({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    className="flex flex-col items-center space-y-1.5 w-[83px] h-[83px] glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
                     onClick={() => setShowAddOptionsModal(true)}
                   >
-                    <PlusCircle size={20} className="text-green-400" />
-                    <span className="text-xs">Add</span>
+                    <PlusCircle size={26} className="text-green-400" />
+                    <span className="text-sm">Add</span>
                   </Button>
                 </motion.div>
               )}
@@ -259,11 +259,11 @@ export function SpacesBar({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    className="flex flex-col items-center space-y-1.5 w-[83px] h-[83px] glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
                     onClick={() => setShowAIChat(true)}
                   >
-                    <Bot size={20} className="text-blue-400" />
-                    <span className="text-xs">AI</span>
+                    <Bot size={26} className="text-blue-400" />
+                    <span className="text-sm">AI</span>
                   </Button>
                 </motion.div>
               )}
@@ -278,11 +278,11 @@ export function SpacesBar({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex flex-col items-center space-y-1 w-16 h-16 glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
+                    className="flex flex-col items-center space-y-1.5 w-[83px] h-[83px] glass-card border-white/30 hover:bg-white/10 hover:border-primary/50"
                     onClick={() => setShowChatWindow(true)}
                   >
-                    <MessageSquare size={20} className="text-purple-400" />
-                    <span className="text-xs">Chat</span>
+                    <MessageSquare size={26} className="text-purple-400" />
+                    <span className="text-sm">Chat</span>
                   </Button>
                 </motion.div>
               )}

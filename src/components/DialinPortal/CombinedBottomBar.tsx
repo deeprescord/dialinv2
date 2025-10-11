@@ -7,7 +7,6 @@ import { Close } from '../icons';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
-import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { SpacesBar } from './SpacesBar';
 
 interface CombinedBottomBarProps {
@@ -103,9 +102,6 @@ export function CombinedBottomBar({
 
   return (
     <div className="px-4 pb-4 space-y-4">
-      {/* Items/People Bar */}
-      <ItemsPeopleBar />
-      
       {/* Spaces Bar with resizable drag handle */}
       <SpacesBar
         spaces={spaces}

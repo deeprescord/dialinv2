@@ -160,6 +160,17 @@ export function SpacesBar({
       <div className="relative">
         {/* Top Action Buttons */}
         <div className="flex items-center justify-end gap-2 px-3 pt-2 pb-1">
+          {!hideActionButtons && !hideNewButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCreateSpace}
+              className="h-7 px-2 text-xs hover:bg-white/10"
+            >
+              <PlusCircle size={14} className="mr-1" />
+              Add
+            </Button>
+          )}
           {!hideActionButtons && !hideAIButton && (
             <Button
               variant="ghost"

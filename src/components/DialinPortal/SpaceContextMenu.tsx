@@ -484,6 +484,8 @@ export function SpaceContextMenu({
                         value={[xAxis]}
                         onValueChange={(value) => {
                           setXAxis(value[0]);
+                        }}
+                        onValueCommit={(value) => {
                           on360AxisChange?.(space.id, 'x', value[0]);
                         }}
                         min={-180}
@@ -499,6 +501,8 @@ export function SpaceContextMenu({
                         value={[yAxis]}
                         onValueChange={(value) => {
                           setYAxis(value[0]);
+                        }}
+                        onValueCommit={(value) => {
                           on360AxisChange?.(space.id, 'y', value[0]);
                         }}
                         min={-90}
@@ -529,6 +533,8 @@ export function SpaceContextMenu({
                           value={[volume]}
                           onValueChange={(value) => {
                             setVolume(value[0]);
+                          }}
+                          onValueCommit={(value) => {
                             on360VolumeChange?.(space.id, value[0]);
                           }}
                           min={0}
@@ -590,6 +596,8 @@ export function SpaceContextMenu({
                             value={[rotationSpeed]}
                             onValueChange={(value) => {
                               setRotationSpeed(value[0]);
+                            }}
+                            onValueCommit={(value) => {
                               on360RotationSpeedChange?.(space.id, value[0]);
                             }}
                             min={0.1}

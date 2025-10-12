@@ -86,7 +86,7 @@ export function useSpaces() {
     }
   };
 
-  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis'>>): Promise<boolean> => {
+  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis'>>, options?: { silent?: boolean }): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('spaces')
@@ -102,7 +102,9 @@ export function useSpaces() {
       setSpaces(prev => prev.map(space => 
         space.id === id ? { ...space, ...updates } : space
       ));
-      toast.success('Space updated successfully');
+      if (!options?.silent) {
+        toast.success('Space updated successfully');
+      }
       return true;
     } catch (error) {
       console.error('Error updating space:', error);
@@ -110,7 +112,6 @@ export function useSpaces() {
       return false;
     }
   };
-
   const deleteSpace = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase

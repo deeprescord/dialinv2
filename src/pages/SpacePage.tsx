@@ -603,7 +603,7 @@ export default function SpacePage() {
     if (spaceId !== 'lobby') {
       await updateSpace(spaceId, { 
         [axis === 'x' ? 'x_axis_offset' : 'y_axis_offset']: value 
-      });
+      }, { silent: true });
     }
   };
 
@@ -617,7 +617,7 @@ export default function SpacePage() {
     
     // Persist to database
     if (spaceId !== 'lobby') {
-      await updateSpace(spaceId, { volume });
+      await updateSpace(spaceId, { volume }, { silent: true });
     }
   };
 
@@ -659,7 +659,7 @@ export default function SpacePage() {
     
     // Persist to database
     if (spaceId !== 'lobby') {
-      await updateSpace(spaceId, { rotation_speed: speed });
+      await updateSpace(spaceId, { rotation_speed: speed }, { silent: true });
     }
   };
 

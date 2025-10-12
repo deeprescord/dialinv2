@@ -88,9 +88,10 @@ interface SkyboxProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  rotationAxis?: 'x' | 'y';
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1 }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1, rotationAxis = 'x' }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -188,8 +189,11 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   // Auto-rotation animation
   useFrame((state, delta) => {
     if (rotationEnabled && meshRef.current) {
-      // Rotate around X axis (horizontal spin)
-      meshRef.current.rotation.x += delta * rotationSpeed * 0.1;
+      if (rotationAxis === 'x') {
+        meshRef.current.rotation.x += delta * rotationSpeed * 0.1;
+      } else {
+        meshRef.current.rotation.y += delta * rotationSpeed * 0.1;
+      }
     }
   });
 
@@ -232,6 +236,7 @@ interface SkyboxViewerProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  rotationAxis?: 'x' | 'y';
 }
 
 export function SkyboxViewer({ 
@@ -243,7 +248,8 @@ export function SkyboxViewer({
   volume = 50,
   isMuted = true,
   rotationEnabled = false,
-  rotationSpeed = 1
+  rotationSpeed = 1,
+  rotationAxis = 'x'
 }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
@@ -340,11 +346,12 @@ export function SkyboxViewer({
             mediaUrl={mediaUrl} 
             xAxisOffset={xAxisOffset}
             yAxisOffset={yAxisOffset}
-            volume={volume}
-            isMuted={isMuted}
-            rotationEnabled={rotationEnabled}
-            rotationSpeed={rotationSpeed}
-          />
+        volume={volume}
+        isMuted={isMuted}
+        rotationEnabled={rotationEnabled}
+        rotationSpeed={rotationSpeed}
+        rotationAxis={rotationAxis}
+      />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 
             onActiveChange={setGyroscopeActive}

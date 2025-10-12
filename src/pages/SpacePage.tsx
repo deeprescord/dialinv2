@@ -663,6 +663,20 @@ export default function SpacePage() {
     }
   };
 
+  const handle360RotationAxisChange = async (spaceId: string, axis: 'x' | 'y') => {
+    // Update local state immediately for responsive UI
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, rotationAxis: axis }
+        : space
+    ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { rotation_axis: axis });
+    }
+  };
+
   // Handle chat and AI chat toggles
   const handleToggleChatWindow = () => {
     setShowChatWindow(prev => !prev);
@@ -756,6 +770,7 @@ export default function SpacePage() {
               isMuted={currentSpace?.isMuted}
               rotationEnabled={currentSpace?.rotationEnabled}
               rotationSpeed={currentSpace?.rotationSpeed}
+              rotationAxis={currentSpace?.rotationAxis}
               selectedItem={selectedItemData}
             />
           )}

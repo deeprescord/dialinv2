@@ -16,6 +16,7 @@ export interface Space {
   is_muted?: boolean;
   rotation_enabled?: boolean;
   rotation_speed?: number;
+  rotation_axis?: string;
   created_at: string;
   updated_at: string;
 }
@@ -85,7 +86,7 @@ export function useSpaces() {
     }
   };
 
-  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed'>>): Promise<boolean> => {
+  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis'>>): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('spaces')

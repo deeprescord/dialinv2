@@ -341,6 +341,7 @@ export type Database = {
           is_muted: boolean | null
           name: string
           parent_id: string | null
+          rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
           show_360: boolean | null
@@ -358,6 +359,7 @@ export type Database = {
           is_muted?: boolean | null
           name: string
           parent_id?: string | null
+          rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
           show_360?: boolean | null
@@ -375,6 +377,7 @@ export type Database = {
           is_muted?: boolean | null
           name?: string
           parent_id?: string | null
+          rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
           show_360?: boolean | null

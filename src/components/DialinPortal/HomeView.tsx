@@ -36,6 +36,7 @@ interface HomeViewProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  rotationAxis?: 'x' | 'y';
   spaces?: Space[];
   onFilesDrop?: (files: File[], spaceId: string) => void;
   onCreateSpace?: (name: string) => void;
@@ -62,6 +63,7 @@ export function HomeView({
   isMuted,
   rotationEnabled,
   rotationSpeed,
+  rotationAxis,
   spaces = [],
   onFilesDrop,
   onCreateSpace,
@@ -256,6 +258,7 @@ export function HomeView({
           isMuted={isMuted}
           rotationEnabled={rotationEnabled}
           rotationSpeed={rotationSpeed}
+          rotationAxis={rotationAxis}
           onOpenAddPanel={onOpenAddPanel}
         />
       )}

@@ -36,6 +36,7 @@ interface SpaceContextMenuProps {
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
+  on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   position: { x: number; y: number };
 }
 
@@ -54,6 +55,7 @@ export function SpaceContextMenu({
   on360MuteToggle,
   on360RotationToggle,
   on360RotationSpeedChange,
+  on360RotationAxisChange,
   position
 }: SpaceContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -68,6 +70,7 @@ export function SpaceContextMenu({
   const [isMuted, setIsMuted] = useState(space.isMuted !== undefined ? space.isMuted : true);
   const [rotationEnabled, setRotationEnabled] = useState(space.rotationEnabled || false);
   const [rotationSpeed, setRotationSpeed] = useState(space.rotationSpeed || 1);
+  const [rotationAxis, setRotationAxis] = useState<'x' | 'y'>((space.rotationAxis as 'x' | 'y') || 'x');
   const [showCoverOptions, setShowCoverOptions] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedMediaTypes, setUploadedMediaTypes] = useState<('image' | 'video')[]>([]);
@@ -537,20 +540,54 @@ export function SpaceContextMenu({
                     </div>
 
                     {rotationEnabled && (
-                      <div className="space-y-2">
-                        <label className="text-xs text-foreground/70">Rotation Speed</label>
-                        <Slider
-                          value={[rotationSpeed]}
-                          onValueChange={(value) => {
-                            setRotationSpeed(value[0]);
-                            on360RotationSpeedChange?.(space.id, value[0]);
-                          }}
-                          min={0.1}
-                          max={5}
-                          step={0.1}
-                        />
-                        <span className="text-xs text-foreground/60">{rotationSpeed.toFixed(1)}x</span>
-                      </div>
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-foreground/70">Rotation Axis</span>
+                          <div className="flex gap-2">
+                            <button
+                              className={`px-3 py-1 text-xs rounded transition-colors ${
+                                rotationAxis === 'x' 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-background/50 hover:bg-background/70'
+                              }`}
+                              onClick={() => {
+                                setRotationAxis('x');
+                                on360RotationAxisChange?.(space.id, 'x');
+                              }}
+                            >
+                              X
+                            </button>
+                            <button
+                              className={`px-3 py-1 text-xs rounded transition-colors ${
+                                rotationAxis === 'y' 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-background/50 hover:bg-background/70'
+                              }`}
+                              onClick={() => {
+                                setRotationAxis('y');
+                                on360RotationAxisChange?.(space.id, 'y');
+                              }}
+                            >
+                              Y
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs text-foreground/70">Rotation Speed</label>
+                          <Slider
+                            value={[rotationSpeed]}
+                            onValueChange={(value) => {
+                              setRotationSpeed(value[0]);
+                              on360RotationSpeedChange?.(space.id, value[0]);
+                            }}
+                            min={0.1}
+                            max={5}
+                            step={0.1}
+                          />
+                          <span className="text-xs text-foreground/60">{rotationSpeed.toFixed(1)}x</span>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}

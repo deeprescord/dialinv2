@@ -28,6 +28,7 @@ interface SpacesBarProps {
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
+  on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   onSpaceClick?: (space: Space) => void;
   breadcrumbs?: Array<{ id: string; name: string }>;
   hideActionButtons?: boolean; // Hide New, AI, Chat buttons (deprecated - use individual hide props)
@@ -51,6 +52,7 @@ export function SpacesBar({
   on360MuteToggle,
   on360RotationToggle,
   on360RotationSpeedChange,
+  on360RotationAxisChange,
   onSpaceClick,
   breadcrumbs,
   hideActionButtons = false,
@@ -282,6 +284,7 @@ export function SpacesBar({
             on360MuteToggle={on360MuteToggle}
             on360RotationToggle={on360RotationToggle}
             on360RotationSpeedChange={on360RotationSpeedChange}
+            on360RotationAxisChange={on360RotationAxisChange}
             position={contextMenu.position}
           />
         )}

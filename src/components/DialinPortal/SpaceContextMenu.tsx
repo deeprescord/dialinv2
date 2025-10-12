@@ -140,11 +140,11 @@ export function SpaceContextMenu({
 
         // Generate unique filename
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/space-covers/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
-        // Upload to Supabase storage
+        // Upload to Lovable Cloud storage (public space-covers bucket)
         const { data, error } = await supabase.storage
-          .from('user-files')
+          .from('space-covers')
           .upload(fileName, file);
 
         if (error) {
@@ -155,7 +155,7 @@ export function SpaceContextMenu({
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-          .from('user-files')
+          .from('space-covers')
           .getPublicUrl(data.path);
 
         setUploadedImages(prev => [...prev, publicUrl]);
@@ -324,10 +324,13 @@ export function SpaceContextMenu({
                   {uploadedImages.map((mediaUrl, index) => {
                     const isVideo = uploadedMediaTypes[index] === 'video';
                     return (
-                      <button
+                      <div
                         key={`uploaded-${index}`}
+                        role="button"
+                        tabIndex={0}
                         className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all aspect-video"
                         onClick={() => selectCoverImage(mediaUrl)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectCoverImage(mediaUrl); }}
                       >
                         {isVideo ? (
                           <video
@@ -345,7 +348,9 @@ export function SpaceContextMenu({
                             className="w-full h-full object-cover"
                           />
                         )}
-                        <button
+                        <div
+                          role="button"
+                          aria-label="Remove uploaded media"
                           className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -353,8 +358,8 @@ export function SpaceContextMenu({
                           }}
                         >
                           <X size={12} />
-                        </button>
-                      </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>

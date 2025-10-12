@@ -95,7 +95,6 @@ const [spaces, setSpaces] = useState<Space[]>([
 const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpacesContext();
 
 useEffect(() => {
-  const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: lobbyPoster };
   const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
     id: dbSpace.id,
     name: dbSpace.name,
@@ -104,7 +103,11 @@ useEffect(() => {
     backgroundImage: (dbSpace as any).cover_url || undefined,
     show360: false
   }));
-  setSpaces([lobby, ...convertedDbSpaces]);
+  setSpaces(prev => {
+    const prevLobby = prev.find(s => s.id === 'lobby');
+    const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: prevLobby?.thumb || lobbyPoster };
+    return [lobby, ...convertedDbSpaces];
+  });
 }, [dbSpaces]);
 
 const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);

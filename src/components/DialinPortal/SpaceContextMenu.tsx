@@ -110,12 +110,38 @@ export function SpaceContextMenu({
     setRotationSpeed(space.rotationSpeed || 1);
   }, [space.xAxis, space.yAxis, space.volume, space.isMuted, space.rotationEnabled, space.rotationSpeed]);
 
-  const coverOptions = [
-    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&h=120&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1629909613654-28e6c8816c9b?q=80&w=200&h=120&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1583847268964-a6f45e725dc3?q=80&w=200&h=120&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=200&h=120&fit=crop&auto=format',
-  ];
+  // Load user's uploaded media from storage so carousel persists across openings
+  useEffect(() => {
+    if (!isOpen) return;
+    const load = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data, error } = await supabase.storage
+          .from('space-covers')
+          .list(user.id, { limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } });
+        if (error) {
+          console.error('Failed listing media:', error);
+          return;
+        }
+        const urls: string[] = [];
+        const types: ('image' | 'video')[] = [];
+        (data || []).forEach((item) => {
+          const { data: pub } = supabase.storage
+            .from('space-covers')
+            .getPublicUrl(`${user.id}/${item.name}`);
+          urls.push(pub.publicUrl);
+          const isVideo = /\.(mp4|mov|webm|ogg)$/i.test(item.name);
+          types.push(isVideo ? 'video' : 'image');
+        });
+        setUploadedImages(urls);
+        setUploadedMediaTypes(types);
+      } catch (err) {
+        console.error('Error loading uploaded media:', err);
+      }
+    };
+    load();
+  }, [isOpen]);
 
   const handleRename = () => {
     if (newName.trim() && newName !== space.name) {
@@ -195,7 +221,28 @@ export function SpaceContextMenu({
     }
   };
 
-  const removeUploadedImage = (index: number) => {
+  const removeUploadedImage = async (index: number) => {
+    const url = uploadedImages[index];
+    // Try to remove from storage as well
+    try {
+      const path = (() => {
+        try {
+          const u = new URL(url);
+          const seg = u.pathname.split('/object/public/space-covers/')[1];
+          return seg ? decodeURIComponent(seg) : null;
+        } catch {
+          return null;
+        }
+      })();
+      if (path) {
+        const { error } = await supabase.storage.from('space-covers').remove([path]);
+        if (error) {
+          console.error('Failed to remove from storage:', error);
+        }
+      }
+    } catch (err) {
+      console.error('Error removing uploaded media:', err);
+    }
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
     setUploadedMediaTypes(prev => prev.filter((_, i) => i !== index));
   };

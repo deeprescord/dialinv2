@@ -338,30 +338,45 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_muted: boolean | null
           name: string
           parent_id: string | null
+          show_360: boolean | null
           updated_at: string
           user_id: string
+          volume: number | null
+          x_axis_offset: number | null
+          y_axis_offset: number | null
         }
         Insert: {
           cover_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_muted?: boolean | null
           name: string
           parent_id?: string | null
+          show_360?: boolean | null
           updated_at?: string
           user_id: string
+          volume?: number | null
+          x_axis_offset?: number | null
+          y_axis_offset?: number | null
         }
         Update: {
           cover_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_muted?: boolean | null
           name?: string
           parent_id?: string | null
+          show_360?: boolean | null
           updated_at?: string
           user_id?: string
+          volume?: number | null
+          x_axis_offset?: number | null
+          y_axis_offset?: number | null
         }
         Relationships: [
           {

@@ -68,7 +68,11 @@ export default function SpacePage() {
       thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
       parentId: dbSpace.parent_id || undefined,
       backgroundImage: dbSpace.cover_url || undefined,
-      show360: false
+      show360: dbSpace.show_360 || false,
+      xAxis: dbSpace.x_axis_offset || 0,
+      yAxis: dbSpace.y_axis_offset || 0,
+      volume: dbSpace.volume || 50,
+      isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
     }));
 
     setSpaces([lobby, ...convertedDbSpaces]);
@@ -571,36 +575,62 @@ export default function SpacePage() {
     setFloatingPlayer(prev => ({ ...prev, isVisible: false }));
   };
 
-  const handleToggle360 = (spaceId: string, enabled: boolean) => {
+  const handleToggle360 = async (spaceId: string, enabled: boolean) => {
+    // Update local state immediately for responsive UI
     setSpaces(spaces.map(space => 
       space.id === spaceId 
         ? { ...space, show360: enabled }
         : space
     ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { show_360: enabled });
+    }
   };
 
-  const handle360AxisChange = (spaceId: string, axis: 'x' | 'y', value: number) => {
+  const handle360AxisChange = async (spaceId: string, axis: 'x' | 'y', value: number) => {
+    // Update local state immediately for responsive UI
     setSpaces(spaces.map(space => 
       space.id === spaceId 
         ? { ...space, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
         : space
     ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { 
+        [axis === 'x' ? 'x_axis_offset' : 'y_axis_offset']: value 
+      });
+    }
   };
 
-  const handle360VolumeChange = (spaceId: string, volume: number) => {
+  const handle360VolumeChange = async (spaceId: string, volume: number) => {
+    // Update local state immediately for responsive UI
     setSpaces(spaces.map(space => 
       space.id === spaceId 
         ? { ...space, volume }
         : space
     ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { volume });
+    }
   };
 
-  const handle360MuteToggle = (spaceId: string, muted: boolean) => {
+  const handle360MuteToggle = async (spaceId: string, muted: boolean) => {
+    // Update local state immediately for responsive UI
     setSpaces(spaces.map(space => 
       space.id === spaceId 
         ? { ...space, isMuted: muted }
         : space
     ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { is_muted: muted });
+    }
   };
 
   // Handle chat and AI chat toggles

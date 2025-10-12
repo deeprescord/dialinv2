@@ -9,6 +9,11 @@ export interface Space {
   description?: string;
   parent_id?: string | null;
   cover_url?: string | null;
+  show_360?: boolean;
+  x_axis_offset?: number;
+  y_axis_offset?: number;
+  volume?: number;
+  is_muted?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -78,7 +83,7 @@ export function useSpaces() {
     }
   };
 
-  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url'>>): Promise<boolean> => {
+  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted'>>): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('spaces')

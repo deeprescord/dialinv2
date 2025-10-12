@@ -101,6 +101,17 @@ export function SpaceContextMenu({
     return () => window.removeEventListener('resize', onResize);
   }, [isOpen, position]);
 
+  // Sync local state with space prop changes
+  useEffect(() => {
+    setXAxis(space.xAxis || 0);
+    setYAxis(space.yAxis || 0);
+    setVolume(space.volume || 50);
+    setIsMuted(space.isMuted !== undefined ? space.isMuted : true);
+    setRotationEnabled(space.rotationEnabled || false);
+    setRotationSpeed(space.rotationSpeed || 1);
+    setRotationAxis((space.rotationAxis as 'x' | 'y') || 'x');
+  }, [space.xAxis, space.yAxis, space.volume, space.isMuted, space.rotationEnabled, space.rotationSpeed, space.rotationAxis]);
+
   const coverOptions = [
     'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&h=120&fit=crop&auto=format',
     'https://images.unsplash.com/photo-1629909613654-28e6c8816c9b?q=80&w=200&h=120&fit=crop&auto=format',

@@ -76,7 +76,7 @@ export function SpaceContextMenu({
     const maxHeight = Math.round(window.innerHeight * 0.85);
     const calc = () => {
       const left = Math.min(position.x, window.innerWidth - menuWidth - margin);
-      let top = position.y - 350;
+      let top = position.y - 500;
       const height = Math.min(menuRef.current?.offsetHeight || maxHeight, maxHeight);
       top = Math.min(Math.max(margin, top), window.innerHeight - margin - height);
       setComputedPos({ left, top });

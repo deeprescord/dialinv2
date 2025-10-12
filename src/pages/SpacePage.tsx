@@ -771,7 +771,6 @@ export default function SpacePage() {
               isMuted={currentSpace?.isMuted}
               rotationEnabled={currentSpace?.rotationEnabled}
               rotationSpeed={currentSpace?.rotationSpeed}
-              rotationAxis={currentSpace?.rotationAxis}
               selectedItem={selectedItemData}
             />
           )}

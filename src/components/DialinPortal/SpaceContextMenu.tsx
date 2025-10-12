@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -66,6 +66,26 @@ export function SpaceContextMenu({
   const [isGenerating, setIsGenerating] = useState(false);
   const [is360Mode, setIs360Mode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [computedPos, setComputedPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const margin = 10;
+    const menuWidth = 400; // w-[400px]
+    const maxHeight = Math.round(window.innerHeight * 0.85);
+    const calc = () => {
+      const left = Math.min(position.x, window.innerWidth - menuWidth - margin);
+      let top = position.y - 350;
+      const height = Math.min(menuRef.current?.offsetHeight || maxHeight, maxHeight);
+      top = Math.min(Math.max(margin, top), window.innerHeight - margin - height);
+      setComputedPos({ left, top });
+    };
+    calc();
+    const onResize = () => calc();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [isOpen, position]);
 
   const coverOptions = [
     'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&h=120&fit=crop&auto=format',
@@ -182,10 +202,8 @@ export function SpaceContextMenu({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
             className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg w-[400px] max-h-[85vh] overflow-y-auto"
-            style={{
-              left: Math.min(position.x, window.innerWidth - 420),
-              top: Math.max(10, position.y - 350),
-            }}
+            ref={menuRef}
+            style={{ left: computedPos.left, top: computedPos.top }}
           >
             <GradientLoader isLoading={isGenerating} />
             

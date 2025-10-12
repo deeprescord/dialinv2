@@ -73,6 +73,8 @@ export default function SpacePage() {
       yAxis: dbSpace.y_axis_offset || 0,
       volume: dbSpace.volume || 50,
       isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
+      rotationEnabled: dbSpace.rotation_enabled || false,
+      rotationSpeed: dbSpace.rotation_speed || 1,
     }));
 
     setSpaces([lobby, ...convertedDbSpaces]);
@@ -633,6 +635,34 @@ export default function SpacePage() {
     }
   };
 
+  const handle360RotationToggle = async (spaceId: string, enabled: boolean) => {
+    // Update local state immediately for responsive UI
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, rotationEnabled: enabled }
+        : space
+    ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { rotation_enabled: enabled });
+    }
+  };
+
+  const handle360RotationSpeedChange = async (spaceId: string, speed: number) => {
+    // Update local state immediately for responsive UI
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, rotationSpeed: speed }
+        : space
+    ));
+    
+    // Persist to database
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { rotation_speed: speed });
+    }
+  };
+
   // Handle chat and AI chat toggles
   const handleToggleChatWindow = () => {
     setShowChatWindow(prev => !prev);
@@ -724,6 +754,8 @@ export default function SpacePage() {
               yAxisOffset={currentSpace?.yAxis}
               volume={currentSpace?.volume}
               isMuted={currentSpace?.isMuted}
+              rotationEnabled={currentSpace?.rotationEnabled}
+              rotationSpeed={currentSpace?.rotationSpeed}
               selectedItem={selectedItemData}
             />
           )}
@@ -794,6 +826,8 @@ export default function SpacePage() {
             on360AxisChange={handle360AxisChange}
             on360VolumeChange={handle360VolumeChange}
             on360MuteToggle={handle360MuteToggle}
+            on360RotationToggle={handle360RotationToggle}
+            on360RotationSpeedChange={handle360RotationSpeedChange}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={handleToggleChatWindow}

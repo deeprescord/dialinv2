@@ -25,6 +25,8 @@ interface BreadcrumbNavBarProps {
   on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
   on360VolumeChange?: (spaceId: string, volume: number) => void;
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
+  on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
+  on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   showChatWindow?: boolean;
   onToggleChatWindow?: () => void;
   showCreateSpaceModal?: boolean;
@@ -49,6 +51,8 @@ export function BreadcrumbNavBar({
   on360AxisChange,
   on360VolumeChange,
   on360MuteToggle,
+  on360RotationToggle,
+  on360RotationSpeedChange,
   showChatWindow,
   onToggleChatWindow,
   showCreateSpaceModal,
@@ -326,6 +330,8 @@ export function BreadcrumbNavBar({
             on360AxisChange={on360AxisChange}
             on360VolumeChange={on360VolumeChange}
             on360MuteToggle={on360MuteToggle}
+            on360RotationToggle={on360RotationToggle}
+            on360RotationSpeedChange={on360RotationSpeedChange}
             position={contextMenu.position}
           />
         )}

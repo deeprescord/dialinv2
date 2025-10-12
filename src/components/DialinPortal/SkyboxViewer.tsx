@@ -86,9 +86,11 @@ interface SkyboxProps {
   yAxisOffset?: number;
   volume?: number;
   isMuted?: boolean;
+  rotationEnabled?: boolean;
+  rotationSpeed?: number;
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1 }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -183,6 +185,14 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     }
   }, [mediaUrl]);
 
+  // Auto-rotation animation
+  useFrame((state, delta) => {
+    if (rotationEnabled && meshRef.current) {
+      // Rotate around X axis (horizontal spin)
+      meshRef.current.rotation.x += delta * rotationSpeed * 0.1;
+    }
+  });
+
   // If error loading texture, don't render the skybox
   if (error || !texture) {
     return null;
@@ -198,12 +208,14 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     rotation = [Math.PI, Math.PI / 2, 0];
   }
   
-  // Apply user-defined axis offsets
-  rotation[0] += MathUtils.degToRad(yAxisOffset || 0); // Y axis affects X rotation
-  rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
+  // Apply user-defined axis offsets (only if rotation is not enabled)
+  if (!rotationEnabled) {
+    rotation[0] += MathUtils.degToRad(yAxisOffset || 0); // Y axis affects X rotation
+    rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
+  }
   
   return (
-    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotation}>
+    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>
@@ -218,6 +230,8 @@ interface SkyboxViewerProps {
   yAxisOffset?: number;
   volume?: number;
   isMuted?: boolean;
+  rotationEnabled?: boolean;
+  rotationSpeed?: number;
 }
 
 export function SkyboxViewer({ 
@@ -227,7 +241,9 @@ export function SkyboxViewer({
   xAxisOffset = 0,
   yAxisOffset = 0,
   volume = 50,
-  isMuted = true
+  isMuted = true,
+  rotationEnabled = false,
+  rotationSpeed = 1
 }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
@@ -326,6 +342,8 @@ export function SkyboxViewer({
             yAxisOffset={yAxisOffset}
             volume={volume}
             isMuted={isMuted}
+            rotationEnabled={rotationEnabled}
+            rotationSpeed={rotationSpeed}
           />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 

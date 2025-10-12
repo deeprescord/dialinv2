@@ -24,6 +24,8 @@ interface CombinedBottomBarProps {
   on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
   on360VolumeChange?: (spaceId: string, volume: number) => void;
   on360MuteToggle?: (spaceId: string, muted: boolean) => void;
+  on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
+  on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   onSpaceClick?: (space: Space) => void;
   className?: string;
   showChatWindow?: boolean;
@@ -46,6 +48,8 @@ export function CombinedBottomBar({
   on360AxisChange,
   on360VolumeChange,
   on360MuteToggle,
+  on360RotationToggle,
+  on360RotationSpeedChange,
   onSpaceClick,
   className = "",
   showChatWindow,
@@ -129,6 +133,8 @@ export function CombinedBottomBar({
           on360AxisChange={on360AxisChange}
           on360VolumeChange={on360VolumeChange}
           on360MuteToggle={on360MuteToggle}
+          on360RotationToggle={on360RotationToggle}
+          on360RotationSpeedChange={on360RotationSpeedChange}
           onSpaceClick={onSpaceClick}
           hideActionButtons={true}
         />

@@ -57,6 +57,8 @@ export interface Space {
   yAxis?: number;
   volume?: number;
   isMuted?: boolean;
+  rotationEnabled?: boolean;
+  rotationSpeed?: number;
   parentId?: string; // For nested spaces
 }
 

@@ -176,10 +176,16 @@ export function SpaceContextMenu({
           .from('space-covers')
           .getPublicUrl(data.path);
 
+        // Add to uploaded images array
         setUploadedImages(prev => [...prev, publicUrl]);
         setUploadedMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
         
-        toast.success(`${isVideo ? 'Video' : 'Image'} uploaded successfully`);
+        // Automatically apply the first uploaded image as the cover
+        if (onUpdateThumbnail) {
+          onUpdateThumbnail(space.id, publicUrl);
+        }
+        
+        toast.success(`${isVideo ? 'Video' : 'Image'} uploaded and applied successfully`);
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -226,7 +232,7 @@ export function SpaceContextMenu({
   const selectCoverImage = (imageUrl: string) => {
     if (onUpdateThumbnail) {
       onUpdateThumbnail(space.id, imageUrl);
-      setShowCoverOptions(false);
+      toast.success('Cover updated successfully');
     }
   };
 
@@ -336,50 +342,66 @@ export function SpaceContextMenu({
                 </div>
               </div>
 
-              {/* Media Grid - show uploaded images/videos */}
-              {(uploadedImages.length > 0 || coverOptions.length > 0) && (
-                <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
-                  {uploadedImages.map((mediaUrl, index) => {
-                    const isVideo = uploadedMediaTypes[index] === 'video';
-                    return (
-                      <div
-                        key={`uploaded-${index}`}
-                        role="button"
-                        tabIndex={0}
-                        className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all aspect-video"
-                        onClick={() => selectCoverImage(mediaUrl)}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectCoverImage(mediaUrl); }}
-                      >
-                        {isVideo ? (
-                          <video
-                            src={mediaUrl}
-                            className="w-full h-full object-cover"
-                            muted
-                            loop
-                            autoPlay
-                            playsInline
-                          />
-                        ) : (
-                          <img
-                            src={mediaUrl}
-                            alt={`Uploaded ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
+              {/* Media Grid - show uploaded images/videos as carousel */}
+              {uploadedImages.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-sm font-medium text-foreground/80">Your Uploads</span>
+                    <span className="text-xs text-muted-foreground">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto">
+                    {uploadedImages.map((mediaUrl, index) => {
+                      const isVideo = uploadedMediaTypes[index] === 'video';
+                      const isCurrentCover = space.thumb === mediaUrl;
+                      return (
                         <div
+                          key={`uploaded-${index}`}
                           role="button"
-                          aria-label="Remove uploaded media"
-                          className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeUploadedImage(index);
-                          }}
+                          tabIndex={0}
+                          className={`relative overflow-hidden rounded-lg border-2 transition-all aspect-video ${
+                            isCurrentCover 
+                              ? 'border-primary ring-2 ring-primary/50' 
+                              : 'border-white/20 hover:border-primary/50'
+                          }`}
+                          onClick={() => selectCoverImage(mediaUrl)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectCoverImage(mediaUrl); }}
                         >
-                          <X size={12} />
+                          {isVideo ? (
+                            <video
+                              src={mediaUrl}
+                              className="w-full h-full object-cover"
+                              muted
+                              loop
+                              autoPlay
+                              playsInline
+                            />
+                          ) : (
+                            <img
+                              src={mediaUrl}
+                              alt={`Uploaded ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          {isCurrentCover && (
+                            <div className="absolute top-1 left-1 bg-primary/90 text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">
+                              Active
+                            </div>
+                          )}
+                          <div
+                            role="button"
+                            aria-label="Remove uploaded media"
+                            className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeUploadedImage(index);
+                            }}
+                          >
+                            <X size={12} />
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

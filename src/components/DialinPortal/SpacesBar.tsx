@@ -233,7 +233,7 @@ export function SpacesBar({
                     className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
                     style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
                   >
-                    {space.thumb?.match(/\.(mp4|webm|ogg)$/i) ? (
+                    {space.thumb && /\.(mp4|webm|ogg|mov)$/i.test((space.thumb as string).split('?')[0].split('#')[0]) ? (
                       <video
                         src={space.thumb}
                         className="w-full h-full object-cover"

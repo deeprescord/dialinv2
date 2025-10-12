@@ -87,9 +87,13 @@ export function HeroHeaderVideo({
     }
   };
 
-  // Check if backgroundImage is a video
-  const isBackgroundVideo = backgroundImage?.match(/\.(mp4|webm|ogg|mov)$/i);
-
+  // Check if backgroundImage is a video (handle URLs with query params)
+  const getIsVideo = (url?: string) => {
+    if (!url) return false;
+    const clean = url.split('?')[0].split('#')[0];
+    return /\.(mp4|webm|ogg|mov)$/i.test(clean);
+  };
+  const isBackgroundVideo = getIsVideo(backgroundImage);
   return (
     <div 
       className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20 cursor-pointer select-none"
@@ -159,7 +163,7 @@ export function HeroHeaderVideo({
                 !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              <source src={backgroundImage} type="video/mp4" />
+              <source src={backgroundImage} />
             </video>
           ) : (
             <div 

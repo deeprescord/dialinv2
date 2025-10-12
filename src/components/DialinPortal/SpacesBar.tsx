@@ -31,10 +31,12 @@ interface SpacesBarProps {
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   onSpaceClick?: (space: Space) => void;
   breadcrumbs?: Array<{ id: string; name: string }>;
-  hideActionButtons?: boolean; // Hide New, AI, Chat buttons (deprecated - use individual hide props)
-  hideNewButton?: boolean; // Hide New button
-  hideAIButton?: boolean; // Hide AI button
-  hideChatButton?: boolean; // Hide Chat button
+  hideActionButtons?: boolean;
+  hideNewButton?: boolean;
+  hideAIButton?: boolean;
+  hideChatButton?: boolean;
+  onToggleAIChat?: () => void;
+  onToggleChatWindow?: () => void;
 }
 
 export function SpacesBar({
@@ -58,7 +60,9 @@ export function SpacesBar({
   hideActionButtons = false,
   hideNewButton = false,
   hideAIButton = false,
-  hideChatButton = false
+  hideChatButton = false,
+  onToggleAIChat,
+  onToggleChatWindow
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const scale = 87; // Fixed scale percentage (reduced by 1/3 from 130)
@@ -153,117 +157,146 @@ export function SpacesBar({
   return (
     <div className="relative">
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
-      <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
-        {/* Breadcrumb Navigation or Spaces */}
-        <div className="flex items-center" style={{ gap: `${spacing}px` }}>
-          {breadcrumbs && breadcrumbs.length > 0 ? (
-            // Show breadcrumb navigation
-            <div className="flex items-center gap-4">
-              {breadcrumbs.map((crumb, index) => (
-                <React.Fragment key={crumb.id}>
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Button
-                      variant={index === breadcrumbs.length - 1 ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => {
-                        const space = allSpaces.find(s => s.id === crumb.id);
-                        if (space) handleSpaceClick(space);
-                      }}
-                      className={index === breadcrumbs.length - 1 ? "pointer-events-none" : ""}
-                    >
-                      {crumb.name}
-                    </Button>
-                  </motion.div>
-                  {index < breadcrumbs.length - 1 && (
-                    <span className="text-muted-foreground">/</span>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          ) : (
-            // Show space thumbnails
-            <>
-              {allSpaces.map((space, index) => {
-            const isLobby = space.id === 'lobby';
-            const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
-            
-            return (
-              <motion.div
-                key={space.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="flex-shrink-0"
-              >
-                <div 
-                  className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
-                  onClick={(e) => {
-                    if (wasLongPress) return;
-                    handleSpaceClick(space);
-                  }}
-                  onMouseDown={(e) => handleMouseDown(space, e)}
-                  onMouseUp={(e) => {
-                    handleMouseUp();
-                  }}
-                  onMouseLeave={handleMouseLeave}
-                  onContextMenu={(e) => handleContextMenu(space, e)}
-                  onTouchStart={(e) => {
-                    const touch = e.touches[0];
-                    handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
-                  }}
-                  onTouchEnd={(e) => {
-                    handleMouseUp();
-                  }}
-                >
-                  {/* Triangle arrow for selected space */}
-                  {isCurrentSpace && (
-                    <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
-                      <div 
-                        className="border-l-transparent border-r-transparent border-b-primary" 
-                        style={{ 
-                          width: 0, 
-                          height: 0, 
-                          borderLeftWidth: `${getScaled(8)}px`,
-                          borderRightWidth: `${getScaled(8)}px`,
-                          borderBottomWidth: `${getScaled(8)}px`,
-                          borderStyle: 'solid'
-                        }}
-                      ></div>
-                    </div>
-                  )}
-                  <div 
-                    className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
-                    style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-                  >
-                    {space.thumb && /\.(mp4|webm|ogg|mov)$/i.test((space.thumb as string).split('?')[0].split('#')[0]) ? (
-                      <video
-                        src={space.thumb}
-                        className="w-full h-full object-cover"
-                        muted
-                        loop
-                        autoPlay
-                        playsInline
-                      />
-                    ) : (
-                      <ImageFallback 
-                        src={space.thumb} 
-                        alt={space.name}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <span className={`${fontSize} font-medium text-center ${
-                    isCurrentSpace ? 'text-primary' : ''
-                  }`}>{space.name}</span>
-                </div>
-              </motion.div>
-            )})}
-            </>
+      <div className="relative">
+        {/* Top Action Buttons */}
+        <div className="flex items-center justify-end gap-2 px-3 pt-2 pb-1">
+          {!hideActionButtons && !hideAIButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleAIChat?.()}
+              className="h-7 px-2 text-xs hover:bg-white/10"
+            >
+              <Bot size={14} className="mr-1" />
+              AI
+            </Button>
           )}
+          {!hideActionButtons && !hideChatButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleChatWindow?.()}
+              className="h-7 px-2 text-xs hover:bg-white/10"
+            >
+              <MessageSquare size={14} className="mr-1" />
+              Chat
+            </Button>
+          )}
+        </div>
+
+        {/* Spaces Bar */}
+        <div className="flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
+          {/* Breadcrumb Navigation or Spaces */}
+          <div className="flex items-center" style={{ gap: `${spacing}px` }}>
+            {breadcrumbs && breadcrumbs.length > 0 ? (
+              // Show breadcrumb navigation
+              <div className="flex items-center gap-4">
+                {breadcrumbs.map((crumb, index) => (
+                  <React.Fragment key={crumb.id}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <Button
+                        variant={index === breadcrumbs.length - 1 ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => {
+                          const space = allSpaces.find(s => s.id === crumb.id);
+                          if (space) handleSpaceClick(space);
+                        }}
+                        className={index === breadcrumbs.length - 1 ? "pointer-events-none" : ""}
+                      >
+                        {crumb.name}
+                      </Button>
+                    </motion.div>
+                    {index < breadcrumbs.length - 1 && (
+                      <span className="text-muted-foreground">/</span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              // Show space thumbnails
+              <>
+                {allSpaces.map((space, index) => {
+              const isLobby = space.id === 'lobby';
+              const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
+              
+              return (
+                <motion.div
+                  key={space.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="flex-shrink-0"
+                >
+                  <div 
+                    className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
+                    onClick={(e) => {
+                      if (wasLongPress) return;
+                      handleSpaceClick(space);
+                    }}
+                    onMouseDown={(e) => handleMouseDown(space, e)}
+                    onMouseUp={(e) => {
+                      handleMouseUp();
+                    }}
+                    onMouseLeave={handleMouseLeave}
+                    onContextMenu={(e) => handleContextMenu(space, e)}
+                    onTouchStart={(e) => {
+                      const touch = e.touches[0];
+                      handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+                    }}
+                    onTouchEnd={(e) => {
+                      handleMouseUp();
+                    }}
+                  >
+                    {/* Triangle arrow for selected space */}
+                    {isCurrentSpace && (
+                      <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                        <div 
+                          className="border-l-transparent border-r-transparent border-b-primary" 
+                          style={{ 
+                            width: 0, 
+                            height: 0, 
+                            borderLeftWidth: `${getScaled(8)}px`,
+                            borderRightWidth: `${getScaled(8)}px`,
+                            borderBottomWidth: `${getScaled(8)}px`,
+                            borderStyle: 'solid'
+                          }}
+                        ></div>
+                      </div>
+                    )}
+                    <div 
+                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
+                      style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                    >
+                      {space.thumb && /\.(mp4|webm|ogg|mov)$/i.test((space.thumb as string).split('?')[0].split('#')[0]) ? (
+                        <video
+                          src={space.thumb}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                      ) : (
+                        <ImageFallback 
+                          src={space.thumb} 
+                          alt={space.name}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <span className={`${fontSize} font-medium text-center ${
+                      isCurrentSpace ? 'text-primary' : ''
+                    }`}>{space.name}</span>
+                  </div>
+                </motion.div>
+              )})}
+              </>
+            )}
+          </div>
         </div>
       </div>
 

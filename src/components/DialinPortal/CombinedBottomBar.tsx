@@ -140,6 +140,8 @@ export function CombinedBottomBar({
           on360RotationAxisChange={on360RotationAxisChange}
           onSpaceClick={onSpaceClick}
           hideActionButtons={true}
+          onToggleAIChat={onToggleAIChat}
+          onToggleChatWindow={onToggleChatWindow}
         />
       </div>
     </>

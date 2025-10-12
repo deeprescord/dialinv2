@@ -184,9 +184,7 @@ export function SpaceContextMenu({
             className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg w-[400px] max-h-[85vh] overflow-y-auto"
             style={{
               left: Math.min(position.x, window.innerWidth - 420),
-              top: position.y + 350 > window.innerHeight 
-                ? Math.max(10, window.innerHeight - 460)
-                : position.y - 100,
+              top: Math.max(10, position.y - 350),
             }}
           >
             <GradientLoader isLoading={isGenerating} />

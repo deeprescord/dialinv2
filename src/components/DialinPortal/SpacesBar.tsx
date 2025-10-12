@@ -196,7 +196,7 @@ export function SpacesBar({
                 <div 
                   className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
                   onClick={(e) => {
-                    if (wasLongPress) return; // Prevent click if long press happened
+                    if (wasLongPress) return;
                     handleSpaceClick(space);
                   }}
                   onMouseDown={(e) => handleMouseDown(space, e)}
@@ -233,11 +233,22 @@ export function SpacesBar({
                     className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
                     style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
                   >
-                    <ImageFallback 
-                      src={space.thumb} 
-                      alt={space.name}
-                      className="w-full h-full object-cover"
-                    />
+                    {space.thumb?.match(/\.(mp4|webm|ogg)$/i) ? (
+                      <video
+                        src={space.thumb}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <ImageFallback 
+                        src={space.thumb} 
+                        alt={space.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <span className={`${fontSize} font-medium text-center ${
                     isCurrentSpace ? 'text-primary' : ''

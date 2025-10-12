@@ -5,7 +5,9 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { GradientLoader } from './GradientLoader';
 import { Space } from '@/data/catalogs';
 import {
@@ -62,9 +64,11 @@ export function SpaceContextMenu({
   const [isMuted, setIsMuted] = useState(space.isMuted !== undefined ? space.isMuted : true);
   const [showCoverOptions, setShowCoverOptions] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadedMediaTypes, setUploadedMediaTypes] = useState<('image' | 'video')[]>([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [is360Mode, setIs360Mode] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [computedPos, setComputedPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
@@ -76,7 +80,8 @@ export function SpaceContextMenu({
     const maxHeight = Math.round(window.innerHeight * 0.85);
     const calc = () => {
       const left = Math.min(position.x, window.innerWidth - menuWidth - margin);
-      let top = position.y - 500;
+      // Calculate top to keep panel above the space bar (raise it even higher)
+      let top = position.y - 650; // Increased from 500 to 650
       const height = Math.min(menuRef.current?.offsetHeight || maxHeight, maxHeight);
       top = Math.min(Math.max(margin, top), window.innerHeight - margin - height);
       setComputedPos({ left, top });
@@ -110,24 +115,65 @@ export function SpaceContextMenu({
     onClose();
   };
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const result = event.target?.result as string;
-            setUploadedImages(prev => [...prev, result]);
-          };
-          reader.readAsDataURL(file);
+    if (!files) return;
+
+    setUploading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to upload files');
+        setUploading(false);
+        return;
+      }
+
+      for (const file of Array.from(files)) {
+        const isVideo = file.type.startsWith('video/');
+        const isImage = file.type.startsWith('image/');
+
+        if (!isVideo && !isImage) {
+          toast.error('Please select image or video files only');
+          continue;
         }
-      });
+
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/space-covers/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+        // Upload to Supabase storage
+        const { data, error } = await supabase.storage
+          .from('user-files')
+          .upload(fileName, file);
+
+        if (error) {
+          console.error('Upload error:', error);
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('user-files')
+          .getPublicUrl(data.path);
+
+        setUploadedImages(prev => [...prev, publicUrl]);
+        setUploadedMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
+        
+        toast.success(`${isVideo ? 'Video' : 'Image'} uploaded successfully`);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setUploading(false);
     }
   };
 
   const removeUploadedImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setUploadedMediaTypes(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleGenerateWithAI = async () => {
@@ -208,19 +254,29 @@ export function SpaceContextMenu({
             <GradientLoader isLoading={isGenerating} />
             
             <div className="p-4 space-y-3">
-              {/* Upload Image Button */}
+              {/* Upload Media Button */}
               <button
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-background/50 hover:bg-background/70 border border-white/20 rounded-xl transition-colors"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
               >
-                <Upload size={16} />
-                <span className="text-sm font-medium">Upload Image</span>
+                {uploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm font-medium">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} />
+                    <span className="text-sm font-medium">Upload Image / Video</span>
+                  </>
+                )}
               </button>
               
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/mp4,video/quicktime"
                 multiple
                 onChange={handleThumbnailChange}
                 className="hidden"
@@ -262,31 +318,45 @@ export function SpaceContextMenu({
                 </div>
               </div>
 
-              {/* Image Grid - only show if there are images */}
+              {/* Media Grid - show uploaded images/videos */}
               {(uploadedImages.length > 0 || coverOptions.length > 0) && (
                 <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
-                  {uploadedImages.map((image, index) => (
-                    <button
-                      key={`uploaded-${index}`}
-                      className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all aspect-video"
-                      onClick={() => selectCoverImage(image)}
-                    >
-                      <img
-                        src={image}
-                        alt={`Uploaded ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                  {uploadedImages.map((mediaUrl, index) => {
+                    const isVideo = uploadedMediaTypes[index] === 'video';
+                    return (
                       <button
-                        className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeUploadedImage(index);
-                        }}
+                        key={`uploaded-${index}`}
+                        className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all aspect-video"
+                        onClick={() => selectCoverImage(mediaUrl)}
                       >
-                        <X size={12} />
+                        {isVideo ? (
+                          <video
+                            src={mediaUrl}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={mediaUrl}
+                            alt={`Uploaded ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        <button
+                          className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeUploadedImage(index);
+                          }}
+                        >
+                          <X size={12} />
+                        </button>
                       </button>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

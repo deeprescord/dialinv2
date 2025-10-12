@@ -9,6 +9,7 @@ import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
 import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { SpacesBar } from './SpacesBar';
+import { FloatingActionButtons } from './FloatingActionButtons';
 
 interface CombinedBottomBarProps {
   spaces: Space[];
@@ -102,26 +103,36 @@ export function CombinedBottomBar({
   };
 
   return (
-    <div className="px-4 pb-4 space-y-4">
-      {/* Items/People Bar */}
-      <ItemsPeopleBar />
-      
-      {/* Spaces Bar with resizable drag handle */}
-      <SpacesBar
-        spaces={spaces}
-        currentSpaceId={currentSpaceId}
-        onCreateSpace={onCreateSpace}
-        onDeleteSpace={onDeleteSpace}
-        onRenameSpace={onRenameSpace}
-        onUpdateSpaceDescription={onUpdateSpaceDescription}
-        onUpdateSpaceThumbnail={onUpdateSpaceThumbnail}
-        onReorderSpace={onReorderSpace}
-        onToggle360={onToggle360}
-        on360AxisChange={on360AxisChange}
-        on360VolumeChange={on360VolumeChange}
-        on360MuteToggle={on360MuteToggle}
-        onSpaceClick={onSpaceClick}
+    <>
+      {/* Floating Action Buttons */}
+      <FloatingActionButtons
+        onAddClick={onCreateSpace}
+        onAIClick={() => onToggleAIChat?.()}
+        onChatClick={() => onToggleChatWindow?.()}
       />
-    </div>
+
+      <div className="px-4 pb-4 space-y-4">
+        {/* Items/People Bar */}
+        <ItemsPeopleBar />
+        
+        {/* Spaces Bar with resizable drag handle */}
+        <SpacesBar
+          spaces={spaces}
+          currentSpaceId={currentSpaceId}
+          onCreateSpace={onCreateSpace}
+          onDeleteSpace={onDeleteSpace}
+          onRenameSpace={onRenameSpace}
+          onUpdateSpaceDescription={onUpdateSpaceDescription}
+          onUpdateSpaceThumbnail={onUpdateSpaceThumbnail}
+          onReorderSpace={onReorderSpace}
+          onToggle360={onToggle360}
+          on360AxisChange={on360AxisChange}
+          on360VolumeChange={on360VolumeChange}
+          on360MuteToggle={on360MuteToggle}
+          onSpaceClick={onSpaceClick}
+          hideActionButtons={true}
+        />
+      </div>
+    </>
   );
 }

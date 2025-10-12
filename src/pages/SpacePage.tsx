@@ -67,7 +67,7 @@ export default function SpacePage() {
       name: dbSpace.name,
       thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
       parentId: dbSpace.parent_id || undefined,
-      backgroundImage: undefined,
+      backgroundImage: dbSpace.cover_url || undefined,
       show360: false
     }));
 
@@ -153,9 +153,9 @@ export default function SpacePage() {
       ? {
           id: dbSpace.id,
           name: dbSpace.name,
-          thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+          thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
           parentId: dbSpace.parent_id || undefined,
-          backgroundImage: undefined,
+          backgroundImage: dbSpace.cover_url || undefined,
           show360: false,
         }
       : undefined;

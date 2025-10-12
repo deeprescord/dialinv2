@@ -87,6 +87,9 @@ export function HeroHeaderVideo({
     }
   };
 
+  // Check if backgroundImage is a video
+  const isBackgroundVideo = backgroundImage?.match(/\.(mp4|webm|ogg|mov)$/i);
+
   return (
     <div 
       className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20 cursor-pointer select-none"
@@ -142,14 +145,31 @@ export function HeroHeaderVideo({
         </div>
       )}
 
-      {/* Background Image - for floors or fallback */}
+      {/* Background - Video or Image */}
       {!show360 && (
-        <div 
-          className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 ${
-            !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
-        />
+        <>
+          {isBackgroundVideo ? (
+            <video
+              autoPlay
+              muted
+              playsInline
+              loop
+              preload="auto"
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <source src={backgroundImage} type="video/mp4" />
+            </video>
+          ) : (
+            <div 
+              className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 ${
+                !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
+            />
+          )}
+        </>
       )}
 
       {/* Gradient Overlay - don't interfere with 360° view */}

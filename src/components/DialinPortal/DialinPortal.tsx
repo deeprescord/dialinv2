@@ -101,7 +101,7 @@ useEffect(() => {
     name: dbSpace.name,
     thumb: (dbSpace as any).cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
     parentId: (dbSpace as any).parent_id || undefined,
-    backgroundImage: undefined,
+    backgroundImage: (dbSpace as any).cover_url || undefined,
     show360: false
   }));
   setSpaces([lobby, ...convertedDbSpaces]);

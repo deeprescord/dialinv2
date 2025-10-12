@@ -429,10 +429,7 @@ export function SpaceContextMenu({
               {/* Menu Items */}
               <div className="space-y-1">
                 {/* 360° Toggle */}
-                <div 
-                  className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
-                  onClick={() => onToggle360(space.id, !space.show360)}
-                >
+                <div className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors">
                   <div className="flex items-center gap-3">
                     <Globe size={16} />
                     <span className="text-sm">360° View</span>
@@ -440,7 +437,9 @@ export function SpaceContextMenu({
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={space.show360 || false}
-                      onCheckedChange={(checked) => onToggle360(space.id, checked)}
+                      onCheckedChange={(checked) => {
+                        onToggle360(space.id, checked);
+                      }}
                     />
                     {space.show360 && (
                       <button
@@ -519,46 +518,6 @@ export function SpaceContextMenu({
                         <span className="text-xs text-foreground/60">{volume}%</span>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* Change Cover */}
-                <div 
-                  className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
-                  onClick={() => setShowCoverOptions(!showCoverOptions)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Image size={16} />
-                    <span className="text-sm">Change Cover</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowCoverOptions(!showCoverOptions);
-                    }}
-                    className="p-1 hover:bg-white/10 rounded"
-                  >
-                    {showCoverOptions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
-                </div>
-
-                {showCoverOptions && (
-                  <div className="px-3 py-2 ml-3 mr-1 my-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {coverOptions.map((cover, index) => (
-                        <button
-                          key={`default-${index}`}
-                          className="relative overflow-hidden rounded-lg border-2 border-white/20 hover:border-primary transition-all aspect-video"
-                          onClick={() => selectCoverImage(cover)}
-                        >
-                          <img
-                            src={cover}
-                            alt={`Cover ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 )}
 

@@ -75,6 +75,7 @@ export default function SpacePage() {
       isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
       rotationEnabled: dbSpace.rotation_enabled || false,
       rotationSpeed: dbSpace.rotation_speed || 1,
+      rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
     }));
 
     setSpaces([lobby, ...convertedDbSpaces]);

@@ -218,6 +218,19 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
   }
   
+  // When auto-rotation is enabled, ensure base orientation includes offsets
+  useEffect(() => {
+    if (!rotationEnabled || !meshRef.current) return;
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    let base: [number, number, number] = isVideo ? [Math.PI, 0, 0] : [0, 0, 0];
+    if (mediaUrl.includes('lobby2.mp4')) {
+      base = [Math.PI, Math.PI / 2, 0];
+    }
+    base[0] += MathUtils.degToRad(yAxisOffset || 0);
+    base[1] += MathUtils.degToRad(xAxisOffset || 0);
+    meshRef.current.rotation.set(base[0], base[1], base[2]);
+  }, [rotationEnabled, xAxisOffset, yAxisOffset, mediaUrl]);
+  
   return (
     <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />

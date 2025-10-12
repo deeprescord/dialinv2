@@ -339,6 +339,16 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
 // Handle space thumbnail update
   const handleUpdateSpaceThumbnail = async (spaceId: string, thumbnailUrl: string) => {
+    // Lobby is a special case - update it in local state only
+    if (spaceId === 'lobby') {
+      setSpaces(prev => prev.map(space =>
+        space.id === 'lobby' ? { ...space, thumb: thumbnailUrl } : space
+      ));
+      toast.success('Lobby cover updated');
+      return;
+    }
+    
+    // For other spaces, update in database
     const success = await updateSpace(spaceId, { cover_url: thumbnailUrl } as any);
     if (!success) {
       refetch();

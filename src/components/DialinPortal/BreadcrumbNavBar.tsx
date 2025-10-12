@@ -314,7 +314,7 @@ export function BreadcrumbNavBar({
         {/* Context Menu */}
         {contextMenu && (
           <SpaceContextMenu
-            space={contextMenu.space}
+            space={spaces.find(s => s.id === contextMenu.space.id) || contextMenu.space}
             isOpen={true}
             onClose={() => setContextMenu(null)}
             onDelete={onDeleteSpace}

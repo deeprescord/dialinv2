@@ -262,23 +262,23 @@ export function SpacesBar({
       </div>
 
       {/* Context Menu */}
-      {contextMenu && (
-        <SpaceContextMenu
-          space={contextMenu.space}
-          isOpen={true}
-          onClose={() => setContextMenu(null)}
-          onDelete={onDeleteSpace}
-          onRename={onRenameSpace}
-          onUpdateDescription={onUpdateSpaceDescription}
-          onUpdateThumbnail={onUpdateSpaceThumbnail}
-          onReorder={onReorderSpace}
-          onToggle360={onToggle360}
-          on360AxisChange={on360AxisChange}
-          on360VolumeChange={on360VolumeChange}
-          on360MuteToggle={on360MuteToggle}
-          position={contextMenu.position}
-        />
-      )}
+        {contextMenu && (
+          <SpaceContextMenu
+            space={spaces.find(s => s.id === contextMenu.space.id) || contextMenu.space}
+            isOpen={true}
+            onClose={() => setContextMenu(null)}
+            onDelete={onDeleteSpace}
+            onRename={onRenameSpace}
+            onUpdateDescription={onUpdateSpaceDescription}
+            onUpdateThumbnail={onUpdateSpaceThumbnail}
+            onReorder={onReorderSpace}
+            onToggle360={onToggle360}
+            on360AxisChange={on360AxisChange}
+            on360VolumeChange={on360VolumeChange}
+            on360MuteToggle={on360MuteToggle}
+            position={contextMenu.position}
+          />
+        )}
 
       {/* Dial Popup */}
       <DialPopup

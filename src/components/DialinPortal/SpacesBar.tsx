@@ -82,15 +82,12 @@ export function SpacesBar({
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     setWasLongPress(false);
     const timer = setTimeout(() => {
-      // Show DialPopup on long press
+      // Show SpaceContextMenu on long press
       setWasLongPress(true);
-      setDialPopupItem({
-        id: space.id,
-        title: space.name,
-        thumb: space.thumb,
-        type: 'space'
+      setContextMenu({
+        space,
+        position: { x: event.clientX, y: event.clientY }
       });
-      setShowDialPopup(true);
     }, 500); // 500ms press and hold
     setPressTimer(timer);
   };

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Package, Users } from 'lucide-react';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
@@ -11,7 +11,7 @@ import { DialPopup } from './DialPopup';
 import { AddOptionsModal } from './AddOptionsModal';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
-import { Slider } from '../ui/slider';
+import { ItemsPeopleBar } from './ItemsPeopleBar';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -77,6 +77,7 @@ export function SpacesBar({
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
+  const [showItemsPeople, setShowItemsPeople] = useState(false);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -156,6 +157,18 @@ export function SpacesBar({
 
   return (
     <div className="relative">
+      {/* Items/People Bar - shown above when toggled */}
+      {showItemsPeople && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="absolute bottom-full mb-2 left-0 right-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"
+        >
+          <ItemsPeopleBar scale={scale} />
+        </motion.div>
+      )}
+
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
       <div className="relative">
         {/* Top Action Buttons */}
@@ -169,6 +182,28 @@ export function SpacesBar({
             >
               <PlusCircle size={14} className="mr-1" />
               Add
+            </Button>
+          )}
+          {!hideActionButtons && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowItemsPeople(!showItemsPeople)}
+              className={`h-7 px-2 text-xs hover:bg-white/10 ${showItemsPeople ? 'bg-white/10' : ''}`}
+            >
+              <Package size={14} className="mr-1" />
+              Items
+            </Button>
+          )}
+          {!hideActionButtons && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowItemsPeople(!showItemsPeople)}
+              className={`h-7 px-2 text-xs hover:bg-white/10 ${showItemsPeople ? 'bg-white/10' : ''}`}
+            >
+              <Users size={14} className="mr-1" />
+              People
             </Button>
           )}
           {!hideActionButtons && !hideAIButton && (

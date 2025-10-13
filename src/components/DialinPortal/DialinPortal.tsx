@@ -356,7 +356,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     // Lobby is a special case - update it in local state only
     if (spaceId === 'lobby') {
       setSpaces(prev => prev.map(space =>
-        space.id === 'lobby' ? { ...space, thumb: thumbnailUrl } : space
+        space.id === 'lobby' ? { ...space, thumb: thumbnailUrl, backgroundImage: thumbnailUrl } : space
       ));
       toast.success('Lobby cover updated');
       return;
@@ -364,7 +364,13 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     
     // For other spaces, update in database
     const success = await updateSpace(spaceId, { cover_url: thumbnailUrl } as any);
-    if (!success) {
+    if (success) {
+      // Update local state immediately
+      setSpaces(prev => prev.map(space =>
+        space.id === spaceId ? { ...space, thumb: thumbnailUrl, backgroundImage: thumbnailUrl } : space
+      ));
+      toast.success('Cover updated');
+    } else {
       refetch();
       toast.error('Failed to update cover');
     }

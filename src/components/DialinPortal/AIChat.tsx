@@ -134,14 +134,14 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-start justify-center pt-8" style={{ height: '70vh' }}>
+        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ height: 'calc(70vh - 5rem)' }}>
           {/* AI Chat Window */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="relative z-10 w-[85vw] max-w-4xl h-[calc(70vh-4rem)]"
+            className="relative z-10 w-[85vw] max-w-4xl h-[calc(70vh-9rem)]"
           >
             <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
               {/* Header */}

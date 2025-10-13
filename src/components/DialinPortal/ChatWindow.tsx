@@ -131,14 +131,14 @@ export function ChatWindow({ isOpen, onClose, pinnedContacts = [], onContactClic
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ height: 'calc(70vh - 5rem)' }}>
+          <div className="fixed top-20 left-0 right-0 bottom-24 z-40 flex items-start justify-center pt-4">
             {/* Chat Window */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-              className="relative z-10 w-[85vw] max-w-4xl h-[calc(70vh-9rem)]"
+              className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full"
             >
               <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
             

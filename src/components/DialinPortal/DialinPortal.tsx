@@ -101,11 +101,22 @@ useEffect(() => {
     thumb: (dbSpace as any).cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
     parentId: (dbSpace as any).parent_id || undefined,
     backgroundImage: (dbSpace as any).cover_url || undefined,
-    show360: false
   }));
   setSpaces(prev => {
-    const prevLobby = prev.find(s => s.id === 'lobby');
-    const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: prevLobby?.thumb || lobbyPoster };
+    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: lobbyPoster };
+    const lobby: Space = {
+      id: 'lobby',
+      name: 'Lobby',
+      thumb: prevLobby.thumb || lobbyPoster,
+      // Preserve 360 settings across refetches
+      show360: prevLobby.show360,
+      xAxis: prevLobby.xAxis,
+      yAxis: prevLobby.yAxis,
+      volume: prevLobby.volume,
+      isMuted: prevLobby.isMuted,
+      rotationEnabled: prevLobby.rotationEnabled,
+      rotationSpeed: prevLobby.rotationSpeed,
+    };
     return [lobby, ...convertedDbSpaces];
   });
 }, [dbSpaces]);
@@ -399,7 +410,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   const handleToggle360 = (spaceId: string, enabled: boolean) => {
-    setSpaces(spaces.map(space => 
+    setSpaces(prev => prev.map(space => 
       space.id === spaceId 
         ? { ...space, show360: enabled }
         : space
@@ -407,7 +418,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   const handle360AxisChange = (spaceId: string, axis: 'x' | 'y', value: number) => {
-    setSpaces(spaces.map(space => 
+    setSpaces(prev => prev.map(space => 
       space.id === spaceId 
         ? { ...space, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
         : space
@@ -415,7 +426,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   const handle360VolumeChange = (spaceId: string, volume: number) => {
-    setSpaces(spaces.map(space => 
+    setSpaces(prev => prev.map(space => 
       space.id === spaceId 
         ? { ...space, volume }
         : space
@@ -423,9 +434,25 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   const handle360MuteToggle = (spaceId: string, muted: boolean) => {
-    setSpaces(spaces.map(space => 
+    setSpaces(prev => prev.map(space => 
       space.id === spaceId 
         ? { ...space, isMuted: muted }
+        : space
+    ));
+  };
+
+  const handle360RotationToggle = (spaceId: string, enabled: boolean) => {
+    setSpaces(prev => prev.map(space =>
+      space.id === spaceId
+        ? { ...space, rotationEnabled: enabled }
+        : space
+    ));
+  };
+
+  const handle360RotationSpeedChange = (spaceId: string, speed: number) => {
+    setSpaces(prev => prev.map(space =>
+      space.id === spaceId
+        ? { ...space, rotationSpeed: speed }
         : space
     ));
   };
@@ -606,6 +633,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             on360AxisChange={handle360AxisChange}
             on360VolumeChange={handle360VolumeChange}
             on360MuteToggle={handle360MuteToggle}
+            on360RotationToggle={handle360RotationToggle}
+            on360RotationSpeedChange={handle360RotationSpeedChange}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={() => setShowChatWindow(!showChatWindow)}

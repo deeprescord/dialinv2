@@ -68,7 +68,7 @@ export function AddContactPanel({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-start justify-center pt-8" style={{ height: '70vh' }}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -84,7 +84,7 @@ export function AddContactPanel({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="relative z-10 w-[90vw] max-w-2xl max-h-[80vh] overflow-y-auto"
+            className="relative z-10 w-[85vw] max-w-4xl h-[calc(70vh-4rem)] overflow-y-auto"
           >
             <div className="w-full glass-card border border-white/10 rounded-xl overflow-hidden">
               {/* Header */}

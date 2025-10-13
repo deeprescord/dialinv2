@@ -77,7 +77,7 @@ export function SpacesBar({
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
-  const [showItemsPeople, setShowItemsPeople] = useState(false);
+  const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people' | null>(null);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -158,14 +158,14 @@ export function SpacesBar({
   return (
     <div className="relative">
       {/* Items/People Bar - shown above when toggled */}
-      {showItemsPeople && (
+      {itemsPeopleView && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           className="absolute bottom-full mb-2 left-0 right-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"
         >
-          <ItemsPeopleBar scale={scale} />
+          <ItemsPeopleBar scale={scale} view={itemsPeopleView} />
         </motion.div>
       )}
 
@@ -188,8 +188,8 @@ export function SpacesBar({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowItemsPeople(!showItemsPeople)}
-              className={`h-7 px-2 text-xs hover:bg-white/10 ${showItemsPeople ? 'bg-white/10' : ''}`}
+              onClick={() => setItemsPeopleView(itemsPeopleView === 'items' ? null : 'items')}
+              className={`h-7 px-2 text-xs hover:bg-white/10 ${itemsPeopleView === 'items' ? 'bg-white/10' : ''}`}
             >
               <Package size={14} className="mr-1" />
               Items
@@ -199,8 +199,8 @@ export function SpacesBar({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowItemsPeople(!showItemsPeople)}
-              className={`h-7 px-2 text-xs hover:bg-white/10 ${showItemsPeople ? 'bg-white/10' : ''}`}
+              onClick={() => setItemsPeopleView(itemsPeopleView === 'people' ? null : 'people')}
+              className={`h-7 px-2 text-xs hover:bg-white/10 ${itemsPeopleView === 'people' ? 'bg-white/10' : ''}`}
             >
               <Users size={14} className="mr-1" />
               People

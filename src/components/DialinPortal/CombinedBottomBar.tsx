@@ -118,8 +118,7 @@ export function CombinedBottomBar({
       />
 
       <div className="px-4 pb-4 space-y-4">
-        {/* Items/People Bar */}
-        <ItemsPeopleBar />
+        {/* Items/People Bar - removed, now controlled by SpacesBar */}
         
         {/* Spaces Bar with resizable drag handle */}
         <SpacesBar

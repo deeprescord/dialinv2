@@ -10,10 +10,10 @@ import city from '@/assets/social-city.jpg';
 
 interface ItemsPeopleBarProps {
   scale?: number; // Inherit scale from SpacesBar if needed
+  view: 'items' | 'people'; // Controlled by parent
 }
 
-export function ItemsPeopleBar({ scale = 30 }: ItemsPeopleBarProps) {
-  const [activeTab, setActiveTab] = useState<'items' | 'people'>('items');
+export function ItemsPeopleBar({ scale = 30, view }: ItemsPeopleBarProps) {
 
   // Scale-responsive sizing (reduced by 25%)
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -35,31 +35,10 @@ export function ItemsPeopleBar({ scale = 30 }: ItemsPeopleBarProps) {
   return (
     <div className="mb-4 relative">
       <div className="relative" style={{ padding: `${padding}px` }}>
-        {/* Tab Headers */}
-        <div className="flex items-center gap-2 mb-4 ml-2">
-          <button
-            onClick={() => setActiveTab('items')}
-            className={`text-lg font-semibold transition-colors ${
-              activeTab === 'items' ? 'text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            Items
-          </button>
-          <span className="text-muted-foreground">|</span>
-          <button
-            onClick={() => setActiveTab('people')}
-            className={`text-lg font-semibold transition-colors ${
-              activeTab === 'people' ? 'text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            People
-          </button>
-        </div>
-
         {/* Scrollable Items/People List */}
         <div className="overflow-x-auto scrollbar-thin">
           <div className="flex items-center" style={{ gap: `${spacing}px` }}>
-            {activeTab === 'items' ? (
+            {view === 'items' ? (
               demoItems.map((item, index) => (
                 <motion.div
                   key={item.id}

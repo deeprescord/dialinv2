@@ -103,11 +103,12 @@ useEffect(() => {
     backgroundImage: (dbSpace as any).cover_url || undefined,
   }));
   setSpaces(prev => {
-    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: lobbyPoster };
+    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: lobbyPoster };
     const lobby: Space = {
       id: 'lobby',
       name: 'Lobby',
-      thumb: prevLobby.thumb || lobbyPoster,
+      thumb: prevLobby.thumb,
+      backgroundImage: prevLobby.backgroundImage || prevLobby.thumb,
       // Preserve 360 settings across refetches
       show360: prevLobby.show360,
       xAxis: prevLobby.xAxis,

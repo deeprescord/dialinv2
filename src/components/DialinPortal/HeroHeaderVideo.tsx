@@ -119,6 +119,7 @@ export function HeroHeaderVideo({
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
+          style={{ transform: 'scaleY(1)' }}
           poster={posterSrc}
         >
           <source src={videoSrc} type="video/mp4" />
@@ -168,6 +169,7 @@ export function HeroHeaderVideo({
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                 !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
               }`}
+              style={{ transform: 'scaleY(1)' }}
             >
               <source src={backgroundImage} />
             </video>

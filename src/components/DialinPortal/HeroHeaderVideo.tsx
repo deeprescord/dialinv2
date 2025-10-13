@@ -70,7 +70,7 @@ export function HeroHeaderVideo({
   }, [videoLoaded]);
 
   const handleMouseDown = () => {
-    if (!onOpenAddPanel) return;
+    if (!onOpenAddPanel || show360) return;
     const timer = setTimeout(() => {
       onOpenAddPanel();
     }, 800);

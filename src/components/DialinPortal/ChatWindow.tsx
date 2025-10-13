@@ -132,15 +132,6 @@ export function ChatWindow({ isOpen, onClose, pinnedContacts = [], onContactClic
       <AnimatePresence>
         {isOpen && (
           <div className="fixed top-0 left-0 right-0 z-50 flex items-start justify-center pt-8" style={{ height: '70vh' }}>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
-              onClick={onClose}
-            />
-            
             {/* Chat Window */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -149,7 +140,7 @@ export function ChatWindow({ isOpen, onClose, pinnedContacts = [], onContactClic
               transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
               className="relative z-10 w-[85vw] max-w-4xl h-[calc(70vh-4rem)]"
             >
-              <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col">
+              <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
             
             {selectedThread ? (
               // Individual Thread View

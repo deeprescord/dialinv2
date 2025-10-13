@@ -44,6 +44,13 @@ import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
 import { toast } from 'sonner';
 
+const appendCacheBuster = (url?: string, seed?: string | number): string | undefined => {
+  if (!url) return undefined;
+  const v = typeof seed === 'number' ? seed : seed ? new Date(seed).getTime() : Date.now();
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}cb=${v}`;
+};
+
 export function DialinPortal() {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
@@ -98,9 +105,9 @@ useEffect(() => {
   const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
     id: dbSpace.id,
     name: dbSpace.name,
-    thumb: (dbSpace as any).cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+    thumb: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
     parentId: (dbSpace as any).parent_id || undefined,
-    backgroundImage: (dbSpace as any).cover_url || undefined,
+    backgroundImage: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : undefined,
   }));
   setSpaces(prev => {
     const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: lobbyPoster };
@@ -356,8 +363,9 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const handleUpdateSpaceThumbnail = async (spaceId: string, thumbnailUrl: string) => {
     // Lobby is a special case - update it in local state only
     if (spaceId === 'lobby') {
+      const url = appendCacheBuster(thumbnailUrl);
       setSpaces(prev => prev.map(space =>
-        space.id === 'lobby' ? { ...space, thumb: thumbnailUrl, backgroundImage: thumbnailUrl } : space
+        space.id === 'lobby' ? { ...space, thumb: url!, backgroundImage: url } : space
       ));
       toast.success('Lobby cover updated');
       return;
@@ -367,8 +375,9 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     const success = await updateSpace(spaceId, { cover_url: thumbnailUrl } as any);
     if (success) {
       // Update local state immediately
+      const url = appendCacheBuster(thumbnailUrl);
       setSpaces(prev => prev.map(space =>
-        space.id === spaceId ? { ...space, thumb: thumbnailUrl, backgroundImage: thumbnailUrl } : space
+        space.id === spaceId ? { ...space, thumb: url!, backgroundImage: url } : space
       ));
       toast.success('Cover updated');
     } else {

@@ -11,7 +11,7 @@ interface CreateSpaceModalProps {
   parentId?: string;
 }
 
-const defaultCover = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&h=120&fit=crop&auto=format';
+const defaultCover = '';
 
 export function CreateSpaceModal({ isOpen, onClose, onCreate, parentId }: CreateSpaceModalProps) {
   const [spaceName, setSpaceName] = useState('');

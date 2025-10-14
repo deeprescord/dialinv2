@@ -771,13 +771,6 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         isMuted={lobbySpace?.isMuted || false}
         onVolumeChange={(volume) => handle360VolumeChange('lobby', volume)}
         onMuteToggle={() => handle360MuteToggle('lobby', !lobbySpace?.isMuted)}
-        horizontalFlip={lobbySpace?.horizontalFlip || false}
-        verticalFlip={lobbySpace?.verticalFlip || false}
-        onFlipChange={(axis, value) => {
-          updateSpace('lobby', {
-            [axis === 'horizontal' ? 'horizontal_flip' : 'vertical_flip']: value
-          }, { silent: true });
-        }}
       />
 
       <AuthModal

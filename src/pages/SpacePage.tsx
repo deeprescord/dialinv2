@@ -76,8 +76,6 @@ export default function SpacePage() {
       rotationEnabled: dbSpace.rotation_enabled || false,
       rotationSpeed: dbSpace.rotation_speed || 1,
       rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
-      horizontalFlip: dbSpace.horizontal_flip || false,
-      verticalFlip: dbSpace.vertical_flip || false,
     }));
 
     setSpaces([lobby, ...convertedDbSpaces]);
@@ -165,15 +163,7 @@ export default function SpacePage() {
           thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
           parentId: dbSpace.parent_id || undefined,
           backgroundImage: dbSpace.cover_url || undefined,
-          show360: dbSpace.show_360 || false,
-          xAxis: dbSpace.x_axis_offset || 0,
-          yAxis: dbSpace.y_axis_offset || 0,
-          volume: dbSpace.volume || 50,
-          isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
-          rotationEnabled: dbSpace.rotation_enabled || false,
-          rotationSpeed: dbSpace.rotation_speed || 1,
-          horizontalFlip: dbSpace.horizontal_flip || false,
-          verticalFlip: dbSpace.vertical_flip || false,
+          show360: false,
         }
       : undefined;
   }, [spaces, dbSpaces, spaceId]);
@@ -781,8 +771,6 @@ export default function SpacePage() {
               isMuted={currentSpace?.isMuted}
               rotationEnabled={currentSpace?.rotationEnabled}
               rotationSpeed={currentSpace?.rotationSpeed}
-              horizontalFlip={currentSpace?.horizontalFlip}
-              verticalFlip={currentSpace?.verticalFlip}
               selectedItem={selectedItemData}
             />
           )}
@@ -855,11 +843,6 @@ export default function SpacePage() {
             on360MuteToggle={handle360MuteToggle}
             on360RotationToggle={handle360RotationToggle}
             on360RotationSpeedChange={handle360RotationSpeedChange}
-            on360FlipChange={(spaceId, axis, value) => {
-              updateSpace(spaceId, {
-                [axis === 'horizontal' ? 'horizontal_flip' : 'vertical_flip']: value
-              }, { silent: true });
-            }}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={handleToggleChatWindow}
@@ -980,13 +963,6 @@ export default function SpacePage() {
           isMuted={currentSpace?.isMuted}
           onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
-          horizontalFlip={currentSpace?.horizontalFlip || false}
-          verticalFlip={currentSpace?.verticalFlip || false}
-          onFlipChange={(axis, value) => {
-            updateSpace(spaceId || 'lobby', {
-              [axis === 'horizontal' ? 'horizontal_flip' : 'vertical_flip']: value
-            }, { silent: true });
-          }}
         />
 
         {/* Metadata Adjustment Panel */}

@@ -337,7 +337,6 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
-          horizontal_flip: boolean | null
           id: string
           is_muted: boolean | null
           name: string
@@ -348,7 +347,6 @@ export type Database = {
           show_360: boolean | null
           updated_at: string
           user_id: string
-          vertical_flip: boolean | null
           volume: number | null
           x_axis_offset: number | null
           y_axis_offset: number | null
@@ -357,7 +355,6 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
-          horizontal_flip?: boolean | null
           id?: string
           is_muted?: boolean | null
           name: string
@@ -368,7 +365,6 @@ export type Database = {
           show_360?: boolean | null
           updated_at?: string
           user_id: string
-          vertical_flip?: boolean | null
           volume?: number | null
           x_axis_offset?: number | null
           y_axis_offset?: number | null
@@ -377,7 +373,6 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
-          horizontal_flip?: boolean | null
           id?: string
           is_muted?: boolean | null
           name?: string
@@ -388,7 +383,6 @@ export type Database = {
           show_360?: boolean | null
           updated_at?: string
           user_id?: string
-          vertical_flip?: boolean | null
           volume?: number | null
           x_axis_offset?: number | null
           y_axis_offset?: number | null

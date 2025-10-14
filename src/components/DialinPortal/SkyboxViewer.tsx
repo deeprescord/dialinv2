@@ -1,7 +1,7 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { TextureLoader, BackSide, DoubleSide, Euler, MathUtils, VideoTexture } from 'three';
+import { TextureLoader, BackSide, Euler, MathUtils, VideoTexture } from 'three';
 import { Mesh } from 'three';
 
 
@@ -88,26 +88,21 @@ interface SkyboxProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
-  horizontalFlip?: boolean;
-  verticalFlip?: boolean;
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1, horizontalFlip = false, verticalFlip = false }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1 }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const isVideoRef = useRef(false);
 
   React.useEffect(() => {
     // Reset states
     setTexture(null);
     setError(false);
     
-    // Check if the URL is a video file (handle query/hash)
-    const cleanUrl = mediaUrl.split('?')[0].split('#')[0];
-    const isVideo = /(\.mp4|\.webm|\.ogg|\.mov)$/i.test(cleanUrl);
-    isVideoRef.current = isVideo;
+    // Check if the URL is a video file
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
     
     if (isVideo) {
       // Handle video
@@ -127,11 +122,9 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           hasCreatedTexture = true;
           try {
             const videoTexture = new VideoTexture(video);
-            videoTexture.flipY = false; // Keep false to prevent flipping
+            videoTexture.flipY = true;
             setTexture(videoTexture);
             setError(false);
-            // Notify parent that WebGL content loaded
-            window.dispatchEvent(new CustomEvent('webgl-loaded'));
             
             // Start playing
             video.play().catch((playError) => {
@@ -155,17 +148,9 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       const handleError = (err: any) => {
         console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
         setError(true);
-        // Trigger fallback in parent for any video load issues
-        setTimeout(() => {
-          const event = new CustomEvent('webgl-security-error');
-          window.dispatchEvent(event);
-        }, 100);
       };
       
-      video.addEventListener('loadedmetadata', handleCanPlay);
-      video.addEventListener('loadeddata', handleCanPlay);
       video.addEventListener('canplay', handleCanPlay);
-      video.addEventListener('canplaythrough', handleCanPlay);
       video.addEventListener('error', handleError);
       
       videoRef.current = video;
@@ -174,10 +159,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       video.load();
       
       return () => {
-        video.removeEventListener('loadedmetadata', handleCanPlay);
-        video.removeEventListener('loadeddata', handleCanPlay);
         video.removeEventListener('canplay', handleCanPlay);
-        video.removeEventListener('canplaythrough', handleCanPlay);
         video.removeEventListener('error', handleError);
         video.pause();
         video.remove();
@@ -191,22 +173,13 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       loader.load(
         mediaUrl,
         (loadedTexture) => {
-          loadedTexture.flipY = false;
-          loadedTexture.needsUpdate = true;
           setTexture(loadedTexture);
           setError(false);
-          // Notify parent that WebGL content loaded
-          window.dispatchEvent(new CustomEvent('webgl-loaded'));
         },
         undefined,
         (err) => {
           console.warn(`Failed to load skybox texture: ${mediaUrl}`, err);
           setError(true);
-          // Trigger fallback in parent so we show non-WebGL background
-          setTimeout(() => {
-            const event = new CustomEvent('webgl-security-error');
-            window.dispatchEvent(event);
-          }, 100);
         }
       );
     }
@@ -219,52 +192,44 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     }
   });
 
-  // Ensure stable rotation order to avoid flips at high pitch
-  React.useEffect(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.order = 'YXZ';
-    }
-  }, []);
-
   // Set initial rotation when auto-rotation is enabled (includes axis offsets)
   React.useEffect(() => {
     if (!rotationEnabled || !meshRef.current) return;
-    const isVideo = isVideoRef.current;
-    let base: [number, number, number] = isVideo ? [0, Math.PI, 0] : [0, 0, 0];
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    let base: [number, number, number] = isVideo ? [Math.PI, 0, 0] : [0, 0, 0];
     if (mediaUrl.includes('lobby2.mp4')) {
-      base = [0, Math.PI * 1.5, 0];
+      base = [Math.PI, Math.PI / 2, 0];
     }
-    base[0] += MathUtils.degToRad(Math.max(-85, Math.min(85, yAxisOffset || 0)));
+    base[0] += MathUtils.degToRad(yAxisOffset || 0);
     base[1] += MathUtils.degToRad(xAxisOffset || 0);
     meshRef.current.rotation.set(base[0], base[1], base[2]);
   }, [rotationEnabled, xAxisOffset, yAxisOffset, mediaUrl]);
 
-  // Compute mesh scale for flip (avoid RepeatWrapping on NPOT textures like videos)
-  const meshScale: [number, number, number] = [
-    horizontalFlip ? -50 : 50,
-    verticalFlip ? -50 : 50,
-    50
-  ];
+  // If error loading texture, don't render the skybox
+  if (error || !texture) {
+    return null;
+  }
+
   // Check if this is a video file to apply different rotation
-  const isVideo = isVideoRef.current;
+  const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
   
   // Apply specific rotation based on video to center them properly
-  let rotation: [number, number, number] = isVideo ? [0, Math.PI, 0] : [0, 0, 0];
+  let rotation: [number, number, number] = isVideo ? [Math.PI, 0, 0] : [0, 0, 0];
   if (mediaUrl.includes('lobby2.mp4')) {
     // Center the Grand Theater video by rotating it to the center
-    rotation = [0, Math.PI * 1.5, 0];
+    rotation = [Math.PI, Math.PI / 2, 0];
   }
   
   // Apply user-defined axis offsets (only if rotation is not enabled)
   if (!rotationEnabled) {
-    rotation[0] += MathUtils.degToRad(Math.max(-85, Math.min(85, yAxisOffset || 0))); // Clamp pitch to avoid inversion
-    rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // Yaw adjustment
+    rotation[0] += MathUtils.degToRad(yAxisOffset || 0); // Y axis affects X rotation
+    rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
   }
   
   return (
-    <mesh ref={meshRef} scale={meshScale} rotation={rotationEnabled ? undefined : rotation}>
+    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
-      <meshBasicMaterial map={texture} side={DoubleSide} />
+      <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>
   );
 }
@@ -279,8 +244,6 @@ interface SkyboxViewerProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
-  horizontalFlip?: boolean;
-  verticalFlip?: boolean;
 }
 
 export function SkyboxViewer({ 
@@ -292,9 +255,7 @@ export function SkyboxViewer({
   volume = 50,
   isMuted = true,
   rotationEnabled = false,
-  rotationSpeed = 1,
-  horizontalFlip = false,
-  verticalFlip = false
+  rotationSpeed = 1
 }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
@@ -311,39 +272,20 @@ export function SkyboxViewer({
 
     checkMobile();
 
-    // Reset and set a safety fallback timer if WebGL content doesn't load
-    setWebglError(false);
-    let loaded = false;
-    const fallbackTimer = window.setTimeout(() => {
-      if (!loaded) setWebglError(true);
-    }, 2500);
-
-    // Listen for WebGL errors and successful loads from child components
+    // Listen for WebGL security errors from child components
     const handleWebGLError = () => {
-      loaded = false;
       setWebglError(true);
-      window.clearTimeout(fallbackTimer);
-    };
-
-    const handleWebGLLoaded = () => {
-      loaded = true;
-      setWebglError(false);
-      window.clearTimeout(fallbackTimer);
     };
 
     window.addEventListener('webgl-security-error', handleWebGLError);
-    window.addEventListener('webgl-loaded', handleWebGLLoaded);
     
     return () => {
       window.removeEventListener('webgl-security-error', handleWebGLError);
-      window.removeEventListener('webgl-loaded', handleWebGLLoaded);
-      window.clearTimeout(fallbackTimer);
     };
   }, [enableGyroscope, mediaUrl]);
 
   if (webglError) {
-    const cleanUrl = mediaUrl.split('?')[0].split('#')[0];
-    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(cleanUrl);
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
     
     if (isVideo) {
       return (
@@ -410,12 +352,10 @@ export function SkyboxViewer({
             mediaUrl={mediaUrl} 
             xAxisOffset={xAxisOffset}
             yAxisOffset={yAxisOffset}
-            volume={volume}
+        volume={volume}
             isMuted={isMuted}
             rotationEnabled={rotationEnabled}
             rotationSpeed={rotationSpeed}
-            horizontalFlip={horizontalFlip}
-            verticalFlip={verticalFlip}
           />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 

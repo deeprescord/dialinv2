@@ -37,7 +37,6 @@ interface SpaceContextMenuProps {
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
-  on360FlipChange?: (spaceId: string, axis: 'horizontal' | 'vertical', value: boolean) => void;
   position: { x: number; y: number };
 }
 
@@ -57,7 +56,6 @@ export function SpaceContextMenu({
   on360RotationToggle,
   on360RotationSpeedChange,
   on360RotationAxisChange,
-  on360FlipChange,
   position
 }: SpaceContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -632,27 +630,6 @@ export function SpaceContextMenu({
                           <span className="text-[10px] text-white/60">{volume}%</span>
                         </div>
                       )}
-
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white">Flip Horizontal</span>
-                        <Switch
-                          checked={space.horizontalFlip || false}
-                          onCheckedChange={(checked) => {
-                            on360FlipChange?.(space.id, 'horizontal', checked);
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white">Flip Vertical</span>
-                        <Switch
-                          checked={space.verticalFlip || false}
-                          onCheckedChange={(checked) => {
-                            on360FlipChange?.(space.id, 'vertical', checked);
-                          }}
-                        />
-                      </div>
 
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-white">Auto Rotate</span>

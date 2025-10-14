@@ -122,10 +122,10 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
                       <button
                         key={option.id}
                         onClick={() => handleOptionClick(option.id)}
-                        className="h-28 flex flex-col items-center justify-center space-y-3 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
+                        className="h-20 flex flex-col items-center justify-center space-y-2 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
                       >
-                        <Icon className="h-7 w-7 text-white group-hover:scale-110 transition-transform" />
-                        <span className="text-xs font-medium tracking-wide text-white">{option.title}</span>
+                        <Icon className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] font-medium tracking-wide text-white">{option.title}</span>
                       </button>
                     );
                   })}

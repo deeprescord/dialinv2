@@ -27,7 +27,7 @@ interface MetadataAdjustmentPanelProps {
   initialDialValues?: Record<string, any>;
   suggestedDials?: DialSuggestion[];
   suggestedSpaces?: string[];
-  availableSpaces: Array<{ id: string; name: string; parent_id?: string | null }>;
+  availableSpaces: Array<{ id: string; name: string; parent_id?: string | null; cover_url?: string | null; updated_at?: string | null }>;
   confidence?: number;
   isAiGenerated?: boolean;
   onSave: (metadata: {
@@ -570,7 +570,7 @@ export function MetadataAdjustmentPanel({
                     spaces={getCurrentLevelSpaces().map(s => ({
                       id: s.id,
                       name: s.name,
-                      thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+                      thumb: s.cover_url ? `${s.cover_url}${s.cover_url.includes('?') ? '&' : '?'}cb=${s.updated_at ? new Date(s.updated_at).getTime() : Date.now()}` : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
                       parentId: s.parent_id || undefined
                     }))}
                     currentSpaceId={selectedSpaceId}

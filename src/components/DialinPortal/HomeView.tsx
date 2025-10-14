@@ -310,7 +310,9 @@ export function HomeView({
           availableSpaces={userSpaces.map(space => ({
             id: space.id,
             name: space.name,
-            parent_id: space.parent_id
+            parent_id: space.parent_id,
+            cover_url: (space as any).cover_url,
+            updated_at: (space as any).updated_at
           }))}
           confidence={aiMetadata?.confidence || 0}
           isAiGenerated={!!aiMetadata}

@@ -236,6 +236,9 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       console.warn('Failed to apply texture flip:', e);
     }
   }, [texture, horizontalFlip, verticalFlip]);
+  // Check if this is a video file to apply different rotation
+  const isVideo = isVideoRef.current;
+  
   // Apply specific rotation based on video to center them properly
   let rotation: [number, number, number] = isVideo ? [0, Math.PI, 0] : [0, 0, 0];
   if (mediaUrl.includes('lobby2.mp4')) {

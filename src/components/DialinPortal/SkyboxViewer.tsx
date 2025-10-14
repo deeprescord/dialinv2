@@ -104,8 +104,9 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     setTexture(null);
     setError(false);
     
-    // Check if the URL is a video file
-    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    // Check if the URL is a video file (handle query/hash)
+    const cleanUrl = mediaUrl.split('?')[0].split('#')[0];
+    const isVideo = /(\.mp4|\.webm|\.ogg|\.mov)$/i.test(cleanUrl);
     isVideoRef.current = isVideo;
     
     if (isVideo) {
@@ -315,7 +316,8 @@ export function SkyboxViewer({
   }, [enableGyroscope, mediaUrl]);
 
   if (webglError) {
-    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    const cleanUrl = mediaUrl.split('?')[0].split('#')[0];
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(cleanUrl);
     
     if (isVideo) {
       return (

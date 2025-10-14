@@ -97,7 +97,7 @@ export function DialinPortal() {
     setShowCelebration(true);
   };
 const [spaces, setSpaces] = useState<Space[]>([
-  { id: 'lobby', name: 'Lobby', thumb: '' }
+  { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' }
 ]);
 const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpacesContext();
 
@@ -110,12 +110,12 @@ useEffect(() => {
     backgroundImage: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : undefined,
   }));
   setSpaces(prev => {
-    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: '', backgroundImage: '' };
+    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png', backgroundImage: '' };
     const lobby: Space = {
       id: 'lobby',
       name: 'Lobby',
-      thumb: prevLobby.thumb,
-      backgroundImage: prevLobby.backgroundImage || prevLobby.thumb,
+      thumb: prevLobby.thumb || '/media/lobby-poster.png',
+      backgroundImage: prevLobby.backgroundImage || prevLobby.thumb || '/media/lobby-poster.png',
       // Preserve 360 settings across refetches
       show360: prevLobby.show360,
       xAxis: prevLobby.xAxis,

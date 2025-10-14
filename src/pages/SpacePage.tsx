@@ -115,6 +115,7 @@ export default function SpacePage() {
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
@@ -273,6 +274,27 @@ export default function SpacePage() {
     if (selectedContact) {
       setPinnedContacts(prev => prev.filter(c => c.id !== selectedContact.id));
     }
+  };
+
+  // Panel management
+  const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
+    setShowChatWindow(panelName === 'chat');
+    setShowAIChat(panelName === 'ai');
+    setIsAddModalOpen(panelName === 'add');
+  };
+
+  // Handle add option selection
+  const handleAddOptionSelect = (optionId: string) => {
+    if (optionId === 'SPACE') {
+      setShowCreateSpaceModal(true);
+    }
+    console.log('Selected option:', optionId);
+    setIsAddModalOpen(false);
+  };
+
+  // Handle create space from drop
+  const handleCreateSpaceFromDrop = async (name: string) => {
+    await handleCreateSpace(name, '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png');
   };
 
   // Handle media interactions
@@ -758,6 +780,7 @@ export default function SpacePage() {
           dialCount={1240}
           show360={show360}
           onOpen360Settings={handleOpen360Settings}
+          onOpenAddPanel={() => openPanel('add')}
         />
 
         <MobileTabBar
@@ -787,6 +810,13 @@ export default function SpacePage() {
               rotationSpeed={currentSpace?.rotationSpeed}
               flipHorizontal={currentSpace?.flipHorizontal}
               flipVertical={currentSpace?.flipVertical}
+              spaces={spaces}
+              onFilesDrop={handleFilesDropped}
+              onCreateSpace={handleCreateSpaceFromDrop}
+              isAddModalOpen={isAddModalOpen}
+              onCloseAddModal={() => setIsAddModalOpen(false)}
+              onAddOptionSelect={handleAddOptionSelect}
+              onOpenAddPanel={() => openPanel('add')}
               selectedItem={selectedItemData}
             />
           )}

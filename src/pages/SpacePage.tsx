@@ -422,9 +422,19 @@ export default function SpacePage() {
 
   // Handle space thumbnail update
   const handleUpdateSpaceThumbnail = async (spaceId: string, thumbnailUrl: string) => {
-    const success = await updateSpace(spaceId, { cover_url: thumbnailUrl });
-    if (!success) {
-      refetch();
+    // Update local state immediately
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, thumb: thumbnailUrl, backgroundImage: thumbnailUrl }
+        : space
+    ));
+    
+    // Only persist to database if not lobby
+    if (spaceId !== 'lobby') {
+      const success = await updateSpace(spaceId, { cover_url: thumbnailUrl });
+      if (!success) {
+        refetch();
+      }
     }
   };
 

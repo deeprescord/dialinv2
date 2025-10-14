@@ -29,6 +29,7 @@ interface SpacesBarProps {
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
+  on360FlipChange?: (spaceId: string, axis: 'horizontal' | 'vertical', value: boolean) => void;
   onSpaceClick?: (space: Space) => void;
   breadcrumbs?: Array<{ id: string; name: string }>;
   hideActionButtons?: boolean;
@@ -55,6 +56,7 @@ export function SpacesBar({
   on360RotationToggle,
   on360RotationSpeedChange,
   on360RotationAxisChange,
+  on360FlipChange,
   onSpaceClick,
   breadcrumbs,
   hideActionButtons = false,
@@ -364,6 +366,7 @@ export function SpacesBar({
             on360RotationToggle={on360RotationToggle}
             on360RotationSpeedChange={on360RotationSpeedChange}
             on360RotationAxisChange={on360RotationAxisChange}
+            on360FlipChange={on360FlipChange}
             position={contextMenu.position}
           />
         )}

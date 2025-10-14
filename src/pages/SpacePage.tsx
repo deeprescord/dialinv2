@@ -771,6 +771,8 @@ export default function SpacePage() {
               isMuted={currentSpace?.isMuted}
               rotationEnabled={currentSpace?.rotationEnabled}
               rotationSpeed={currentSpace?.rotationSpeed}
+              horizontalFlip={currentSpace?.horizontalFlip}
+              verticalFlip={currentSpace?.verticalFlip}
               selectedItem={selectedItemData}
             />
           )}
@@ -843,6 +845,11 @@ export default function SpacePage() {
             on360MuteToggle={handle360MuteToggle}
             on360RotationToggle={handle360RotationToggle}
             on360RotationSpeedChange={handle360RotationSpeedChange}
+            on360FlipChange={(spaceId, axis, value) => {
+              updateSpace(spaceId, {
+                [axis === 'horizontal' ? 'horizontal_flip' : 'vertical_flip']: value
+              }, { silent: true });
+            }}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={handleToggleChatWindow}

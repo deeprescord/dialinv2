@@ -196,6 +196,13 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     }
   });
 
+  // Ensure stable rotation order to avoid flips at high pitch
+  React.useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.rotation.order = 'YXZ';
+    }
+  }, []);
+
   // Set initial rotation when auto-rotation is enabled (includes axis offsets)
   React.useEffect(() => {
     if (!rotationEnabled || !meshRef.current) return;
@@ -204,7 +211,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     if (mediaUrl.includes('lobby2.mp4')) {
       base = [0, Math.PI * 1.5, 0];
     }
-    base[0] += MathUtils.degToRad(yAxisOffset || 0);
+    base[0] += MathUtils.degToRad(Math.max(-85, Math.min(85, yAxisOffset || 0)));
     base[1] += MathUtils.degToRad(xAxisOffset || 0);
     meshRef.current.rotation.set(base[0], base[1], base[2]);
   }, [rotationEnabled, xAxisOffset, yAxisOffset, mediaUrl]);
@@ -226,8 +233,8 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   
   // Apply user-defined axis offsets (only if rotation is not enabled)
   if (!rotationEnabled) {
-    rotation[0] += MathUtils.degToRad(yAxisOffset || 0); // Y axis affects X rotation
-    rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
+    rotation[0] += MathUtils.degToRad(Math.max(-85, Math.min(85, yAxisOffset || 0))); // Clamp pitch to avoid inversion
+    rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // Yaw adjustment
   }
   
   return (

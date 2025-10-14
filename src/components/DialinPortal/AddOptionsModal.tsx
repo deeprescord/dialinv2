@@ -78,67 +78,72 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4"
-          onClick={onClose}
-        >
+        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+          {/* Add Options Modal */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gradient-to-b from-background/98 to-background/95 backdrop-blur-xl border border-white/20 rounded-2xl p-5 w-full max-w-md shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+            className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full"
           >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold">Add to Space</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="h-8 w-8 p-0 rounded-full hover:bg-white/10"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
+                <div>
+                  <h3 className="font-semibold text-white">Add to Space</h3>
+                  <p className="text-xs text-white/60">Choose what to add</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              {/* Options Grid */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="grid grid-cols-2 gap-3">
+                  {addOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => handleOptionClick(option.id)}
+                        className="h-28 flex flex-col items-center justify-center space-y-3 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
+                      >
+                        <Icon className="h-7 w-7 text-white group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-medium tracking-wide text-white">{option.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-white/10 bg-black/10">
+                <Button
+                  onClick={onClose}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Close
+                </Button>
+              </div>
             </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {addOptions.map((option) => {
-                const Icon = option.icon;
-                return (
-                  <Button
-                    key={option.id}
-                    variant="ghost"
-                    className="h-24 flex flex-col items-center justify-center space-y-2 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
-                    onClick={() => handleOptionClick(option.id)}
-                  >
-                    <Icon className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-medium tracking-wide">{option.title}</span>
-                  </Button>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="default"
-              className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-medium rounded-xl"
-              onClick={onClose}
-            >
-              Close
-            </Button>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );

@@ -134,6 +134,13 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Close other panels when one opens
+  const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
+    setShowChatWindow(panelName === 'chat');
+    setShowAIChat(panelName === 'ai');
+    setIsAddModalOpen(panelName === 'add');
+  };
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -545,7 +552,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         show360={show360}
         onOpen360Settings={handleOpen360Settings}
         userPoints={userPoints}
-        onOpenAddPanel={() => setIsAddModalOpen(true)}
+        onOpenAddPanel={() => openPanel('add')}
       />
 
       <MobileTabBar
@@ -579,7 +586,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             isAddModalOpen={isAddModalOpen}
             onCloseAddModal={() => setIsAddModalOpen(false)}
             onAddOptionSelect={handleAddOptionSelect}
-            onOpenAddPanel={() => setIsAddModalOpen(true)}
+            onOpenAddPanel={() => openPanel('add')}
           />
         )}
 
@@ -639,7 +646,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
           <CombinedBottomBar
             spaces={spaces.filter(s => s.id === 'lobby' || s.parentId === undefined)}
             currentSpaceId="lobby"
-            onCreateSpace={() => setIsAddModalOpen(true)}
+            onCreateSpace={() => openPanel('add')}
             onDeleteSpace={handleDeleteSpace}
             onRenameSpace={handleRenameSpace}
             onUpdateSpaceDescription={handleUpdateSpaceDescription}
@@ -653,10 +660,10 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             on360RotationSpeedChange={handle360RotationSpeedChange}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
-            onToggleChatWindow={() => setShowChatWindow(!showChatWindow)}
+            onToggleChatWindow={() => showChatWindow ? setShowChatWindow(false) : openPanel('chat')}
             showCreateSpaceModal={showCreateSpaceModal}
             showAIChat={showAIChat}
-            onToggleAIChat={() => setShowAIChat(!showAIChat)}
+            onToggleAIChat={() => showAIChat ? setShowAIChat(false) : openPanel('ai')}
           />
         </div>
       ) : null}
@@ -671,7 +678,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         onPin={handleContactPin}
         onUnpin={handleContactUnpin}
         onChatClick={handleContactChatClick}
-        onAIClick={() => setShowAIChat(true)}
+        onAIClick={() => openPanel('ai')}
         onAddClick={handleContactAddClick}
       />
 

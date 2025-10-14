@@ -150,6 +150,11 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       const handleError = (err: any) => {
         console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
         setError(true);
+        // Notify parent to show standard fallback rendering
+        setTimeout(() => {
+          const event = new CustomEvent('webgl-security-error');
+          window.dispatchEvent(event);
+        }, 0);
       };
       
       video.addEventListener('canplay', handleCanPlay);

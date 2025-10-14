@@ -257,7 +257,7 @@ export function HomeView({
           posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
           title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
           subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
-          backgroundImage={selectedItem?.thumb || selectedItem?.art || (isLobby && show360 && !hasCustomBackground ? "https://dialin.io/s/TownSquare2-1.mp4" : (backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")))}
+          backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360)}
           show360={show360}
           xAxisOffset={xAxisOffset}

@@ -175,6 +175,8 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       loader.load(
         mediaUrl,
         (loadedTexture) => {
+          loadedTexture.flipY = false;
+          loadedTexture.needsUpdate = true;
           setTexture(loadedTexture);
           setError(false);
         },
@@ -229,7 +231,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   }
   
   return (
-    <mesh ref={meshRef} scale={[-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
+    <mesh ref={meshRef} scale={[50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>

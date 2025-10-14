@@ -302,46 +302,54 @@ export function SpaceContextMenu({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-            onClick={onClose}
-          />
-
+        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
           {/* Context Menu */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.2 }}
-            className="fixed z-50 bg-background/95 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg w-[400px] max-h-[85vh] overflow-y-auto"
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+            className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full"
             ref={menuRef}
-            style={{ left: computedPos.left, top: computedPos.top }}
           >
-            <GradientLoader isLoading={isGenerating} />
-            
-            <div className="p-4 space-y-3">
-              {/* Upload Media Button */}
-              <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-background/50 hover:bg-background/70 border border-white/20 rounded-xl transition-colors"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
+            <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
+              <GradientLoader isLoading={isGenerating} />
+              
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
+                <div>
+                  <h3 className="font-semibold text-white">Space Settings</h3>
+                  <p className="text-xs text-white/60">Customize your space</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Main Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {/* Upload Media Button */}
+                <button
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
                 {uploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm font-medium">Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={16} />
-                    <span className="text-sm font-medium">Upload Image / Video</span>
-                  </>
-                )}
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm font-medium text-white">Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} className="text-white" />
+                      <span className="text-sm font-medium text-white">Upload Image / Video</span>
+                    </>
+                  )}
               </button>
               
               <input
@@ -353,33 +361,33 @@ export function SpaceContextMenu({
                 className="hidden"
               />
 
-              {/* AI Generation Section */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-sm font-medium text-foreground/80">Generate with AI</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">360°</span>
-                    <Switch
-                      checked={is360Mode}
-                      onCheckedChange={setIs360Mode}
-                      className="scale-90"
-                    />
+                {/* AI Generation Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-sm font-medium text-white">Generate with AI</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-white/60">360°</span>
+                      <Switch
+                        checked={is360Mode}
+                        onCheckedChange={setIs360Mode}
+                        className="scale-90"
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder="Background..."
-                    className="flex-1 bg-background/50 border-white/20 h-10"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-white/20 hover:bg-white/5 px-3 h-10"
-                    onClick={handleGenerateWithAI}
-                    disabled={!aiPrompt.trim() || isGenerating}
-                  >
+                  <div className="flex gap-2">
+                    <Input
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      placeholder="Background..."
+                      className="flex-1 bg-black/40 border-white/10 h-10 text-white placeholder:text-white/40"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-white/10 hover:bg-white/5 px-3 h-10 text-white"
+                      onClick={handleGenerateWithAI}
+                      disabled={!aiPrompt.trim() || isGenerating}
+                    >
                     {isGenerating ? (
                       <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
                     ) : (
@@ -389,13 +397,13 @@ export function SpaceContextMenu({
                 </div>
               </div>
 
-              {/* Media Grid - show uploaded images/videos as carousel */}
-              {uploadedImages.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-sm font-medium text-foreground/80">Your Uploads</span>
-                    <span className="text-xs text-muted-foreground">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
-                  </div>
+                {/* Media Grid - show uploaded images/videos as carousel */}
+                {uploadedImages.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-sm font-medium text-white">Your Uploads</span>
+                      <span className="text-xs text-white/60">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
+                    </div>
                   <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto">
                     {uploadedImages.map((mediaUrl, index) => {
                       const isVideo = uploadedMediaTypes[index] === 'video';
@@ -448,79 +456,64 @@ export function SpaceContextMenu({
                         </div>
                       );
                     })}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* Divider */}
-            <div className="h-px bg-white/10" />
+                {/* Divider */}
+                <div className="h-px bg-white/10 my-3" />
 
-            <div className="p-4">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-foreground/80">Space Options</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-white/10"
-                  onClick={onClose}
-                >
-                  <X size={14} />
-                </Button>
-              </div>
-
-              {/* Space Name & Description */}
-              {isRenaming ? (
-                <div className="mb-4">
-                  <Input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onBlur={handleRename}
-                    className="text-sm h-9"
-                    autoFocus
-                    placeholder="Space name"
-                  />
-                </div>
-              ) : isEditingDescription ? (
-                <div className="mb-4">
-                  <Textarea
-                    value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onBlur={handleDescriptionUpdate}
-                    className="text-sm resize-none"
-                    rows={2}
-                    autoFocus
-                    placeholder="Welcome back phrase"
-                  />
-                </div>
-              ) : (
-                <div className="mb-4 space-y-0.5">
-                  <p 
-                    className="text-base font-semibold cursor-pointer hover:text-primary/80 transition-colors" 
-                    onClick={() => setIsRenaming(true)}
-                  >
-                    {space.name}
-                  </p>
-                  <p 
-                    className="text-xs text-muted-foreground cursor-pointer hover:text-foreground/60 transition-colors" 
-                    onClick={() => setIsEditingDescription(true)}
-                  >
-                    {space.description || 'Welcome back'}
-                  </p>
-                </div>
-              )}
-
-              {/* Menu Items */}
-              <div className="space-y-1">
-                {/* 360° Toggle */}
-                <div className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Globe size={16} />
-                    <span className="text-sm">360° View</span>
+                {/* Space Name & Description */}
+                {isRenaming ? (
+                  <div className="mb-4">
+                    <Input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      onBlur={handleRename}
+                      className="text-sm h-9 bg-black/40 border-white/10 text-white"
+                      autoFocus
+                      placeholder="Space name"
+                    />
                   </div>
+                ) : isEditingDescription ? (
+                  <div className="mb-4">
+                    <Textarea
+                      value={newDescription}
+                      onChange={(e) => setNewDescription(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      onBlur={handleDescriptionUpdate}
+                      className="text-sm resize-none bg-black/40 border-white/10 text-white"
+                      rows={2}
+                      autoFocus
+                      placeholder="Welcome back phrase"
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-4 space-y-0.5">
+                    <p 
+                      className="text-base font-semibold cursor-pointer hover:text-white/80 transition-colors text-white" 
+                      onClick={() => setIsRenaming(true)}
+                    >
+                      {space.name}
+                    </p>
+                    <p 
+                      className="text-xs text-white/60 cursor-pointer hover:text-white/80 transition-colors" 
+                      onClick={() => setIsEditingDescription(true)}
+                    >
+                      {space.description || 'Welcome back'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Menu Items */}
+                <div className="space-y-1">
+                  {/* 360° Toggle */}
+                  <div className="flex items-center justify-between px-3 py-2.5 hover:bg-black/30 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Globe size={16} className="text-white" />
+                      <span className="text-sm text-white">360° View</span>
+                    </div>
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={space.show360 || false}
@@ -542,11 +535,11 @@ export function SpaceContextMenu({
                   </div>
                 </div>
 
-                {/* Advanced 360° Controls */}
-                {space.show360 && show360Advanced && (
-                  <div className="px-3 py-3 space-y-3 bg-background/30 rounded-lg ml-3 mr-1 my-2">
-                    <div className="space-y-2">
-                      <label className="text-xs text-foreground/70">X Axis</label>
+                  {/* Advanced 360° Controls */}
+                  {space.show360 && show360Advanced && (
+                    <div className="px-3 py-3 space-y-3 bg-black/20 rounded-lg ml-3 mr-1 my-2">
+                      <div className="space-y-2">
+                        <label className="text-xs text-white/70">X Axis</label>
                       <Slider
                         value={[xAxis]}
                         onValueChange={(value) => {
@@ -559,11 +552,11 @@ export function SpaceContextMenu({
                         max={180}
                         step={1}
                       />
-                      <span className="text-xs text-foreground/60">{xAxis}°</span>
-                    </div>
+                        <span className="text-xs text-white/60">{xAxis}°</span>
+                      </div>
 
-                    <div className="space-y-2">
-                      <label className="text-xs text-foreground/70">Y Axis</label>
+                      <div className="space-y-2">
+                        <label className="text-xs text-white/70">Y Axis</label>
                       <Slider
                         value={[yAxis]}
                         onValueChange={(value) => {
@@ -576,14 +569,14 @@ export function SpaceContextMenu({
                         max={90}
                         step={1}
                       />
-                      <span className="text-xs text-foreground/60">{yAxis}°</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                        <span className="text-xs">Audio</span>
+                        <span className="text-xs text-white/60">{yAxis}°</span>
                       </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isMuted ? <VolumeX size={14} className="text-white" /> : <Volume2 size={14} className="text-white" />}
+                          <span className="text-xs text-white">Audio</span>
+                        </div>
                       <Switch
                         checked={!isMuted}
                         onCheckedChange={(checked) => {
@@ -593,9 +586,9 @@ export function SpaceContextMenu({
                       />
                     </div>
 
-                    {!isMuted && (
-                      <div className="space-y-2">
-                        <label className="text-xs text-foreground/70">Volume</label>
+                      {!isMuted && (
+                        <div className="space-y-2">
+                          <label className="text-xs text-white/70">Volume</label>
                         <Slider
                           value={[volume]}
                           onValueChange={(value) => {
@@ -608,12 +601,12 @@ export function SpaceContextMenu({
                           max={100}
                           step={1}
                         />
-                        <span className="text-xs text-foreground/60">{volume}%</span>
-                      </div>
-                    )}
+                          <span className="text-xs text-white/60">{volume}%</span>
+                        </div>
+                      )}
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs">Auto Rotate</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white">Auto Rotate</span>
                       <Switch
                         checked={rotationEnabled}
                         onCheckedChange={(checked) => {
@@ -623,9 +616,9 @@ export function SpaceContextMenu({
                       />
                     </div>
 
-                    {rotationEnabled && (
-                      <div className="space-y-2">
-                        <label className="text-xs text-foreground/70">Rotation Speed</label>
+                      {rotationEnabled && (
+                        <div className="space-y-2">
+                          <label className="text-xs text-white/70">Rotation Speed</label>
                         <Slider
                           value={[rotationSpeed]}
                           onValueChange={(value) => {
@@ -638,63 +631,74 @@ export function SpaceContextMenu({
                           max={5}
                           step={0.1}
                         />
-                        <span className="text-xs text-foreground/60">{rotationSpeed.toFixed(1)}x</span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                          <span className="text-xs text-white/60">{rotationSpeed.toFixed(1)}x</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                {/* Rename */}
-                {space.id !== 'lobby' && (
+                  {/* Rename */}
+                  {space.id !== 'lobby' && (
+                    <button
+                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => setIsRenaming(true)}
+                      disabled={isRenaming || isEditingDescription}
+                    >
+                      <Edit3 size={16} className="text-white" />
+                      <span className="text-sm text-white">Rename</span>
+                    </button>
+                  )}
+
+                  {/* Edit Description */}
                   <button
-                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors text-left"
-                    onClick={() => setIsRenaming(true)}
+                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                    onClick={() => setIsEditingDescription(true)}
                     disabled={isRenaming || isEditingDescription}
                   >
-                    <Edit3 size={16} />
-                    <span className="text-sm">Rename</span>
+                    <MessageSquare size={16} className="text-white" />
+                    <span className="text-sm text-white">Edit Description</span>
                   </button>
-                )}
 
-                {/* Edit Description */}
-                <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors text-left"
-                  onClick={() => setIsEditingDescription(true)}
-                  disabled={isRenaming || isEditingDescription}
-                >
-                  <MessageSquare size={16} />
-                  <span className="text-sm">Edit Description</span>
-                </button>
+                  {/* Move Left */}
+                  <button
+                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                    onClick={() => onReorder(space.id, 'left')}
+                  >
+                    <GripVertical size={16} className="text-white" />
+                    <span className="text-sm text-white">Move Left</span>
+                  </button>
 
-                {/* Move Left */}
-                <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors text-left"
-                  onClick={() => onReorder(space.id, 'left')}
-                >
-                  <GripVertical size={16} />
-                  <span className="text-sm">Move Left</span>
-                </button>
+                  {/* Move Right */}
+                  <button
+                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                    onClick={() => {
+                      onReorder(space.id, 'right');
+                      onClose();
+                    }}
+                  >
+                    <GripVertical size={16} className="text-white" />
+                    <span className="text-sm text-white">Move Right</span>
+                  </button>
 
-                {/* Move Right */}
-                <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/5 rounded-lg transition-colors text-left"
-                  onClick={() => {
-                    onReorder(space.id, 'right');
-                    onClose();
-                  }}
-                >
-                  <GripVertical size={16} />
-                  <span className="text-sm">Move Right</span>
-                </button>
+                  {/* Delete */}
+                  <button
+                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <Trash2 size={16} />
+                    <span className="text-sm">Delete</span>
+                  </button>
+                </div>
+              </div>
 
-                {/* Delete */}
-                <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
-                  onClick={() => setShowDeleteConfirm(true)}
+              {/* Footer */}
+              <div className="p-4 border-t border-white/10 bg-black/10">
+                <Button
+                  onClick={onClose}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                 >
-                  <Trash2 size={16} />
-                  <span className="text-sm">Delete</span>
-                </button>
+                  Close
+                </Button>
               </div>
             </div>
           </motion.div>
@@ -723,7 +727,7 @@ export function SpaceContextMenu({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

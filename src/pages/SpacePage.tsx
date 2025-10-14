@@ -859,6 +859,8 @@ export default function SpacePage() {
             on360MuteToggle={handle360MuteToggle}
             on360RotationToggle={handle360RotationToggle}
             on360RotationSpeedChange={handle360RotationSpeedChange}
+            onFlipHorizontalToggle={handleFlipHorizontalToggle}
+            onFlipVerticalToggle={handleFlipVerticalToggle}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={handleToggleChatWindow}

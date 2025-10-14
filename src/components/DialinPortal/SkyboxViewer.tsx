@@ -162,7 +162,10 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
         }, 100);
       };
       
+      video.addEventListener('loadedmetadata', handleCanPlay);
+      video.addEventListener('loadeddata', handleCanPlay);
       video.addEventListener('canplay', handleCanPlay);
+      video.addEventListener('canplaythrough', handleCanPlay);
       video.addEventListener('error', handleError);
       
       videoRef.current = video;
@@ -171,7 +174,10 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       video.load();
       
       return () => {
+        video.removeEventListener('loadedmetadata', handleCanPlay);
+        video.removeEventListener('loadeddata', handleCanPlay);
         video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('canplaythrough', handleCanPlay);
         video.removeEventListener('error', handleError);
         video.pause();
         video.remove();

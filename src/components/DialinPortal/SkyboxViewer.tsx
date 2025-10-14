@@ -95,6 +95,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const isVideoRef = useRef(false);
 
   React.useEffect(() => {
     // Reset states
@@ -103,6 +104,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     
     // Check if the URL is a video file
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+    isVideoRef.current = isVideo;
     
     if (isVideo) {
       // Handle video
@@ -122,7 +124,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           hasCreatedTexture = true;
           try {
             const videoTexture = new VideoTexture(video);
-            videoTexture.flipY = true;
+            videoTexture.flipY = false; // Keep false to prevent flipping
             setTexture(videoTexture);
             setError(false);
             
@@ -195,10 +197,10 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   // Set initial rotation when auto-rotation is enabled (includes axis offsets)
   React.useEffect(() => {
     if (!rotationEnabled || !meshRef.current) return;
-    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
-    let base: [number, number, number] = isVideo ? [Math.PI, 0, 0] : [0, 0, 0];
+    const isVideo = isVideoRef.current;
+    let base: [number, number, number] = isVideo ? [0, Math.PI, 0] : [0, 0, 0];
     if (mediaUrl.includes('lobby2.mp4')) {
-      base = [Math.PI, Math.PI / 2, 0];
+      base = [0, Math.PI * 1.5, 0];
     }
     base[0] += MathUtils.degToRad(yAxisOffset || 0);
     base[1] += MathUtils.degToRad(xAxisOffset || 0);
@@ -211,13 +213,13 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   }
 
   // Check if this is a video file to apply different rotation
-  const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
+  const isVideo = isVideoRef.current;
   
   // Apply specific rotation based on video to center them properly
-  let rotation: [number, number, number] = isVideo ? [Math.PI, 0, 0] : [0, 0, 0];
+  let rotation: [number, number, number] = isVideo ? [0, Math.PI, 0] : [0, 0, 0];
   if (mediaUrl.includes('lobby2.mp4')) {
     // Center the Grand Theater video by rotating it to the center
-    rotation = [Math.PI, Math.PI / 2, 0];
+    rotation = [0, Math.PI * 1.5, 0];
   }
   
   // Apply user-defined axis offsets (only if rotation is not enabled)
@@ -227,7 +229,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   }
   
   return (
-    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
+    <mesh ref={meshRef} scale={[-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>

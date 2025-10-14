@@ -76,6 +76,8 @@ export default function SpacePage() {
       rotationEnabled: dbSpace.rotation_enabled || false,
       rotationSpeed: dbSpace.rotation_speed || 1,
       rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
+      horizontalFlip: dbSpace.horizontal_flip || false,
+      verticalFlip: dbSpace.vertical_flip || false,
     }));
 
     setSpaces([lobby, ...convertedDbSpaces]);
@@ -163,7 +165,15 @@ export default function SpacePage() {
           thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
           parentId: dbSpace.parent_id || undefined,
           backgroundImage: dbSpace.cover_url || undefined,
-          show360: false,
+          show360: dbSpace.show_360 || false,
+          xAxis: dbSpace.x_axis_offset || 0,
+          yAxis: dbSpace.y_axis_offset || 0,
+          volume: dbSpace.volume || 50,
+          isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
+          rotationEnabled: dbSpace.rotation_enabled || false,
+          rotationSpeed: dbSpace.rotation_speed || 1,
+          horizontalFlip: dbSpace.horizontal_flip || false,
+          verticalFlip: dbSpace.vertical_flip || false,
         }
       : undefined;
   }, [spaces, dbSpaces, spaceId]);

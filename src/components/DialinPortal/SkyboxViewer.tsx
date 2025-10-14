@@ -88,9 +88,11 @@ interface SkyboxProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  horizontalFlip?: boolean;
+  verticalFlip?: boolean;
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1 }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1, horizontalFlip = false, verticalFlip = false }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -237,8 +239,15 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // Yaw adjustment
   }
   
+  // Apply flip transformations via scale
+  const scale: [number, number, number] = [
+    horizontalFlip ? -50 : 50,
+    verticalFlip ? -50 : 50,
+    50
+  ];
+  
   return (
-    <mesh ref={meshRef} scale={[50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
+    <mesh ref={meshRef} scale={scale} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>
@@ -255,6 +264,8 @@ interface SkyboxViewerProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  horizontalFlip?: boolean;
+  verticalFlip?: boolean;
 }
 
 export function SkyboxViewer({ 
@@ -266,7 +277,9 @@ export function SkyboxViewer({
   volume = 50,
   isMuted = true,
   rotationEnabled = false,
-  rotationSpeed = 1
+  rotationSpeed = 1,
+  horizontalFlip = false,
+  verticalFlip = false
 }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
@@ -363,10 +376,12 @@ export function SkyboxViewer({
             mediaUrl={mediaUrl} 
             xAxisOffset={xAxisOffset}
             yAxisOffset={yAxisOffset}
-        volume={volume}
+            volume={volume}
             isMuted={isMuted}
             rotationEnabled={rotationEnabled}
             rotationSpeed={rotationSpeed}
+            horizontalFlip={horizontalFlip}
+            verticalFlip={verticalFlip}
           />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 

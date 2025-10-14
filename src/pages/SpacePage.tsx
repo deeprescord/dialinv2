@@ -963,6 +963,13 @@ export default function SpacePage() {
           isMuted={currentSpace?.isMuted}
           onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
+          horizontalFlip={currentSpace?.horizontalFlip || false}
+          verticalFlip={currentSpace?.verticalFlip || false}
+          onFlipChange={(axis, value) => {
+            updateSpace(spaceId || 'lobby', {
+              [axis === 'horizontal' ? 'horizontal_flip' : 'vertical_flip']: value
+            }, { silent: true });
+          }}
         />
 
         {/* Metadata Adjustment Panel */}

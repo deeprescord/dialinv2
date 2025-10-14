@@ -1,7 +1,7 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { TextureLoader, BackSide, DoubleSide, Euler, MathUtils, VideoTexture, RepeatWrapping } from 'three';
+import { TextureLoader, BackSide, DoubleSide, Euler, MathUtils, VideoTexture } from 'three';
 import { Mesh } from 'three';
 
 
@@ -233,24 +233,12 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     meshRef.current.rotation.set(base[0], base[1], base[2]);
   }, [rotationEnabled, xAxisOffset, yAxisOffset, mediaUrl]);
 
-  // Apply texture flipping based on props
-  React.useEffect(() => {
-    if (!texture) return;
-    try {
-      // Use texture repeat and offset to flip without changing geometry
-      if ((texture as any).wrapS !== RepeatWrapping) (texture as any).wrapS = RepeatWrapping;
-      if ((texture as any).wrapT !== RepeatWrapping) (texture as any).wrapT = RepeatWrapping;
-      if (texture.repeat?.set) {
-        texture.repeat.set(horizontalFlip ? -1 : 1, verticalFlip ? -1 : 1);
-      }
-      if (texture.offset?.set) {
-        texture.offset.set(horizontalFlip ? 1 : 0, verticalFlip ? 1 : 0);
-      }
-      texture.needsUpdate = true;
-    } catch (e) {
-      console.warn('Failed to apply texture flip:', e);
-    }
-  }, [texture, horizontalFlip, verticalFlip]);
+  // Compute mesh scale for flip (avoid RepeatWrapping on NPOT textures like videos)
+  const meshScale: [number, number, number] = [
+    horizontalFlip ? -50 : 50,
+    verticalFlip ? -50 : 50,
+    50
+  ];
   // Check if this is a video file to apply different rotation
   const isVideo = isVideoRef.current;
   
@@ -268,9 +256,9 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
   }
   
   return (
-    <mesh ref={meshRef} scale={[50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
+    <mesh ref={meshRef} scale={meshScale} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
-      <meshBasicMaterial map={texture} side={BackSide} />
+      <meshBasicMaterial map={texture} side={DoubleSide} />
     </mesh>
   );
 }

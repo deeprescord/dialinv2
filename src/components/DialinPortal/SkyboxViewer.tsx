@@ -122,7 +122,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           hasCreatedTexture = true;
           try {
             const videoTexture = new VideoTexture(video);
-            videoTexture.flipY = false;
+            videoTexture.flipY = true;
             setTexture(videoTexture);
             setError(false);
             

@@ -130,6 +130,8 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
             videoTexture.flipY = false; // Keep false to prevent flipping
             setTexture(videoTexture);
             setError(false);
+            // Notify parent that WebGL content loaded
+            window.dispatchEvent(new CustomEvent('webgl-loaded'));
             
             // Start playing
             video.play().catch((playError) => {
@@ -153,6 +155,11 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       const handleError = (err: any) => {
         console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
         setError(true);
+        // Trigger fallback in parent for any video load issues
+        setTimeout(() => {
+          const event = new CustomEvent('webgl-security-error');
+          window.dispatchEvent(event);
+        }, 100);
       };
       
       video.addEventListener('canplay', handleCanPlay);
@@ -182,11 +189,18 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           loadedTexture.needsUpdate = true;
           setTexture(loadedTexture);
           setError(false);
+          // Notify parent that WebGL content loaded
+          window.dispatchEvent(new CustomEvent('webgl-loaded'));
         },
         undefined,
         (err) => {
           console.warn(`Failed to load skybox texture: ${mediaUrl}`, err);
           setError(true);
+          // Trigger fallback in parent so we show non-WebGL background
+          setTimeout(() => {
+            const event = new CustomEvent('webgl-security-error');
+            window.dispatchEvent(event);
+          }, 100);
         }
       );
     }
@@ -303,15 +317,33 @@ export function SkyboxViewer({
 
     checkMobile();
 
-    // Listen for WebGL security errors from child components
+    // Reset and set a safety fallback timer if WebGL content doesn't load
+    setWebglError(false);
+    let loaded = false;
+    const fallbackTimer = window.setTimeout(() => {
+      if (!loaded) setWebglError(true);
+    }, 2500);
+
+    // Listen for WebGL errors and successful loads from child components
     const handleWebGLError = () => {
+      loaded = false;
       setWebglError(true);
+      window.clearTimeout(fallbackTimer);
+    };
+
+    const handleWebGLLoaded = () => {
+      loaded = true;
+      setWebglError(false);
+      window.clearTimeout(fallbackTimer);
     };
 
     window.addEventListener('webgl-security-error', handleWebGLError);
+    window.addEventListener('webgl-loaded', handleWebGLLoaded);
     
     return () => {
       window.removeEventListener('webgl-security-error', handleWebGLError);
+      window.removeEventListener('webgl-loaded', handleWebGLLoaded);
+      window.clearTimeout(fallbackTimer);
     };
   }, [enableGyroscope, mediaUrl]);
 

@@ -97,7 +97,7 @@ export function DialinPortal() {
     setShowCelebration(true);
   };
 const [spaces, setSpaces] = useState<Space[]>([
-  { id: 'lobby', name: 'Lobby', thumb: lobbyPoster }
+  { id: 'lobby', name: 'Lobby', thumb: '' }
 ]);
 const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpacesContext();
 
@@ -105,12 +105,12 @@ useEffect(() => {
   const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
     id: dbSpace.id,
     name: dbSpace.name,
-    thumb: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : '',
+    thumb: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
     parentId: (dbSpace as any).parent_id || undefined,
     backgroundImage: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : undefined,
   }));
   setSpaces(prev => {
-    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: lobbyPoster, backgroundImage: lobbyPoster };
+    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Lobby', thumb: '', backgroundImage: '' };
     const lobby: Space = {
       id: 'lobby',
       name: 'Lobby',

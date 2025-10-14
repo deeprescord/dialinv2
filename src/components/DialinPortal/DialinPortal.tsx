@@ -480,6 +480,14 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     ));
   };
 
+  const handleFlipHorizontalToggle = (spaceId: string, flipped: boolean) => {
+    updateSpace(spaceId, { flip_horizontal: flipped });
+  };
+
+  const handleFlipVerticalToggle = (spaceId: string, flipped: boolean) => {
+    updateSpace(spaceId, { flip_vertical: flipped });
+  };
+
   // Handle contact click from chat window
   const handleChatContactClick = (contactId: string) => {
     const contact = friends.find(c => c.id === contactId);
@@ -580,6 +588,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             isMuted={lobbySpace?.isMuted}
             rotationEnabled={lobbySpace?.rotationEnabled}
             rotationSpeed={lobbySpace?.rotationSpeed}
+            flipHorizontal={lobbySpace?.flipHorizontal}
+            flipVertical={lobbySpace?.flipVertical}
             spaces={spaces}
             onFilesDrop={handleFilesDrop}
             onCreateSpace={handleCreateSpaceFromDrop}
@@ -658,6 +668,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             on360MuteToggle={handle360MuteToggle}
             on360RotationToggle={handle360RotationToggle}
             on360RotationSpeedChange={handle360RotationSpeedChange}
+            onFlipHorizontalToggle={handleFlipHorizontalToggle}
+            onFlipVerticalToggle={handleFlipVerticalToggle}
             onSpaceClick={handleSpaceClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={() => showChatWindow ? setShowChatWindow(false) : openPanel('chat')}

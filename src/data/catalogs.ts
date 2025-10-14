@@ -59,6 +59,8 @@ export interface Space {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  flipHorizontal?: boolean;
+  flipVertical?: boolean;
   parentId?: string; // For nested spaces
 }
 

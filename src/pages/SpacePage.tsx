@@ -76,6 +76,8 @@ export default function SpacePage() {
       rotationEnabled: dbSpace.rotation_enabled || false,
       rotationSpeed: dbSpace.rotation_speed || 1,
       rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
+      flipHorizontal: dbSpace.flip_horizontal || false,
+      flipVertical: dbSpace.flip_vertical || false,
     }));
 
     setSpaces([lobby, ...convertedDbSpaces]);
@@ -678,6 +680,18 @@ export default function SpacePage() {
     }
   };
 
+  const handleFlipHorizontalToggle = async (spaceId: string, flipped: boolean) => {
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { flip_horizontal: flipped });
+    }
+  };
+
+  const handleFlipVerticalToggle = async (spaceId: string, flipped: boolean) => {
+    if (spaceId !== 'lobby') {
+      await updateSpace(spaceId, { flip_vertical: flipped });
+    }
+  };
+
   // Handle chat and AI chat toggles
   const handleToggleChatWindow = () => {
     setShowChatWindow(prev => !prev);
@@ -771,6 +785,8 @@ export default function SpacePage() {
               isMuted={currentSpace?.isMuted}
               rotationEnabled={currentSpace?.rotationEnabled}
               rotationSpeed={currentSpace?.rotationSpeed}
+              flipHorizontal={currentSpace?.flipHorizontal}
+              flipVertical={currentSpace?.flipVertical}
               selectedItem={selectedItemData}
             />
           )}

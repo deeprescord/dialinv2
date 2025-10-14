@@ -16,6 +16,8 @@ interface HeroHeaderVideoProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  flipHorizontal?: boolean;
+  flipVertical?: boolean;
   onOpenAddPanel?: () => void;
 }
 
@@ -33,6 +35,8 @@ export function HeroHeaderVideo({
   isMuted,
   rotationEnabled,
   rotationSpeed,
+  flipHorizontal,
+  flipVertical,
   onOpenAddPanel
 }: HeroHeaderVideoProps) {
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -144,6 +148,8 @@ export function HeroHeaderVideo({
               isMuted={isMuted}
               rotationEnabled={rotationEnabled}
               rotationSpeed={rotationSpeed}
+              flipHorizontal={flipHorizontal}
+              flipVertical={flipVertical}
             />
           </Suspense>
           {/* 360° Indicator */}

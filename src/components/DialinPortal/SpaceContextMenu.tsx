@@ -37,6 +37,8 @@ interface SpaceContextMenuProps {
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
+  onFlipHorizontalToggle?: (spaceId: string, flipped: boolean) => void;
+  onFlipVerticalToggle?: (spaceId: string, flipped: boolean) => void;
   position: { x: number; y: number };
 }
 
@@ -56,6 +58,8 @@ export function SpaceContextMenu({
   on360RotationToggle,
   on360RotationSpeedChange,
   on360RotationAxisChange,
+  onFlipHorizontalToggle,
+  onFlipVerticalToggle,
   position
 }: SpaceContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -641,6 +645,26 @@ export function SpaceContextMenu({
                         }}
                       />
                     </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-white">Flip Horizontal</span>
+                        <Switch
+                          checked={space.flipHorizontal || false}
+                          onCheckedChange={(checked) => {
+                            onFlipHorizontalToggle?.(space.id, checked);
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-white">Flip Vertical</span>
+                        <Switch
+                          checked={space.flipVertical || false}
+                          onCheckedChange={(checked) => {
+                            onFlipVerticalToggle?.(space.id, checked);
+                          }}
+                        />
+                      </div>
 
                       {rotationEnabled && (
                         <div className="space-y-1">

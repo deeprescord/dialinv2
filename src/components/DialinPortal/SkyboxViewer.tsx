@@ -88,9 +88,11 @@ interface SkyboxProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  flipHorizontal?: boolean;
+  flipVertical?: boolean;
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1 }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1, flipHorizontal = false, flipVertical = false }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -226,8 +228,16 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     rotation[1] += MathUtils.degToRad(xAxisOffset || 0); // X axis affects Y rotation
   }
   
+  // Calculate scale with flip transforms
+  const baseScale = isVideo ? [50, 50, 50] : [-50, 50, 50];
+  const scale: [number, number, number] = [
+    baseScale[0] * (flipHorizontal ? -1 : 1),
+    baseScale[1] * (flipVertical ? -1 : 1),
+    baseScale[2]
+  ];
+  
   return (
-    <mesh ref={meshRef} scale={isVideo ? [50, 50, 50] : [-50, 50, 50]} rotation={rotationEnabled ? undefined : rotation}>
+    <mesh ref={meshRef} scale={scale} rotation={rotationEnabled ? undefined : rotation}>
       <sphereGeometry args={[1, 60, 40]} />
       <meshBasicMaterial map={texture} side={BackSide} />
     </mesh>
@@ -244,6 +254,8 @@ interface SkyboxViewerProps {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  flipHorizontal?: boolean;
+  flipVertical?: boolean;
 }
 
 export function SkyboxViewer({ 
@@ -255,7 +267,9 @@ export function SkyboxViewer({
   volume = 50,
   isMuted = true,
   rotationEnabled = false,
-  rotationSpeed = 1
+  rotationSpeed = 1,
+  flipHorizontal = false,
+  flipVertical = false
 }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
@@ -352,10 +366,12 @@ export function SkyboxViewer({
             mediaUrl={mediaUrl} 
             xAxisOffset={xAxisOffset}
             yAxisOffset={yAxisOffset}
-        volume={volume}
+            volume={volume}
             isMuted={isMuted}
             rotationEnabled={rotationEnabled}
             rotationSpeed={rotationSpeed}
+            flipHorizontal={flipHorizontal}
+            flipVertical={flipVertical}
           />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 

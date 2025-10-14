@@ -427,64 +427,61 @@ export function SpaceContextMenu({
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between px-1">
                       <span className="text-xs font-medium text-white">Your Uploads</span>
-                      <span className="text-[10px] text-white/60">{currentCarouselIndex + 1}/{uploadedImages.length}</span>
+                      <span className="text-[10px] text-white/60">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
                     </div>
-                    <div className="relative aspect-video rounded-lg overflow-hidden border-2 border-white/20">
-                      {uploadedMediaTypes[currentCarouselIndex] === 'video' ? (
-                        <video
-                          src={uploadedImages[currentCarouselIndex]}
-                          className="w-full h-full object-cover"
-                          muted
-                          loop
-                          autoPlay
-                          playsInline
-                        />
-                      ) : (
-                        <img
-                          src={uploadedImages[currentCarouselIndex]}
-                          alt={`Upload ${currentCarouselIndex + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      
-                      {/* Carousel Controls */}
-                      {uploadedImages.length > 1 && (
-                        <>
-                          <button
-                            onClick={() => setCurrentCarouselIndex((prev) => (prev - 1 + uploadedImages.length) % uploadedImages.length)}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white border border-white/20"
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {uploadedImages.map((mediaUrl, index) => {
+                        const isVideo = uploadedMediaTypes[index] === 'video';
+                        const isCurrentCover = space.thumb === mediaUrl;
+                        return (
+                          <div
+                            key={`upload-${index}`}
+                            className="relative flex-shrink-0 w-32 aspect-video rounded-lg overflow-hidden border-2 transition-all group"
+                            style={{
+                              borderColor: isCurrentCover ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.2)'
+                            }}
                           >
-                            <ChevronDown size={14} className="rotate-90" />
-                          </button>
-                          <button
-                            onClick={() => setCurrentCarouselIndex((prev) => (prev + 1) % uploadedImages.length)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white border border-white/20"
-                          >
-                            <ChevronDown size={14} className="-rotate-90" />
-                          </button>
-                        </>
-                      )}
-                      
-                      {/* Action Buttons Overlay */}
-                      <div className="absolute bottom-2 left-2 right-2 flex gap-2">
-                        <button
-                          onClick={() => selectCoverImage(uploadedImages[currentCarouselIndex])}
-                          className="flex-1 px-2 py-1 bg-primary/80 hover:bg-primary rounded text-[10px] font-medium text-white"
-                        >
-                          Set as Cover
-                        </button>
-                        <button
-                          onClick={() => {
-                            removeUploadedImage(currentCarouselIndex);
-                            if (currentCarouselIndex >= uploadedImages.length - 1) {
-                              setCurrentCarouselIndex(Math.max(0, uploadedImages.length - 2));
-                            }
-                          }}
-                          className="px-2 py-1 bg-red-500/80 hover:bg-red-500 rounded text-white"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
+                            {isVideo ? (
+                              <video
+                                src={mediaUrl}
+                                className="w-full h-full object-cover"
+                                muted
+                                loop
+                                autoPlay
+                                playsInline
+                              />
+                            ) : (
+                              <img
+                                src={mediaUrl}
+                                alt={`Upload ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                            
+                            {/* Hover Overlay */}
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => selectCoverImage(mediaUrl)}
+                                className="px-2 py-1 bg-primary/90 hover:bg-primary rounded text-[10px] font-medium text-white"
+                              >
+                                Set Cover
+                              </button>
+                              <button
+                                onClick={() => removeUploadedImage(index)}
+                                className="p-1 bg-red-500/90 hover:bg-red-500 rounded text-white"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                            
+                            {isCurrentCover && (
+                              <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-primary rounded text-[9px] font-medium text-white">
+                                Current
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

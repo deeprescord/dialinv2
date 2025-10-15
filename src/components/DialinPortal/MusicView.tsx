@@ -13,6 +13,14 @@ interface MusicViewProps {
   onClearAll: () => void;
   onMusicClick: (music: MusicItem) => void;
   onMusicLongPress: (music: MusicItem) => void;
+  onVideoStateChange?: (state: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  }) => void;
 }
 
 export function MusicView({
@@ -21,7 +29,8 @@ export function MusicView({
   onDialToggle,
   onClearAll,
   onMusicClick,
-  onMusicLongPress
+  onMusicLongPress,
+  onVideoStateChange
 }: MusicViewProps) {
   const musicGridItems = music.map(item => ({
     ...item,
@@ -65,6 +74,7 @@ export function MusicView({
         volume={0.7}
         xAxisOffset={0}
         yAxisOffset={0}
+        onVideoStateChange={onVideoStateChange}
       />
 
       <div className="mt-8">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { DialsBar } from './DialsBar';
@@ -14,6 +14,20 @@ interface LocationsViewProps {
   onClearAll: () => void;
   onLocationClick: (location: LocationItem) => void;
   onLocationLongPress: (location: LocationItem) => void;
+  onVideoStateChange?: (state: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  }) => void;
+  videoControlHandlers?: {
+    onPlayPause: () => void;
+    onSeek: (value: number) => void;
+    onVolumeChange: (value: number) => void;
+    onMuteToggle: () => void;
+  };
 }
 
 export function LocationsView({
@@ -22,7 +36,8 @@ export function LocationsView({
   onDialToggle,
   onClearAll,
   onLocationClick,
-  onLocationLongPress
+  onLocationLongPress,
+  onVideoStateChange
 }: LocationsViewProps) {
   const locationGridItems = locations.map(item => ({
     ...item,
@@ -49,6 +64,7 @@ export function LocationsView({
         yAxisOffset={0}
         volume={30}
         isMuted={true}
+        onVideoStateChange={onVideoStateChange}
       />
 
       <div className="mt-8">

@@ -13,6 +13,14 @@ interface VideosViewProps {
   onClearAll: () => void;
   onVideoClick: (video: VideoItem) => void;
   onVideoLongPress: (video: VideoItem) => void;
+  onVideoStateChange?: (state: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  }) => void;
 }
 
 export function VideosView({
@@ -21,7 +29,8 @@ export function VideosView({
   onDialToggle,
   onClearAll,
   onVideoClick,
-  onVideoLongPress
+  onVideoLongPress,
+  onVideoStateChange
 }: VideosViewProps) {
   const handleFilterChange = (filterKey: string, values: string[]) => {
     // Clear current selection for this filter
@@ -58,6 +67,7 @@ export function VideosView({
         yAxisOffset={-10}
         volume={50}
         isMuted={false}
+        onVideoStateChange={onVideoStateChange}
       />
 
       <div className="mt-8">

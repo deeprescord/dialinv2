@@ -54,6 +54,24 @@ export default function SpacePage() {
     { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
   ]);
   
+  // Video controls state
+  const [videoState, setVideoState] = useState<{
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  }>({
+    isPlaying: false,
+    currentTime: 0,
+    duration: 0,
+    volume: 1,
+    isMuted: true,
+    hasVideo: false
+  });
+  const videoRef = React.useRef<any>(null);
+  
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
@@ -757,6 +775,28 @@ export default function SpacePage() {
     setShow360Settings(true);
   };
 
+  // Video control handlers
+  const handleVideoStateChange = (state: typeof videoState) => {
+    setVideoState(state);
+  };
+
+  const handleVideoPlayPause = () => {
+    // Trigger play/pause - HeroHeaderVideo manages the actual playback
+    setVideoState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+  };
+
+  const handleVideoSeek = (value: number) => {
+    setVideoState(prev => ({ ...prev, currentTime: value }));
+  };
+
+  const handleVideoVolumeChange = (value: number) => {
+    setVideoState(prev => ({ ...prev, volume: value, isMuted: value === 0 }));
+  };
+
+  const handleVideoMuteToggle = () => {
+    setVideoState(prev => ({ ...prev, isMuted: !prev.isMuted }));
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -849,6 +889,7 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onVideoClick={handleMediaClick}
               onVideoLongPress={handleMediaLongPress}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
 
@@ -860,6 +901,7 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onMusicClick={handleMediaClick}
               onMusicLongPress={handleMediaLongPress}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
 
@@ -871,6 +913,7 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onLocationClick={handleMediaClick}
               onLocationLongPress={handleMediaLongPress}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
         </main>
@@ -907,6 +950,11 @@ export default function SpacePage() {
             showCreateSpaceModal={showCreateSpaceModal}
             showAIChat={showAIChat}
             onToggleAIChat={handleToggleAIChat}
+            videoControlsState={videoState}
+            onVideoPlayPause={handleVideoPlayPause}
+            onVideoSeek={handleVideoSeek}
+            onVideoVolumeChange={handleVideoVolumeChange}
+            onVideoMuteToggle={handleVideoMuteToggle}
           />
         </div>
       ) : null}

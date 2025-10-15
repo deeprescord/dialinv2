@@ -36,6 +36,18 @@ interface CombinedBottomBarProps {
   showCreateSpaceModal?: boolean;
   showAIChat?: boolean;
   onToggleAIChat?: () => void;
+  videoControlsState?: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  };
+  onVideoPlayPause?: () => void;
+  onVideoSeek?: (value: number) => void;
+  onVideoVolumeChange?: (value: number) => void;
+  onVideoMuteToggle?: () => void;
 }
 
 export function CombinedBottomBar({
@@ -62,7 +74,12 @@ export function CombinedBottomBar({
   onToggleChatWindow,
   showCreateSpaceModal,
   showAIChat,
-  onToggleAIChat
+  onToggleAIChat,
+  videoControlsState,
+  onVideoPlayPause,
+  onVideoSeek,
+  onVideoVolumeChange,
+  onVideoMuteToggle
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -146,6 +163,11 @@ export function CombinedBottomBar({
           onSpaceClick={onSpaceClick}
           onToggleAIChat={onToggleAIChat}
           onToggleChatWindow={onToggleChatWindow}
+          videoControlsState={videoControlsState}
+          onVideoPlayPause={onVideoPlayPause}
+          onVideoSeek={onVideoSeek}
+          onVideoVolumeChange={onVideoVolumeChange}
+          onVideoMuteToggle={onVideoMuteToggle}
         />
       </div>
     </>

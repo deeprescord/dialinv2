@@ -12,6 +12,7 @@ import { AddOptionsModal } from './AddOptionsModal';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 import { ItemsPeopleBar } from './ItemsPeopleBar';
+import { VideoControls } from './VideoControls';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -39,6 +40,18 @@ interface SpacesBarProps {
   hideChatButton?: boolean;
   onToggleAIChat?: () => void;
   onToggleChatWindow?: () => void;
+  videoControlsState?: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  };
+  onVideoPlayPause?: () => void;
+  onVideoSeek?: (value: number) => void;
+  onVideoVolumeChange?: (value: number) => void;
+  onVideoMuteToggle?: () => void;
 }
 
 export function SpacesBar({
@@ -66,7 +79,12 @@ export function SpacesBar({
   hideAIButton = false,
   hideChatButton = false,
   onToggleAIChat,
-  onToggleChatWindow
+  onToggleChatWindow,
+  videoControlsState,
+  onVideoPlayPause,
+  onVideoSeek,
+  onVideoVolumeChange,
+  onVideoMuteToggle
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const scale = 87; // Fixed scale percentage (reduced by 1/3 from 130)
@@ -177,7 +195,24 @@ export function SpacesBar({
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
       <div className="relative">
         {/* Top Action Buttons */}
-        <div className="flex items-center justify-end gap-2 px-3 pt-2 pb-1">
+        <div className="flex items-center justify-between gap-2 px-3 pt-2 pb-1">
+          {/* Video Controls - Left Side */}
+          {videoControlsState?.hasVideo && onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
+            <VideoControls
+              isPlaying={videoControlsState.isPlaying}
+              currentTime={videoControlsState.currentTime}
+              duration={videoControlsState.duration}
+              volume={videoControlsState.volume}
+              isMuted={videoControlsState.isMuted}
+              onPlayPause={onVideoPlayPause}
+              onSeek={onVideoSeek}
+              onVolumeChange={onVideoVolumeChange}
+              onMuteToggle={onVideoMuteToggle}
+            />
+          )}
+          
+          {/* Right Side Buttons */}
+          <div className="flex items-center gap-2">
           {!hideActionButtons && !hideNewButton && (
             <Button
               variant="ghost"
@@ -233,6 +268,7 @@ export function SpacesBar({
               Chat
             </Button>
           )}
+          </div>
         </div>
 
         {/* Spaces Bar */}

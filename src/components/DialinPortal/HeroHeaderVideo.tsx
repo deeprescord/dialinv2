@@ -50,6 +50,7 @@ export function HeroHeaderVideo({
   const [videoVolume, setVideoVolume] = useState(1);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -127,36 +128,40 @@ export function HeroHeaderVideo({
   };
 
   const togglePlayPause = () => {
-    if (videoRef.current) {
+    const activeVideo = videoRef.current || bgVideoRef.current;
+    if (activeVideo) {
       if (isPlaying) {
-        videoRef.current.pause();
+        activeVideo.pause();
       } else {
-        videoRef.current.play();
+        activeVideo.play();
       }
     }
   };
 
   const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isVideoMuted;
+    const activeVideo = videoRef.current || bgVideoRef.current;
+    if (activeVideo) {
+      activeVideo.muted = !isVideoMuted;
       setIsVideoMuted(!isVideoMuted);
     }
   };
 
   const handleVolumeChange = (value: number[]) => {
-    if (videoRef.current) {
-      videoRef.current.volume = value[0];
+    const activeVideo = videoRef.current || bgVideoRef.current;
+    if (activeVideo) {
+      activeVideo.volume = value[0];
       setVideoVolume(value[0]);
       if (value[0] > 0) {
         setIsVideoMuted(false);
-        videoRef.current.muted = false;
+        activeVideo.muted = false;
       }
     }
   };
 
   const handleSeek = (value: number[]) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = value[0];
+    const activeVideo = videoRef.current || bgVideoRef.current;
+    if (activeVideo) {
+      activeVideo.currentTime = value[0];
       setCurrentTime(value[0]);
     }
   };
@@ -174,6 +179,54 @@ export function HeroHeaderVideo({
     return /\.(mp4|webm|ogg|mov)$/i.test(clean);
   };
   const isBackgroundVideo = getIsVideo(backgroundImage);
+
+  // Setup event listeners for background video
+  useEffect(() => {
+    const bgVideo = bgVideoRef.current;
+    if (!bgVideo || !isBackgroundVideo) return;
+
+    const handleCanPlay = () => {
+      setVideoLoaded(true);
+    };
+
+    const handleError = () => {
+      setVideoError(true);
+    };
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(bgVideo.currentTime);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(bgVideo.duration);
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
+    bgVideo.addEventListener('canplay', handleCanPlay);
+    bgVideo.addEventListener('error', handleError);
+    bgVideo.addEventListener('timeupdate', handleTimeUpdate);
+    bgVideo.addEventListener('loadedmetadata', handleLoadedMetadata);
+    bgVideo.addEventListener('play', handlePlay);
+    bgVideo.addEventListener('pause', handlePause);
+
+    return () => {
+      bgVideo.removeEventListener('canplay', handleCanPlay);
+      bgVideo.removeEventListener('error', handleError);
+      bgVideo.removeEventListener('timeupdate', handleTimeUpdate);
+      bgVideo.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      bgVideo.removeEventListener('play', handlePlay);
+      bgVideo.removeEventListener('pause', handlePause);
+    };
+  }, [isBackgroundVideo]);
+
+  const hasVideoPlaying = (showVideo && videoSrc && !videoError && videoLoaded) || (isBackgroundVideo && !show360 && !videoError && videoLoaded);
   return (
     <div 
       className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20 cursor-pointer select-none"
@@ -239,6 +292,7 @@ export function HeroHeaderVideo({
         <>
           {isBackgroundVideo ? (
             <video
+              ref={bgVideoRef}
               autoPlay
               muted
               playsInline
@@ -266,8 +320,8 @@ export function HeroHeaderVideo({
       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
 
       {/* Media Controls - show when video is playing */}
-      {showVideo && videoSrc && !videoError && videoLoaded && !show360 && (
-        <div className="absolute bottom-4 left-4 right-4 z-30 flex items-center justify-end gap-2 px-3 pt-2 pb-1 bg-black/40 backdrop-blur-sm rounded-lg">
+      {hasVideoPlaying && (
+        <div className="absolute top-4 left-4 z-30 flex items-center gap-2 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-lg max-w-md">
           <button
             onClick={togglePlayPause}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"

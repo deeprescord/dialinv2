@@ -86,13 +86,15 @@ interface SkyboxProps {
   yAxisOffset?: number;
   volume?: number;
   isMuted?: boolean;
+  isPlaying?: boolean;
+  seekTo?: number;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
   flipHorizontal?: boolean;
   flipVertical?: boolean;
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, rotationEnabled = false, rotationSpeed = 1, flipHorizontal = false, flipVertical = false }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, isPlaying = false, seekTo, rotationEnabled = false, rotationSpeed = 1, flipHorizontal = false, flipVertical = false }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -283,6 +285,8 @@ interface SkyboxViewerProps {
   yAxisOffset?: number;
   volume?: number;
   isMuted?: boolean;
+  isPlaying?: boolean;
+  seekTo?: number;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
   flipHorizontal?: boolean;
@@ -297,6 +301,8 @@ export function SkyboxViewer({
   yAxisOffset = 0,
   volume = 50,
   isMuted = true,
+  isPlaying = false,
+  seekTo,
   rotationEnabled = false,
   rotationSpeed = 1,
   flipHorizontal = false,
@@ -399,6 +405,8 @@ export function SkyboxViewer({
             yAxisOffset={yAxisOffset}
             volume={volume}
             isMuted={isMuted}
+            isPlaying={isPlaying}
+            seekTo={seekTo}
             rotationEnabled={rotationEnabled}
             rotationSpeed={rotationSpeed}
             flipHorizontal={flipHorizontal}

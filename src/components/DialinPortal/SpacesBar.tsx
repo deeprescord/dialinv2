@@ -199,7 +199,7 @@ export function SpacesBar({
           <div className="flex items-center gap-2">
             {/* Video Controls - Always show (disabled when no video) */}
             {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
-              <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50 pointer-events-none'}`}>
+              <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50'}`}>
                 <VideoControls
                   isPlaying={videoControlsState?.isPlaying ?? false}
                   currentTime={videoControlsState?.currentTime ?? 0}

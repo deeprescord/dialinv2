@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TopNav } from '@/components/DialinPortal/TopNav';
 import { MobileTabBar } from '@/components/DialinPortal/MobileTabBar';
 import { HomeView } from '@/components/DialinPortal/HomeView';
+import type { HeroHeaderVideoHandle } from '@/components/DialinPortal/HeroHeaderVideo';
 import { FriendsView } from '@/components/DialinPortal/FriendsView';
 import { VideosView } from '@/components/DialinPortal/VideosView';
 import { MusicView } from '@/components/DialinPortal/MusicView';
@@ -70,7 +71,7 @@ export default function SpacePage() {
     isMuted: true,
     hasVideo: false
   });
-  const videoRef = React.useRef<any>(null);
+  const heroRef = React.useRef<HeroHeaderVideoHandle>(null);
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
@@ -781,19 +782,22 @@ export default function SpacePage() {
   };
 
   const handleVideoPlayPause = () => {
-    // Trigger play/pause - HeroHeaderVideo manages the actual playback
+    heroRef.current?.playPause();
     setVideoState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
   };
 
   const handleVideoSeek = (value: number) => {
+    heroRef.current?.seek(value);
     setVideoState(prev => ({ ...prev, currentTime: value }));
   };
 
   const handleVideoVolumeChange = (value: number) => {
+    heroRef.current?.setVolume(value);
     setVideoState(prev => ({ ...prev, volume: value, isMuted: value === 0 }));
   };
 
   const handleVideoMuteToggle = () => {
+    heroRef.current?.toggleMute();
     setVideoState(prev => ({ ...prev, isMuted: !prev.isMuted }));
   };
 
@@ -843,33 +847,34 @@ export default function SpacePage() {
         <main className="relative">
           {currentTab === 'home' && (
             <HomeView
-              pinnedContacts={pinnedContacts}
-              onContactClick={handleContactClick}
-              onMediaClick={handleMediaClick}
-              onMediaLongPress={handleMediaLongPress}
-              backgroundImage={backgroundImage}
-              spaceName={currentSpace?.name || 'Lobby'}
-              spaceDescription={currentSpace?.description}
-              isLobby={spaceId === 'lobby'}
-              show360={show360}
-              xAxisOffset={currentSpace?.xAxis}
-              yAxisOffset={currentSpace?.yAxis}
-              volume={currentSpace?.volume}
-              isMuted={currentSpace?.isMuted}
-              rotationEnabled={currentSpace?.rotationEnabled}
-              rotationSpeed={currentSpace?.rotationSpeed}
-              flipHorizontal={currentSpace?.flipHorizontal}
-              flipVertical={currentSpace?.flipVertical}
-              spaces={spaces}
-              onFilesDrop={handleFilesDropped}
-              onCreateSpace={handleCreateSpaceFromDrop}
-              isAddModalOpen={isAddModalOpen}
-              onCloseAddModal={() => setIsAddModalOpen(false)}
-              onAddOptionSelect={handleAddOptionSelect}
-              onOpenAddPanel={() => openPanel('add')}
-              selectedItem={selectedItemData}
-              onVideoStateChange={handleVideoStateChange}
-            />
+               pinnedContacts={pinnedContacts}
+               onContactClick={handleContactClick}
+               onMediaClick={handleMediaClick}
+               onMediaLongPress={handleMediaLongPress}
+               backgroundImage={backgroundImage}
+               spaceName={currentSpace?.name || 'Lobby'}
+               spaceDescription={currentSpace?.description}
+               isLobby={spaceId === 'lobby'}
+               show360={show360}
+               xAxisOffset={currentSpace?.xAxis}
+               yAxisOffset={currentSpace?.yAxis}
+               volume={currentSpace?.volume}
+               isMuted={currentSpace?.isMuted}
+               rotationEnabled={currentSpace?.rotationEnabled}
+               rotationSpeed={currentSpace?.rotationSpeed}
+               flipHorizontal={currentSpace?.flipHorizontal}
+               flipVertical={currentSpace?.flipVertical}
+               spaces={spaces}
+               onFilesDrop={handleFilesDropped}
+               onCreateSpace={handleCreateSpaceFromDrop}
+               isAddModalOpen={isAddModalOpen}
+               onCloseAddModal={() => setIsAddModalOpen(false)}
+               onAddOptionSelect={handleAddOptionSelect}
+               onOpenAddPanel={() => openPanel('add')}
+               selectedItem={selectedItemData}
+               onVideoStateChange={handleVideoStateChange}
+               heroRef={heroRef}
+             />
           )}
 
           {currentTab === 'friends' && (

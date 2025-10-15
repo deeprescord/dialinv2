@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, Suspense } from 'react';
+import React, { useState, useRef, useEffect, Suspense, useImperativeHandle } from 'react';
 import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
 
@@ -30,7 +30,14 @@ interface HeroHeaderVideoProps {
   }) => void;
 }
 
-export function HeroHeaderVideo({ 
+export type HeroHeaderVideoHandle = {
+  playPause: () => void;
+  seek: (value: number) => void;
+  setVolume: (value: number) => void;
+  toggleMute: () => void;
+};
+
+export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeaderVideoProps>(({ 
   videoSrc, 
   posterSrc, 
   title, 
@@ -49,7 +56,7 @@ export function HeroHeaderVideo({
   flipVertical,
   onOpenAddPanel,
   onVideoStateChange
-}: HeroHeaderVideoProps) {
+}: HeroHeaderVideoProps, ref) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -174,6 +181,13 @@ export function HeroHeaderVideo({
       setCurrentTime(value[0]);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    playPause: togglePlayPause,
+    seek: (value: number) => handleSeek([value]),
+    setVolume: (value: number) => handleVolumeChange([value]),
+    toggleMute: toggleMute
+  }));
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -368,3 +382,4 @@ export function HeroHeaderVideo({
     </div>
   );
 }
+);

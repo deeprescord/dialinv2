@@ -19,6 +19,7 @@ import { videoCatalog, musicCatalog, friendsPosts, friends } from '@/data/catalo
 import { Friend, Space } from '@/data/catalogs';
 import lobbyBackground from '@/assets/lobby-background.jpg';
 import appBackground from '@/assets/app-background.jpg';
+import type { HeroHeaderVideoHandle } from './HeroHeaderVideo';
 
 interface HomeViewProps {
   pinnedContacts: Friend[];
@@ -54,6 +55,7 @@ interface HomeViewProps {
     isMuted: boolean;
     hasVideo: boolean;
   }) => void;
+  heroRef?: React.Ref<HeroHeaderVideoHandle>;
 }
 
 export function HomeView({ 
@@ -262,27 +264,28 @@ export function HomeView({
         />
       ) : (
         <HeroHeaderVideo
-          videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby && !hasCustomBackground && !show360 ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
-          posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
-          title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
-          subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
-          backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-          skyboxSrc={(backgroundImage && /\.(mp4|webm|ogg|mov)$/i.test(backgroundImage) 
-              ? backgroundImage 
-              : (isLobby && !hasCustomBackground ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))}
-          showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360)}
-          show360={show360}
-          xAxisOffset={xAxisOffset}
-          yAxisOffset={yAxisOffset}
-          volume={volume}
-          isMuted={isMuted}
-          rotationEnabled={rotationEnabled}
-          rotationSpeed={rotationSpeed}
-          flipHorizontal={flipHorizontal}
-          flipVertical={flipVertical}
-          onOpenAddPanel={onOpenAddPanel}
-          onVideoStateChange={onVideoStateChange}
-        />
+           ref={heroRef as any}
+           videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby && !hasCustomBackground && !show360 ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
+           posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
+           title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
+           subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
+           backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
+           skyboxSrc={(backgroundImage && /\.(mp4|webm|ogg|mov)$/i.test(backgroundImage) 
+               ? backgroundImage 
+               : (isLobby && !hasCustomBackground ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))}
+           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360)}
+           show360={show360}
+           xAxisOffset={xAxisOffset}
+           yAxisOffset={yAxisOffset}
+           volume={volume}
+           isMuted={isMuted}
+           rotationEnabled={rotationEnabled}
+           rotationSpeed={rotationSpeed}
+           flipHorizontal={flipHorizontal}
+           flipVertical={flipVertical}
+           onOpenAddPanel={onOpenAddPanel}
+           onVideoStateChange={onVideoStateChange}
+         />
       )}
 
       {isLobby ? (

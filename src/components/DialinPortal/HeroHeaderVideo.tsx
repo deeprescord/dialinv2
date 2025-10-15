@@ -8,6 +8,7 @@ interface HeroHeaderVideoProps {
   title: string;
   subtitle: string;
   backgroundImage?: string;
+  skyboxSrc?: string;
   showVideo?: boolean;
   show360?: boolean;
   xAxisOffset?: number;
@@ -27,6 +28,7 @@ export function HeroHeaderVideo({
   title, 
   subtitle, 
   backgroundImage, 
+  skyboxSrc,
   showVideo = true, 
   show360 = false,
   xAxisOffset,
@@ -131,16 +133,16 @@ export function HeroHeaderVideo({
       )}
 
       {/* 360° Skybox View - for special floors */}
-      {show360 && backgroundImage && (
+      {show360 && (skyboxSrc || backgroundImage) && (
         <div className="absolute inset-0 w-full h-full z-10">
           <Suspense fallback={
             <div 
               className="w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${backgroundImage})` }}
+              style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
             />
           }>
             <SkyboxViewer 
-              mediaUrl={backgroundImage} 
+              mediaUrl={(skyboxSrc || backgroundImage)!} 
               className="w-full h-full"
               xAxisOffset={xAxisOffset}
               yAxisOffset={yAxisOffset}

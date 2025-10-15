@@ -110,42 +110,52 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       // Handle video
       const video = document.createElement('video');
       video.src = mediaUrl;
-      video.crossOrigin = 'anonymous'; // Enable CORS for WebGL texture usage
+      // Enable CORS and mobile autoplay compatibility
+      video.crossOrigin = 'anonymous';
+      video.setAttribute('crossorigin', 'anonymous');
       video.loop = true;
       video.muted = isMuted;
+      if (isMuted) {
+        video.setAttribute('muted', '');
+      }
       video.volume = isMuted ? 0 : volume / 100;
       video.playsInline = true;
-      video.preload = 'metadata';
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.preload = 'auto';
       
       let hasCreatedTexture = false;
       
-      const handleCanPlay = () => {
-        if (!hasCreatedTexture) {
-          hasCreatedTexture = true;
-          try {
-            const videoTexture = new VideoTexture(video);
-            videoTexture.flipY = true;
-            setTexture(videoTexture);
-            setError(false);
-            
-            // Start playing
-            video.play().catch((playError) => {
-              console.warn('Video play failed:', playError);
-            });
-          } catch (textureError) {
-            console.warn('VideoTexture creation failed:', textureError);
-            setError(true);
-            // Also trigger webglError in parent component for fallback
-            if (textureError.name === 'SecurityError') {
-              // This will trigger the parent to use webglError fallback
-              setTimeout(() => {
-                const event = new CustomEvent('webgl-security-error');
-                window.dispatchEvent(event);
-              }, 100);
-            }
+      const createTexture = () => {
+        if (hasCreatedTexture) return;
+        hasCreatedTexture = true;
+        try {
+          const videoTexture = new VideoTexture(video);
+          videoTexture.flipY = true;
+          setTexture(videoTexture);
+          setError(false);
+          // Start playing
+          video.play().catch((playError) => {
+            console.warn('Video play failed:', playError);
+          });
+        } catch (textureError: any) {
+          console.warn('VideoTexture creation failed:', textureError);
+          setError(true);
+          // Also trigger webglError in parent component for fallback
+          if (textureError.name === 'SecurityError') {
+            // This will trigger the parent to use webglError fallback
+            setTimeout(() => {
+              const event = new CustomEvent('webgl-security-error');
+              window.dispatchEvent(event);
+            }, 100);
           }
         }
       };
+      
+      const handleCanPlay = () => createTexture();
+      const handleLoadedData = () => createTexture();
+      const handlePlaying = () => createTexture();
+      const handleCanPlayThrough = () => createTexture();
       
       const handleError = (err: any) => {
         console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
@@ -157,16 +167,32 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
         }, 0);
       };
       
+      video.addEventListener('loadedmetadata', handleCanPlay);
+      video.addEventListener('loadeddata', handleLoadedData);
       video.addEventListener('canplay', handleCanPlay);
+      video.addEventListener('canplaythrough', handleCanPlayThrough);
+      video.addEventListener('playing', handlePlaying);
       video.addEventListener('error', handleError);
       
       videoRef.current = video;
+      
+      // Fallback: if readyState is already sufficient, create the texture shortly
+      const readyCheck = setTimeout(() => {
+        if (video.readyState >= 2 && !hasCreatedTexture) {
+          createTexture();
+        }
+      }, 500);
       
       // Load the video
       video.load();
       
       return () => {
+        clearTimeout(readyCheck);
+        video.removeEventListener('loadedmetadata', handleCanPlay);
+        video.removeEventListener('loadeddata', handleLoadedData);
         video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('canplaythrough', handleCanPlayThrough);
+        video.removeEventListener('playing', handlePlaying);
         video.removeEventListener('error', handleError);
         video.pause();
         video.remove();

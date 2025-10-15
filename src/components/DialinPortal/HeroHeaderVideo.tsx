@@ -163,7 +163,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const toggleMute = () => {
-    const activeVideo = videoRef.current || bgVideoRef.current;
+    const activeVideo = getActiveVideo();
     if (activeVideo) {
       activeVideo.muted = !isVideoMuted;
       setIsVideoMuted(!isVideoMuted);
@@ -171,7 +171,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const handleVolumeChange = (value: number[]) => {
-    const activeVideo = videoRef.current || bgVideoRef.current;
+    const activeVideo = getActiveVideo();
     if (activeVideo) {
       activeVideo.volume = value[0];
       setVideoVolume(value[0]);
@@ -183,7 +183,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const handleSeek = (value: number[]) => {
-    const activeVideo = videoRef.current || bgVideoRef.current;
+    const activeVideo = getActiveVideo();
     if (activeVideo) {
       activeVideo.currentTime = value[0];
       setCurrentTime(value[0]);

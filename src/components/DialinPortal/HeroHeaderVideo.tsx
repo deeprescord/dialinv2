@@ -68,6 +68,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
+  // Determine which video element is active (foreground vs background)
+  const getActiveVideo = (): HTMLVideoElement | null => {
+    if (showVideo && videoRef.current) return videoRef.current;
+    if (!showVideo && bgVideoRef.current) return bgVideoRef.current;
+    // Fallback to whichever exists
+    return videoRef.current || bgVideoRef.current;
+  };
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -144,7 +152,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const togglePlayPause = () => {
-    const activeVideo = videoRef.current || bgVideoRef.current;
+    const activeVideo = getActiveVideo();
     if (activeVideo) {
       if (isPlaying) {
         activeVideo.pause();

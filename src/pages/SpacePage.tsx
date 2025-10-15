@@ -868,6 +868,7 @@ export default function SpacePage() {
               onAddOptionSelect={handleAddOptionSelect}
               onOpenAddPanel={() => openPanel('add')}
               selectedItem={selectedItemData}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
 

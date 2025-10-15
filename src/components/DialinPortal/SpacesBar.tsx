@@ -197,19 +197,21 @@ export function SpacesBar({
         {/* Top Action Buttons */}
         <div className="flex items-center justify-between gap-2 px-3 pt-2 pb-1">
           <div className="flex items-center gap-2">
-            {/* Video Controls - Only show when video is playing */}
-            {videoControlsState?.hasVideo && onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
-              <VideoControls
-                isPlaying={videoControlsState.isPlaying}
-                currentTime={videoControlsState.currentTime}
-                duration={videoControlsState.duration}
-                volume={videoControlsState.volume}
-                isMuted={videoControlsState.isMuted}
-                onPlayPause={onVideoPlayPause}
-                onSeek={onVideoSeek}
-                onVolumeChange={onVideoVolumeChange}
-                onMuteToggle={onVideoMuteToggle}
-              />
+            {/* Video Controls - Always show (disabled when no video) */}
+            {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
+              <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50 pointer-events-none'}`}>
+                <VideoControls
+                  isPlaying={videoControlsState?.isPlaying ?? false}
+                  currentTime={videoControlsState?.currentTime ?? 0}
+                  duration={videoControlsState?.duration ?? 0}
+                  volume={videoControlsState?.volume ?? 1}
+                  isMuted={videoControlsState?.isMuted ?? true}
+                  onPlayPause={onVideoPlayPause}
+                  onSeek={onVideoSeek}
+                  onVolumeChange={onVideoVolumeChange}
+                  onMuteToggle={onVideoMuteToggle}
+                />
+              </div>
             )}
           </div>
           

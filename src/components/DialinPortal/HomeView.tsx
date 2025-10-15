@@ -84,7 +84,8 @@ export function HomeView({
   onAddOptionSelect,
   onOpenAddPanel,
   selectedItem,
-  onVideoStateChange
+  onVideoStateChange,
+  heroRef
 }: HomeViewProps) {
   const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);

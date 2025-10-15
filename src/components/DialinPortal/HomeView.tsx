@@ -46,6 +46,14 @@ interface HomeViewProps {
   onAddOptionSelect?: (optionId: string) => void;
   onOpenAddPanel?: () => void;
   selectedItem?: any;
+  onVideoStateChange?: (state: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  }) => void;
 }
 
 export function HomeView({ 
@@ -73,7 +81,8 @@ export function HomeView({
   onCloseAddModal,
   onAddOptionSelect,
   onOpenAddPanel,
-  selectedItem
+  selectedItem,
+  onVideoStateChange
 }: HomeViewProps) {
   const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -258,11 +267,9 @@ export function HomeView({
           title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
           subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
           backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-          skyboxSrc={
-            (backgroundImage && /\.(mp4|webm|ogg|mov)$/i.test(backgroundImage) 
+          skyboxSrc={(backgroundImage && /\.(mp4|webm|ogg|mov)$/i.test(backgroundImage) 
               ? backgroundImage 
-              : (isLobby && !hasCustomBackground ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))
-          }
+              : (isLobby && !hasCustomBackground ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))}
           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360)}
           show360={show360}
           xAxisOffset={xAxisOffset}
@@ -274,6 +281,7 @@ export function HomeView({
           flipHorizontal={flipHorizontal}
           flipVertical={flipVertical}
           onOpenAddPanel={onOpenAddPanel}
+          onVideoStateChange={onVideoStateChange}
         />
       )}
 

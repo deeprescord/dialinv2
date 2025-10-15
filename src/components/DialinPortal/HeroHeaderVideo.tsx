@@ -235,7 +235,12 @@ export function HeroHeaderVideo({
     };
   }, [isBackgroundVideo]);
 
-  const hasVideoPlaying = (showVideo && videoSrc && !videoError && videoLoaded) || (isBackgroundVideo && !show360 && !videoError && videoLoaded);
+  const isSkyboxVideo = show360 && getIsVideo(skyboxSrc || backgroundImage);
+  const hasVideoPlaying = (
+    (showVideo && !!videoSrc && !videoError && videoLoaded) ||
+    (isBackgroundVideo && !videoError && (!show360 ? videoLoaded : true)) ||
+    (isSkyboxVideo && !videoError)
+  );
 
   // Notify parent of video state changes
   useEffect(() => {

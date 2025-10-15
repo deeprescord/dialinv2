@@ -80,6 +80,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const video = videoRef.current;
     if (!video) return;
 
+    // Reset state when source/display changes
+    setVideoLoaded(false);
+    setVideoError(false);
+    setCurrentTime(0);
+    setDuration(0);
+
     const handleCanPlay = () => {
       setVideoLoaded(true);
     };
@@ -127,7 +133,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
     };
-  }, [videoLoaded]);
+  }, [videoSrc, showVideo]);
 
   const handleMouseDown = () => {
     if (!onOpenAddPanel || show360) return;
@@ -216,6 +222,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const bgVideo = bgVideoRef.current;
     if (!bgVideo || !isBackgroundVideo) return;
 
+    // Reset state when source changes
+    setVideoLoaded(false);
+    setVideoError(false);
+    setCurrentTime(0);
+    setDuration(0);
+
     const handleCanPlay = () => {
       setVideoLoaded(true);
     };
@@ -255,7 +267,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       bgVideo.removeEventListener('play', handlePlay);
       bgVideo.removeEventListener('pause', handlePause);
     };
-  }, [isBackgroundVideo]);
+  }, [isBackgroundVideo, backgroundImage]);
 
   const isSkyboxVideo = show360 && getIsVideo(skyboxSrc || backgroundImage);
   const hasVideoPlaying = (

@@ -459,26 +459,23 @@ export default function SpacePage() {
 
   // Drag and drop handlers
   const handleFilesDropped = async (files: File[]) => {
-    if (files.length === 0 || !currentUser) return;
+    if (files.length === 0) return;
 
-    const currentSpaceId = navigationPath[navigationPath.length - 1];
+    // Resolve the destination space: prefer URL spaceId when not in lobby
+    const destSpaceId = (spaceId && spaceId !== 'lobby') ? spaceId : navigationPath[navigationPath.length - 1];
 
     for (const file of files) {
       try {
-        // Auto-upload file first
         toast.info('Uploading and analyzing...');
-        const uploadResult = await uploadFile(file, currentSpaceId);
+        // Upload directly; the hook already checks auth, no need to gate on local currentUser state
+        const uploadResult = await uploadFile(file, destSpaceId);
         
         if (uploadResult) {
           // Auto-trigger AI analysis
           const aiMetadata = await analyzeWithAI(file, uploadResult.id);
           
           if (aiMetadata) {
-            // Show adjustment panel with AI results
-            setPendingFile({
-              file: uploadResult,
-              metadata: aiMetadata
-            });
+            setPendingFile({ file: uploadResult, metadata: aiMetadata });
           } else {
             // If AI fails, show panel with defaults
             setPendingFile({
@@ -488,7 +485,7 @@ export default function SpacePage() {
                 dial_values: {},
                 suggested_dials: [],
                 confidence: 0,
-                suggested_spaces: [currentSpaceId],
+                suggested_spaces: [destSpaceId],
                 fallback: true
               }
             });
@@ -500,7 +497,6 @@ export default function SpacePage() {
       }
     }
   };
-
   const handleMetadataSave = async (metadata: {
     hashtags: string[];
     dialValues: Record<string, any>;

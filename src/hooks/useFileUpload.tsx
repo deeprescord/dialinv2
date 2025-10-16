@@ -88,11 +88,12 @@ export function useFileUpload() {
 
       if (error) {
         console.error('Failed to save metadata:', error);
-        toast.error('Failed to save metadata');
+        toast.error(`Failed to save metadata: ${error.message || 'Unknown error'}`);
         throw error;
       }
     } catch (error) {
       console.error('Error in saveMetadata:', error);
+      toast.error(`Failed to save metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
       throw error;
     }
   };

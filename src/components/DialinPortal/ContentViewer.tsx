@@ -74,9 +74,17 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
 
   useEffect(() => {
-    getPublicUrl(content.storage_path).then(setContentUrl);
+    getPublicUrl(content.storage_path).then(url => {
+      console.log('Content URL loaded:', url);
+      setContentUrl(url);
+    });
     if (content.thumbnail_path) {
-      getPublicUrl(content.thumbnail_path).then(setThumbnailUrl);
+      getPublicUrl(content.thumbnail_path).then(url => {
+        console.log('Thumbnail URL loaded:', url);
+        setThumbnailUrl(url);
+      });
+    } else {
+      console.log('No thumbnail_path provided:', content);
     }
   }, [content.storage_path, content.thumbnail_path]);
 
@@ -316,13 +324,19 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       {isAudio && contentUrl && (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center">
           <audio ref={audioRef} src={contentUrl} />
-          {/* Show thumbnail if available */}
+          {/* Show thumbnail if available, or fallback visual */}
           {thumbnailUrl ? (
-            <img
-              src={thumbnailUrl}
-              alt={content.original_name}
-              className="w-full h-full object-cover"
-            />
+            <div className="w-full h-full relative">
+              <img
+                src={thumbnailUrl}
+                alt={content.original_name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Thumbnail failed to load:', thumbnailUrl);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/20 via-background to-secondary/20 flex items-center justify-center">
               <div className="text-center space-y-4">

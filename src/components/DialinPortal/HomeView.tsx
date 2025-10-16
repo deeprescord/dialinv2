@@ -12,6 +12,7 @@ import { AuthModal } from './AuthModal';
 import { DialControlPanel } from './DialControlPanel';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { UploadLoader } from './UploadLoader';
+import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { useSpaces } from '@/hooks/useSpaces';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,6 +57,8 @@ interface HomeViewProps {
     hasVideo: boolean;
   }) => void;
   heroRef?: React.Ref<HeroHeaderVideoHandle>;
+  spaceId?: string;
+  onItemClick?: (item: any) => void;
 }
 
 export function HomeView({ 
@@ -85,7 +88,9 @@ export function HomeView({
   onOpenAddPanel,
   selectedItem,
   onVideoStateChange,
-  heroRef
+  heroRef,
+  spaceId,
+  onItemClick
 }: HomeViewProps) {
   const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -300,6 +305,11 @@ export function HomeView({
         </>
       ) : (
         <>
+          <ItemsPeopleBar
+            view="items"
+            spaceId={spaceId}
+            onItemClick={onItemClick}
+          />
           <MediaRow
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}

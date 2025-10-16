@@ -885,6 +885,8 @@ export default function SpacePage() {
                selectedItem={selectedItemData}
                onVideoStateChange={handleVideoStateChange}
                heroRef={heroRef}
+               spaceId={spaceId}
+               onItemClick={handleMediaClick}
              />
           )}
 

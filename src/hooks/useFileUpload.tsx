@@ -75,21 +75,56 @@ export function useFileUpload() {
         return;
       }
 
-      const { error } = await supabase
-        .from('item_metadata')
-        .insert({
-          file_id: fileId,
-          user_id: user.id,
-          hashtags: hashtags || [],
-          dial_values: dialValues || {},
-          ai_generated: aiGenerated,
-          ai_confidence: confidence
-        });
+      // Sanitize inputs
+      const safeHashtags = Array.isArray(hashtags) ? hashtags.filter((h) => typeof h === 'string').map((h) => h.trim()).slice(0, 50) : [];
+      const safeDialValues = dialValues && typeof dialValues === 'object' ? dialValues : {};
+      const safeConfidence = Number.isFinite(confidence) ? confidence : 0;
 
-      if (error) {
-        console.error('Failed to save metadata:', error);
-        toast.error(`Failed to save metadata: ${error.message || 'Unknown error'}`);
-        throw error;
+      // If a row already exists for this user+file, update it instead of inserting
+      const { data: existing, error: selectError } = await supabase
+        .from('item_metadata')
+        .select('id')
+        .eq('file_id', fileId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (selectError) {
+        console.warn('Select existing metadata failed (continuing with insert):', selectError);
+      }
+
+      if (existing?.id) {
+        const { error: updateError } = await supabase
+          .from('item_metadata')
+          .update({
+            hashtags: safeHashtags,
+            dial_values: safeDialValues,
+            ai_generated: aiGenerated,
+            ai_confidence: safeConfidence,
+          })
+          .eq('id', existing.id);
+
+        if (updateError) {
+          console.error('Failed to update metadata:', updateError);
+          toast.error(`Failed to save metadata: ${updateError.message || 'Unknown error'}`);
+          throw updateError;
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('item_metadata')
+          .insert({
+            file_id: fileId,
+            user_id: user.id,
+            hashtags: safeHashtags,
+            dial_values: safeDialValues,
+            ai_generated: aiGenerated,
+            ai_confidence: safeConfidence,
+          });
+
+        if (insertError) {
+          console.error('Failed to insert metadata:', insertError);
+          toast.error(`Failed to save metadata: ${insertError.message || 'Unknown error'}`);
+          throw insertError;
+        }
       }
     } catch (error) {
       console.error('Error in saveMetadata:', error);

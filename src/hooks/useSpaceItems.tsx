@@ -9,6 +9,7 @@ export interface SpaceItem {
   mime_type: string;
   storage_path: string;
   thumbnail_path?: string;
+  duration?: number;
   created_at: string;
   hashtags?: string[];
   dial_values?: Record<string, any>;
@@ -84,6 +85,7 @@ export function useSpaceItems(spaceId?: string) {
           mime_type: file.mime_type,
           storage_path: file.storage_path,
           thumbnail_path: file.thumbnail_path || undefined,
+          duration: file.duration || undefined,
           created_at: file.created_at,
           hashtags: meta?.hashtags as string[] || undefined,
           dial_values: (meta?.dial_values as Record<string, any>) || undefined,

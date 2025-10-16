@@ -104,7 +104,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
   };
 
   return (
-    <div className="relative">
+    <div className="mb-4 relative">
       <div className="relative" style={{ padding: `${padding}px` }}>
         {/* Scrollable Items/People List */}
         <div className="overflow-x-auto scrollbar-thin">

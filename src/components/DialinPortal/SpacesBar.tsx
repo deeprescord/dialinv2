@@ -180,13 +180,13 @@ export function SpacesBar({
 
   return (
     <div className="relative">
-      {/* Items/People Bar - floating above space bar */}
+      {/* Items/People Bar - shown above when toggled */}
       {itemsPeopleView && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-24 left-4 right-4 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg z-40"
+          className="absolute bottom-full mb-2 left-0 right-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"
         >
           <ItemsPeopleBar scale={scale} view={itemsPeopleView} spaceId={currentSpaceId} />
         </motion.div>

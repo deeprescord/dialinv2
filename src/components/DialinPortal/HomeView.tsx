@@ -334,6 +334,11 @@ export function HomeView({
         </>
       ) : (
         <>
+          <ItemsPeopleBar
+            view="items"
+            spaceId={spaceId}
+            onItemClick={handleItemClickFromBar}
+          />
           <MediaRow
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}

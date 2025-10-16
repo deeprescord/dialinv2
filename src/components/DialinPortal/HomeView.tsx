@@ -279,6 +279,17 @@ export function HomeView({
         transition={{ duration: 0.3 }}
         className="pb-32"
       >
+      {/* Items Bar - Fixed above space bar, floating over hero */}
+      {!isLobby && (
+        <div className="fixed bottom-24 left-4 right-4 z-40 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg">
+          <ItemsPeopleBar
+            view="items"
+            spaceId={spaceId}
+            onItemClick={handleItemClickFromBar}
+          />
+        </div>
+      )}
+
       {/* Hero Header - Show ContentViewer if item has file data, otherwise show HeroHeaderVideo */}
       {selectedItem?.storage_path ? (
         <ContentViewer

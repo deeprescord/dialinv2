@@ -467,29 +467,44 @@ export default function SpacePage() {
     for (const file of files) {
       try {
         toast.info('Uploading and analyzing...');
-        // Upload directly; the hook already checks auth, no need to gate on local currentUser state
         const uploadResult = await uploadFile(file, destSpaceId);
         
         if (uploadResult) {
           // Auto-trigger AI analysis
           const aiMetadata = await analyzeWithAI(file, uploadResult.id);
           
-          if (aiMetadata) {
-            setPendingFile({ file: uploadResult, metadata: aiMetadata });
-          } else {
-            // If AI fails, show panel with defaults
-            setPendingFile({
-              file: uploadResult,
-              metadata: {
-                hashtags: ['untagged'],
-                dial_values: {},
-                suggested_dials: [],
-                confidence: 0,
-                suggested_spaces: [destSpaceId],
-                fallback: true
-              }
-            });
+          // Get current location automatically
+          let currentLocation: { lat: number; lng: number; address?: string } | undefined;
+          if (navigator.geolocation) {
+            try {
+              const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+              });
+              currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              };
+            } catch (err) {
+              console.log('Location not available');
+            }
           }
+          
+          // Auto-save with AI metadata and location
+          const dialValuesWithLocation = {
+            ...(aiMetadata?.dial_values || {}),
+            ...(currentLocation && { location: currentLocation })
+          };
+          
+          await saveMetadata(
+            uploadResult.id,
+            aiMetadata?.hashtags || ['untagged'],
+            dialValuesWithLocation,
+            !!aiMetadata,
+            aiMetadata?.confidence || 0
+          );
+          
+          toast.success(`${file.name} uploaded successfully`);
+          if (refetch) refetch();
         }
       } catch (error) {
         console.error('File processing error:', error);

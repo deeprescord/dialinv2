@@ -92,9 +92,16 @@ interface SkyboxProps {
   rotationSpeed?: number;
   flipHorizontal?: boolean;
   flipVertical?: boolean;
+  onStateChange?: (state: {
+    currentTime: number;
+    duration: number;
+    isPlaying: boolean;
+    volume: number;
+    isMuted: boolean;
+  }) => void;
 }
 
-function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, isPlaying = false, seekTo, rotationEnabled = false, rotationSpeed = 1, flipHorizontal = false, flipVertical = false }: SkyboxProps) {
+function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMuted = true, isPlaying = false, seekTo, rotationEnabled = false, rotationSpeed = 1, flipHorizontal = false, flipVertical = false, onStateChange }: SkyboxProps) {
   const meshRef = useRef<Mesh>(null);
   const [texture, setTexture] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -116,11 +123,12 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       video.crossOrigin = 'anonymous';
       video.setAttribute('crossorigin', 'anonymous');
       video.loop = true;
-      video.muted = isMuted;
-      if (isMuted) {
+      const norm = volume > 1 ? volume / 100 : volume;
+      video.muted = isMuted || norm === 0;
+      if (video.muted) {
         video.setAttribute('muted', '');
       }
-      video.volume = isMuted ? 0 : volume / 100;
+      video.volume = video.muted ? 0 : norm;
       video.playsInline = true;
       video.setAttribute('playsinline', '');
       video.setAttribute('webkit-playsinline', '');
@@ -158,6 +166,18 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       const handleLoadedData = () => createTexture();
       const handlePlaying = () => createTexture();
       const handleCanPlayThrough = () => createTexture();
+
+      const emitState = () => {
+        try {
+          onStateChange?.({
+            currentTime: video.currentTime || 0,
+            duration: video.duration || 0,
+            isPlaying: !video.paused && !video.ended,
+            volume: video.muted ? 0 : video.volume,
+            isMuted: video.muted,
+          });
+        } catch {}
+      };
       
       const handleError = (err: any) => {
         console.warn(`Failed to load skybox video: ${mediaUrl}`, err);
@@ -169,11 +189,15 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
         }, 0);
       };
       
-      video.addEventListener('loadedmetadata', handleCanPlay);
-      video.addEventListener('loadeddata', handleLoadedData);
-      video.addEventListener('canplay', handleCanPlay);
-      video.addEventListener('canplaythrough', handleCanPlayThrough);
-      video.addEventListener('playing', handlePlaying);
+      video.addEventListener('loadedmetadata', () => { handleCanPlay(); emitState(); });
+      video.addEventListener('loadeddata', () => { handleLoadedData(); emitState(); });
+      video.addEventListener('canplay', () => { handleCanPlay(); emitState(); });
+      video.addEventListener('canplaythrough', () => { handleCanPlayThrough(); emitState(); });
+      video.addEventListener('playing', () => { handlePlaying(); emitState(); });
+      video.addEventListener('timeupdate', emitState);
+      video.addEventListener('play', emitState);
+      video.addEventListener('pause', emitState);
+      video.addEventListener('volumechange', emitState);
       video.addEventListener('error', handleError);
       
       videoRef.current = video;
@@ -182,6 +206,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       const readyCheck = setTimeout(() => {
         if (video.readyState >= 2 && !hasCreatedTexture) {
           createTexture();
+          emitState();
         }
       }, 500);
       
@@ -195,6 +220,10 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
         video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('canplaythrough', handleCanPlayThrough);
         video.removeEventListener('playing', handlePlaying);
+        video.removeEventListener('timeupdate', emitState);
+        video.removeEventListener('play', emitState);
+        video.removeEventListener('pause', emitState);
+        video.removeEventListener('volumechange', emitState);
         video.removeEventListener('error', handleError);
         video.pause();
         video.remove();
@@ -219,6 +248,38 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
       );
     }
   }, [mediaUrl]);
+
+  // Playback control effects
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    try {
+      if (isPlaying) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    } catch {}
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (seekTo == null) return;
+    try {
+      v.currentTime = seekTo;
+    } catch {}
+  }, [seekTo]);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const norm = volume > 1 ? volume / 100 : volume;
+    try {
+      v.muted = !!isMuted;
+      v.volume = isMuted ? 0 : norm;
+    } catch {}
+  }, [isMuted, volume]);
 
   // Auto-rotation animation (always Y-axis for left-to-right rotation)
   useFrame((state, delta) => {
@@ -291,6 +352,13 @@ interface SkyboxViewerProps {
   rotationSpeed?: number;
   flipHorizontal?: boolean;
   flipVertical?: boolean;
+  onStateChange?: (state: {
+    currentTime: number;
+    duration: number;
+    isPlaying: boolean;
+    volume: number;
+    isMuted: boolean;
+  }) => void;
 }
 
 export function SkyboxViewer({ 
@@ -306,7 +374,8 @@ export function SkyboxViewer({
   rotationEnabled = false,
   rotationSpeed = 1,
   flipHorizontal = false,
-  flipVertical = false
+  flipVertical = false,
+  onStateChange
 }: SkyboxViewerProps) {
   const [webglError, setWebglError] = useState(false);
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
@@ -346,14 +415,40 @@ export function SkyboxViewer({
             className="w-full h-full object-cover"
             loop
             muted={isMuted}
-            autoPlay
+            autoPlay={isPlaying}
             playsInline
             controls={true}
             ref={(video) => {
-              if (video && !isMuted) {
-                video.volume = volume / 100;
+              if (video) {
+                try {
+                  video.muted = !!isMuted;
+                  const norm = volume > 1 ? volume / 100 : volume;
+                  video.volume = isMuted ? 0 : norm;
+                  if (isPlaying) video.play().catch(() => {}); else video.pause();
+                } catch {}
               }
             }}
+            onTimeUpdate={(e) => onStateChange?.({
+              currentTime: (e.currentTarget as HTMLVideoElement).currentTime,
+              duration: (e.currentTarget as HTMLVideoElement).duration,
+              isPlaying: !(e.currentTarget as HTMLVideoElement).paused,
+              volume: (e.currentTarget as HTMLVideoElement).muted ? 0 : (e.currentTarget as HTMLVideoElement).volume,
+              isMuted: (e.currentTarget as HTMLVideoElement).muted,
+            })}
+            onPlay={(e) => onStateChange?.({
+              currentTime: (e.currentTarget as HTMLVideoElement).currentTime,
+              duration: (e.currentTarget as HTMLVideoElement).duration,
+              isPlaying: true,
+              volume: (e.currentTarget as HTMLVideoElement).muted ? 0 : (e.currentTarget as HTMLVideoElement).volume,
+              isMuted: (e.currentTarget as HTMLVideoElement).muted,
+            })}
+            onPause={(e) => onStateChange?.({
+              currentTime: (e.currentTarget as HTMLVideoElement).currentTime,
+              duration: (e.currentTarget as HTMLVideoElement).duration,
+              isPlaying: false,
+              volume: (e.currentTarget as HTMLVideoElement).muted ? 0 : (e.currentTarget as HTMLVideoElement).volume,
+              isMuted: (e.currentTarget as HTMLVideoElement).muted,
+            })}
           />
           {/* Enhanced fallback indicator for 360° external videos */}
           <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none">
@@ -411,6 +506,7 @@ export function SkyboxViewer({
             rotationSpeed={rotationSpeed}
             flipHorizontal={flipHorizontal}
             flipVertical={flipVertical}
+            onStateChange={onStateChange}
           />
           <GyroscopeControls 
             enabled={gyroscopeEnabled} 

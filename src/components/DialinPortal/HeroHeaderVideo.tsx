@@ -65,6 +65,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [duration, setDuration] = useState(0);
   const [videoVolume, setVideoVolume] = useState(1);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const [skyboxSeekTo, setSkyboxSeekTo] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -158,6 +159,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const togglePlayPause = () => {
+    if (show360) {
+      setIsPlaying((prev) => !prev);
+      return;
+    }
     const activeVideo = getActiveVideo();
     if (activeVideo) {
       if (isPlaying) {
@@ -169,6 +174,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const toggleMute = () => {
+    if (show360) {
+      setIsVideoMuted(!isVideoMuted);
+      return;
+    }
     const activeVideo = getActiveVideo();
     if (activeVideo) {
       activeVideo.muted = !isVideoMuted;
@@ -177,6 +186,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const handleVolumeChange = (value: number[]) => {
+    if (show360) {
+      const vol = value[0];
+      setVideoVolume(vol);
+      if (vol > 0) setIsVideoMuted(false);
+      return;
+    }
     const activeVideo = getActiveVideo();
     if (activeVideo) {
       activeVideo.volume = value[0];
@@ -189,6 +204,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const handleSeek = (value: number[]) => {
+    if (show360) {
+      setSkyboxSeekTo(value[0]);
+      setCurrentTime(value[0]);
+      setTimeout(() => setSkyboxSeekTo(null), 100);
+      return;
+    }
     const activeVideo = getActiveVideo();
     if (activeVideo) {
       activeVideo.currentTime = value[0];
@@ -331,12 +352,21 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               className="w-full h-full"
               xAxisOffset={xAxisOffset}
               yAxisOffset={yAxisOffset}
-              volume={volume}
-              isMuted={isMuted}
+              volume={videoVolume}
+              isMuted={isVideoMuted}
+              isPlaying={isPlaying}
+              seekTo={skyboxSeekTo ?? undefined}
               rotationEnabled={rotationEnabled}
               rotationSpeed={rotationSpeed}
               flipHorizontal={flipHorizontal}
               flipVertical={flipVertical}
+              onStateChange={({ currentTime, duration, isPlaying, volume, isMuted }) => {
+                setCurrentTime(currentTime);
+                setDuration(duration);
+                setIsPlaying(isPlaying);
+                setVideoVolume(volume);
+                setIsVideoMuted(isMuted);
+              }}
             />
           </Suspense>
           {/* 360° Indicator */}

@@ -545,16 +545,30 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
       for (const result of results) {
         const file = droppedFiles.find(f => f.name === result.original_name);
         if (file && user) {
-          const aiMetadata = await analyzeWithAI(file, result.id);
-          
-          if (aiMetadata) {
-            await saveMetadata(
-              result.id,
-              aiMetadata.hashtags,
-              aiMetadata.dial_values,
-              true,
-              aiMetadata.confidence
-            );
+          try {
+            const aiMetadata = await analyzeWithAI(file, result.id);
+            
+            if (aiMetadata && aiMetadata.hashtags && aiMetadata.dial_values) {
+              await saveMetadata(
+                result.id,
+                aiMetadata.hashtags,
+                aiMetadata.dial_values,
+                true,
+                aiMetadata.confidence || 0
+              );
+            } else {
+              // Save empty metadata if AI analysis failed
+              await saveMetadata(
+                result.id,
+                [],
+                {},
+                false,
+                0
+              );
+            }
+          } catch (error) {
+            console.error('Error processing file metadata:', error);
+            // Continue with next file even if metadata fails
           }
         }
       }

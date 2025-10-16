@@ -68,23 +68,32 @@ export function useFileUpload() {
     aiGenerated: boolean,
     confidence: number
   ) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No user found when saving metadata');
+        return;
+      }
 
-    const { error } = await supabase
-      .from('item_metadata')
-      .insert({
-        file_id: fileId,
-        user_id: user.id,
-        hashtags,
-        dial_values: dialValues,
-        ai_generated: aiGenerated,
-        ai_confidence: confidence
-      });
+      const { error } = await supabase
+        .from('item_metadata')
+        .insert({
+          file_id: fileId,
+          user_id: user.id,
+          hashtags: hashtags || [],
+          dial_values: dialValues || {},
+          ai_generated: aiGenerated,
+          ai_confidence: confidence
+        });
 
-    if (error) {
-      console.error('Failed to save metadata:', error);
-      toast.error('Failed to save metadata');
+      if (error) {
+        console.error('Failed to save metadata:', error);
+        toast.error('Failed to save metadata');
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in saveMetadata:', error);
+      throw error;
     }
   };
 

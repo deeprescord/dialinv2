@@ -236,6 +236,35 @@ export function HomeView({
     setShowCelebration(true);
     setTimeout(() => setShowCelebration(false), 3000);
   };
+
+  // Handle item click from ItemsPeopleBar
+  const handleItemClickFromBar = async (item: any) => {
+    if (!item) return;
+    
+    // Generate signed URL for the item
+    const { data: signedData } = await supabase.storage
+      .from('user-files')
+      .createSignedUrl(item.storage_path, 3600);
+    
+    const url = signedData?.signedUrl || '';
+    
+    // Transform SpaceItem to the format expected by ContentViewer/HeroHeaderVideo
+    const transformedItem = {
+      id: item.id,
+      title: item.original_name,
+      type: item.file_type,
+      url: url,
+      thumb: item.thumbnail_path ? url : undefined,
+      duration: item.duration,
+      mime_type: item.mime_type,
+      storage_path: item.storage_path,
+      file_type: item.file_type,
+      original_name: item.original_name,
+      thumbnail_path: item.thumbnail_path
+    };
+    
+    onItemClick?.(transformedItem);
+  };
   // Determine if lobby has a custom uploaded background (disable default video when true)
   const hasCustomBackground = isLobby && typeof backgroundImage === 'string' && (
     backgroundImage.startsWith('http') ||
@@ -308,7 +337,7 @@ export function HomeView({
           <ItemsPeopleBar
             view="items"
             spaceId={spaceId}
-            onItemClick={onItemClick}
+            onItemClick={handleItemClickFromBar}
           />
           <MediaRow
             title=""

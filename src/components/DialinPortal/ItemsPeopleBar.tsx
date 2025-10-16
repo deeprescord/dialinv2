@@ -140,6 +140,10 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                               src={thumbnail}
                               alt={item.original_name}
                               className="w-full h-full object-cover"
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => handleItemClick(item)}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleItemClick(item); }}
                             />
                           ) : (
                             getFileIcon(item.file_type)

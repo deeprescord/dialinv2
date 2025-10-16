@@ -992,18 +992,6 @@ export default function SpacePage() {
           onAddClick={handleContactAddClick}
         />
 
-        <FloatingPlayer
-          isVisible={floatingPlayer.isVisible}
-          item={floatingPlayer.item}
-          isPlaying={floatingPlayer.isPlaying}
-          progress={floatingPlayer.progress}
-          onPlay={handlePlayerPlay}
-          onPause={handlePlayerPause}
-          onSkipBack={() => {}}
-          onSkipForward={() => {}}
-          onExpand={() => {}}
-          onClose={handlePlayerClose}
-        />
 
         <DialControlPanel
           isOpen={showDialPopup}

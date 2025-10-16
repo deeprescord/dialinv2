@@ -6,6 +6,7 @@ import appBackground from '@/assets/app-background.jpg';
 import featuredVideoBg from '@/assets/featured-video-bg.jpg';
 import musicAlbumGrid from '@/assets/music-album-grid.jpg';
 import videoGridThumbs from '@/assets/video-grid-thumbs.jpg';
+import defaultMusicCover from '@/assets/default-music-cover.png';
 
 interface ImageFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
@@ -37,8 +38,9 @@ export function ImageFallback({
     
     // Music content fallbacks  
     if (altLower.includes('music') || altLower.includes('album') || altLower.includes('artist') || 
-        altLower.includes('song') || altLower.includes('track') || altLower.includes('sound')) {
-      return musicAlbumGrid;
+        altLower.includes('song') || altLower.includes('track') || altLower.includes('sound') ||
+        altLower.includes('audio') || altLower.includes('mp3')) {
+      return defaultMusicCover;
     }
     
     // Avatar/profile fallbacks

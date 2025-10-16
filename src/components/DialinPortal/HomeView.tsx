@@ -342,7 +342,7 @@ export function HomeView({
           <MediaRow
             title=""
             items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
-            onItemClick={onMediaClick}
+            onItemClick={handleItemClickFromBar}
             onItemLongPress={handleItemLongPress}
           />
         </>

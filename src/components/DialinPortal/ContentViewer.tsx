@@ -295,18 +295,29 @@ export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDel
 
       {/* Audio Content */}
       {isAudio && contentUrl && (
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 via-background to-secondary/20 flex items-center justify-center">
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center">
           <audio ref={audioRef} src={contentUrl} />
-          <div className="text-center space-y-4">
-            <motion.div
-              animate={{ scale: isPlaying ? [1, 1.05, 1] : 1 }}
-              transition={{ duration: 1, repeat: isPlaying ? Infinity : 0 }}
-              className="w-48 h-48 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center"
-            >
-              <Volume2 className="w-24 h-24 text-white" />
-            </motion.div>
-            <h2 className="text-2xl font-bold text-foreground">{content.original_name}</h2>
-          </div>
+          {/* Show thumbnail if available */}
+          {content.thumbnail_path ? (
+            <img
+              src={contentUrl.replace(content.storage_path, content.thumbnail_path)}
+              alt={content.original_name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 via-background to-secondary/20 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <motion.div
+                  animate={{ scale: isPlaying ? [1, 1.05, 1] : 1 }}
+                  transition={{ duration: 1, repeat: isPlaying ? Infinity : 0 }}
+                  className="w-48 h-48 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center"
+                >
+                  <Volume2 className="w-24 h-24 text-white" />
+                </motion.div>
+                <h2 className="text-2xl font-bold text-foreground">{content.original_name}</h2>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -349,74 +360,6 @@ export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDel
         </div>
       )}
 
-      {/* Enhanced Media Controls */}
-      {!is360 && (isVideo || isAudio) && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6 space-y-4"
-        >
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <Slider
-              value={[currentTime]}
-              max={duration || 100}
-              step={0.1}
-              onValueChange={handleSeek}
-              className="w-full cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-white/80 font-mono">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 h-12 w-12"
-                onClick={togglePlay}
-              >
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20"
-                  onClick={toggleMute}
-                >
-                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                </Button>
-                <Slider
-                  value={[isMuted ? 0 : volume]}
-                  max={1}
-                  step={0.01}
-                  onValueChange={handleVolumeChange}
-                  className="w-24"
-                />
-              </div>
-              
-              {isVideo && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20"
-                  onClick={handleFullscreen}
-                >
-                  <Maximize className="w-5 h-5" />
-                </Button>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       {/* Content Info */}
       <div className="absolute bottom-32 left-8 z-40">

@@ -65,6 +65,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [duration, setDuration] = useState(0);
   const [videoVolume, setVideoVolume] = useState(1);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const [lastUnmutedVolume, setLastUnmutedVolume] = useState(1); // Track last volume before mute
   const [skyboxSeekTo, setSkyboxSeekTo] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
@@ -175,13 +176,31 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
   const toggleMute = () => {
     if (show360) {
-      setIsVideoMuted(!isVideoMuted);
+      if (!isVideoMuted) {
+        // Muting: save current volume
+        setLastUnmutedVolume(videoVolume > 0 ? videoVolume : 1);
+        setIsVideoMuted(true);
+      } else {
+        // Unmuting: restore last volume
+        setVideoVolume(lastUnmutedVolume);
+        setIsVideoMuted(false);
+      }
       return;
     }
     const activeVideo = getActiveVideo();
     if (activeVideo) {
-      activeVideo.muted = !isVideoMuted;
-      setIsVideoMuted(!isVideoMuted);
+      if (!isVideoMuted) {
+        // Muting: save current volume
+        setLastUnmutedVolume(activeVideo.volume > 0 ? activeVideo.volume : 1);
+        activeVideo.muted = true;
+        setIsVideoMuted(true);
+      } else {
+        // Unmuting: restore last volume
+        activeVideo.muted = false;
+        activeVideo.volume = lastUnmutedVolume;
+        setVideoVolume(lastUnmutedVolume);
+        setIsVideoMuted(false);
+      }
     }
   };
 
@@ -189,7 +208,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     if (show360) {
       const vol = value[0];
       setVideoVolume(vol);
-      if (vol > 0) setIsVideoMuted(false);
+      if (vol > 0) {
+        setLastUnmutedVolume(vol); // Save as last unmuted volume
+        setIsVideoMuted(false);
+      }
       return;
     }
     const activeVideo = getActiveVideo();
@@ -197,6 +219,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       activeVideo.volume = value[0];
       setVideoVolume(value[0]);
       if (value[0] > 0) {
+        setLastUnmutedVolume(value[0]); // Save as last unmuted volume
         setIsVideoMuted(false);
         activeVideo.muted = false;
       }

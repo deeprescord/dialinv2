@@ -33,24 +33,45 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
     }
   };
 
-  // Get thumbnail URL from storage
-  const getItemThumbnail = (item: any) => {
-    if (item.thumbnail_path) {
-      const { data } = supabase.storage
-        .from('user-files')
-        .getPublicUrl(item.thumbnail_path);
-      return data.publicUrl;
-    }
-    
-    if (item.file_type === 'image') {
-      const { data } = supabase.storage
-        .from('user-files')
-        .getPublicUrl(item.storage_path);
-      return data.publicUrl;
-    }
-    
-    return null;
-  };
+  // Signed thumbnail URLs for private bucket
+  const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadThumbs = async () => {
+      if (!items?.length) return;
+      const pairs = await Promise.all(
+        items.map(async (item) => {
+          const path = item.thumbnail_path || item.storage_path;
+          if (!path) return [item.id, null] as const;
+          // Prefer signed URL (bucket 'user-files' is private)
+          const { data, error } = await supabase.storage
+            .from('user-files')
+            .createSignedUrl(path, 3600);
+          if (error) {
+            const { data: pub } = supabase.storage
+              .from('user-files')
+              .getPublicUrl(path);
+            return [item.id, pub.publicUrl] as const;
+          }
+          return [item.id, data.signedUrl] as const;
+        })
+      );
+      if (!cancelled) {
+        setThumbUrls((prev) => {
+          const next = { ...prev };
+          for (const [id, url] of pairs) {
+            if (url) next[id] = url;
+          }
+          return next;
+        });
+      }
+    };
+    loadThumbs();
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
 
   return (
     <div className="mb-4 relative">
@@ -67,7 +88,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                 </div>
               ) : (
                 items.map((item, index) => {
-                  const thumbnail = getItemThumbnail(item);
+                  const thumbnail = thumbUrls[item.id];
                   return (
                     <motion.div
                       key={item.id}

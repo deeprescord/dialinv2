@@ -103,6 +103,25 @@ export function useSpaceItems(spaceId?: string) {
     fetchItems();
   }, [spaceId]);
 
+  // Realtime updates: refetch when files are added/removed from this space
+  useEffect(() => {
+    if (!spaceId) return;
+
+    const channel = supabase
+      .channel(`space-items-${spaceId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'space_files', filter: `space_id=eq.${spaceId}` },
+        () => {
+          fetchItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [spaceId]);
   return {
     items,
     loading,

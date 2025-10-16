@@ -293,6 +293,7 @@ export function HomeView({
       {/* Hero Header - Show ContentViewer if item has file data, otherwise show HeroHeaderVideo */}
       {selectedItem?.storage_path ? (
         <ContentViewer
+          ref={heroRef as any}
           content={{
             id: selectedItem.id || selectedItem.thumb,
             storage_path: selectedItem.storage_path,

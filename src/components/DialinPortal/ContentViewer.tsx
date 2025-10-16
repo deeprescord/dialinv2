@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useImperativeHandle } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, X, Maximize, Settings, Edit, Share2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,14 @@ interface ContentViewerProps {
   onDelete?: () => void;
 }
 
-export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDelete }: ContentViewerProps) {
+export type ContentViewerHandle = {
+  playPause: () => void;
+  seek: (value: number) => void;
+  setVolume: (value: number) => void;
+  toggleMute: () => void;
+};
+
+export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.7);
@@ -64,10 +71,14 @@ export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDel
   };
 
   const [contentUrl, setContentUrl] = useState<string>('');
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
 
   useEffect(() => {
     getPublicUrl(content.storage_path).then(setContentUrl);
-  }, [content.storage_path]);
+    if (content.thumbnail_path) {
+      getPublicUrl(content.thumbnail_path).then(setThumbnailUrl);
+    }
+  }, [content.storage_path, content.thumbnail_path]);
 
   useEffect(() => {
     const mediaRef = isVideo ? videoRef.current : audioRef.current;
@@ -133,6 +144,14 @@ export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDel
       mediaRef.currentTime = newTime;
     }
   };
+
+  // Expose controls via ref for space bar control
+  useImperativeHandle(ref, () => ({
+    playPause: togglePlay,
+    seek: (value: number) => handleSeek([value]),
+    setVolume: (value: number) => handleVolumeChange([value]),
+    toggleMute: toggleMute
+  }));
 
   const handleFullscreen = () => {
     const elem = videoRef.current;
@@ -298,9 +317,9 @@ export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDel
         <div className="absolute inset-0 w-full h-full flex items-center justify-center">
           <audio ref={audioRef} src={contentUrl} />
           {/* Show thumbnail if available */}
-          {content.thumbnail_path ? (
+          {thumbnailUrl ? (
             <img
-              src={contentUrl.replace(content.storage_path, content.thumbnail_path)}
+              src={thumbnailUrl}
               alt={content.original_name}
               className="w-full h-full object-cover"
             />
@@ -378,4 +397,4 @@ export function ContentViewer({ content, onClose, onEditMetadata, onShare, onDel
       </div>
     </div>
   );
-}
+});

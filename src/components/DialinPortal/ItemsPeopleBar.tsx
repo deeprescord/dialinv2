@@ -74,6 +74,35 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
     };
   }, [items]);
 
+  // Handle item click with proper transformation
+  const handleItemClick = async (item: any) => {
+    if (!onItemClick) return;
+    
+    // Generate signed URL for the item
+    const { data: signedData } = await supabase.storage
+      .from('user-files')
+      .createSignedUrl(item.storage_path, 3600);
+    
+    const url = signedData?.signedUrl || '';
+    
+    // Transform SpaceItem to the format expected by ContentViewer/HeroHeaderVideo
+    const transformedItem = {
+      id: item.id,
+      title: item.original_name,
+      type: item.file_type,
+      url: url,
+      thumb: item.thumbnail_path ? url : undefined,
+      duration: item.duration,
+      mime_type: item.mime_type,
+      storage_path: item.storage_path,
+      file_type: item.file_type,
+      original_name: item.original_name,
+      thumbnail_path: item.thumbnail_path
+    };
+    
+    onItemClick(transformedItem);
+  };
+
   return (
     <div className="mb-4 relative">
       <div className="relative" style={{ padding: `${padding}px` }}>
@@ -100,7 +129,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                     >
                       <div 
                         className="cursor-pointer group flex flex-col items-center gap-2"
-                        onClick={() => onItemClick?.(item)}
+                        onClick={() => handleItemClick(item)}
                       >
                         <div
                           className="rounded-lg overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative bg-muted/50 flex items-center justify-center"

@@ -128,6 +128,8 @@ const UNSPLASH_IDS = {
   ]
 };
 
+// All catalog data is now blank - users will populate spaces with their own uploaded content
+// Sample data kept above for reference if needed
 export const videoCatalog: VideoItem[] = [];
 
 export const musicCatalog: MusicItem[] = [];
@@ -142,7 +144,7 @@ export const friends: Friend[] = [
 
 export const locations: LocationItem[] = [];
 
-// Update Starbuds space with real product data  
+// Starbuds products kept for reference
 export const starbudsProducts = [
   { id: '1', title: 'Premium Flower', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-flower-showcase.jpg', type: 'flower' },
   { id: '2', title: 'Edibles Collection', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-edibles-collection.jpg', type: 'edible' },
@@ -150,7 +152,7 @@ export const starbudsProducts = [
   { id: '4', title: 'Merchandise', url: 'https://shop.starbuds.us/menu/', thumb: '/src/assets/starbuds-merchandise.jpg', type: 'merch' }
 ];
 
-// Only the Lobby space by default - users build their own spaces from scratch
+// Users build their own spaces from scratch
 export const initialSpaces: Space[] = [];
 
 export const friendsPosts: Post[] = [];

@@ -23,8 +23,11 @@ import { AIChat } from './AIChat';
 import { AddContactPanel } from './AddContactPanel';
 import { Settings360Modal } from './Settings360Modal';
 import { CelebrationAnimation } from './CelebrationAnimation';
+import { DragDropZone } from './DragDropZone';
+import { SpaceSelectionModal } from './SpaceSelectionModal';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useSpacesContext } from '@/contexts/SpacesContext';
+import { useFileUpload } from '@/hooks/useFileUpload';
 
 import { 
   videoCatalog, 
@@ -62,6 +65,11 @@ export function DialinPortal() {
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [userPoints, setUserPoints] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
+  
+  // File upload integration
+  const { uploadMultipleFiles, uploading, analyzeWithAI, saveMetadata } = useFileUpload();
   
   // Auth session persistence
   useEffect(() => {
@@ -512,14 +520,67 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     setShow360Settings(true);
   };
 
-  // Handle file drop
-  const handleFilesDrop = (files: File[], spaceId: string) => {
-    console.log(`Files dropped in space ${spaceId}:`, files);
-    // TODO: Implement file upload logic to backend
-    // For now, just log the action
-    files.forEach(file => {
-      console.log(`File: ${file.name}, Size: ${file.size}, Type: ${file.type}`);
-    });
+  // Handle files dropped anywhere on the site
+  const handleFilesDropped = (files: File[]) => {
+    if (!user) {
+      toast.error('Please sign in to upload files');
+      setShowAuthModal(true);
+      return;
+    }
+    
+    setDroppedFiles(files);
+    setShowSpaceSelectionModal(true);
+  };
+
+  // Handle space selection and upload
+  const handleSpaceSelect = async (spaceId: string, autoDetectedDials?: any[]) => {
+    setShowSpaceSelectionModal(false);
+    
+    try {
+      toast.info(`Uploading ${droppedFiles.length} file${droppedFiles.length > 1 ? 's' : ''}...`);
+      
+      const results = await uploadMultipleFiles(droppedFiles, spaceId);
+      
+      // Analyze each file with AI and save metadata
+      for (const result of results) {
+        const file = droppedFiles.find(f => f.name === result.original_name);
+        if (file && user) {
+          const aiMetadata = await analyzeWithAI(file, result.id);
+          
+          if (aiMetadata) {
+            await saveMetadata(
+              result.id,
+              aiMetadata.hashtags,
+              aiMetadata.dial_values,
+              true,
+              aiMetadata.confidence
+            );
+          }
+        }
+      }
+      
+      toast.success(`Successfully added ${results.length} item${results.length > 1 ? 's' : ''} to space!`);
+      refetch(); // Refresh spaces to show new files
+      setDroppedFiles([]);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload files');
+    }
+  };
+
+  // Handle creating new space and uploading
+  const handleCreateSpaceAndUpload = async (name: string, autoDetectedDials?: any[]) => {
+    setShowSpaceSelectionModal(false);
+    
+    try {
+      const newSpace = await createDbSpace(name);
+      if (newSpace) {
+        await handleSpaceSelect(newSpace.id, autoDetectedDials);
+      }
+    } catch (error) {
+      console.error('Space creation error:', error);
+      toast.error('Failed to create space');
+    }
   };
 
   // Handle creating new space from file drop
@@ -591,7 +652,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             flipHorizontal={lobbySpace?.flipHorizontal}
             flipVertical={lobbySpace?.flipVertical}
             spaces={spaces}
-            onFilesDrop={handleFilesDrop}
+            onFilesDrop={handleFilesDropped}
             onCreateSpace={handleCreateSpaceFromDrop}
             isAddModalOpen={isAddModalOpen}
             onCloseAddModal={() => setIsAddModalOpen(false)}
@@ -797,6 +858,25 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         isVisible={showCelebration}
         onComplete={() => setShowCelebration(false)}
       />
+
+      {/* Space Selection Modal for Uploads */}
+      <SpaceSelectionModal
+        isOpen={showSpaceSelectionModal}
+        onClose={() => {
+          setShowSpaceSelectionModal(false);
+          setDroppedFiles([]);
+        }}
+        onSpaceSelect={handleSpaceSelect}
+        onCreateNewSpace={handleCreateSpaceAndUpload}
+        spaces={spaces.map(s => ({ id: s.id, name: s.name, thumb: s.thumb }))}
+        droppedFiles={droppedFiles}
+        loading={uploading}
+      />
+
+      {/* Global Drag & Drop Zone */}
+      <DragDropZone onFilesDropped={handleFilesDropped}>
+        <></>
+      </DragDropZone>
     </div>
   );
 }

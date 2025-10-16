@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { friends } from '@/data/catalogs';
 import { FileText, Music, Video, Image as ImageIcon, File } from 'lucide-react';
+import { ImageFallback } from '@/components/ui/image-fallback';
 
 interface ItemsPeopleBarProps {
   scale?: number;
@@ -106,7 +107,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                           style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                         >
                           {thumbnail ? (
-                            <img 
+                            <ImageFallback 
                               src={thumbnail}
                               alt={item.original_name}
                               className="w-full h-full object-cover"

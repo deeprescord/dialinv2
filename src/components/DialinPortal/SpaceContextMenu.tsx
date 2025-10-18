@@ -339,26 +339,34 @@ export function SpaceContextMenu({
 
               {/* Main Content */}
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                {/* Top Action Buttons */}
-                <div className="flex gap-2">
+                {/* Thumbnail Upload Section */}
+                <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Image size={16} className="text-white" />
+                    <span className="text-xs font-semibold text-white">Thumbnail Upload</span>
+                  </div>
                   <button
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-black/40 hover:bg-black/50 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                   >
                     {uploading ? (
                       <>
-                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span className="text-xs font-medium text-white">Uploading...</span>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm font-medium text-white">Uploading...</span>
                       </>
                     ) : (
                       <>
-                        <Upload size={14} className="text-white" />
-                        <span className="text-xs font-medium text-white">Upload</span>
+                        <Upload size={16} className="text-white" />
+                        <span className="text-sm font-medium text-white">Upload Thumbnail</span>
                       </>
                     )}
                   </button>
-                  
+                  <p className="text-xs text-white/50 text-center">Upload an image or video thumbnail</p>
+                </div>
+
+                {/* AI Generation Option */}
+                <div className="flex gap-2">
                   <button
                     className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-xl transition-all duration-200 ${
                       showAIControls 

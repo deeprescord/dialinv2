@@ -392,23 +392,6 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           </div>
         </div>
       )}
-
-
-      {/* Content Info */}
-      <div className="absolute bottom-32 left-8 z-40">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2 drop-shadow-lg">
-            {content.original_name}
-          </h1>
-          <p className="text-lg lg:text-xl text-white/80 capitalize drop-shadow-md">
-            {content.file_type}
-          </p>
-        </motion.div>
-      </div>
     </div>
   );
 });

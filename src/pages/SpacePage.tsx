@@ -80,35 +80,47 @@ export default function SpacePage() {
   
   // Sync UI spaces with database spaces (plus Lobby)
   useEffect(() => {
-    // Get lobby thumbnail and background from localStorage
-    const lobbyThumbnail = localStorage.getItem('lobby-thumbnail') || '/media/lobby-poster.png';
-    const lobbyBackground = localStorage.getItem('lobby-background') || '/lovable-uploads/cropped-header-bg.png';
-    
-    const lobby: Space = { 
-      id: 'lobby', 
-      name: 'Lobby', 
-      thumb: lobbyThumbnail,
-      backgroundImage: lobbyBackground
-    };
-    const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
-      id: dbSpace.id,
-      name: dbSpace.name,
-      thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-      parentId: dbSpace.parent_id || undefined,
-      backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-      show360: dbSpace.show_360 || false,
-      xAxis: dbSpace.x_axis_offset || 0,
-      yAxis: dbSpace.y_axis_offset || 0,
-      volume: dbSpace.volume || 50,
-      isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
-      rotationEnabled: dbSpace.rotation_enabled || false,
-      rotationSpeed: dbSpace.rotation_speed || 1,
-      rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
-      flipHorizontal: dbSpace.flip_horizontal || false,
-      flipVertical: dbSpace.flip_vertical || false,
-    }));
+    const updateSpaces = () => {
+      // Get lobby thumbnail and background from localStorage
+      const lobbyThumbnail = localStorage.getItem('lobby-thumbnail') || '/media/lobby-poster.png';
+      const lobbyBackground = localStorage.getItem('lobby-background') || '/lovable-uploads/cropped-header-bg.png';
+      
+      const lobby: Space = { 
+        id: 'lobby', 
+        name: 'Lobby', 
+        thumb: lobbyThumbnail,
+        backgroundImage: lobbyBackground
+      };
+      const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
+        id: dbSpace.id,
+        name: dbSpace.name,
+        thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        parentId: dbSpace.parent_id || undefined,
+        backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        show360: dbSpace.show_360 || false,
+        xAxis: dbSpace.x_axis_offset || 0,
+        yAxis: dbSpace.y_axis_offset || 0,
+        volume: dbSpace.volume || 50,
+        isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
+        rotationEnabled: dbSpace.rotation_enabled || false,
+        rotationSpeed: dbSpace.rotation_speed || 1,
+        rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
+        flipHorizontal: dbSpace.flip_horizontal || false,
+        flipVertical: dbSpace.flip_vertical || false,
+      }));
 
-    setSpaces([lobby, ...convertedDbSpaces]);
+      setSpaces([lobby, ...convertedDbSpaces]);
+    };
+    
+    updateSpaces();
+    
+    // Listen for lobby updates
+    const handleLobbyUpdate = () => {
+      updateSpaces();
+    };
+    
+    window.addEventListener('refetch-spaces', handleLobbyUpdate);
+    return () => window.removeEventListener('refetch-spaces', handleLobbyUpdate);
   }, [dbSpaces]);
   
   // Listen for refetch events from SpaceContextMenu

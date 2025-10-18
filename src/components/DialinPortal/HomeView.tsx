@@ -59,6 +59,7 @@ interface HomeViewProps {
   heroRef?: React.Ref<HeroHeaderVideoHandle>;
   spaceId?: string;
   onItemClick?: (item: any) => void;
+  showItemsBar?: boolean;
 }
 
 export function HomeView({ 
@@ -90,7 +91,8 @@ export function HomeView({
   onVideoStateChange,
   heroRef,
   spaceId,
-  onItemClick
+  onItemClick,
+  showItemsBar = false
 }: HomeViewProps) {
   const [showMetadataPanel, setShowMetadataPanel] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -280,7 +282,7 @@ export function HomeView({
         className="pb-32"
       >
       {/* Items Bar - Fixed above space bar, floating over hero */}
-      {!isLobby && (
+      {!isLobby && showItemsBar && (
         <div className="fixed bottom-44 left-4 right-4 z-40 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg">
           <ItemsPeopleBar
             view="items"

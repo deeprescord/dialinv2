@@ -52,6 +52,7 @@ interface SpacesBarProps {
   onVideoSeek?: (value: number) => void;
   onVideoVolumeChange?: (value: number) => void;
   onVideoMuteToggle?: () => void;
+  onToggleItemsBar?: () => void;
 }
 
 export function SpacesBar({
@@ -84,7 +85,8 @@ export function SpacesBar({
   onVideoPlayPause,
   onVideoSeek,
   onVideoVolumeChange,
-  onVideoMuteToggle
+  onVideoMuteToggle,
+  onToggleItemsBar
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const scale = 87; // Fixed scale percentage (reduced by 1/3 from 130)
@@ -221,8 +223,8 @@ export function SpacesBar({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setItemsPeopleView(itemsPeopleView === 'items' ? null : 'items')}
-              className={`h-7 px-2 text-xs hover:bg-white/10 ${itemsPeopleView === 'items' ? 'bg-white/10' : ''}`}
+              onClick={() => onToggleItemsBar?.()}
+              className="h-7 px-2 text-xs hover:bg-white/10"
             >
               <Package size={14} className="mr-1" />
               Items

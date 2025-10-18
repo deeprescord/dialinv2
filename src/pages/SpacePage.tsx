@@ -136,6 +136,7 @@ export default function SpacePage() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
+  const [showItemsBar, setShowItemsBar] = useState(false);
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [pendingFile, setPendingFile] = useState<{
@@ -887,6 +888,7 @@ export default function SpacePage() {
                heroRef={heroRef}
                spaceId={spaceId}
                onItemClick={handleMediaClick}
+               showItemsBar={showItemsBar}
              />
           )}
 
@@ -974,6 +976,7 @@ export default function SpacePage() {
             onVideoSeek={handleVideoSeek}
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
+            onToggleItemsBar={() => setShowItemsBar(!showItemsBar)}
           />
         </div>
       ) : null}

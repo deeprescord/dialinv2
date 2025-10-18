@@ -348,6 +348,7 @@ export type Database = {
           rotation_enabled: boolean | null
           rotation_speed: number | null
           show_360: boolean | null
+          thumbnail_url: string | null
           updated_at: string
           user_id: string
           vertical_flip: boolean | null
@@ -370,6 +371,7 @@ export type Database = {
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
           show_360?: boolean | null
+          thumbnail_url?: string | null
           updated_at?: string
           user_id: string
           vertical_flip?: boolean | null
@@ -392,6 +394,7 @@ export type Database = {
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
           show_360?: boolean | null
+          thumbnail_url?: string | null
           updated_at?: string
           user_id?: string
           vertical_flip?: boolean | null

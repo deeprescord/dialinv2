@@ -7,6 +7,7 @@ import featuredVideoBg from '@/assets/featured-video-bg.jpg';
 import musicAlbumGrid from '@/assets/music-album-grid.jpg';
 import videoGridThumbs from '@/assets/video-grid-thumbs.jpg';
 import defaultMusicCover from '@/assets/default-music-cover.png';
+import defaultSpaceThumbnail from '@/assets/default-space-thumbnail.jpg';
 
 interface ImageFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
@@ -61,6 +62,11 @@ export function ImageFallback({
     // Thumbnail grid fallbacks
     if (altLower.includes('thumb') || altLower.includes('grid') || altLower.includes('collection')) {
       return videoGridThumbs;
+    }
+    
+    // Space fallbacks
+    if (altLower.includes('space') || classLower.includes('space')) {
+      return defaultSpaceThumbnail;
     }
     
     // Default cyberpunk fallback with better styling

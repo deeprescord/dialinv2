@@ -212,12 +212,12 @@ export function SpaceContextMenu({
         setUploadedImages(prev => [...prev, publicUrl]);
         setUploadedMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
         
-        // Automatically apply the first uploaded image as the cover
+        // Automatically apply the first uploaded image as the thumbnail
         if (onUpdateThumbnail) {
           onUpdateThumbnail(space.id, publicUrl);
         }
         
-        toast.success(`${isVideo ? 'Video' : 'Image'} uploaded and applied successfully`);
+        toast.success(`${isVideo ? 'Video' : 'Image'} uploaded and set as thumbnail`);
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -285,7 +285,7 @@ export function SpaceContextMenu({
   const selectCoverImage = (imageUrl: string) => {
     if (onUpdateThumbnail) {
       onUpdateThumbnail(space.id, imageUrl);
-      toast.success('Cover updated successfully');
+      toast.success('Thumbnail updated successfully');
     }
   };
 
@@ -468,7 +468,7 @@ export function SpaceContextMenu({
                                 onClick={() => selectCoverImage(mediaUrl)}
                                 className="px-2 py-1 bg-primary/90 hover:bg-primary rounded text-[10px] font-medium text-white"
                               >
-                                Set Cover
+                                Thumbnail
                               </button>
                               <button
                                 onClick={() => removeUploadedImage(index)}

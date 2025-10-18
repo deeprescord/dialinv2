@@ -84,7 +84,7 @@ export default function SpacePage() {
     const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
       id: dbSpace.id,
       name: dbSpace.name,
-      thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+      thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
       parentId: dbSpace.parent_id || undefined,
       backgroundImage: dbSpace.cover_url || undefined,
       show360: dbSpace.show_360 || false,
@@ -183,7 +183,7 @@ export default function SpacePage() {
       ? {
           id: dbSpace.id,
           name: dbSpace.name,
-          thumb: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+          thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
           parentId: dbSpace.parent_id || undefined,
           backgroundImage: dbSpace.cover_url || undefined,
           show360: false,
@@ -445,13 +445,13 @@ export default function SpacePage() {
     // Update local state immediately
     setSpaces(spaces.map(space => 
       space.id === spaceId 
-        ? { ...space, thumb: thumbnailUrl, backgroundImage: thumbnailUrl }
+        ? { ...space, thumb: thumbnailUrl }
         : space
     ));
     
     // Only persist to database if not lobby
     if (spaceId !== 'lobby') {
-      const success = await updateSpace(spaceId, { cover_url: thumbnailUrl });
+      const success = await updateSpace(spaceId, { thumbnail_url: thumbnailUrl });
       if (!success) {
         refetch();
       }

@@ -113,7 +113,7 @@ useEffect(() => {
   const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
     id: dbSpace.id,
     name: dbSpace.name,
-    thumb: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+    thumb: (dbSpace as any).thumbnail_url ? appendCacheBuster((dbSpace as any).thumbnail_url, (dbSpace as any).updated_at) : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
     parentId: (dbSpace as any).parent_id || undefined,
     backgroundImage: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : undefined,
   }));

@@ -478,15 +478,13 @@ export function SpaceContextMenu({
                       className="hidden"
                     />
 
-                    {uploadedThumbnails.length > 0 && (
-                      <MediaCarousel
-                        items={uploadedThumbnails}
-                        mediaTypes={thumbnailMediaTypes}
-                        onSelect={selectThumbnail}
-                        onRemove={removeThumbnail}
-                        selectedUrl={space.thumb}
-                      />
-                    )}
+                    <MediaCarousel
+                      items={uploadedThumbnails}
+                      mediaTypes={thumbnailMediaTypes}
+                      onSelect={selectThumbnail}
+                      onRemove={removeThumbnail}
+                      selectedUrl={space.thumb}
+                    />
                   </div>
                 </div>
 
@@ -583,15 +581,13 @@ export function SpaceContextMenu({
                       )}
                     </AnimatePresence>
 
-                    {uploadedBackgrounds.length > 0 && (
-                      <MediaCarousel
-                        items={uploadedBackgrounds}
-                        mediaTypes={backgroundMediaTypes}
-                        onSelect={selectBackground}
-                        onRemove={removeBackground}
-                        selectedUrl={space.backgroundImage}
-                      />
-                    )}
+                    <MediaCarousel
+                      items={uploadedBackgrounds}
+                      mediaTypes={backgroundMediaTypes}
+                      onSelect={selectBackground}
+                      onRemove={removeBackground}
+                      selectedUrl={space.backgroundImage}
+                    />
                   </div>
                 </div>
 

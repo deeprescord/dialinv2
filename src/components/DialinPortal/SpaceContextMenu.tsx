@@ -386,6 +386,7 @@ export function SpaceContextMenu({
   };
 
   const selectThumbnail = async (imageUrl: string) => {
+    console.log('selectThumbnail called with:', imageUrl, 'for space:', space.id);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -413,6 +414,7 @@ export function SpaceContextMenu({
       return;
     }
 
+    console.log('Thumbnail updated successfully in database');
     if (onUpdateThumbnail) {
       onUpdateThumbnail(space.id, imageUrl);
     }
@@ -424,6 +426,7 @@ export function SpaceContextMenu({
   };
 
   const selectBackground = async (imageUrl: string) => {
+    console.log('selectBackground called with:', imageUrl, 'for space:', space.id);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -443,9 +446,10 @@ export function SpaceContextMenu({
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error updating space:', error);
+        console.error('Error updating space background:', error);
         toast.error('Failed to set background');
       } else {
+        console.log('Background updated successfully in database');
         toast.success('Background updated');
         
         // Force a refetch from SpacesContext to update the UI

@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { GradientLoader } from './GradientLoader';
@@ -338,168 +338,178 @@ export function SpaceContextMenu({
               </div>
 
               {/* Main Content */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                {/* Thumbnail Upload Section */}
-                <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Image size={16} className="text-white" />
-                    <span className="text-xs font-semibold text-white">Thumbnail Upload</span>
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                {/* Space Thumbnail Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <Image size={14} className="text-primary" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Space Thumbnail</span>
                   </div>
-                  <button
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm font-medium text-white">Uploading...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Upload size={16} className="text-white" />
-                        <span className="text-sm font-medium text-white">Upload Thumbnail</span>
-                      </>
-                    )}
-                  </button>
-                  <p className="text-xs text-white/50 text-center">Upload an image or video thumbnail</p>
-                </div>
-
-                {/* AI Generation Option */}
-                <div className="flex gap-2">
-                  <button
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-xl transition-all duration-200 ${
-                      showAIControls 
-                        ? 'bg-primary/20 border-primary/50 text-white' 
-                        : 'bg-black/40 hover:bg-black/50 border-white/10 hover:border-white/20 text-white'
-                    }`}
-                    onClick={() => setShowAIControls(!showAIControls)}
-                  >
-                    <Sparkles size={14} />
-                    <span className="text-xs font-medium">AI Generate</span>
-                  </button>
-                </div>
-              
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*,video/mp4,video/quicktime"
-                  multiple
-                  onChange={handleThumbnailChange}
-                  className="hidden"
-                />
-
-                {/* AI Controls - Collapsible */}
-                <AnimatePresence>
-                  {showAIControls && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
+                  <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
+                    <button
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
                     >
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex gap-1.5">
-                          <Input
-                            value={aiPrompt}
-                            onChange={(e) => setAiPrompt(e.target.value)}
-                            placeholder="Describe your background..."
-                            className="flex-1 bg-black/40 border-white/10 h-8 text-white placeholder:text-white/40 text-xs"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-white/10 hover:bg-white/5 px-2 h-8 text-white"
-                            onClick={handleGenerateWithAI}
-                            disabled={!aiPrompt.trim() || isGenerating}
-                          >
-                            {isGenerating ? (
-                              <div className="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
-                            ) : (
-                              <Sparkles size={14} />
-                            )}
-                          </Button>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-1">
-                          <Switch
-                            checked={is360Mode}
-                            onCheckedChange={setIs360Mode}
-                            className="scale-90"
-                          />
-                          <span className="text-[10px] text-white/60">360° Mode</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Image Carousel */}
-                {uploadedImages.length > 0 && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-xs font-medium text-white">Your Uploads</span>
-                      <span className="text-[10px] text-white/60">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2">
-                      {uploadedImages.map((mediaUrl, index) => {
-                        const isVideo = uploadedMediaTypes[index] === 'video';
-                        const isCurrentCover = space.thumb === mediaUrl;
-                        return (
-                          <div
-                            key={`upload-${index}`}
-                            className="relative flex-shrink-0 w-32 aspect-video rounded-lg overflow-hidden border-2 transition-all group"
-                            style={{
-                              borderColor: isCurrentCover ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.2)'
-                            }}
-                          >
-                            {isVideo ? (
-                              <video
-                                src={mediaUrl}
-                                className="w-full h-full object-cover"
-                                muted
-                                loop
-                                autoPlay
-                                playsInline
-                              />
-                            ) : (
-                              <img
-                                src={mediaUrl}
-                                alt={`Upload ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            )}
-                            
-                            {/* Hover Overlay */}
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                              <button
-                                onClick={() => selectCoverImage(mediaUrl)}
-                                className="px-2 py-1 bg-primary/90 hover:bg-primary rounded text-[10px] font-medium text-white"
-                              >
-                                Thumbnail
-                              </button>
-                              <button
-                                onClick={() => removeUploadedImage(index)}
-                                className="p-1 bg-red-500/90 hover:bg-red-500 rounded text-white"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                            
-                            {isCurrentCover && (
-                              <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-primary rounded text-[9px] font-medium text-white">
-                                Current
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                      {uploading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span className="text-sm font-medium text-white">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={16} className="text-white" />
+                          <span className="text-sm font-medium text-white">Upload Thumbnail</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-xs text-white/50 text-center">Upload an image or video thumbnail</p>
                   </div>
-                )}
+                </div>
+
+                {/* Space Background Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <ImageIcon size={14} className="text-primary" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Space Background</span>
+                  </div>
+                  
+                  {/* AI Generation Option */}
+                  <div className="flex gap-2">
+                    <button
+                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-xl transition-all duration-200 ${
+                        showAIControls 
+                          ? 'bg-primary/20 border-primary/50 text-white' 
+                          : 'bg-black/40 hover:bg-black/50 border-white/10 hover:border-white/20 text-white'
+                      }`}
+                      onClick={() => setShowAIControls(!showAIControls)}
+                    >
+                      <Sparkles size={14} />
+                      <span className="text-xs font-medium">AI Generate</span>
+                    </button>
+                  </div>
+                
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/mp4,video/quicktime"
+                    multiple
+                    onChange={handleThumbnailChange}
+                    className="hidden"
+                  />
+
+                  {/* AI Controls - Collapsible */}
+                  <AnimatePresence>
+                    {showAIControls && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex gap-1.5">
+                            <Input
+                              value={aiPrompt}
+                              onChange={(e) => setAiPrompt(e.target.value)}
+                              placeholder="Describe your background..."
+                              className="flex-1 bg-black/40 border-white/10 h-8 text-white placeholder:text-white/40 text-xs"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-white/10 hover:bg-white/5 px-2 h-8 text-white"
+                              onClick={handleGenerateWithAI}
+                              disabled={!aiPrompt.trim() || isGenerating}
+                            >
+                              {isGenerating ? (
+                                <div className="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
+                              ) : (
+                                <Sparkles size={14} />
+                              )}
+                            </Button>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-1">
+                            <Switch
+                              checked={is360Mode}
+                              onCheckedChange={setIs360Mode}
+                              className="scale-90"
+                            />
+                            <span className="text-[10px] text-white/60">360° Mode</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Image Carousel */}
+                  {uploadedImages.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-xs font-medium text-white">Your Uploads</span>
+                        <span className="text-[10px] text-white/60">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {uploadedImages.map((mediaUrl, index) => {
+                          const isVideo = uploadedMediaTypes[index] === 'video';
+                          const isCurrentCover = space.thumb === mediaUrl;
+                          return (
+                            <div
+                              key={`upload-${index}`}
+                              className="relative flex-shrink-0 w-32 aspect-video rounded-lg overflow-hidden border-2 transition-all group"
+                              style={{
+                                borderColor: isCurrentCover ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.2)'
+                              }}
+                            >
+                              {isVideo ? (
+                                <video
+                                  src={mediaUrl}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  loop
+                                  autoPlay
+                                  playsInline
+                                />
+                              ) : (
+                                <img
+                                  src={mediaUrl}
+                                  alt={`Upload ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                              
+                              {/* Hover Overlay */}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                <button
+                                  onClick={() => selectCoverImage(mediaUrl)}
+                                  className="px-2 py-1 bg-primary/90 hover:bg-primary rounded text-[10px] font-medium text-white"
+                                >
+                                  Thumbnail
+                                </button>
+                                <button
+                                  onClick={() => removeUploadedImage(index)}
+                                  className="p-1 bg-red-500/90 hover:bg-red-500 rounded text-white"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                              
+                              {isCurrentCover && (
+                                <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-primary rounded text-[9px] font-medium text-white">
+                                  Current
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Divider */}
-                <div className="h-px bg-white/10 my-2" />
+                <div className="h-px bg-white/10 my-3" />
 
                 {/* Space Name & Description */}
                 {isRenaming ? (
@@ -544,34 +554,41 @@ export function SpaceContextMenu({
                   </div>
                 )}
 
+                {/* 360 Mode Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <Globe size={14} className="text-primary" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">360 Mode</span>
+                  </div>
+
                 {/* Menu Items */}
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
                   {/* 360° Toggle */}
                   <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
                     <div className="flex items-center gap-2">
                       <Globe size={14} className="text-white" />
                       <span className="text-xs text-white">360° View</span>
                     </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={space.show360 || false}
-                      onCheckedChange={(checked) => {
-                        onToggle360(space.id, checked);
-                      }}
-                    />
-                    {space.show360 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShow360Advanced(!show360Advanced);
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={space.show360 || false}
+                        onCheckedChange={(checked) => {
+                          onToggle360(space.id, checked);
                         }}
-                        className="p-1 hover:bg-white/10 rounded"
-                      >
-                        {show360Advanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                      </button>
-                    )}
+                      />
+                      {space.show360 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShow360Advanced(!show360Advanced);
+                          }}
+                          className="p-1 hover:bg-white/10 rounded"
+                        >
+                          {show360Advanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
 
                   {/* Advanced 360° Controls */}
                   {space.show360 && show360Advanced && (
@@ -746,6 +763,7 @@ export function SpaceContextMenu({
                     <Trash2 size={14} />
                     <span className="text-xs">Delete</span>
                   </button>
+                </div>
                 </div>
               </div>
 

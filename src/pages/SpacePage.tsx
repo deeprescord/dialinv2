@@ -86,7 +86,7 @@ export default function SpacePage() {
       name: dbSpace.name,
       thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
       parentId: dbSpace.parent_id || undefined,
-      backgroundImage: dbSpace.cover_url || undefined,
+      backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
       show360: dbSpace.show_360 || false,
       xAxis: dbSpace.x_axis_offset || 0,
       yAxis: dbSpace.y_axis_offset || 0,

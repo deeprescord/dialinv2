@@ -6,6 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
 import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon } from 'lucide-react';
+import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { GradientLoader } from './GradientLoader';
@@ -75,15 +76,18 @@ export function SpaceContextMenu({
   const [rotationEnabled, setRotationEnabled] = useState(space.rotationEnabled || false);
   const [rotationSpeed, setRotationSpeed] = useState(space.rotationSpeed || 1);
   const [showCoverOptions, setShowCoverOptions] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [uploadedMediaTypes, setUploadedMediaTypes] = useState<('image' | 'video')[]>([]);
+  const [uploadedThumbnails, setUploadedThumbnails] = useState<string[]>([]);
+  const [thumbnailMediaTypes, setThumbnailMediaTypes] = useState<('image' | 'video')[]>([]);
+  const [uploadedBackgrounds, setUploadedBackgrounds] = useState<string[]>([]);
+  const [backgroundMediaTypes, setBackgroundMediaTypes] = useState<('image' | 'video')[]>([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [is360Mode, setIs360Mode] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingBackground, setUploadingBackground] = useState(false);
   const [showAIControls, setShowAIControls] = useState(false);
-  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [computedPos, setComputedPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
 
@@ -123,25 +127,42 @@ export function SpaceContextMenu({
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data, error } = await supabase.storage
+        
+        // Load thumbnails
+        const { data: thumbData } = await supabase.storage
           .from('space-covers')
-          .list(user.id, { limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } });
-        if (error) {
-          console.error('Failed listing media:', error);
-          return;
-        }
-        const urls: string[] = [];
-        const types: ('image' | 'video')[] = [];
-        (data || []).forEach((item) => {
+          .list(`${user.id}/thumbnails`, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+        
+        const thumbUrls: string[] = [];
+        const thumbTypes: ('image' | 'video')[] = [];
+        (thumbData || []).forEach((item) => {
           const { data: pub } = supabase.storage
             .from('space-covers')
-            .getPublicUrl(`${user.id}/${item.name}`);
-          urls.push(pub.publicUrl);
+            .getPublicUrl(`${user.id}/thumbnails/${item.name}`);
+          thumbUrls.push(pub.publicUrl);
           const isVideo = /\.(mp4|mov|webm|ogg)$/i.test(item.name);
-          types.push(isVideo ? 'video' : 'image');
+          thumbTypes.push(isVideo ? 'video' : 'image');
         });
-        setUploadedImages(urls);
-        setUploadedMediaTypes(types);
+        setUploadedThumbnails(thumbUrls);
+        setThumbnailMediaTypes(thumbTypes);
+
+        // Load backgrounds
+        const { data: bgData } = await supabase.storage
+          .from('space-covers')
+          .list(`${user.id}/backgrounds`, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+        
+        const bgUrls: string[] = [];
+        const bgTypes: ('image' | 'video')[] = [];
+        (bgData || []).forEach((item) => {
+          const { data: pub } = supabase.storage
+            .from('space-covers')
+            .getPublicUrl(`${user.id}/backgrounds/${item.name}`);
+          bgUrls.push(pub.publicUrl);
+          const isVideo = /\.(mp4|mov|webm|ogg)$/i.test(item.name);
+          bgTypes.push(isVideo ? 'video' : 'image');
+        });
+        setUploadedBackgrounds(bgUrls);
+        setBackgroundMediaTypes(bgTypes);
       } catch (err) {
         console.error('Error loading uploaded media:', err);
       }
@@ -165,17 +186,17 @@ export function SpaceContextMenu({
     onClose();
   };
 
-  const handleThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    setUploading(true);
+    setUploadingThumbnail(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error('You must be logged in to upload files');
-        setUploading(false);
+        setUploadingThumbnail(false);
         return;
       }
 
@@ -188,11 +209,9 @@ export function SpaceContextMenu({
           continue;
         }
 
-        // Generate unique filename
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const fileName = `${user.id}/thumbnails/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
-        // Upload to Lovable Cloud storage (public space-covers bucket)
         const { data, error } = await supabase.storage
           .from('space-covers')
           .upload(fileName, file);
@@ -203,54 +222,121 @@ export function SpaceContextMenu({
           continue;
         }
 
-        // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from('space-covers')
           .getPublicUrl(data.path);
 
-        // Add to uploaded images array
-        setUploadedImages(prev => [...prev, publicUrl]);
-        setUploadedMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
+        setUploadedThumbnails(prev => [...prev, publicUrl]);
+        setThumbnailMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
         
-        // Automatically apply the first uploaded image as the thumbnail
         if (onUpdateThumbnail) {
           onUpdateThumbnail(space.id, publicUrl);
         }
         
-        toast.success(`${isVideo ? 'Video' : 'Image'} uploaded and set as thumbnail`);
+        toast.success(`Thumbnail uploaded`);
       }
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('An unexpected error occurred');
     } finally {
-      setUploading(false);
+      setUploadingThumbnail(false);
     }
   };
 
-  const removeUploadedImage = async (index: number) => {
-    const url = uploadedImages[index];
-    // Try to remove from storage as well
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    setUploadingBackground(true);
+
     try {
-      const path = (() => {
-        try {
-          const u = new URL(url);
-          const seg = u.pathname.split('/object/public/space-covers/')[1];
-          return seg ? decodeURIComponent(seg) : null;
-        } catch {
-          return null;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to upload files');
+        setUploadingBackground(false);
+        return;
+      }
+
+      for (const file of Array.from(files)) {
+        const isVideo = file.type.startsWith('video/');
+        const isImage = file.type.startsWith('image/');
+
+        if (!isVideo && !isImage) {
+          toast.error('Please select image or video files only');
+          continue;
         }
-      })();
-      if (path) {
-        const { error } = await supabase.storage.from('space-covers').remove([path]);
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/backgrounds/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from('space-covers')
+          .upload(fileName, file);
+
         if (error) {
-          console.error('Failed to remove from storage:', error);
+          console.error('Upload error:', error);
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('space-covers')
+          .getPublicUrl(data.path);
+
+        setUploadedBackgrounds(prev => [...prev, publicUrl]);
+        setBackgroundMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
+        
+        // Update space cover_url
+        try {
+          const { error: updateError } = await supabase
+            .from('spaces')
+            .update({ cover_url: publicUrl })
+            .eq('id', space.id);
+
+          if (updateError) {
+            console.error('Error updating space:', updateError);
+            toast.error('Failed to set background');
+          } else {
+            toast.success(`Background uploaded and set`);
+          }
+        } catch (err) {
+          console.error('Error updating space:', err);
         }
       }
-    } catch (err) {
-      console.error('Error removing uploaded media:', err);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setUploadingBackground(false);
     }
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
-    setUploadedMediaTypes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeThumbnail = async (index: number) => {
+    const url = uploadedThumbnails[index];
+    try {
+      const path = new URL(url).pathname.split('/object/public/space-covers/')[1];
+      if (path) {
+        await supabase.storage.from('space-covers').remove([decodeURIComponent(path)]);
+      }
+    } catch (err) {
+      console.error('Error removing thumbnail:', err);
+    }
+    setUploadedThumbnails(prev => prev.filter((_, i) => i !== index));
+    setThumbnailMediaTypes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeBackground = async (index: number) => {
+    const url = uploadedBackgrounds[index];
+    try {
+      const path = new URL(url).pathname.split('/object/public/space-covers/')[1];
+      if (path) {
+        await supabase.storage.from('space-covers').remove([decodeURIComponent(path)]);
+      }
+    } catch (err) {
+      console.error('Error removing background:', err);
+    }
+    setUploadedBackgrounds(prev => prev.filter((_, i) => i !== index));
+    setBackgroundMediaTypes(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleGenerateWithAI = async () => {
@@ -269,10 +355,9 @@ export function SpaceContextMenu({
           </svg>`
         )}`;
         
-        setUploadedImages(prev => [...prev, generatedImage]);
-        if (onUpdateThumbnail) {
-          onUpdateThumbnail(space.id, generatedImage);
-        }
+        setUploadedBackgrounds(prev => [...prev, generatedImage]);
+        setBackgroundMediaTypes(prev => [...prev, 'image']);
+        selectBackground(generatedImage);
         setAiPrompt('');
         setIsGenerating(false);
       }, 2000);
@@ -282,10 +367,29 @@ export function SpaceContextMenu({
     }
   };
 
-  const selectCoverImage = (imageUrl: string) => {
+  const selectThumbnail = (imageUrl: string) => {
     if (onUpdateThumbnail) {
       onUpdateThumbnail(space.id, imageUrl);
-      toast.success('Thumbnail updated successfully');
+      toast.success('Thumbnail updated');
+    }
+  };
+
+  const selectBackground = async (imageUrl: string) => {
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ cover_url: imageUrl })
+        .eq('id', space.id);
+
+      if (error) {
+        console.error('Error updating space:', error);
+        toast.error('Failed to set background');
+      } else {
+        toast.success('Background updated');
+      }
+    } catch (err) {
+      console.error('Error updating space:', err);
+      toast.error('Failed to set background');
     }
   };
 
@@ -348,10 +452,10 @@ export function SpaceContextMenu({
                   <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
                     <button
                       className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
+                      onClick={() => thumbnailInputRef.current?.click()}
+                      disabled={uploadingThumbnail}
                     >
-                      {uploading ? (
+                      {uploadingThumbnail ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           <span className="text-sm font-medium text-white">Uploading...</span>
@@ -363,7 +467,26 @@ export function SpaceContextMenu({
                         </>
                       )}
                     </button>
-                    <p className="text-xs text-white/50 text-center">Upload an image or video thumbnail</p>
+                    <p className="text-xs text-white/50 text-center">Thumbnail shown in space navigation</p>
+                    
+                    <input
+                      ref={thumbnailInputRef}
+                      type="file"
+                      accept="image/*,video/mp4,video/quicktime"
+                      multiple
+                      onChange={handleThumbnailUpload}
+                      className="hidden"
+                    />
+
+                    {uploadedThumbnails.length > 0 && (
+                      <MediaCarousel
+                        items={uploadedThumbnails}
+                        mediaTypes={thumbnailMediaTypes}
+                        onSelect={selectThumbnail}
+                        onRemove={removeThumbnail}
+                        selectedUrl={space.thumb}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -373,11 +496,38 @@ export function SpaceContextMenu({
                     <ImageIcon size={14} className="text-primary" />
                     <span className="text-xs font-bold text-white uppercase tracking-wider">Space Background</span>
                   </div>
-                  
-                  {/* AI Generation Option */}
-                  <div className="flex gap-2">
+                  <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
                     <button
-                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-xl transition-all duration-200 ${
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
+                      onClick={() => backgroundInputRef.current?.click()}
+                      disabled={uploadingBackground}
+                    >
+                      {uploadingBackground ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span className="text-sm font-medium text-white">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={16} className="text-white" />
+                          <span className="text-sm font-medium text-white">Upload Background</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-xs text-white/50 text-center">Background shown when entering space</p>
+                    
+                    <input
+                      ref={backgroundInputRef}
+                      type="file"
+                      accept="image/*,video/mp4,video/quicktime"
+                      multiple
+                      onChange={handleBackgroundUpload}
+                      className="hidden"
+                    />
+
+                    {/* AI Generation Option */}
+                    <button
+                      className={`w-full flex items-center justify-center gap-2 px-3 py-2 border rounded-xl transition-all duration-200 ${
                         showAIControls 
                           ? 'bg-primary/20 border-primary/50 text-white' 
                           : 'bg-black/40 hover:bg-black/50 border-white/10 hover:border-white/20 text-white'
@@ -387,125 +537,62 @@ export function SpaceContextMenu({
                       <Sparkles size={14} />
                       <span className="text-xs font-medium">AI Generate</span>
                     </button>
-                  </div>
-                
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/mp4,video/quicktime"
-                    multiple
-                    onChange={handleThumbnailChange}
-                    className="hidden"
-                  />
 
-                  {/* AI Controls - Collapsible */}
-                  <AnimatePresence>
-                    {showAIControls && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="space-y-1.5 pt-1">
-                          <div className="flex gap-1.5">
-                            <Input
-                              value={aiPrompt}
-                              onChange={(e) => setAiPrompt(e.target.value)}
-                              placeholder="Describe your background..."
-                              className="flex-1 bg-black/40 border-white/10 h-8 text-white placeholder:text-white/40 text-xs"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-white/10 hover:bg-white/5 px-2 h-8 text-white"
-                              onClick={handleGenerateWithAI}
-                              disabled={!aiPrompt.trim() || isGenerating}
-                            >
-                              {isGenerating ? (
-                                <div className="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
-                              ) : (
-                                <Sparkles size={14} />
-                              )}
-                            </Button>
-                          </div>
-                          <div className="flex items-center gap-1.5 px-1">
-                            <Switch
-                              checked={is360Mode}
-                              onCheckedChange={setIs360Mode}
-                              className="scale-90"
-                            />
-                            <span className="text-[10px] text-white/60">360° Mode</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Image Carousel */}
-                  {uploadedImages.length > 0 && (
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-xs font-medium text-white">Your Uploads</span>
-                        <span className="text-[10px] text-white/60">{uploadedImages.length} file{uploadedImages.length !== 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        {uploadedImages.map((mediaUrl, index) => {
-                          const isVideo = uploadedMediaTypes[index] === 'video';
-                          const isCurrentCover = space.thumb === mediaUrl;
-                          return (
-                            <div
-                              key={`upload-${index}`}
-                              className="relative flex-shrink-0 w-32 aspect-video rounded-lg overflow-hidden border-2 transition-all group"
-                              style={{
-                                borderColor: isCurrentCover ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.2)'
-                              }}
-                            >
-                              {isVideo ? (
-                                <video
-                                  src={mediaUrl}
-                                  className="w-full h-full object-cover"
-                                  muted
-                                  loop
-                                  autoPlay
-                                  playsInline
-                                />
-                              ) : (
-                                <img
-                                  src={mediaUrl}
-                                  alt={`Upload ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              )}
-                              
-                              {/* Hover Overlay */}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                                <button
-                                  onClick={() => selectCoverImage(mediaUrl)}
-                                  className="px-2 py-1 bg-primary/90 hover:bg-primary rounded text-[10px] font-medium text-white"
-                                >
-                                  Thumbnail
-                                </button>
-                                <button
-                                  onClick={() => removeUploadedImage(index)}
-                                  className="p-1 bg-red-500/90 hover:bg-red-500 rounded text-white"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                              </div>
-                              
-                              {isCurrentCover && (
-                                <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-primary rounded text-[9px] font-medium text-white">
-                                  Current
-                                </div>
-                              )}
+                    {/* AI Controls - Collapsible */}
+                    <AnimatePresence>
+                      {showAIControls && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex gap-1.5">
+                              <Input
+                                value={aiPrompt}
+                                onChange={(e) => setAiPrompt(e.target.value)}
+                                placeholder="Describe your background..."
+                                className="flex-1 bg-black/40 border-white/10 h-8 text-white placeholder:text-white/40 text-xs"
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-white/10 hover:bg-white/5 px-2 h-8 text-white"
+                                onClick={handleGenerateWithAI}
+                                disabled={!aiPrompt.trim() || isGenerating}
+                              >
+                                {isGenerating ? (
+                                  <div className="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
+                                ) : (
+                                  <Sparkles size={14} />
+                                )}
+                              </Button>
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                            <div className="flex items-center gap-1.5 px-1">
+                              <Switch
+                                checked={is360Mode}
+                                onCheckedChange={setIs360Mode}
+                                className="scale-90"
+                              />
+                              <span className="text-[10px] text-white/60">360° Mode</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {uploadedBackgrounds.length > 0 && (
+                      <MediaCarousel
+                        items={uploadedBackgrounds}
+                        mediaTypes={backgroundMediaTypes}
+                        onSelect={selectBackground}
+                        onRemove={removeBackground}
+                        selectedUrl={space.backgroundImage}
+                      />
+                    )}
+                  </div>
                 </div>
 
                 {/* Divider */}

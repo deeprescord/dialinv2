@@ -80,7 +80,16 @@ export default function SpacePage() {
   
   // Sync UI spaces with database spaces (plus Lobby)
   useEffect(() => {
-    const lobby: Space = { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
+    // Get lobby thumbnail and background from localStorage
+    const lobbyThumbnail = localStorage.getItem('lobby-thumbnail') || '/media/lobby-poster.png';
+    const lobbyBackground = localStorage.getItem('lobby-background') || '/lovable-uploads/cropped-header-bg.png';
+    
+    const lobby: Space = { 
+      id: 'lobby', 
+      name: 'Lobby', 
+      thumb: lobbyThumbnail,
+      backgroundImage: lobbyBackground
+    };
     const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
       id: dbSpace.id,
       name: dbSpace.name,

@@ -386,10 +386,21 @@ export function SpaceContextMenu({
   };
 
   const selectThumbnail = async (imageUrl: string) => {
-    // Update in database
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Handle lobby as a special case - store in localStorage
+    if (space.id === 'lobby') {
+      localStorage.setItem('lobby-thumbnail', imageUrl);
+      if (onUpdateThumbnail) {
+        onUpdateThumbnail(space.id, imageUrl);
+      }
+      toast.success('Lobby thumbnail updated');
+      window.dispatchEvent(new CustomEvent('refetch-spaces'));
+      return;
+    }
+
+    // Update regular spaces in database
     const { error } = await supabase
       .from('spaces')
       .update({ thumbnail_url: imageUrl })
@@ -416,6 +427,14 @@ export function SpaceContextMenu({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Handle lobby as a special case - store in localStorage
+      if (space.id === 'lobby') {
+        localStorage.setItem('lobby-background', imageUrl);
+        toast.success('Lobby background updated');
+        window.dispatchEvent(new CustomEvent('refetch-spaces'));
+        return;
+      }
 
       const { error } = await supabase
         .from('spaces')

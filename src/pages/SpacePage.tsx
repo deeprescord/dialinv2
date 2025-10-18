@@ -101,6 +101,16 @@ export default function SpacePage() {
 
     setSpaces([lobby, ...convertedDbSpaces]);
   }, [dbSpaces]);
+  
+  // Listen for refetch events from SpaceContextMenu
+  useEffect(() => {
+    const handleRefetch = () => {
+      refetch();
+    };
+    
+    window.addEventListener('refetch-spaces', handleRefetch);
+    return () => window.removeEventListener('refetch-spaces', handleRefetch);
+  }, [refetch]);
   const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
   // Footer spaces (main navigation spaces)

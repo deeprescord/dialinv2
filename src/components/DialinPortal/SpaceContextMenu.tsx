@@ -229,11 +229,25 @@ export function SpaceContextMenu({
         setUploadedThumbnails(prev => [...prev, publicUrl]);
         setThumbnailMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
         
+        // Update the space thumbnail_url in the database
+        const { error: updateError } = await supabase
+          .from('spaces')
+          .update({ thumbnail_url: publicUrl })
+          .eq('id', space.id)
+          .eq('user_id', user.id);
+
+        if (updateError) {
+          console.error('Error updating space thumbnail:', updateError);
+        }
+        
         if (onUpdateThumbnail) {
           onUpdateThumbnail(space.id, publicUrl);
         }
         
-        toast.success(`Thumbnail uploaded`);
+        toast.success(`Thumbnail uploaded and set`);
+        
+        // Force a refetch from SpacesContext to update the UI
+        window.dispatchEvent(new CustomEvent('refetch-spaces'));
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -291,13 +305,17 @@ export function SpaceContextMenu({
           const { error: updateError } = await supabase
             .from('spaces')
             .update({ cover_url: publicUrl })
-            .eq('id', space.id);
+            .eq('id', space.id)
+            .eq('user_id', user.id);
 
           if (updateError) {
             console.error('Error updating space:', updateError);
             toast.error('Failed to set background');
           } else {
             toast.success(`Background uploaded and set`);
+            
+            // Force a refetch from SpacesContext to update the UI
+            window.dispatchEvent(new CustomEvent('refetch-spaces'));
           }
         } catch (err) {
           console.error('Error updating space:', err);
@@ -367,25 +385,52 @@ export function SpaceContextMenu({
     }
   };
 
-  const selectThumbnail = (imageUrl: string) => {
+  const selectThumbnail = async (imageUrl: string) => {
+    // Update in database
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('spaces')
+      .update({ thumbnail_url: imageUrl })
+      .eq('id', space.id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating space thumbnail:', error);
+      toast.error('Failed to update space thumbnail');
+      return;
+    }
+
     if (onUpdateThumbnail) {
       onUpdateThumbnail(space.id, imageUrl);
-      toast.success('Thumbnail updated');
     }
+    
+    toast.success('Thumbnail updated');
+    
+    // Force a refetch from SpacesContext to update the UI
+    window.dispatchEvent(new CustomEvent('refetch-spaces'));
   };
 
   const selectBackground = async (imageUrl: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { error } = await supabase
         .from('spaces')
         .update({ cover_url: imageUrl })
-        .eq('id', space.id);
+        .eq('id', space.id)
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Error updating space:', error);
         toast.error('Failed to set background');
       } else {
         toast.success('Background updated');
+        
+        // Force a refetch from SpacesContext to update the UI
+        window.dispatchEvent(new CustomEvent('refetch-spaces'));
       }
     } catch (err) {
       console.error('Error updating space:', err);

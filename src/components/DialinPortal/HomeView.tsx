@@ -335,25 +335,6 @@ export function HomeView({
          />
       )}
 
-      {isLobby ? (
-        <>
-          <MediaRow
-            title=""
-            items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
-            onItemClick={onMediaClick}
-            onItemLongPress={handleItemLongPress}
-          />
-        </>
-      ) : (
-        <>
-          <MediaRow
-            title=""
-            items={[...friendsPosts.slice(0, 4), ...videoCatalog.slice(0, 4)]}
-            onItemClick={handleItemClickFromBar}
-            onItemLongPress={handleItemLongPress}
-          />
-        </>
-      )}
 
       <AddOptionsModal
         isOpen={isAddModalOpen}

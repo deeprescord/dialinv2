@@ -533,7 +533,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   // Handle space selection and upload
-  const handleSpaceSelect = async (spaceId: string, autoDetectedDials?: any[]) => {
+  const handleSpaceSelect = async (spaceId: string) => {
     setShowSpaceSelectionModal(false);
     
     try {
@@ -541,8 +541,10 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
       
       const results = await uploadMultipleFiles(droppedFiles, spaceId);
       
-      // Analyze each file with AI and save metadata
-      for (const result of results) {
+      toast.success(`Added ${results.length} item${results.length > 1 ? 's' : ''} to space!`);
+      
+      // Analyze files with AI in the background (non-blocking)
+      Promise.all(results.map(async (result) => {
         const file = droppedFiles.find(f => f.name === result.original_name);
         if (file && user) {
           try {
@@ -557,23 +559,17 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
                 aiMetadata.confidence || 0
               );
             } else {
-              // Save empty metadata if AI analysis failed
-              await saveMetadata(
-                result.id,
-                [],
-                {},
-                false,
-                0
-              );
+              await saveMetadata(result.id, [], {}, false, 0);
             }
           } catch (error) {
-            console.error('Error processing file metadata:', error);
-            // Continue with next file even if metadata fails
+            console.error('Background AI analysis error:', error);
           }
         }
-      }
+      })).then(() => {
+        console.log('AI analysis complete');
+        refetch(); // Refresh to show AI-generated metadata
+      });
       
-      toast.success(`Successfully added ${results.length} item${results.length > 1 ? 's' : ''} to space!`);
       refetch(); // Refresh spaces to show new files
       setDroppedFiles([]);
     } catch (error) {
@@ -583,13 +579,13 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   // Handle creating new space and uploading
-  const handleCreateSpaceAndUpload = async (name: string, autoDetectedDials?: any[]) => {
+  const handleCreateSpaceAndUpload = async (name: string) => {
     setShowSpaceSelectionModal(false);
     
     try {
       const newSpace = await createDbSpace(name);
       if (newSpace) {
-        await handleSpaceSelect(newSpace.id, autoDetectedDials);
+        await handleSpaceSelect(newSpace.id);
       }
     } catch (error) {
       console.error('Space creation error:', error);

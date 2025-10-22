@@ -156,13 +156,11 @@ export function HomeView({
     >
       {/* Items Bar - Fixed above space bar, floating over hero */}
       {!isLobby && showItemsBar && (
-        <div className="fixed bottom-44 left-4 right-4 z-40 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg">
-          <ItemsPeopleBar
-            view="items"
-            spaceId={spaceId}
-            onItemClick={handleItemClickFromBar}
-          />
-        </div>
+        <ItemsPeopleBar
+          view="items"
+          spaceId={spaceId}
+          onItemClick={handleItemClickFromBar}
+        />
       )}
 
       {/* Hero Header - Show ContentViewer if item has file data, otherwise show HeroHeaderVideo */}

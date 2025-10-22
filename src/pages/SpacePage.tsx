@@ -489,61 +489,108 @@ export default function SpacePage() {
     }
   };
 
-  // Drag and drop handlers
+  // Drag and drop handlers - show space selection modal
   const handleFilesDropped = async (files: File[]) => {
     if (files.length === 0) return;
+    
+    setDroppedFiles(files);
+    setShowSpaceSelectionModal(true);
+  };
 
-    // Resolve the destination space: prefer URL spaceId when not in lobby
-    const destSpaceId = (spaceId && spaceId !== 'lobby') ? spaceId : navigationPath[navigationPath.length - 1];
+  // Handle space selection for dropped files
+  const handleSpaceSelect = async (spaceId: string) => {
+    if (droppedFiles.length === 0) return;
 
-    for (const file of files) {
-      try {
-        toast.info('Uploading and analyzing...');
-        const uploadResult = await uploadFile(file, destSpaceId);
-        
-        if (uploadResult) {
-          // Auto-trigger AI analysis
-          const aiMetadata = await analyzeWithAI(file, uploadResult.id);
-          
-          // Get current location automatically
-          let currentLocation: { lat: number; lng: number; address?: string } | undefined;
-          if (navigator.geolocation) {
-            try {
-              const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-              });
-              currentLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-              };
-            } catch (err) {
-              console.log('Location not available');
-            }
-          }
-          
-          // Auto-save with AI metadata and location
-          const dialValuesWithLocation = {
-            ...(aiMetadata?.dial_values || {}),
-            ...(currentLocation && { location: currentLocation })
-          };
-          
-          await saveMetadata(
-            uploadResult.id,
-            aiMetadata?.hashtags || ['untagged'],
-            dialValuesWithLocation,
-            !!aiMetadata,
-            aiMetadata?.confidence || 0
-          );
-          
-          toast.success(`${file.name} uploaded successfully`);
-          if (refetch) refetch();
+    try {
+      setShowSpaceSelectionModal(false);
+      toast.info(`Uploading ${droppedFiles.length} file(s)...`);
+
+      // Upload all files to the selected space
+      const uploadResults = [];
+      for (const file of droppedFiles) {
+        const result = await uploadFile(file, spaceId);
+        if (result) {
+          uploadResults.push({ file, result });
         }
-      } catch (error) {
-        console.error('File processing error:', error);
-        toast.error(`Failed to process ${file.name}`);
       }
+
+      // Refetch spaces to show new files
+      if (refetch) refetch();
+
+      // Background AI analysis (non-blocking)
+      Promise.all(
+        uploadResults.map(async ({ file, result }) => {
+          try {
+            const aiMetadata = await analyzeWithAI(file, result.id);
+            if (aiMetadata) {
+              await saveMetadata(
+                result.id,
+                aiMetadata.hashtags,
+                aiMetadata.dial_values,
+                true,
+                aiMetadata.confidence
+              );
+            }
+          } catch (err) {
+            console.error('AI analysis failed for', file.name, err);
+          }
+        })
+      ).then(() => {
+        if (refetch) refetch(); // Refetch again after AI metadata is saved
+      });
+
+      toast.success(`${droppedFiles.length} file(s) uploaded!`);
+      setDroppedFiles([]);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload files');
     }
   };
+
+  // Handle create new space from selection modal
+  const handleCreateSpaceAndUpload = async (name: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to create spaces');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('spaces')
+        .insert({
+          user_id: user.id,
+          name,
+          parent_id: null,
+          cover_url: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating space:', error);
+        toast.error('Failed to create space');
+        return;
+      }
+
+      const newSpace: Space = {
+        id: data.id,
+        name: data.name,
+        thumb: data.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        parentId: data.parent_id || undefined
+      };
+
+      setSpaces(prev => [...prev, newSpace]);
+      toast.success(`Space "${name}" created!`);
+
+      // Upload files to the new space
+      await handleSpaceSelect(data.id);
+    } catch (error) {
+      console.error('Error creating space:', error);
+      toast.error('Failed to create space');
+    }
+  };
+
   const handleMetadataSave = async (metadata: {
     hashtags: string[];
     dialValues: Record<string, any>;
@@ -1158,6 +1205,24 @@ export default function SpacePage() {
             />
           )}
         </AnimatePresence>
+
+        {/* Space Selection Modal */}
+        <SpaceSelectionModal
+          isOpen={showSpaceSelectionModal}
+          onClose={() => {
+            setShowSpaceSelectionModal(false);
+            setDroppedFiles([]);
+          }}
+          onSpaceSelect={handleSpaceSelect}
+          onCreateNewSpace={handleCreateSpaceAndUpload}
+          spaces={spaces.map(s => ({
+            id: s.id,
+            name: s.name,
+            fileCount: 0,
+            thumbnail: s.thumb
+          }))}
+          droppedFiles={droppedFiles}
+        />
 
         <UploadLoader isUploading={uploading || analyzingWithAI} />
       </div>

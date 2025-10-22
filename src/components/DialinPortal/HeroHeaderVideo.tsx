@@ -90,6 +90,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
+      // Autoplay video when loaded
+      video.play().catch(err => console.log('Autoplay prevented:', err));
     };
 
     const handleError = () => {
@@ -274,6 +276,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
+      // Autoplay background video when loaded
+      bgVideo.play().catch(err => console.log('Autoplay prevented:', err));
     };
 
     const handleError = () => {
@@ -346,8 +350,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {showVideo && videoSrc && !videoError && (
         <video
           ref={videoRef}
-          autoPlay
-          muted
           playsInline
           loop
           preload="auto"
@@ -408,8 +410,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           {isBackgroundVideo ? (
             <video
               ref={bgVideoRef}
-              autoPlay
-              muted
               playsInline
               loop
               preload="auto"

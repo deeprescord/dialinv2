@@ -319,9 +319,9 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-      <div className="w-full max-w-6xl mx-auto pointer-events-auto">
-        <div className="glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
+    <div className="fixed bottom-32 left-8 right-8 top-8 flex items-center justify-center z-50 pointer-events-none">
+      <div className="w-full h-full max-w-7xl mx-auto pointer-events-auto">
+        <div className="glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden h-full flex flex-col">
           {/* Header with View Selector */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <h2 className="text-lg font-semibold text-foreground">
@@ -362,7 +362,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
           </div>
           
           {/* Content */}
-          <div className="min-h-[300px]">
+          <div className="flex-1 overflow-hidden">
             {renderContent()}
           </div>
         </div>

@@ -319,9 +319,9 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
   };
 
   return (
-    <div className="fixed bottom-32 left-8 right-8 top-8 flex items-center justify-center z-50 pointer-events-none">
-      <div className="w-full h-full max-w-7xl mx-auto pointer-events-auto">
-        <div className="glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden h-full flex flex-col">
+    <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+      <div className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full pointer-events-auto">
+        <div className="w-full h-full glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
           {/* Header with View Selector */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <h2 className="text-lg font-semibold text-foreground">

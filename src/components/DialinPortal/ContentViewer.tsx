@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useImperativeHandle } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, X, Maximize, Settings, Edit, Share2, Trash2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, X, Maximize, Settings, Edit, Share2, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,9 +42,11 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const [duration, setDuration] = useState(0);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [zoom, setZoom] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
@@ -194,6 +196,36 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       setPressTimer(null);
     }
   };
+
+  // Zoom controls
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.25, 5));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.25, 0.5));
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+  };
+
+  // Mouse wheel zoom for images
+  useEffect(() => {
+    if (!isImage || !imageContainerRef.current) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        setZoom(prev => Math.max(0.5, Math.min(5, prev + delta)));
+      }
+    };
+
+    const container = imageContainerRef.current;
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [isImage]);
 
   // Close context menu when clicking outside
   useEffect(() => {
@@ -356,13 +388,47 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
       {/* Regular Image Content */}
       {!is360 && isImage && contentUrl && (
-        <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center">
-          <img
-            src={contentUrl}
-            alt={content.original_name}
-            className="max-w-full max-h-full object-contain"
-          />
-        </div>
+        <>
+          <div 
+            ref={imageContainerRef}
+            className="absolute inset-0 w-full h-full bg-black flex items-center justify-center overflow-auto"
+          >
+            <img
+              src={contentUrl}
+              alt={content.original_name}
+              className="max-w-full max-h-full object-contain transition-transform duration-200"
+              style={{ transform: `scale(${zoom})` }}
+            />
+          </div>
+          
+          {/* Zoom Controls */}
+          <div className="absolute bottom-4 right-4 z-40 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-lg p-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleZoomOut}
+              disabled={zoom <= 0.5}
+              className="text-white hover:bg-white/20"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <button
+              onClick={handleResetZoom}
+              className="px-3 py-1 text-white text-sm hover:bg-white/20 rounded transition-colors"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleZoomIn}
+              disabled={zoom >= 5}
+              className="text-white hover:bg-white/20"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+          </div>
+        </>
       )}
 
       {/* PDF Content */}

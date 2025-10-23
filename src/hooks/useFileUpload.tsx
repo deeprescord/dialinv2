@@ -182,6 +182,17 @@ export function useFileUpload() {
         return null;
       }
 
+      // Generate thumbnail in background (don't wait for it)
+      if (file.type.startsWith('image/')) {
+        supabase.functions.invoke('generate-thumbnail', {
+          body: {
+            fileId: fileRecord.id,
+            storagePath: uploadData.path,
+            mimeType: file.type
+          }
+        }).catch(err => console.warn('Thumbnail generation failed:', err));
+      }
+
       // Add file to the specified space
       const { error: spaceError } = await supabase
         .from('space_files')

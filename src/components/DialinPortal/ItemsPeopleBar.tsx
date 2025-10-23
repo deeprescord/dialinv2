@@ -47,33 +47,37 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
     let cancelled = false;
     const loadThumbs = async () => {
       if (!items?.length) return;
-      const pairs = await Promise.all(
-        items.map(async (item) => {
-          const path = item.thumbnail_path || item.storage_path;
-          if (!path) return [item.id, null] as const;
-          // Prefer signed URL (bucket 'user-files' is private)
+      
+      // Batch create signed URLs more efficiently
+      const urlPromises = items.map(async (item) => {
+        // Prefer thumbnail for faster loading
+        const path = item.thumbnail_path || item.storage_path;
+        if (!path) return [item.id, null] as const;
+        
+        try {
           const { data, error } = await supabase.storage
             .from('user-files')
-            .createSignedUrl(path, 3600);
-          if (error) {
-            const { data: pub } = supabase.storage
-              .from('user-files')
-              .getPublicUrl(path);
-            return [item.id, pub.publicUrl] as const;
-          }
+            .createSignedUrl(path, 7200); // 2 hour cache
+            
+          if (error) throw error;
           return [item.id, data.signedUrl] as const;
-        })
-      );
+        } catch (err) {
+          console.warn('Signed URL failed for', path, err);
+          return [item.id, null] as const;
+        }
+      });
+
+      const pairs = await Promise.all(urlPromises);
+      
       if (!cancelled) {
-        setThumbUrls((prev) => {
-          const next = { ...prev };
-          for (const [id, url] of pairs) {
-            if (url) next[id] = url;
-          }
-          return next;
-        });
+        const urlMap: Record<string, string> = {};
+        for (const [id, url] of pairs) {
+          if (url) urlMap[id] = url;
+        }
+        setThumbUrls(urlMap);
       }
     };
+    
     loadThumbs();
     return () => {
       cancelled = true;

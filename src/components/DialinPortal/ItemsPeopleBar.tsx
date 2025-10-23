@@ -20,7 +20,7 @@ type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
 
 export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
-  const [viewMode, setViewMode] = useState<ViewMode>('carousel');
+  const [viewMode, setViewMode] = useState<ViewMode>('tile');
 
   // Scale-responsive sizing (reduced by 25%)
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -110,12 +110,17 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
   };
 
   const renderCarouselView = () => (
-    <Carousel className="w-full max-w-5xl mx-auto">
-      <CarouselContent>
+    <Carousel 
+      className="w-full max-w-5xl mx-auto"
+      opts={{
+        dragFree: true,
+      }}
+    >
+      <CarouselContent className="-ml-2 cursor-grab active:cursor-grabbing">
         {items.map((item, index) => {
           const thumbnail = thumbUrls[item.id];
           return (
-            <CarouselItem key={item.id} className="md:basis-1/2 lg:basis-1/3">
+            <CarouselItem key={item.id} className="pl-2 md:basis-1/2 lg:basis-1/3">
               <div className="p-4">
                 <div 
                   className="cursor-pointer group flex flex-col items-center gap-3"
@@ -131,6 +136,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                     ) : (
                       getFileIcon(item.file_type)
                     )}
+                    {/* File type icon badge */}
+                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm rounded p-1.5">
+                      {item.file_type === 'image' && <ImageIcon className="w-4 h-4 text-white" />}
+                      {item.file_type === 'video' && <Video className="w-4 h-4 text-white" />}
+                      {item.file_type === 'audio' && <Music className="w-4 h-4 text-white" />}
+                      {item.file_type === 'document' && <FileText className="w-4 h-4 text-white" />}
+                      {!['image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-4 h-4 text-white" />}
+                    </div>
                   </div>
                   <span className="text-sm font-medium text-foreground/90 max-w-full truncate">
                     {item.original_name}
@@ -169,6 +182,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                 ) : (
                   <div className="w-8 h-8">{getFileIcon(item.file_type)}</div>
                 )}
+                {/* File type icon badge */}
+                <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm rounded p-1">
+                  {item.file_type === 'image' && <ImageIcon className="w-3 h-3 text-white" />}
+                  {item.file_type === 'video' && <Video className="w-3 h-3 text-white" />}
+                  {item.file_type === 'audio' && <Music className="w-3 h-3 text-white" />}
+                  {item.file_type === 'document' && <FileText className="w-3 h-3 text-white" />}
+                  {!['image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-3 h-3 text-white" />}
+                </div>
               </div>
               <span className="text-xs text-foreground/70 max-w-full truncate text-center px-1">
                 {item.original_name}
@@ -193,7 +214,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
               className="cursor-pointer group flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors border border-white/5"
               onClick={() => handleItemClick(item)}
             >
-              <div className="rounded overflow-hidden border border-white/10 bg-muted/50 flex items-center justify-center w-16 h-16 flex-shrink-0">
+              <div className="rounded overflow-hidden border border-white/10 bg-muted/50 flex items-center justify-center w-16 h-16 flex-shrink-0 relative">
                 {thumbnail ? (
                   <ImageFallback 
                     src={thumbnail}
@@ -203,6 +224,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                 ) : (
                   <div className="w-8 h-8">{getFileIcon(item.file_type)}</div>
                 )}
+                {/* File type icon badge */}
+                <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm rounded p-0.5">
+                  {item.file_type === 'image' && <ImageIcon className="w-2.5 h-2.5 text-white" />}
+                  {item.file_type === 'video' && <Video className="w-2.5 h-2.5 text-white" />}
+                  {item.file_type === 'audio' && <Music className="w-2.5 h-2.5 text-white" />}
+                  {item.file_type === 'document' && <FileText className="w-2.5 h-2.5 text-white" />}
+                  {!['image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-2.5 h-2.5 text-white" />}
+                </div>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{item.original_name}</p>
@@ -240,6 +269,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                     {getFileIcon(item.file_type)}
                   </div>
                 )}
+                {/* File type icon badge */}
+                <div className="absolute bottom-12 right-2 bg-black/60 backdrop-blur-sm rounded p-1">
+                  {item.file_type === 'image' && <ImageIcon className="w-3 h-3 text-white" />}
+                  {item.file_type === 'video' && <Video className="w-3 h-3 text-white" />}
+                  {item.file_type === 'audio' && <Music className="w-3 h-3 text-white" />}
+                  {item.file_type === 'document' && <FileText className="w-3 h-3 text-white" />}
+                  {!['image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-3 h-3 text-white" />}
+                </div>
                 <div className="p-2 bg-background/80 backdrop-blur">
                   <span className="text-xs font-medium text-foreground/80 line-clamp-2">
                     {item.original_name}
@@ -324,17 +361,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
         <div className="w-full h-full glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
           {/* Header with View Selector */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <h2 className="text-lg font-semibold text-foreground">
-              {view === 'items' ? 'Items' : 'People'}
-            </h2>
             {view === 'items' && (
               <div className="flex gap-2">
                 <Button
-                  variant={viewMode === 'carousel' ? 'default' : 'outline'}
+                  variant={viewMode === 'tile' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setViewMode('carousel')}
+                  onClick={() => setViewMode('tile')}
                 >
-                  <Columns className="w-4 h-4" />
+                  <Grid3x3 className="w-4 h-4" />
                 </Button>
                 <Button
                   variant={viewMode === 'icon' ? 'default' : 'outline'}
@@ -351,14 +385,17 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                   <List className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant={viewMode === 'tile' ? 'default' : 'outline'}
+                  variant={viewMode === 'carousel' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setViewMode('tile')}
+                  onClick={() => setViewMode('carousel')}
                 >
-                  <Grid3x3 className="w-4 h-4" />
+                  <Columns className="w-4 h-4" />
                 </Button>
               </div>
             )}
+            <h2 className="text-lg font-semibold text-foreground ml-auto">
+              {view === 'items' ? 'Items' : 'People'}
+            </h2>
           </div>
           
           {/* Content */}

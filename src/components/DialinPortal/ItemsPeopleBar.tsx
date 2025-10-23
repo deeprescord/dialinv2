@@ -130,7 +130,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
                   className="cursor-pointer group flex flex-col items-center gap-3"
                   onClick={() => handleItemClick(item)}
                 >
-                  <div className="rounded-xl overflow-hidden group-hover:scale-105 transition-transform border border-white/20 relative bg-muted/50 flex items-center justify-center w-full aspect-square">
+                  <div className="rounded-xl overflow-hidden group-hover:scale-105 transition-transform border border-white/20 relative bg-muted/50 flex items-center justify-center w-full aspect-[3/4]">
                     {thumbnail ? (
                       <ImageFallback 
                         src={thumbnail}

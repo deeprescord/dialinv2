@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { friends } from '@/data/catalogs';
-import { FileText, Music, Video, Image as ImageIcon, File, LayoutGrid, List, Grid3x3, Columns } from 'lucide-react';
+import { FileText, Music, Video, Image as ImageIcon, File, LayoutGrid, List, Grid3x3, Columns, RefreshCw } from 'lucide-react';
 import { ImageFallback } from '@/components/ui/image-fallback';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 
 interface ItemsPeopleBarProps {
   scale?: number;
@@ -56,6 +57,60 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
 
   // Signed thumbnail URLs for private bucket
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+  const [regeneratingThumbs, setRegeneratingThumbs] = useState(false);
+
+  // Function to regenerate thumbnails
+  const handleRegenerateThumbnails = async () => {
+    setRegeneratingThumbs(true);
+    toast.info('Generating thumbnails for faster loading...');
+    
+    try {
+      const { data: files, error } = await supabase
+        .from('files')
+        .select('*')
+        .eq('file_type', 'image')
+        .is('thumbnail_path', null);
+
+      if (error || !files || files.length === 0) {
+        toast.info('No images need thumbnail generation');
+        setRegeneratingThumbs(false);
+        return;
+      }
+
+      let processed = 0;
+      const batchSize = 3;
+      
+      for (let i = 0; i < files.length; i += batchSize) {
+        const batch = files.slice(i, i + batchSize);
+        
+        await Promise.all(
+          batch.map(async (file) => {
+            try {
+              await supabase.functions.invoke('generate-thumbnail', {
+                body: {
+                  fileId: file.id,
+                  storagePath: file.storage_path,
+                  mimeType: file.mime_type || 'image/jpeg'
+                }
+              });
+              processed++;
+            } catch (err) {
+              console.warn(`Error generating thumbnail for ${file.id}:`, err);
+            }
+          })
+        );
+      }
+
+      toast.success(`Generated ${processed} thumbnails. Refreshing...`);
+      setTimeout(() => window.location.reload(), 1000);
+      
+    } catch (error) {
+      console.error('Error regenerating thumbnails:', error);
+      toast.error('Failed to regenerate thumbnails');
+    } finally {
+      setRegeneratingThumbs(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;

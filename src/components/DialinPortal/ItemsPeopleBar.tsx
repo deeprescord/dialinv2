@@ -9,6 +9,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { PinnedContactsRow } from './PinnedContactsRow';
 
 interface ItemsPeopleBarProps {
   scale?: number;
@@ -375,38 +376,12 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
   const renderContent = () => {
     if (view === 'people') {
       return (
-        <div className="overflow-x-auto scrollbar-thin p-4">
-          <div className="flex items-center gap-4">
-            {friends.map((person, index) => (
-              <motion.div
-                key={person.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="flex-shrink-0"
-              >
-                <div className="cursor-pointer group flex flex-col items-center gap-2">
-                  <div className="rounded-lg overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 bg-muted/50 flex items-center justify-center relative w-32 h-32">
-                    <img 
-                      src={person.avatar} 
-                      alt={person.name}
-                      className="w-full h-full rounded-lg object-cover"
-                    />
-                    <div 
-                      className={`absolute bottom-2 right-2 w-3 h-3 rounded-full border-2 border-white ${
-                        person.status === 'online' ? 'bg-green-500' : 
-                        person.status === 'away' ? 'bg-yellow-500' : 
-                        'bg-gray-500'
-                      }`}
-                    />
-                  </div>
-                  <span className="text-xs font-medium text-foreground/80 max-w-full truncate px-2">
-                    {person.name}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        <div className="p-4">
+          <PinnedContactsRow 
+            contacts={friends} 
+            onContactClick={(contact) => console.log('Contact clicked:', contact)}
+            title="People in this Space"
+          />
         </div>
       );
     }

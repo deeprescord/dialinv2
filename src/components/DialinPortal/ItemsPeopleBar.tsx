@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
@@ -14,13 +14,27 @@ interface ItemsPeopleBarProps {
   view: 'items' | 'people';
   spaceId?: string;
   onItemClick?: (item: any) => void;
+  onClose?: () => void;
 }
 
 type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
 
-export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: ItemsPeopleBarProps) {
+export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>('tile');
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
 
   // Scale-responsive sizing (reduced by 25%)
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -111,6 +125,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
     };
     
     onItemClick(transformedItem);
+    onClose?.(); // Close panel after clicking item
   };
 
   const renderCarouselView = () => (
@@ -361,7 +376,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick }: Items
 
   return (
     <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
-      <div className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full pointer-events-auto">
+      <div ref={panelRef} className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full pointer-events-auto">
         <div className="w-full h-full glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
           {/* Header with View Selector */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">

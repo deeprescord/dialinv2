@@ -402,7 +402,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           </div>
           
           {/* Zoom Controls */}
-          <div className="absolute bottom-4 right-4 z-40 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-lg p-2">
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-lg p-2">
             <Button
               variant="ghost"
               size="icon"

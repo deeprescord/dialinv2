@@ -88,7 +88,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
     >
       {/* Main Navigation */}
       <nav 
-        className="glass-nav px-3 sm:px-6 py-3 cursor-pointer select-none"
+        className="px-3 sm:px-6 py-3 cursor-pointer select-none"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
@@ -97,7 +97,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
       >
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2 sm:space-x-8">
+          <div className="flex items-center space-x-2 sm:space-x-8 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2">
             <img 
               src="/brand/dialin-logo-white.png" 
               alt="Dialin" 
@@ -111,7 +111,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1">
             {/* Profile Dropdown */}
             <UserDropdown />
           </div>

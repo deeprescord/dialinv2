@@ -133,13 +133,6 @@ export function CombinedBottomBar({
 
   return (
     <>
-      {/* Floating Action Buttons */}
-      <FloatingActionButtons
-        onAddClick={onCreateSpace}
-        onAIClick={() => onToggleAIChat?.()}
-        onChatClick={() => onToggleChatWindow?.()}
-      />
-
       <div className="px-4 pb-4 space-y-4">
         {/* Items/People Bar - removed, now controlled by SpacesBar */}
         

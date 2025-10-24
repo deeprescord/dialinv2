@@ -22,8 +22,16 @@ type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
 
 export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
-  const [viewMode, setViewMode] = useState<ViewMode>('tile');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('itemsViewMode');
+    return (saved as ViewMode) || 'tile';
+  });
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Persist view mode preference
+  useEffect(() => {
+    localStorage.setItem('itemsViewMode', viewMode);
+  }, [viewMode]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -442,14 +450,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
                   size="sm"
                   onClick={() => setViewMode('tile')}
                 >
-                  <Grid3x3 className="w-4 h-4" />
+                  <Columns className="w-4 h-4" />
                 </Button>
                 <Button
                   variant={viewMode === 'icon' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('icon')}
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <Grid3x3 className="w-4 h-4" />
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'outline'}
@@ -463,7 +471,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
                   size="sm"
                   onClick={() => setViewMode('carousel')}
                 >
-                  <Columns className="w-4 h-4" />
+                  <LayoutGrid className="w-4 h-4" />
                 </Button>
               </div>
             )}

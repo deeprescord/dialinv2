@@ -1,12 +1,16 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ImageFallback } from '../ui/image-fallback';
 import { Settings, HardDrive, Database, Wallet, ChevronDown } from '../icons';
+import { LogIn, LogOut } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthModal } from './AuthModal';
+import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +22,46 @@ import {
 export function UserDropdown() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully",
+      });
+      navigate('/');
+    }
+  };
 
   return (
+    <>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => setShowAuthModal(false)}
+      />
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center space-x-2 p-2">
@@ -65,7 +107,26 @@ export function UserDropdown() {
           <Wallet width={16} height={16} />
           <span>Wallet</span>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {isAuthenticated ? (
+          <DropdownMenuItem 
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={handleSignOut}
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem 
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => setShowAuthModal(true)}
+          >
+            <LogIn size={16} />
+            <span>Login</span>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </>
   );
 }

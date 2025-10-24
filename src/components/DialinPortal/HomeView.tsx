@@ -54,6 +54,7 @@ interface HomeViewProps {
   spaceId?: string;
   onItemClick?: (item: any) => void;
   showItemsBar?: boolean;
+  onCloseItemsBar?: () => void;
 }
 
 export function HomeView({ 
@@ -86,7 +87,8 @@ export function HomeView({
   heroRef,
   spaceId,
   onItemClick,
-  showItemsBar = false
+  showItemsBar = false,
+  onCloseItemsBar
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -160,6 +162,7 @@ export function HomeView({
           view="items"
           spaceId={spaceId}
           onItemClick={handleItemClickFromBar}
+          onClose={onCloseItemsBar}
         />
       )}
 

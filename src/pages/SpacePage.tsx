@@ -967,6 +967,7 @@ export default function SpacePage() {
                spaceId={spaceId}
                onItemClick={handleMediaClick}
                showItemsBar={showItemsBar}
+               onCloseItemsBar={() => setShowItemsBar(false)}
              />
           )}
 

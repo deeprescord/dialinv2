@@ -74,6 +74,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [proxyAttempted, setProxyAttempted] = useState(false);
   const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
   const [proxyError, setProxyError] = useState<string | null>(null);
+  const [isBlurred, setIsBlurred] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -381,15 +382,70 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     return () => clearTimeout(t);
   }, [webUrl]);
 
+  // Screenshot protection - detect when user might be capturing content
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setIsBlurred(true);
+        // Pause any playing video
+        const activeVideo = getActiveVideo();
+        if (activeVideo && isPlaying) {
+          activeVideo.pause();
+        }
+        setTimeout(() => setIsBlurred(false), 300);
+      }
+    };
+
+    const handleBlur = () => {
+      setIsBlurred(true);
+      setTimeout(() => setIsBlurred(false), 200);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Detect common screenshot shortcuts
+      const isScreenshotShortcut = 
+        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) || // Mac
+        (e.key === 'PrintScreen') || // Windows
+        (e.metaKey && e.key === 'PrintScreen'); // Windows with Cmd
+      
+      if (isScreenshotShortcut) {
+        setIsBlurred(true);
+        setTimeout(() => setIsBlurred(false), 500);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPlaying]);
+
   return (
     <div 
       className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl cursor-pointer select-none"
+      style={{ 
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none'
+      } as React.CSSProperties}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleMouseDown}
       onTouchEnd={handleMouseUp}
     >
+      {/* Screenshot Protection Overlay */}
+      {isBlurred && (
+        <div className="absolute inset-0 bg-black z-50 flex items-center justify-center">
+          <div className="text-white text-xl font-semibold">🔒 Content Protected</div>
+        </div>
+      )}
+
       {/* Web Page Iframe - highest priority */}
       {webUrl && (
         <div className="absolute inset-0 w-full h-full z-20 bg-black">

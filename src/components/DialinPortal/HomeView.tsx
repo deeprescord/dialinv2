@@ -192,8 +192,8 @@ export function HomeView({
         />
       )}
 
-      {/* Hero Header - Show ContentViewer if item has file data, otherwise show HeroHeaderVideo */}
-      {selectedItem?.storage_path ? (
+      {/* Hero Header - Show ContentViewer for files (excluding web links), otherwise HeroHeaderVideo */}
+      {selectedItem?.storage_path && selectedItem?.type !== 'web' ? (
         <ContentViewer
           ref={heroRef as any}
           content={{

@@ -19,6 +19,7 @@ import { Settings360Modal } from '@/components/DialinPortal/Settings360Modal';
 import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { AIChat } from '@/components/DialinPortal/AIChat';
 import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
+import { AddOptionsModal } from '@/components/DialinPortal/AddOptionsModal';
 import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { SpaceSelectionModal } from '@/components/DialinPortal/SpaceSelectionModal';
 import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjustmentPanel';
@@ -339,15 +340,21 @@ export default function SpacePage() {
   // Handle add option selection
   const handleAddOptionSelect = (optionId: string) => {
     if (optionId === 'SPACE') {
+      setIsAddModalOpen(false);
       setShowCreateSpaceModal(true);
     }
     console.log('Selected option:', optionId);
+  };
+
+  // Handle upload click from AddOptionsModal
+  const handleUploadClick = (files: File[]) => {
+    handleFilesDropped(files);
     setIsAddModalOpen(false);
   };
 
   // Handle create space from drop
   const handleCreateSpaceFromDrop = async (name: string) => {
-    await handleCreateSpace(name, '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png');
+    await handleCreateSpace(name);
   };
 
   // Handle media interactions
@@ -403,7 +410,7 @@ export default function SpacePage() {
 
 
   // Handle space creation
-  const handleCreateSpace = async (name: string, coverUrl: string, parentId?: string) => {
+  const handleCreateSpace = async (name: string, description?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -411,13 +418,16 @@ export default function SpacePage() {
         return;
       }
 
+      // If we're in a space (not lobby), create nested space with current space as parent
+      const parentId = spaceId && spaceId !== 'lobby' ? spaceId : null;
+
       const { data, error } = await supabase
         .from('spaces')
         .insert({
           user_id: user.id,
           name,
-          parent_id: parentId || null,
-          cover_url: coverUrl
+          description,
+          parent_id: parentId,
         })
         .select()
         .single();
@@ -428,16 +438,9 @@ export default function SpacePage() {
         return;
       }
 
-      const newSpace: Space = {
-        id: data.id,
-        name: data.name,
-        thumb: coverUrl,
-        parentId: data.parent_id || undefined
-      };
-      
-      setSpaces(prev => [...prev, newSpace]);
-      toast.success(`Space "${name}" created successfully!`);
       setShowCreateSpaceModal(false);
+      toast.success(`Space "${name}" created successfully`);
+      refetch();
     } catch (error) {
       console.error('Error creating space:', error);
       toast.error('Failed to create space');
@@ -1139,11 +1142,8 @@ export default function SpacePage() {
             // Clean up the pending parent ID
             delete (window as any).__pendingSpaceParentId;
           }}
-          onCreate={(name, coverUrl, parentId) => {
-            const storedParentId = (window as any).__pendingSpaceParentId;
-            const finalParentId = parentId || (storedParentId && storedParentId !== 'lobby' ? storedParentId : undefined);
-            handleCreateSpace(name, coverUrl, finalParentId);
-            delete (window as any).__pendingSpaceParentId;
+          onCreate={(name, description) => {
+            handleCreateSpace(name, description);
           }}
         />
 
@@ -1169,6 +1169,13 @@ export default function SpacePage() {
             console.log(`Adding ${selectedContact?.name} to space ${spaceId}`);
             setShowAddPanel(false);
           }}
+        />
+
+        <AddOptionsModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onOptionSelect={handleAddOptionSelect}
+          onUploadClick={handleUploadClick}
         />
 
         <Settings360Modal

@@ -82,11 +82,15 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const video = videoRef.current;
     if (!video) return;
 
+    // Pause video when switching spaces
+    video.pause();
+    
     // Reset state when source/display changes
     setVideoLoaded(false);
     setVideoError(false);
     setCurrentTime(0);
     setDuration(0);
+    setIsPlaying(false);
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
@@ -268,11 +272,15 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const bgVideo = bgVideoRef.current;
     if (!bgVideo || !isBackgroundVideo) return;
 
+    // Pause video when switching spaces
+    bgVideo.pause();
+    
     // Reset state when source changes
     setVideoLoaded(false);
     setVideoError(false);
     setCurrentTime(0);
     setDuration(0);
+    setIsPlaying(false);
 
     const handleCanPlay = () => {
       setVideoLoaded(true);

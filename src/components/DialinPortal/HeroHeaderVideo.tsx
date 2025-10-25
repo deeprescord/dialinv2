@@ -354,11 +354,23 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       console.log('Direct iframe timed out, trying proxy...');
       try {
         setProxyAttempted(true);
-        const { data, error } = await supabase.functions.invoke('embed-proxy', {
-          body: { url: webUrl }
-        });
-        if (error) throw error;
-        const html = typeof data === 'string' ? data : (data?.html || '');
+        const response = await fetch(
+          `https://dkhpfwgejjyheixkpvpr.supabase.co/functions/v1/embed-proxy`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+            },
+            body: JSON.stringify({ url: webUrl })
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error(`Proxy failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const html = await response.text();
         console.log('Proxy response received, html length:', html?.length);
         if (html) setProxiedHtml(html);
       } catch (e) {

@@ -1059,7 +1059,7 @@ export default function SpacePage() {
             showCreateSpaceModal={showCreateSpaceModal}
             showAIChat={showAIChat}
             onToggleAIChat={handleToggleAIChat}
-            onToggleAddModal={() => setIsAddModalOpen(true)}
+            onToggleAddModal={() => setIsAddModalOpen(prev => !prev)}
             videoControlsState={videoState}
             onVideoPlayPause={handleVideoPlayPause}
             onVideoSeek={handleVideoSeek}

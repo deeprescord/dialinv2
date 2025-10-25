@@ -112,6 +112,12 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
     setTexture(null);
     setError(false);
     
+    // Pause any existing video first
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current = null;
+    }
+    
     // Check if the URL is a video file
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
     

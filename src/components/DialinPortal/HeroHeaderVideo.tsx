@@ -572,7 +572,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           style={{ transform: 'scaleY(1)' }}
           poster={posterSrc}
         >
-          <source src={videoSrc} type="video/mp4" />
+          {showVideo && <source src={videoSrc} type="video/mp4" />}
         </video>
       )}
 
@@ -631,7 +631,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               }`}
               style={{ transform: 'scaleY(1)' }}
             >
-              <source src={backgroundImage} />
+              {!showVideo && <source src={backgroundImage} />}
             </video>
           ) : (
             <div 

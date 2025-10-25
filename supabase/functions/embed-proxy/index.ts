@@ -11,17 +11,33 @@ function isValidUrl(url: string) {
 }
 
 function injectBase(html: string, baseHref: string) {
-  // Ensure a <base> tag so relative URLs resolve correctly
-  if (/<base\s/i.test(html)) return html;
+  // Inject both base tag and viewport meta tag for proper rendering
+  const viewportMeta = '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
+  const baseTag = `<base href="${baseHref}">`;
+  
+  if (/<base\s/i.test(html)) {
+    // Base exists, just add viewport if missing
+    if (!/<meta[^>]+name=["']viewport["']/i.test(html)) {
+      const headIndex = html.indexOf('<head');
+      if (headIndex !== -1) {
+        const headClose = html.indexOf('>', headIndex);
+        if (headClose !== -1) {
+          return html.slice(0, headClose + 1) + '\n' + viewportMeta + '\n' + html.slice(headClose + 1);
+        }
+      }
+    }
+    return html;
+  }
+  
   const headIndex = html.indexOf('<head');
   if (headIndex !== -1) {
     const headClose = html.indexOf('>', headIndex);
     if (headClose !== -1) {
-      return html.slice(0, headClose + 1) + `\n<base href="${baseHref}">\n` + html.slice(headClose + 1);
+      return html.slice(0, headClose + 1) + '\n' + viewportMeta + '\n' + baseTag + '\n' + html.slice(headClose + 1);
     }
   }
-  // Fallback: prepend base at the start
-  return `<!doctype html>\n<head><base href="${baseHref}"></head>` + html;
+  // Fallback: prepend both at the start
+  return `<!doctype html>\n<head>${viewportMeta}\n${baseTag}</head>` + html;
 }
 
 serve(async (req) => {

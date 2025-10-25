@@ -408,14 +408,18 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               srcDoc={proxiedHtml}
               className="w-full h-full border-0"
               title="Web Content (proxied)"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+              scrolling="yes"
+              style={{ overflow: 'auto' }}
             />
           ) : (
             <iframe
               src={webUrl}
               className="w-full h-full border-0"
               title="Web Content"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+              scrolling="yes"
+              style={{ overflow: 'auto' }}
               onLoad={() => {
                 console.log('Iframe loaded successfully');
                 setIframeLoaded(true);

@@ -1061,18 +1061,24 @@ export default function SpacePage() {
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
             onToggleItemsBar={() => {
-              setShowItemsBar(prev => {
-                const willClose = prev && itemsPeopleView === 'items';
-                if (!willClose) setItemsPeopleView('items');
-                return !willClose;
-              });
+              if (showItemsBar && itemsPeopleView === 'items') {
+                // Currently showing items - close it
+                setShowItemsBar(false);
+              } else {
+                // Either closed or showing people - open items
+                setItemsPeopleView('items');
+                setShowItemsBar(true);
+              }
             }}
             onTogglePeopleBar={() => {
-              setShowItemsBar(prev => {
-                const willClose = prev && itemsPeopleView === 'people';
-                if (!willClose) setItemsPeopleView('people');
-                return !willClose;
-              });
+              if (showItemsBar && itemsPeopleView === 'people') {
+                // Currently showing people - close it
+                setShowItemsBar(false);
+              } else {
+                // Either closed or showing items - open people
+                setItemsPeopleView('people');
+                setShowItemsBar(true);
+              }
             }}
           />
         </div>

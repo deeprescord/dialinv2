@@ -382,56 +382,38 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     return () => clearTimeout(t);
   }, [webUrl]);
 
-  // Screenshot protection - detect when user might be capturing content
+  // Screenshot deterrents - add right-click prevention and context menu blocking
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setIsBlurred(true);
-        // Pause any playing video
-        const activeVideo = getActiveVideo();
-        if (activeVideo && isPlaying) {
-          activeVideo.pause();
-        }
-        setTimeout(() => setIsBlurred(false), 300);
-      }
+    const heroElement = document.querySelector('.hero-protected-content');
+    if (!heroElement) return;
+
+    const preventContextMenu = (e: Event) => {
+      e.preventDefault();
+      return false;
     };
 
-    const handleBlur = () => {
-      setIsBlurred(true);
-      setTimeout(() => setIsBlurred(false), 200);
+    const preventDragStart = (e: Event) => {
+      e.preventDefault();
+      return false;
     };
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Detect common screenshot shortcuts
-      const isScreenshotShortcut = 
-        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) || // Mac
-        (e.key === 'PrintScreen') || // Windows
-        (e.metaKey && e.key === 'PrintScreen'); // Windows with Cmd
-      
-      if (isScreenshotShortcut) {
-        setIsBlurred(true);
-        setTimeout(() => setIsBlurred(false), 500);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('keydown', handleKeyDown);
+    heroElement.addEventListener('contextmenu', preventContextMenu);
+    heroElement.addEventListener('dragstart', preventDragStart);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('keydown', handleKeyDown);
+      heroElement.removeEventListener('contextmenu', preventContextMenu);
+      heroElement.removeEventListener('dragstart', preventDragStart);
     };
-  }, [isPlaying]);
+  }, []);
 
   return (
     <div 
-      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl cursor-pointer select-none"
+      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl cursor-pointer select-none hero-protected-content"
       style={{ 
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none'
+        WebkitTouchCallout: 'none',
+        pointerEvents: 'auto'
       } as React.CSSProperties}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
@@ -439,12 +421,15 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       onTouchStart={handleMouseDown}
       onTouchEnd={handleMouseUp}
     >
-      {/* Screenshot Protection Overlay */}
-      {isBlurred && (
-        <div className="absolute inset-0 bg-black z-50 flex items-center justify-center">
-          <div className="text-white text-xl font-semibold">🔒 Content Protected</div>
+      {/* Watermark Overlay - subtle content protection */}
+      <div className="absolute inset-0 pointer-events-none z-40 opacity-5">
+        <div className="absolute top-1/4 left-1/4 text-white text-6xl font-bold rotate-[-30deg] select-none">
+          DIALIN
         </div>
-      )}
+        <div className="absolute bottom-1/4 right-1/4 text-white text-6xl font-bold rotate-[-30deg] select-none">
+          DIALIN
+        </div>
+      </div>
 
       {/* Web Page Iframe - highest priority */}
       {webUrl && (

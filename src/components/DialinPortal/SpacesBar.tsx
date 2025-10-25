@@ -269,103 +269,167 @@ export function SpacesBar({
 
         {/* Spaces Bar */}
         <div className="flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
-          {/* Breadcrumb Navigation or Spaces */}
-          <div className="flex items-center" style={{ gap: `${spacing}px` }}>
-            {breadcrumbs && breadcrumbs.length > 0 ? (
-              // Show breadcrumb navigation
-              <div className="flex items-center gap-4">
-                {breadcrumbs.map((crumb, index) => (
-                  <React.Fragment key={crumb.id}>
+          {/* Show spaces with breadcrumb flow when a space is selected */}
+          <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
+            {currentSpaceId && currentSpaceId !== 'lobby' ? (
+              // Breadcrumb mode: Show Lobby + Selected Space + Separator + Items
+              <>
+                {/* Lobby */}
+                {[lobbySpace].map((space) => {
+                  const isLobby = space.id === 'lobby';
+                  
+                  return (
                     <motion.div
+                      key={space.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex-shrink-0"
                     >
-                      <Button
-                        variant={index === breadcrumbs.length - 1 ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => {
-                          const space = allSpaces.find(s => s.id === crumb.id);
-                          if (space) handleSpaceClick(space);
-                        }}
-                        className={index === breadcrumbs.length - 1 ? "pointer-events-none" : ""}
+                      <div 
+                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
+                        onClick={() => handleSpaceClick(space)}
+                        onMouseDown={(e) => handleMouseDown(space, e)}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onContextMenu={(e) => handleContextMenu(space, e)}
                       >
-                        {crumb.name}
-                      </Button>
+                        <div 
+                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
+                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                        >
+                          <ImageFallback 
+                            src={space.thumb} 
+                            alt={space.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className={`${fontSize} font-medium text-center`}>{space.name}</span>
+                      </div>
                     </motion.div>
-                    {index < breadcrumbs.length - 1 && (
-                      <span className="text-muted-foreground">/</span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
+                  );
+                })}
+
+                {/* Selected Space */}
+                {allSpaces.filter(s => s.id === currentSpaceId).map((space) => {
+                  const isCurrentSpace = true;
+                  
+                  return (
+                    <motion.div
+                      key={space.id}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex-shrink-0"
+                    >
+                      <div 
+                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
+                        onMouseDown={(e) => handleMouseDown(space, e)}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onContextMenu={(e) => handleContextMenu(space, e)}
+                      >
+                        {/* Triangle arrow for selected space */}
+                        {isCurrentSpace && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                            <div 
+                              className="border-l-transparent border-r-transparent border-b-primary" 
+                              style={{ 
+                                width: 0, 
+                                height: 0, 
+                                borderLeftWidth: `${getScaled(8)}px`,
+                                borderRightWidth: `${getScaled(8)}px`,
+                                borderBottomWidth: `${getScaled(8)}px`,
+                                borderStyle: 'solid'
+                              }}
+                            ></div>
+                          </div>
+                        )}
+                        <div 
+                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
+                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                        >
+                          <ImageFallback 
+                            src={space.thumb} 
+                            alt={space.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className={`${fontSize} font-medium text-center text-primary`}>{space.name}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+                {/* Separator */}
+                <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
+
+                {/* Items will be shown via ItemsPeopleBar */}
+              </>
             ) : (
-              // Show space thumbnails
+              // Default mode: Show all spaces
               <>
                 {allSpaces.map((space, index) => {
-              const isLobby = space.id === 'lobby';
-              const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
-              
-              return (
-                <motion.div
-                  key={space.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="flex-shrink-0"
-                >
-                  <div 
-                    className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
-                    onClick={(e) => {
-                      if (wasLongPress) return;
-                      handleSpaceClick(space);
-                    }}
-                    onMouseDown={(e) => handleMouseDown(space, e)}
-                    onMouseUp={(e) => {
-                      handleMouseUp();
-                    }}
-                    onMouseLeave={handleMouseLeave}
-                    onContextMenu={(e) => handleContextMenu(space, e)}
-                    onTouchStart={(e) => {
-                      const touch = e.touches[0];
-                      handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
-                    }}
-                    onTouchEnd={(e) => {
-                      handleMouseUp();
-                    }}
-                  >
-                    {/* Triangle arrow for selected space */}
-                    {isCurrentSpace && (
-                      <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
-                        <div 
-                          className="border-l-transparent border-r-transparent border-b-primary" 
-                          style={{ 
-                            width: 0, 
-                            height: 0, 
-                            borderLeftWidth: `${getScaled(8)}px`,
-                            borderRightWidth: `${getScaled(8)}px`,
-                            borderBottomWidth: `${getScaled(8)}px`,
-                            borderStyle: 'solid'
-                          }}
-                        ></div>
-                      </div>
-                    )}
-                    <div 
-                      className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
-                      style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                  const isLobby = space.id === 'lobby';
+                  const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
+                  
+                  return (
+                    <motion.div
+                      key={space.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="flex-shrink-0"
                     >
-                      <ImageFallback 
-                        src={space.thumb} 
-                        alt={space.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <span className={`${fontSize} font-medium text-center ${
-                      isCurrentSpace ? 'text-primary' : ''
-                    }`}>{space.name}</span>
-                  </div>
-                </motion.div>
-              )})}
+                      <div 
+                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
+                        onClick={(e) => {
+                          if (wasLongPress) return;
+                          handleSpaceClick(space);
+                        }}
+                        onMouseDown={(e) => handleMouseDown(space, e)}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onContextMenu={(e) => handleContextMenu(space, e)}
+                        onTouchStart={(e) => {
+                          const touch = e.touches[0];
+                          handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+                        }}
+                        onTouchEnd={handleMouseUp}
+                      >
+                        {/* Triangle arrow for selected space */}
+                        {isCurrentSpace && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                            <div 
+                              className="border-l-transparent border-r-transparent border-b-primary" 
+                              style={{ 
+                                width: 0, 
+                                height: 0, 
+                                borderLeftWidth: `${getScaled(8)}px`,
+                                borderRightWidth: `${getScaled(8)}px`,
+                                borderBottomWidth: `${getScaled(8)}px`,
+                                borderStyle: 'solid'
+                              }}
+                            ></div>
+                          </div>
+                        )}
+                        <div 
+                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
+                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                        >
+                          <ImageFallback 
+                            src={space.thumb} 
+                            alt={space.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className={`${fontSize} font-medium text-center ${
+                          isCurrentSpace ? 'text-primary' : ''
+                        }`}>{space.name}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </>
             )}
           </div>

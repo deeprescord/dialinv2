@@ -383,7 +383,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
   return (
     <div 
-      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20 cursor-pointer select-none"
+      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl cursor-pointer select-none"
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}

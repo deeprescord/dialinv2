@@ -144,8 +144,22 @@ export function HomeView({
   // Handle item click from ItemsPeopleBar
   const handleItemClickFromBar = async (item: any) => {
     if (!item) return;
+
+    // Special case: web links should not be signed; use URL directly
+    if (item.file_type === 'web') {
+      const transformedItem = {
+        id: item.id,
+        title: item.original_name,
+        type: 'web',
+        url: item.storage_path,
+        thumb: item.thumbnail_path,
+        file_type: 'web',
+      };
+      onItemClick?.(transformedItem);
+      return;
+    }
     
-    // Generate signed URL for the item
+    // Generate signed URL for regular storage files
     const { data: signedData } = await supabase.storage
       .from('user-files')
       .createSignedUrl(item.storage_path, 3600);
@@ -193,7 +207,7 @@ export function HomeView({
       )}
 
       {/* Hero Header - Show ContentViewer for files (excluding web links), otherwise HeroHeaderVideo */}
-      {selectedItem?.storage_path && selectedItem?.type !== 'web' ? (
+      {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web') ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
@@ -232,7 +246,7 @@ export function HomeView({
            rotationSpeed={rotationSpeed}
            flipHorizontal={flipHorizontal}
            flipVertical={flipVertical}
-           webUrl={selectedItem?.type === 'web' ? selectedItem?.url : undefined}
+           webUrl={(selectedItem?.type === 'web' || selectedItem?.file_type === 'web') ? (selectedItem?.url || selectedItem?.storage_path) : undefined}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
          />

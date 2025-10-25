@@ -37,6 +37,7 @@ interface CombinedBottomBarProps {
   showCreateSpaceModal?: boolean;
   showAIChat?: boolean;
   onToggleAIChat?: () => void;
+  onToggleAddModal?: () => void;
   videoControlsState?: {
     isPlaying: boolean;
     currentTime: number;
@@ -79,6 +80,7 @@ export function CombinedBottomBar({
   showCreateSpaceModal,
   showAIChat,
   onToggleAIChat,
+  onToggleAddModal,
   videoControlsState,
   onVideoPlayPause,
   onVideoSeek,
@@ -163,6 +165,7 @@ export function CombinedBottomBar({
           onItemClick={onItemClick}
           onToggleAIChat={onToggleAIChat}
           onToggleChatWindow={onToggleChatWindow}
+          onToggleAddModal={onToggleAddModal}
           videoControlsState={videoControlsState}
           onVideoPlayPause={onVideoPlayPause}
           onVideoSeek={onVideoSeek}

@@ -43,6 +43,7 @@ interface SpacesBarProps {
   hideChatButton?: boolean;
   onToggleAIChat?: () => void;
   onToggleChatWindow?: () => void;
+  onToggleAddModal?: () => void;
   videoControlsState?: {
     isPlaying: boolean;
     currentTime: number;
@@ -86,6 +87,7 @@ export function SpacesBar({
   hideChatButton = false,
   onToggleAIChat,
   onToggleChatWindow,
+  onToggleAddModal,
   videoControlsState,
   onVideoPlayPause,
   onVideoSeek,
@@ -251,7 +253,7 @@ export function SpacesBar({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onCreateSpace}
+              onClick={onToggleAddModal || onCreateSpace}
               className="h-7 px-2 text-xs hover:bg-white/10"
             >
               <PlusCircle size={14} className="mr-1" />

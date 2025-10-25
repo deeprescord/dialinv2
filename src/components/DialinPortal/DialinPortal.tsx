@@ -340,7 +340,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
 
   // Handle space creation
-  const handleCreateSpace = async (name: string, coverUrl: string, parentId?: string) => {
+  const handleCreateSpace = async (name: string, _description?: string, parentId?: string) => {
     // Create space in database
     const newDbSpace = await createDbSpace(name, undefined, parentId);
     
@@ -348,7 +348,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
       const newSpace: Space = {
         id: newDbSpace.id,
         name: newDbSpace.name,
-        thumb: coverUrl,
+        thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
         parentId: newDbSpace.parent_id || undefined
       };
       setSpaces(prev => [...prev, newSpace]);

@@ -35,6 +35,7 @@ interface SpacesBarProps {
   onFlipHorizontalToggle?: (spaceId: string, flipped: boolean) => void;
   onFlipVerticalToggle?: (spaceId: string, flipped: boolean) => void;
   onSpaceClick?: (space: Space) => void;
+  onItemClick?: (item: any) => void;
   breadcrumbs?: Array<{ id: string; name: string }>;
   hideActionButtons?: boolean;
   hideNewButton?: boolean;
@@ -77,6 +78,7 @@ export function SpacesBar({
   onFlipHorizontalToggle,
   onFlipVerticalToggle,
   onSpaceClick,
+  onItemClick,
   breadcrumbs,
   hideActionButtons = false,
   hideNewButton = false,
@@ -413,7 +415,10 @@ export function SpacesBar({
                     transition={{ duration: 0.2, delay: idx * 0.05 }}
                     className="flex-shrink-0"
                   >
-                    <div className="flex flex-col items-center space-y-2 cursor-pointer group select-none">
+                    <div 
+                      className="flex flex-col items-center space-y-2 cursor-pointer group select-none"
+                      onClick={() => onItemClick?.(item)}
+                    >
                       <div 
                         className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
                         style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}

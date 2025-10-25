@@ -30,6 +30,7 @@ interface CombinedBottomBarProps {
   onFlipHorizontalToggle?: (spaceId: string, flipped: boolean) => void;
   onFlipVerticalToggle?: (spaceId: string, flipped: boolean) => void;
   onSpaceClick?: (space: Space) => void;
+  onItemClick?: (item: any) => void;
   className?: string;
   showChatWindow?: boolean;
   onToggleChatWindow?: () => void;
@@ -71,6 +72,7 @@ export function CombinedBottomBar({
   onFlipHorizontalToggle,
   onFlipVerticalToggle,
   onSpaceClick,
+  onItemClick,
   className = "",
   showChatWindow,
   onToggleChatWindow,
@@ -158,6 +160,7 @@ export function CombinedBottomBar({
           onFlipHorizontalToggle={onFlipHorizontalToggle}
           onFlipVerticalToggle={onFlipVerticalToggle}
           onSpaceClick={onSpaceClick}
+          onItemClick={onItemClick}
           onToggleAIChat={onToggleAIChat}
           onToggleChatWindow={onToggleChatWindow}
           videoControlsState={videoControlsState}

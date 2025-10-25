@@ -1050,6 +1050,7 @@ export default function SpacePage() {
             onFlipHorizontalToggle={handleFlipHorizontalToggle}
             onFlipVerticalToggle={handleFlipVerticalToggle}
             onSpaceClick={handleSpaceClick}
+            onItemClick={handleMediaClick}
             showChatWindow={showChatWindow}
             onToggleChatWindow={handleToggleChatWindow}
             showCreateSpaceModal={showCreateSpaceModal}

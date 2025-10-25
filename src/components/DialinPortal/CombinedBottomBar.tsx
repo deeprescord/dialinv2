@@ -14,6 +14,7 @@ import { FloatingActionButtons } from './FloatingActionButtons';
 interface CombinedBottomBarProps {
   spaces: Space[];
   currentSpaceId?: string;
+  breadcrumbs?: Array<{ id: string; name: string }>;
   onCreateSpace: () => void;
   onDeleteSpace: (spaceId: string) => void;
   onRenameSpace: (spaceId: string, newName: string) => void;
@@ -57,6 +58,7 @@ interface CombinedBottomBarProps {
 export function CombinedBottomBar({
   spaces,
   currentSpaceId,
+  breadcrumbs,
   onCreateSpace,
   onDeleteSpace,
   onRenameSpace,
@@ -146,6 +148,7 @@ export function CombinedBottomBar({
         <SpacesBar
           spaces={spaces}
           currentSpaceId={currentSpaceId}
+          breadcrumbs={breadcrumbs}
           onCreateSpace={onCreateSpace}
           onDeleteSpace={onDeleteSpace}
           onRenameSpace={onRenameSpace}

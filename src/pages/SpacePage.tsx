@@ -237,14 +237,22 @@ export default function SpacePage() {
     if (!spaceId || spaceId === 'lobby') {
       setNavigationPath(['lobby']);
     } else {
-      setNavigationPath(prev => {
-        if (prev.includes(spaceId)) {
-          return prev.slice(0, prev.indexOf(spaceId) + 1);
+      // Build the full path by tracing parent relationships
+      const buildPath = (targetSpaceId: string): string[] => {
+        const space = spaces.find(s => s.id === targetSpaceId);
+        if (!space) return ['lobby', targetSpaceId];
+        
+        if (!space.parentId || space.parentId === 'lobby') {
+          return ['lobby', targetSpaceId];
         }
-        return ['lobby', spaceId];
-      });
+        
+        // Recursively build path through parents
+        return [...buildPath(space.parentId), targetSpaceId];
+      };
+      
+      setNavigationPath(buildPath(spaceId));
     }
-  }, [spaceId]);
+  }, [spaceId, spaces]);
 
   // Filter content based on selected dials
   const filteredVideos = applyDials(
@@ -1052,6 +1060,10 @@ export default function SpacePage() {
           <CombinedBottomBar
             spaces={spaces}
             currentSpaceId={spaceId}
+            breadcrumbs={navigationPath.map(id => ({
+              id,
+              name: spaces.find(s => s.id === id)?.name || id
+            }))}
             onCreateSpace={() => setShowCreateSpaceModal(true)}
             onDeleteSpace={handleDeleteSpace}
             onRenameSpace={handleRenameSpace}

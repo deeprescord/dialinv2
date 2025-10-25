@@ -328,65 +328,35 @@ export function SpacesBar({
         <div className="flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
           {/* Show spaces with breadcrumb flow when a space is selected */}
           <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
-            {currentSpaceId && currentSpaceId !== 'lobby' ? (
-              // Breadcrumb mode: Show Lobby + Selected Space + Separator + Items
+            {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
+              // Breadcrumb mode: Show full path (Lobby > Space > Subspace) + Separator + Items
               <>
-                {/* Lobby */}
-                {[lobbySpace].map((space) => {
-                  const isLobby = space.id === 'lobby';
+                {/* Show all breadcrumb spaces */}
+                {breadcrumbs.map((breadcrumb, idx) => {
+                  const space = allSpaces.find(s => s.id === breadcrumb.id) || { 
+                    id: breadcrumb.id, 
+                    name: breadcrumb.name, 
+                    thumb: '/media/lobby-poster.png' 
+                  };
+                  const isCurrentSpace = idx === breadcrumbs.length - 1;
                   
                   return (
                     <motion.div
                       key={space.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.2, delay: idx * 0.05 }}
                       className="flex-shrink-0"
                     >
                       <div 
                         className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
                         onClick={() => handleSpaceClick(space)}
-                        onMouseDown={(e) => handleMouseDown(space, e)}
+                        onMouseDown={(e) => !isCurrentSpace && handleMouseDown(space, e)}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
                         onContextMenu={(e) => handleContextMenu(space, e)}
                       >
-                        <div 
-                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
-                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-                        >
-                          <ImageFallback 
-                            src={space.thumb} 
-                            alt={space.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className={`${fontSize} font-medium text-center`}>{space.name}</span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-
-                {/* Selected Space */}
-                {allSpaces.filter(s => s.id === currentSpaceId).map((space) => {
-                  const isCurrentSpace = true;
-                  
-                  return (
-                    <motion.div
-                      key={space.id}
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex-shrink-0"
-                    >
-                      <div 
-                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
-                        onMouseDown={(e) => handleMouseDown(space, e)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                        onContextMenu={(e) => handleContextMenu(space, e)}
-                      >
-                        {/* Triangle arrow for selected space */}
+                        {/* Triangle arrow for current/selected space */}
                         {isCurrentSpace && (
                           <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
                             <div 
@@ -412,7 +382,9 @@ export function SpacesBar({
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <span className={`${fontSize} font-medium text-center text-primary`}>{space.name}</span>
+                        <span className={`${fontSize} font-medium text-center ${isCurrentSpace ? 'text-primary' : ''}`}>
+                          {space.name}
+                        </span>
                       </div>
                     </motion.div>
                   );

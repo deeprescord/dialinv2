@@ -195,7 +195,7 @@ export function SpacesBar({
         const pathToUse = item.thumbnail_path || item.storage_path;
         if (pathToUse) {
           const { data } = await supabase.storage
-            .from('files')
+            .from('user-files')
             .createSignedUrl(pathToUse, 3600);
           if (data?.signedUrl) {
             urls[item.id] = data.signedUrl;

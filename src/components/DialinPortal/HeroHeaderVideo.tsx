@@ -102,19 +102,22 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Set volume and unmute before playing
-      video.volume = 0.7;
-      video.muted = false;
-      setIsVideoMuted(false);
-      setVideoVolume(0.7);
-      // Autoplay video when loaded
-      video.play().catch(err => {
-        console.log('Autoplay with sound prevented, trying muted:', err);
-        // If autoplay with sound fails, try muted
-        video.muted = true;
-        setIsVideoMuted(true);
-        video.play().catch(e => console.log('Muted autoplay also prevented:', e));
-      });
+      // Only autoplay if this is the active video (showVideo is true)
+      if (showVideo) {
+        // Set volume and unmute before playing
+        video.volume = 0.7;
+        video.muted = false;
+        setIsVideoMuted(false);
+        setVideoVolume(0.7);
+        // Autoplay video when loaded
+        video.play().catch(err => {
+          console.log('Autoplay with sound prevented, trying muted:', err);
+          // If autoplay with sound fails, try muted
+          video.muted = true;
+          setIsVideoMuted(true);
+          video.play().catch(e => console.log('Muted autoplay also prevented:', e));
+        });
+      }
     };
 
     const handleError = () => {
@@ -304,19 +307,22 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Set volume and unmute before playing
-      bgVideo.volume = 0.7;
-      bgVideo.muted = false;
-      setIsVideoMuted(false);
-      setVideoVolume(0.7);
-      // Autoplay background video when loaded
-      bgVideo.play().catch(err => {
-        console.log('Background autoplay with sound prevented, trying muted:', err);
-        // If autoplay with sound fails, try muted
-        bgVideo.muted = true;
-        setIsVideoMuted(true);
-        bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
-      });
+      // Only autoplay if this is the active video (showVideo is false, meaning background is active)
+      if (!showVideo) {
+        // Set volume and unmute before playing
+        bgVideo.volume = 0.7;
+        bgVideo.muted = false;
+        setIsVideoMuted(false);
+        setVideoVolume(0.7);
+        // Autoplay background video when loaded
+        bgVideo.play().catch(err => {
+          console.log('Background autoplay with sound prevented, trying muted:', err);
+          // If autoplay with sound fails, try muted
+          bgVideo.muted = true;
+          setIsVideoMuted(true);
+          bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
+        });
+      }
     };
 
     const handleError = () => {
@@ -355,7 +361,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       bgVideo.removeEventListener('play', handlePlay);
       bgVideo.removeEventListener('pause', handlePause);
     };
-  }, [isBackgroundVideo, backgroundImage]);
+  }, [isBackgroundVideo, backgroundImage, showVideo]);
 
   const isSkyboxVideo = show360 && getIsVideo(skyboxSrc || backgroundImage);
   const hasVideoPlaying = (

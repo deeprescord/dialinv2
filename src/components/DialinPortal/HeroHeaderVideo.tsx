@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, Suspense, useImperativeHandle } from 'react';
 import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HeroHeaderVideoProps {
   videoSrc?: string;
@@ -69,6 +70,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [isVideoMuted, setIsVideoMuted] = useState(true);
   const [lastUnmutedVolume, setLastUnmutedVolume] = useState(1); // Track last volume before mute
   const [skyboxSeekTo, setSkyboxSeekTo] = useState<number | null>(null);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [proxyAttempted, setProxyAttempted] = useState(false);
+  const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
+  const [proxyError, setProxyError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -334,19 +339,30 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     (isSkyboxVideo && !videoError)
   );
 
-  // Notify parent of video state changes
+  // Auto-fallback to proxy embed if direct iframe doesn't load
   useEffect(() => {
-    if (onVideoStateChange) {
-      onVideoStateChange({
-        isPlaying,
-        currentTime,
-        duration,
-        volume: videoVolume,
-        isMuted: isVideoMuted,
-        hasVideo: hasVideoPlaying
-      });
-    }
-  }, [isPlaying, currentTime, duration, videoVolume, isVideoMuted, hasVideoPlaying, onVideoStateChange]);
+    setIframeLoaded(false);
+    setProxyAttempted(false);
+    setProxiedHtml(null);
+    setProxyError(null);
+    if (!webUrl) return;
+    const t = setTimeout(async () => {
+      if (proxyAttempted || iframeLoaded) return;
+      try {
+        setProxyAttempted(true);
+        const { data, error } = await supabase.functions.invoke('embed-proxy', {
+          body: { url: webUrl }
+        });
+        if (error) throw error;
+        const html = typeof data === 'string' ? data : (data?.html || '');
+        if (html) setProxiedHtml(html);
+      } catch (e) {
+        setProxyError(e instanceof Error ? e.message : 'Proxy failed');
+      }
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [webUrl]);
+
   return (
     <div 
       className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20 cursor-pointer select-none"
@@ -359,19 +375,42 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {/* Web Page Iframe - highest priority */}
       {webUrl && (
         <div className="absolute inset-0 w-full h-full z-20">
-          <iframe
-            src={webUrl}
-            className="w-full h-full border-0"
-            title="Web Content"
-            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-          />
-          {/* Web indicator */}
-          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none z-30">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-              Web View
+          {proxiedHtml ? (
+            <iframe
+              srcDoc={proxiedHtml}
+              className="w-full h-full border-0"
+              title="Web Content (proxied)"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+            />
+          ) : (
+            <iframe
+              src={webUrl}
+              className="w-full h-full border-0"
+              title="Web Content"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+              onLoad={() => setIframeLoaded(true)}
+            />
+          )}
+          {/* Web indicator + actions */}
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-30">
+            <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 ${proxiedHtml ? 'bg-emerald-400' : 'bg-blue-500'} rounded-full animate-pulse`} />
+                {proxiedHtml ? 'Web View (proxied)' : 'Web View'}
+              </div>
             </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); window.open(webUrl, '_blank', 'noopener'); }}
+              className="px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs hover:opacity-90"
+            >
+              Open
+            </button>
           </div>
+          {proxyError && (
+            <div className="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+              {proxyError}
+            </div>
+          )}
         </div>
       )}
 

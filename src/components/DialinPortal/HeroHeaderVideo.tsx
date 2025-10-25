@@ -66,9 +66,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [videoVolume, setVideoVolume] = useState(1);
-  const [isVideoMuted, setIsVideoMuted] = useState(true);
-  const [lastUnmutedVolume, setLastUnmutedVolume] = useState(1); // Track last volume before mute
+  const [videoVolume, setVideoVolume] = useState(0.7);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [lastUnmutedVolume, setLastUnmutedVolume] = useState(0.7); // Track last volume before mute
   const [skyboxSeekTo, setSkyboxSeekTo] = useState<number | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [proxyAttempted, setProxyAttempted] = useState(false);
@@ -102,8 +102,19 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
+      // Set volume and unmute before playing
+      video.volume = 0.7;
+      video.muted = false;
+      setIsVideoMuted(false);
+      setVideoVolume(0.7);
       // Autoplay video when loaded
-      video.play().catch(err => console.log('Autoplay prevented:', err));
+      video.play().catch(err => {
+        console.log('Autoplay with sound prevented, trying muted:', err);
+        // If autoplay with sound fails, try muted
+        video.muted = true;
+        setIsVideoMuted(true);
+        video.play().catch(e => console.log('Muted autoplay also prevented:', e));
+      });
     };
 
     const handleError = () => {
@@ -293,8 +304,19 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
+      // Set volume and unmute before playing
+      bgVideo.volume = 0.7;
+      bgVideo.muted = false;
+      setIsVideoMuted(false);
+      setVideoVolume(0.7);
       // Autoplay background video when loaded
-      bgVideo.play().catch(err => console.log('Autoplay prevented:', err));
+      bgVideo.play().catch(err => {
+        console.log('Background autoplay with sound prevented, trying muted:', err);
+        // If autoplay with sound fails, try muted
+        bgVideo.muted = true;
+        setIsVideoMuted(true);
+        bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
+      });
     };
 
     const handleError = () => {

@@ -56,6 +56,7 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
   // Get icon for file type
   const getFileIcon = (fileType: string) => {
     switch (fileType) {
+      case 'space': return <LayoutGrid className="w-12 h-12 text-primary" />;
       case 'image': return <ImageIcon className="w-12 h-12 text-primary" />;
       case 'video': return <Video className="w-12 h-12 text-primary" />;
       case 'audio': return <Music className="w-12 h-12 text-primary" />;
@@ -165,6 +166,12 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
   // Handle item click with proper transformation
   const handleItemClick = async (item: any) => {
     if (!onItemClick) return;
+    
+    // If it's a space, navigate to it instead of showing content
+    if (item.is_space) {
+      window.location.href = `/space/${item.id}`;
+      return;
+    }
     
     // Generate signed URL for the item
     const { data: signedData } = await supabase.storage

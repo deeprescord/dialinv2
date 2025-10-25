@@ -402,31 +402,23 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           </div>
           
           {/* Zoom Controls */}
-          <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-lg p-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleZoomOut}
-              disabled={zoom <= 0.5}
-              className="text-white hover:bg-white/20"
-            >
-              <ZoomOut className="w-4 h-4" />
-            </Button>
+          <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 min-w-[280px]">
+            <ZoomOut className="w-4 h-4 text-white flex-shrink-0" />
+            <Slider
+              value={[zoom]}
+              onValueChange={(values) => setZoom(values[0])}
+              min={0.5}
+              max={5}
+              step={0.1}
+              className="flex-1"
+            />
+            <ZoomIn className="w-4 h-4 text-white flex-shrink-0" />
             <button
               onClick={handleResetZoom}
-              className="px-3 py-1 text-white text-sm hover:bg-white/20 rounded transition-colors"
+              className="px-3 py-1 text-white text-sm hover:bg-white/20 rounded transition-colors flex-shrink-0"
             >
               {Math.round(zoom * 100)}%
             </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleZoomIn}
-              disabled={zoom >= 5}
-              className="text-white hover:bg-white/20"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
           </div>
         </>
       )}

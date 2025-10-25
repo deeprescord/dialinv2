@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
-import { Package, Users } from 'lucide-react';
+import { Package, Users, FileText, Music, Video, Image as ImageIcon } from 'lucide-react';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
@@ -13,6 +13,8 @@ import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { VideoControls } from './VideoControls';
+import { useSpaceItems } from '@/hooks/useSpaceItems';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -103,6 +105,10 @@ export function SpacesBar({
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
+  const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+
+  // Fetch items for selected space
+  const { items: spaceItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -179,6 +185,36 @@ export function SpacesBar({
         navigate(`/space/${space.id}`);
       }
     }
+  };
+
+  // Generate signed URLs for item thumbnails
+  React.useEffect(() => {
+    const generateUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const item of spaceItems) {
+        const pathToUse = item.thumbnail_path || item.storage_path;
+        if (pathToUse) {
+          const { data } = await supabase.storage
+            .from('files')
+            .createSignedUrl(pathToUse, 3600);
+          if (data?.signedUrl) {
+            urls[item.id] = data.signedUrl;
+          }
+        }
+      }
+      setThumbUrls(urls);
+    };
+
+    if (spaceItems.length > 0) {
+      generateUrls();
+    }
+  }, [spaceItems]);
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image')) return <ImageIcon size={iconSize * 0.4} />;
+    if (fileType.startsWith('video')) return <Video size={iconSize * 0.4} />;
+    if (fileType.startsWith('audio')) return <Music size={iconSize * 0.4} />;
+    return <FileText size={iconSize * 0.4} />;
   };
 
   return (
@@ -364,7 +400,38 @@ export function SpacesBar({
                 {/* Separator */}
                 <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
 
-                {/* Items will be shown via ItemsPeopleBar */}
+                {/* Items inline */}
+                {spaceItems.map((item, idx) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: idx * 0.05 }}
+                    className="flex-shrink-0"
+                  >
+                    <div className="flex flex-col items-center space-y-2 cursor-pointer group select-none">
+                      <div 
+                        className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
+                        style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                      >
+                        {thumbUrls[item.id] ? (
+                          <ImageFallback 
+                            src={thumbUrls[item.id]} 
+                            alt={item.original_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-background/60 flex items-center justify-center">
+                            {getFileIcon(item.file_type)}
+                          </div>
+                        )}
+                      </div>
+                      <span className={`${fontSize} text-xs text-center truncate max-w-[${thumbWidth}px]`}>
+                        {item.original_name}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
               </>
             ) : (
               // Default mode: Show all spaces

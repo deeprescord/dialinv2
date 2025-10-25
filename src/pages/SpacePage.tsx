@@ -171,15 +171,6 @@ export default function SpacePage() {
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
 
-  // Auto-show items bar when a space is selected (not lobby)
-  useEffect(() => {
-    if (spaceId && spaceId !== 'lobby') {
-      setShowItemsBar(true);
-      setItemsPeopleView('items');
-    } else {
-      setShowItemsBar(false);
-    }
-  }, [spaceId]);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [pendingFile, setPendingFile] = useState<{
     file: { id: string; original_name: string; file_type: string };

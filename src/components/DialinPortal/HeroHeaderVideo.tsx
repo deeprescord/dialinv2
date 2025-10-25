@@ -346,8 +346,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     setProxiedHtml(null);
     setProxyError(null);
     if (!webUrl) return;
+    
+    console.log('Loading web URL:', webUrl);
+    
     const t = setTimeout(async () => {
       if (proxyAttempted || iframeLoaded) return;
+      console.log('Direct iframe timed out, trying proxy...');
       try {
         setProxyAttempted(true);
         const { data, error } = await supabase.functions.invoke('embed-proxy', {
@@ -355,8 +359,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         });
         if (error) throw error;
         const html = typeof data === 'string' ? data : (data?.html || '');
+        console.log('Proxy response received, html length:', html?.length);
         if (html) setProxiedHtml(html);
       } catch (e) {
+        console.error('Proxy error:', e);
         setProxyError(e instanceof Error ? e.message : 'Proxy failed');
       }
     }, 2500);
@@ -374,7 +380,17 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     >
       {/* Web Page Iframe - highest priority */}
       {webUrl && (
-        <div className="absolute inset-0 w-full h-full z-20">
+        <div className="absolute inset-0 w-full h-full z-20 bg-black">
+          {/* Loading indicator */}
+          {!iframeLoaded && !proxiedHtml && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-white border-r-transparent mb-4"></div>
+                <p className="text-white text-sm">Loading webpage...</p>
+              </div>
+            </div>
+          )}
+          
           {proxiedHtml ? (
             <iframe
               srcDoc={proxiedHtml}
@@ -388,15 +404,22 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               className="w-full h-full border-0"
               title="Web Content"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-              onLoad={() => setIframeLoaded(true)}
+              onLoad={() => {
+                console.log('Iframe loaded successfully');
+                setIframeLoaded(true);
+              }}
+              onError={(e) => {
+                console.error('Iframe error:', e);
+              }}
             />
           )}
+          
           {/* Web indicator + actions */}
           <div className="absolute top-4 right-4 flex items-center gap-2 z-30">
             <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 ${proxiedHtml ? 'bg-emerald-400' : 'bg-blue-500'} rounded-full animate-pulse`} />
-                {proxiedHtml ? 'Web View (proxied)' : 'Web View'}
+                {proxiedHtml ? 'Web (proxied)' : 'Web'}
               </div>
             </div>
             <button
@@ -406,8 +429,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               Open
             </button>
           </div>
+          
           {proxyError && (
-            <div className="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+            <div className="absolute bottom-4 right-4 bg-red-500/80 text-white text-xs px-2 py-1 rounded-md">
               {proxyError}
             </div>
           )}

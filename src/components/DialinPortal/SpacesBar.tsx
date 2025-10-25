@@ -260,6 +260,8 @@ export function SpacesBar({
             <Button
                variant="ghost"
                size="sm"
+               onMouseDown={(e) => e.stopPropagation()}
+               onTouchStart={(e) => e.stopPropagation()}
                onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
                className="h-7 px-2 text-xs hover:bg-white/10"
             >
@@ -271,6 +273,8 @@ export function SpacesBar({
             <Button
                variant="ghost"
                size="sm"
+               onMouseDown={(e) => e.stopPropagation()}
+               onTouchStart={(e) => e.stopPropagation()}
                onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
                className="h-7 px-2 text-xs hover:bg-white/10"
             >

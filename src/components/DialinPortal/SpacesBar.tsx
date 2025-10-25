@@ -53,6 +53,7 @@ interface SpacesBarProps {
   onVideoVolumeChange?: (value: number) => void;
   onVideoMuteToggle?: () => void;
   onToggleItemsBar?: () => void;
+  onTogglePeopleBar?: () => void;
 }
 
 export function SpacesBar({
@@ -86,7 +87,8 @@ export function SpacesBar({
   onVideoSeek,
   onVideoVolumeChange,
   onVideoMuteToggle,
-  onToggleItemsBar
+  onToggleItemsBar,
+  onTogglePeopleBar
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const scale = 87; // Fixed scale percentage (reduced by 1/3 from 130)
@@ -101,7 +103,6 @@ export function SpacesBar({
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
-  const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people' | null>(null);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -234,8 +235,8 @@ export function SpacesBar({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setItemsPeopleView(itemsPeopleView === 'people' ? null : 'people')}
-              className={`h-7 px-2 text-xs hover:bg-white/10 ${itemsPeopleView === 'people' ? 'bg-white/10' : ''}`}
+              onClick={() => onTogglePeopleBar?.()}
+              className="h-7 px-2 text-xs hover:bg-white/10"
             >
               <Users size={14} className="mr-1" />
               People

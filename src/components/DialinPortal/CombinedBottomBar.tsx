@@ -49,6 +49,7 @@ interface CombinedBottomBarProps {
   onVideoVolumeChange?: (value: number) => void;
   onVideoMuteToggle?: () => void;
   onToggleItemsBar?: () => void;
+  onTogglePeopleBar?: () => void;
 }
 
 export function CombinedBottomBar({
@@ -81,7 +82,8 @@ export function CombinedBottomBar({
   onVideoSeek,
   onVideoVolumeChange,
   onVideoMuteToggle,
-  onToggleItemsBar
+  onToggleItemsBar,
+  onTogglePeopleBar
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -164,6 +166,7 @@ export function CombinedBottomBar({
           onVideoVolumeChange={onVideoVolumeChange}
           onVideoMuteToggle={onVideoMuteToggle}
           onToggleItemsBar={onToggleItemsBar}
+          onTogglePeopleBar={onTogglePeopleBar}
         />
       </div>
     </>

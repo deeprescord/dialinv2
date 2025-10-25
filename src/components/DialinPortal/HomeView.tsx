@@ -55,6 +55,7 @@ interface HomeViewProps {
   onItemClick?: (item: any) => void;
   showItemsBar?: boolean;
   onCloseItemsBar?: () => void;
+  itemsPeopleView?: 'items' | 'people';
 }
 
 export function HomeView({ 
@@ -88,7 +89,8 @@ export function HomeView({
   spaceId,
   onItemClick,
   showItemsBar = false,
-  onCloseItemsBar
+  onCloseItemsBar,
+  itemsPeopleView = 'items'
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -159,7 +161,7 @@ export function HomeView({
       {/* Items Bar - Fixed above space bar, floating over hero */}
       {!isLobby && showItemsBar && (
         <ItemsPeopleBar
-          view="items"
+          view={itemsPeopleView}
           spaceId={spaceId}
           onItemClick={handleItemClickFromBar}
           onClose={onCloseItemsBar}

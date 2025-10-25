@@ -408,41 +408,105 @@ export function SpacesBar({
                 {/* Separator */}
                 <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
 
-                {/* Items inline */}
-                {spaceItems.map((item, idx) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: idx * 0.05 }}
-                    className="flex-shrink-0"
-                  >
-                    <div 
-                      className="flex flex-col items-center space-y-2 cursor-pointer group select-none"
-                      onClick={() => onItemClick?.(item)}
+                {/* Items inline (including child spaces) */}
+                {spaceItems.map((item, idx) => {
+                  const isSpace = item.is_space;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.05 }}
+                      className="flex-shrink-0"
                     >
                       <div 
-                        className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
-                        style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none"
+                        onClick={() => {
+                          if (isSpace) {
+                            // Navigate to the subspace
+                            navigate(`/space/${item.id}`);
+                          } else if (onItemClick) {
+                            // Handle regular item click
+                            onItemClick(item);
+                          }
+                        }}
+                        onMouseDown={(e) => {
+                          if (isSpace) {
+                            // Show context menu for spaces
+                            setWasLongPress(false);
+                            const timer = setTimeout(() => {
+                              setWasLongPress(true);
+                              const space: Space = {
+                                id: item.id,
+                                name: item.original_name,
+                                thumb: thumbUrls[item.id] || '/placeholder.svg'
+                              };
+                              setContextMenu({
+                                space,
+                                position: { x: e.clientX, y: e.clientY }
+                              });
+                            }, 500);
+                            setPressTimer(timer);
+                          } else {
+                            // Show dial popup for items
+                            const timer = setTimeout(() => {
+                              setDialPopupItem({
+                                id: item.id,
+                                title: item.original_name,
+                                thumb: thumbUrls[item.id],
+                                type: item.file_type
+                              });
+                              setShowDialPopup(true);
+                            }, 500);
+                            setPressTimer(timer);
+                          }
+                        }}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchStart={(e) => {
+                          if (isSpace) {
+                            const touch = e.touches[0];
+                            setWasLongPress(false);
+                            const timer = setTimeout(() => {
+                              setWasLongPress(true);
+                              const space: Space = {
+                                id: item.id,
+                                name: item.original_name,
+                                thumb: thumbUrls[item.id] || '/placeholder.svg'
+                              };
+                              setContextMenu({
+                                space,
+                                position: { x: touch.clientX, y: touch.clientY }
+                              });
+                            }, 500);
+                            setPressTimer(timer);
+                          }
+                        }}
+                        onTouchEnd={handleMouseUp}
                       >
-                        {thumbUrls[item.id] ? (
-                          <ImageFallback 
-                            src={thumbUrls[item.id]} 
-                            alt={item.original_name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-background/60 flex items-center justify-center">
-                            {getFileIcon(item.file_type)}
-                          </div>
-                        )}
+                        <div 
+                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
+                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                        >
+                          {thumbUrls[item.id] ? (
+                            <ImageFallback 
+                              src={thumbUrls[item.id]} 
+                              alt={item.original_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-background/60 flex items-center justify-center">
+                              {getFileIcon(item.file_type)}
+                            </div>
+                          )}
+                        </div>
+                        <span className={`${fontSize} text-xs text-center truncate max-w-[${thumbWidth}px]`}>
+                          {item.original_name}
+                        </span>
                       </div>
-                      <span className={`${fontSize} text-xs text-center truncate max-w-[${thumbWidth}px]`}>
-                        {item.original_name}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </>
             ) : (
               // Default mode: Show all spaces

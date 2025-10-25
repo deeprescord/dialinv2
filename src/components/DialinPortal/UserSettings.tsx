@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Upload, Camera, Video, User, X, Plus, Trash2, Check } from 'lucide-react';
 import { useProfile, CustomField } from '@/hooks/useProfile';
@@ -144,18 +144,34 @@ export const UserSettings: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Profile Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="flex items-center justify-center p-4 min-h-screen">
+      <div className="w-full max-w-2xl h-full glass-card border border-white/10 rounded-xl overflow-hidden backdrop-blur-xl bg-black/40">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">Profile Settings</h3>
+              <p className="text-xs text-white/60">Manage your profile information</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto p-6 space-y-6" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
           {/* Profile Media Upload */}
           <div className="space-y-4">
-            <Label>Profile Picture/Video</Label>
+            <Label className="text-white">Profile Picture/Video</Label>
             <div className="flex items-center gap-4">
               {profile?.profile_media_url ? (
                 <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted">
@@ -185,10 +201,10 @@ export const UserSettings: React.FC = () => {
               <div className="flex gap-2">
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   disabled={uploading}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10"
                 >
                   <Upload className="w-4 h-4" />
                   {uploading ? 'Uploading...' : 'Upload'}
@@ -199,7 +215,7 @@ export const UserSettings: React.FC = () => {
                     checked={formData.profile_media_public}
                     onCheckedChange={(checked) => handleInputChange('profile_media_public', checked)}
                   />
-                  <Label className="text-sm">Public</Label>
+                  <Label className="text-sm text-white">Public</Label>
                 </div>
               </div>
             </div>
@@ -216,7 +232,7 @@ export const UserSettings: React.FC = () => {
           {/* Previous Profile Pictures Carousel */}
           {mediaHistory.length > 0 && (
             <div className="space-y-4">
-              <Label>Previous Profile Pictures</Label>
+              <Label className="text-white">Previous Profile Pictures</Label>
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2">
                   {mediaHistory.map((media) => (
@@ -269,21 +285,21 @@ export const UserSettings: React.FC = () => {
               { key: 'address', label: 'Address', type: 'text' },
             ].map(({ key, label, type }) => (
               <div key={key} className="grid grid-cols-1 gap-2">
-                <Label htmlFor={key}>{label}</Label>
+                <Label htmlFor={key} className="text-white">{label}</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id={key}
                     type={type}
                     value={formData[key as keyof typeof formData] as string}
                     onChange={(e) => handleInputChange(key, e.target.value)}
-                    className="flex-1"
+                    className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-blue-500"
                   />
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={formData[`${key}_public` as keyof typeof formData] as boolean}
                       onCheckedChange={(checked) => handleInputChange(`${key}_public`, checked)}
                     />
-                    <Label className="text-sm">Public</Label>
+                    <Label className="text-sm text-white">Public</Label>
                   </div>
                 </div>
               </div>
@@ -291,13 +307,13 @@ export const UserSettings: React.FC = () => {
             
             {/* Bio Field */}
             <div className="grid grid-cols-1 gap-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio" className="text-white">Bio</Label>
               <div className="flex items-start gap-2">
                 <Textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange('bio', e.target.value)}
-                  className="flex-1"
+                  className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-blue-500 resize-none"
                   rows={3}
                 />
                 <div className="flex items-center gap-2 mt-2">
@@ -305,21 +321,21 @@ export const UserSettings: React.FC = () => {
                     checked={formData.bio_public}
                     onCheckedChange={(checked) => handleInputChange('bio_public', checked)}
                   />
-                  <Label className="text-sm">Public</Label>
+                  <Label className="text-sm text-white">Public</Label>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Custom Fields Section */}
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 pt-4 border-t border-white/10">
             <div className="flex justify-between items-center">
-              <Label className="text-base font-semibold">Custom Fields</Label>
+              <Label className="text-base font-semibold text-white">Custom Fields</Label>
               <Button
                 onClick={addCustomField}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10"
               >
                 <Plus className="w-4 h-4" />
                 Add Field
@@ -327,22 +343,23 @@ export const UserSettings: React.FC = () => {
             </div>
 
             {customFields.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No custom fields yet. Click "Add Field" to create one.</p>
+              <p className="text-sm text-white/60">No custom fields yet. Click "Add Field" to create one.</p>
             ) : (
               <div className="space-y-3">
                 {customFields.map((field) => (
-                  <div key={field.id} className="flex items-start gap-2 p-3 border rounded-lg">
+                  <div key={field.id} className="flex items-start gap-2 p-3 border border-white/10 rounded-lg bg-white/5">
                     <div className="flex-1 space-y-2">
                       <Input
                         placeholder="Field label"
                         value={field.label}
                         onChange={(e) => updateCustomField(field.id, { label: e.target.value })}
-                        className="font-medium"
+                        className="font-medium bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-blue-500"
                       />
                       <Input
                         placeholder="Field value"
                         value={field.value}
                         onChange={(e) => updateCustomField(field.id, { value: e.target.value })}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-blue-500"
                       />
                     </div>
                     <div className="flex flex-col items-center gap-2 pt-1">
@@ -351,13 +368,13 @@ export const UserSettings: React.FC = () => {
                           checked={field.isPublic}
                           onCheckedChange={(checked) => updateCustomField(field.id, { isPublic: checked })}
                         />
-                        <Label className="text-sm">Public</Label>
+                        <Label className="text-sm text-white">Public</Label>
                       </div>
                       <Button
                         onClick={() => removeCustomField(field.id)}
                         variant="ghost"
                         size="sm"
-                        className="text-destructive"
+                        className="text-red-400 hover:text-red-300 hover:bg-white/10"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -368,18 +385,21 @@ export const UserSettings: React.FC = () => {
             )}
           </div>
 
-          <Button onClick={handleSave} className="w-full">
+          <Button 
+            onClick={handleSave} 
+            className="w-full bg-blue-500 hover:bg-blue-600"
+          >
             Save Settings
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Video Trimmer Modal */}
       {showVideoTrimmer && pendingVideoFile && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="glass-card border border-white/10 rounded-xl backdrop-blur-xl bg-black/40 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Trim Video</h2>
+              <h2 className="text-xl font-semibold text-white">Trim Video</h2>
               <Button
                 onClick={() => {
                   setShowVideoTrimmer(false);

@@ -1,19 +1,22 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Upload, Camera, Video, User, X, Plus, Trash2, Check } from 'lucide-react';
 import { useProfile, CustomField } from '@/hooks/useProfile';
 import { VideoTrimmer } from './VideoTrimmer';
 import { toast } from 'sonner';
 
-export const UserSettings: React.FC = () => {
-  const navigate = useNavigate();
+interface UserSettingsProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) => {
   const { profile, loading, uploading, updateProfile, uploadProfileMedia, mediaHistory, selectMediaFromHistory } = useProfile();
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
@@ -33,6 +36,23 @@ export const UserSettings: React.FC = () => {
   const [showVideoTrimmer, setShowVideoTrimmer] = useState(false);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ESC key handling
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
 
   React.useEffect(() => {
     if (profile) {
@@ -64,8 +84,8 @@ export const UserSettings: React.FC = () => {
     });
     if (success) {
       toast.success('Settings saved successfully');
-      // Navigate back to home after successful save
-      setTimeout(() => navigate('/'), 1000);
+      // Close the modal after successful save
+      setTimeout(() => onClose(), 1000);
     }
   };
 
@@ -144,31 +164,40 @@ export const UserSettings: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center p-4 min-h-screen">
-      <div className="w-full max-w-2xl h-full glass-card border border-white/10 rounded-xl overflow-hidden backdrop-blur-xl bg-black/40">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Profile Settings</h3>
-              <p className="text-xs text-white/60">Manage your profile information</p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+            className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full"
           >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+            <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden backdrop-blur-xl bg-black/40 flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Profile Settings</h3>
+                    <p className="text-xs text-white/60">Manage your profile information</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto p-6 space-y-6" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Profile Media Upload */}
           <div className="space-y-4">
             <Label className="text-white">Profile Picture/Video</Label>
@@ -393,36 +422,39 @@ export const UserSettings: React.FC = () => {
           </Button>
         </div>
       </div>
+    </motion.div>
 
-      {/* Video Trimmer Modal */}
-      {showVideoTrimmer && pendingVideoFile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="glass-card border border-white/10 rounded-xl backdrop-blur-xl bg-black/40 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Trim Video</h2>
-              <Button
-                onClick={() => {
-                  setShowVideoTrimmer(false);
-                  setPendingVideoFile(null);
-                }}
-                variant="ghost"
-                size="sm"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <VideoTrimmer
-              videoFile={pendingVideoFile}
-              onTrimmed={handleVideoTrimmed}
-              onCancel={() => {
+    {/* Video Trimmer Modal */}
+    {showVideoTrimmer && pendingVideoFile && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="glass-card border border-white/10 rounded-xl backdrop-blur-xl bg-black/40 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Trim Video</h2>
+            <Button
+              onClick={() => {
                 setShowVideoTrimmer(false);
                 setPendingVideoFile(null);
               }}
-            />
+              variant="ghost"
+              size="sm"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
+          
+          <VideoTrimmer
+            videoFile={pendingVideoFile}
+            onTrimmed={handleVideoTrimmed}
+            onCancel={() => {
+              setShowVideoTrimmer(false);
+              setPendingVideoFile(null);
+            }}
+          />
         </div>
-      )}
-    </div>
+      </div>
+    )}
+  </div>
+  )}
+</AnimatePresence>
   );
 };

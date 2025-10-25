@@ -66,9 +66,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
-        <UserSettings />
-      </div>
+      <UserSettings isOpen={true} onClose={() => navigate('/')} />
     </div>
   );
 };

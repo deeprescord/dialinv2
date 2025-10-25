@@ -10,6 +10,7 @@ import { LogIn, LogOut } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthModal } from './AuthModal';
+import { UserSettings } from './UserSettings';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ export function UserDropdown() {
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -93,7 +95,7 @@ export function UserDropdown() {
       <DropdownMenuContent align="end" className="w-48 bg-background border-white/10">
         <DropdownMenuItem 
           className="flex items-center space-x-2 cursor-pointer"
-          onClick={() => navigate('/settings')}
+          onClick={() => setShowSettings(true)}
         >
           <Settings size={16} />
           <span>Settings</span>
@@ -130,6 +132,11 @@ export function UserDropdown() {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <UserSettings 
+      isOpen={showSettings}
+      onClose={() => setShowSettings(false)}
+    />
     </>
   );
 }

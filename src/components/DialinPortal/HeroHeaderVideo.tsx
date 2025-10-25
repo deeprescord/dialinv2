@@ -86,6 +86,21 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     return videoRef.current || bgVideoRef.current;
   };
 
+  // Immediately mute/pause the inactive element to prevent dual audio
+  useEffect(() => {
+    const fg = videoRef.current;
+    const bg = bgVideoRef.current;
+    if (showVideo) {
+      if (bg) { try { bg.pause(); bg.muted = true; } catch {}
+      }
+      if (fg) { fg.muted = false; }
+    } else {
+      if (fg) { try { fg.pause(); fg.muted = true; } catch {}
+      }
+      if (bg) { bg.muted = false; }
+    }
+  }, [showVideo]);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -544,12 +559,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       )}
 
       {/* Video Background - only show for lobby */}
-      {!webUrl && showVideo && videoSrc && !videoError && (
+       {!webUrl && showVideo && videoSrc && !videoError && (
         <video
           ref={videoRef}
           playsInline
           loop
           preload="auto"
+          muted
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
@@ -601,7 +617,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {/* Background - Video or Image */}
       {!webUrl && !show360 && (
         <>
           {isBackgroundVideo ? (
@@ -610,6 +625,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               playsInline
               loop
               preload="auto"
+              muted
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                 !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
               }`}

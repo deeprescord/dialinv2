@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Upload, Camera, Video, User, X, Plus, Trash2, Check } from 'lucide-react';
+import { Upload, Camera, Video, User, X, Plus, Trash2, Check, RefreshCw } from 'lucide-react';
 import { useProfile, CustomField } from '@/hooks/useProfile';
 import { VideoTrimmer } from './VideoTrimmer';
 import { toast } from 'sonner';
+import { regenerateAllThumbnails } from '@/utils/regenerateThumbnails';
 
 interface UserSettingsProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
   const [customFields, setCustomFields] = useState<CustomField[]>(profile?.custom_fields || []);
   const [showVideoTrimmer, setShowVideoTrimmer] = useState(false);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+  const [regeneratingThumbs, setRegeneratingThumbs] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ESC key handling
@@ -80,12 +82,29 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
   const handleSave = async () => {
     const success = await updateProfile({
       ...formData,
-      custom_fields: customFields,
+      custom_fields: customFields
     });
-    if (success) {
-      toast.success('Settings saved successfully');
-      // Close the modal after successful save
-      setTimeout(() => onClose(), 1000);
+    
+    if (success && onClose) {
+      onClose();
+    }
+  };
+
+  const handleRegenerateThumbnails = async () => {
+    setRegeneratingThumbs(true);
+    toast.loading('Regenerating thumbnails...');
+    try {
+      const result = await regenerateAllThumbnails();
+      if (result.success) {
+        toast.success(`Successfully generated ${result.count} thumbnails`);
+      } else {
+        toast.error('Failed to regenerate thumbnails');
+      }
+    } catch (error) {
+      console.error('Error regenerating thumbnails:', error);
+      toast.error('Failed to regenerate thumbnails');
+    } finally {
+      setRegeneratingThumbs(false);
     }
   };
 
@@ -414,47 +433,43 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
             )}
           </div>
 
-          <Button 
-            onClick={handleSave} 
-            className="w-full bg-blue-500 hover:bg-blue-600"
-          >
-            Save Settings
-          </Button>
-        </div>
-      </div>
-    </motion.div>
-
-    {/* Video Trimmer Modal */}
-    {showVideoTrimmer && pendingVideoFile && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="glass-card border border-white/10 rounded-xl backdrop-blur-xl bg-black/40 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Trim Video</h2>
-            <Button
-              onClick={() => {
-                setShowVideoTrimmer(false);
-                setPendingVideoFile(null);
-              }}
-              variant="ghost"
-              size="sm"
-            >
-              <X className="w-4 h-4" />
+          <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
+            <Button onClick={handleSave} className="w-full">
+              Save Changes
             </Button>
+
+            <div className="pt-4 border-t border-white/10 space-y-3">
+              <h3 className="text-sm font-medium text-white">Performance</h3>
+              <Button 
+                onClick={handleRegenerateThumbnails} 
+                disabled={regeneratingThumbs}
+                variant="outline"
+                className="w-full"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${regeneratingThumbs ? 'animate-spin' : ''}`} />
+                {regeneratingThumbs ? 'Generating...' : 'Regenerate All Thumbnails'}
+              </Button>
+              <p className="text-xs text-white/60">
+                Generate thumbnails for existing items to improve loading performance
+              </p>
+            </div>
           </div>
-          
-          <VideoTrimmer
-            videoFile={pendingVideoFile}
-            onTrimmed={handleVideoTrimmed}
-            onCancel={() => {
-              setShowVideoTrimmer(false);
-              setPendingVideoFile(null);
-            }}
-          />
         </div>
-      </div>
-    )}
-  </div>
-  )}
-</AnimatePresence>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {showVideoTrimmer && pendingVideoFile && (
+        <VideoTrimmer
+          videoFile={pendingVideoFile}
+          onTrimmed={handleVideoTrimmed}
+          onCancel={() => {
+            setShowVideoTrimmer(false);
+            setPendingVideoFile(null);
+          }}
+        />
+      )}
+    </AnimatePresence>
   );
 };

@@ -145,9 +145,19 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
   // Close other panels when one opens
   const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
-    setShowChatWindow(panelName === 'chat');
-    setShowAIChat(panelName === 'ai');
-    setIsAddModalOpen(panelName === 'add');
+    if (panelName === 'chat') {
+      setShowChatWindow(prev => !prev);
+      setShowAIChat(false);
+      setIsAddModalOpen(false);
+    } else if (panelName === 'ai') {
+      setShowAIChat(prev => !prev);
+      setShowChatWindow(false);
+      setIsAddModalOpen(false);
+    } else if (panelName === 'add') {
+      setIsAddModalOpen(prev => !prev);
+      setShowChatWindow(false);
+      setShowAIChat(false);
+    }
   };
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);

@@ -104,6 +104,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       setVideoLoaded(true);
       // Only autoplay if this is the active video (showVideo is true)
       if (showVideo) {
+        // Ensure background video is paused
+        if (bgVideoRef.current) {
+          try { bgVideoRef.current.pause(); } catch {}
+        }
         // Set volume and unmute before playing
         video.volume = 0.7;
         video.muted = false;
@@ -309,6 +313,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       setVideoLoaded(true);
       // Only autoplay if this is the active video (showVideo is false, meaning background is active)
       if (!showVideo) {
+        // Ensure foreground video is paused
+        if (videoRef.current) {
+          try { videoRef.current.pause(); } catch {}
+        }
         // Set volume and unmute before playing
         bgVideo.volume = 0.7;
         bgVideo.muted = false;
@@ -363,12 +371,32 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
   }, [isBackgroundVideo, backgroundImage, showVideo]);
 
+  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos
+  useEffect(() => {
+    if (show360) {
+      try { videoRef.current?.pause(); } catch {}
+      try { bgVideoRef.current?.pause(); } catch {}
+    }
+  }, [show360]);
+
   const isSkyboxVideo = show360 && getIsVideo(skyboxSrc || backgroundImage);
   const hasVideoPlaying = (
     (showVideo && !!videoSrc && !videoError && videoLoaded) ||
     (isBackgroundVideo && !videoError && (!show360 ? videoLoaded : true)) ||
     (isSkyboxVideo && !videoError)
   );
+
+  // Propagate state to parent controls (Spaces bar)
+  React.useEffect(() => {
+    onVideoStateChange?.({
+      isPlaying,
+      currentTime,
+      duration,
+      volume: videoVolume,
+      isMuted: isVideoMuted,
+      hasVideo: hasVideoPlaying,
+    });
+  }, [isPlaying, currentTime, duration, videoVolume, isVideoMuted, hasVideoPlaying, onVideoStateChange]);
 
   // Auto-fallback to proxy embed if direct iframe doesn't load
   useEffect(() => {

@@ -16,6 +16,8 @@ const defaultCover = '';
 export function CreateSpaceModal({ isOpen, onClose, onCreate, parentId }: CreateSpaceModalProps) {
   const [spaceName, setSpaceName] = useState('');
 
+  console.log('CreateSpaceModal render - isOpen:', isOpen, 'parentId:', parentId);
+
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {

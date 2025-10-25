@@ -339,7 +339,9 @@ export default function SpacePage() {
 
   // Handle add option selection
   const handleAddOptionSelect = (optionId: string) => {
+    console.log('handleAddOptionSelect called with:', optionId);
     if (optionId === 'SPACE') {
+      console.log('Setting isAddModalOpen to false and showCreateSpaceModal to true');
       setIsAddModalOpen(false);
       setShowCreateSpaceModal(true);
     }

@@ -56,6 +56,18 @@ interface HomeViewProps {
   showItemsBar?: boolean;
   onCloseItemsBar?: () => void;
   itemsPeopleView?: 'items' | 'people';
+  onDeleteSpace?: (spaceId: string) => void;
+  onRenameSpace?: (spaceId: string, newName: string) => void;
+  onUpdateSpaceDescription?: (spaceId: string, newDescription: string) => void;
+  onUpdateSpaceThumbnail?: (spaceId: string, thumbnailUrl: string) => void;
+  onReorderSpace?: (spaceId: string, direction: 'left' | 'right') => void;
+  onToggle360?: (spaceId: string, enabled: boolean) => void;
+  on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (spaceId: string, volume: number) => void;
+  on360MuteToggle?: (spaceId: string, muted: boolean) => void;
+  on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
+  on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
+  on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
 }
 
 export function HomeView({ 
@@ -90,7 +102,19 @@ export function HomeView({
   onItemClick,
   showItemsBar = false,
   onCloseItemsBar,
-  itemsPeopleView = 'items'
+  itemsPeopleView = 'items',
+  onDeleteSpace,
+  onRenameSpace,
+  onUpdateSpaceDescription,
+  onUpdateSpaceThumbnail,
+  onReorderSpace,
+  onToggle360,
+  on360AxisChange,
+  on360VolumeChange,
+  on360MuteToggle,
+  on360RotationToggle,
+  on360RotationSpeedChange,
+  on360RotationAxisChange
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -229,6 +253,28 @@ export function HomeView({
       />
 
       <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
+
+      {/* Items/People Bar */}
+      {showItemsBar && (
+        <ItemsPeopleBar
+          view={itemsPeopleView}
+          spaceId={spaceId}
+          onItemClick={onItemClick}
+          onClose={onCloseItemsBar}
+          onDeleteSpace={onDeleteSpace}
+          onRenameSpace={onRenameSpace}
+          onUpdateSpaceDescription={onUpdateSpaceDescription}
+          onUpdateSpaceThumbnail={onUpdateSpaceThumbnail}
+          onReorderSpace={onReorderSpace}
+          onToggle360={onToggle360}
+          on360AxisChange={on360AxisChange}
+          on360VolumeChange={on360VolumeChange}
+          on360MuteToggle={on360MuteToggle}
+          on360RotationToggle={on360RotationToggle}
+          on360RotationSpeedChange={on360RotationSpeedChange}
+          on360RotationAxisChange={on360RotationAxisChange}
+        />
+      )}
     </motion.div>
   );
 }

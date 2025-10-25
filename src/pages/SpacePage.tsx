@@ -946,38 +946,50 @@ export default function SpacePage() {
         <main className="relative">
           {currentTab === 'home' && (
             <HomeView
-               pinnedContacts={pinnedContacts}
-               onContactClick={handleContactClick}
-               onMediaClick={handleMediaClick}
-               onMediaLongPress={handleMediaLongPress}
-               backgroundImage={backgroundImage}
-               spaceName={currentSpace?.name || 'Lobby'}
-               spaceDescription={currentSpace?.description}
-               isLobby={spaceId === 'lobby'}
-               show360={show360}
-               xAxisOffset={currentSpace?.xAxis}
-               yAxisOffset={currentSpace?.yAxis}
-               volume={currentSpace?.volume}
-               isMuted={currentSpace?.isMuted}
-               rotationEnabled={currentSpace?.rotationEnabled}
-               rotationSpeed={currentSpace?.rotationSpeed}
-               flipHorizontal={currentSpace?.flipHorizontal}
-               flipVertical={currentSpace?.flipVertical}
-               spaces={spaces}
-               onFilesDrop={handleFilesDropped}
-               onCreateSpace={handleCreateSpaceFromDrop}
-               isAddModalOpen={isAddModalOpen}
-               onCloseAddModal={() => setIsAddModalOpen(false)}
-               onAddOptionSelect={handleAddOptionSelect}
-               onOpenAddPanel={() => openPanel('add')}
-               selectedItem={selectedItemData}
-               onVideoStateChange={handleVideoStateChange}
-               heroRef={heroRef}
-               spaceId={spaceId}
-               onItemClick={handleMediaClick}
+                pinnedContacts={pinnedContacts}
+                onContactClick={handleContactClick}
+                onMediaClick={handleMediaClick}
+                onMediaLongPress={handleMediaLongPress}
+                backgroundImage={backgroundImage}
+                spaceName={currentSpace?.name || 'Lobby'}
+                spaceDescription={currentSpace?.description}
+                isLobby={spaceId === 'lobby'}
+                show360={show360}
+                xAxisOffset={currentSpace?.xAxis}
+                yAxisOffset={currentSpace?.yAxis}
+                volume={currentSpace?.volume}
+                isMuted={currentSpace?.isMuted}
+                rotationEnabled={currentSpace?.rotationEnabled}
+                rotationSpeed={currentSpace?.rotationSpeed}
+                flipHorizontal={currentSpace?.flipHorizontal}
+                flipVertical={currentSpace?.flipVertical}
+                spaces={spaces}
+                onFilesDrop={handleFilesDropped}
+                onCreateSpace={handleCreateSpaceFromDrop}
+                isAddModalOpen={isAddModalOpen}
+                onCloseAddModal={() => setIsAddModalOpen(false)}
+                onAddOptionSelect={handleAddOptionSelect}
+                onOpenAddPanel={() => openPanel('add')}
+                selectedItem={selectedItemData}
+                onVideoStateChange={handleVideoStateChange}
+                heroRef={heroRef}
+                spaceId={spaceId}
+                onItemClick={handleMediaClick}
                 showItemsBar={showItemsBar}
                 onCloseItemsBar={() => setShowItemsBar(false)}
                 itemsPeopleView={itemsPeopleView}
+                onDeleteSpace={handleDeleteSpace}
+                onRenameSpace={handleRenameSpace}
+                onUpdateSpaceDescription={handleUpdateSpaceDescription}
+                onUpdateSpaceThumbnail={handleUpdateSpaceThumbnail}
+                onReorderSpace={handleReorderSpace}
+                onToggle360={handleToggle360}
+                on360AxisChange={handle360AxisChange}
+                on360VolumeChange={handle360VolumeChange}
+                on360MuteToggle={handle360MuteToggle}
+                on360RotationToggle={handle360RotationToggle}
+                on360RotationSpeedChange={handle360RotationSpeedChange}
+                on360RotationAxisChange={handle360RotationAxisChange}
              />
           )}
 

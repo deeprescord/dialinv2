@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { PinnedContactsRow } from './PinnedContactsRow';
+import { SpaceContextMenu } from './SpaceContextMenu';
+import { DialPopup } from './DialPopup';
 
 interface ItemsPeopleBarProps {
   scale?: number;
@@ -17,17 +19,54 @@ interface ItemsPeopleBarProps {
   spaceId?: string;
   onItemClick?: (item: any) => void;
   onClose?: () => void;
+  onDeleteSpace?: (spaceId: string) => void;
+  onRenameSpace?: (spaceId: string, newName: string) => void;
+  onUpdateSpaceDescription?: (spaceId: string, newDescription: string) => void;
+  onUpdateSpaceThumbnail?: (spaceId: string, thumbnailUrl: string) => void;
+  onReorderSpace?: (spaceId: string, direction: 'left' | 'right') => void;
+  onToggle360?: (spaceId: string, enabled: boolean) => void;
+  on360AxisChange?: (spaceId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (spaceId: string, volume: number) => void;
+  on360MuteToggle?: (spaceId: string, muted: boolean) => void;
+  on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
+  on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
+  on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
 }
 
 type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
 
-export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose }: ItemsPeopleBarProps) {
+export function ItemsPeopleBar({ 
+  scale = 30, 
+  view, 
+  spaceId, 
+  onItemClick, 
+  onClose,
+  onDeleteSpace,
+  onRenameSpace,
+  onUpdateSpaceDescription,
+  onUpdateSpaceThumbnail,
+  onReorderSpace,
+  onToggle360,
+  on360AxisChange,
+  on360VolumeChange,
+  on360MuteToggle,
+  on360RotationToggle,
+  on360RotationSpeedChange,
+  on360RotationAxisChange
+}: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('itemsViewMode');
     return (saved as ViewMode) || 'tile';
   });
   const panelRef = useRef<HTMLDivElement>(null);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showDialPopup, setShowDialPopup] = useState(false);
+  const [dialPopupItem, setDialPopupItem] = useState<any>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    space: any;
+    position: { x: number; y: number };
+  } | null>(null);
 
   // Persist view mode preference
   useEffect(() => {
@@ -163,6 +202,47 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
     };
   }, [items]);
 
+  // Handle long press
+  const handleMouseDown = (item: any, event: React.MouseEvent) => {
+    const timer = setTimeout(() => {
+      if (item.is_space) {
+        // Show context menu for spaces
+        setContextMenu({
+          space: {
+            id: item.id,
+            name: item.original_name,
+            thumb: thumbUrls[item.id] || '/placeholder.svg'
+          },
+          position: { x: event.clientX, y: event.clientY }
+        });
+      } else {
+        // Show dial popup for files
+        setDialPopupItem({
+          id: item.id,
+          title: item.original_name,
+          thumb: thumbUrls[item.id],
+          type: item.file_type
+        });
+        setShowDialPopup(true);
+      }
+    }, 500);
+    setPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
   // Handle item click with proper transformation
   const handleItemClick = async (item: any) => {
     if (!onItemClick) return;
@@ -215,6 +295,14 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
                 <div 
                   className="cursor-pointer group flex flex-col items-center gap-3"
                   onClick={() => handleItemClick(item)}
+                  onMouseDown={(e) => handleMouseDown(item, e)}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseLeave}
+                  onTouchStart={(e) => {
+                    const touch = e.touches[0];
+                    handleMouseDown(item, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+                  }}
+                  onTouchEnd={handleMouseUp}
                 >
                   <div className="rounded-xl overflow-hidden group-hover:scale-105 transition-transform border border-white/20 relative bg-muted/50 flex items-center justify-center w-full aspect-[3/4]">
                     {thumbnail ? (
@@ -228,11 +316,12 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
                     )}
                     {/* File type icon badge */}
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm rounded p-1.5">
+                      {item.file_type === 'space' && <LayoutGrid className="w-4 h-4 text-white" />}
                       {item.file_type === 'image' && <ImageIcon className="w-4 h-4 text-white" />}
                       {item.file_type === 'video' && <Video className="w-4 h-4 text-white" />}
                       {item.file_type === 'audio' && <Music className="w-4 h-4 text-white" />}
                       {item.file_type === 'document' && <FileText className="w-4 h-4 text-white" />}
-                      {!['image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-4 h-4 text-white" />}
+                      {!['space', 'image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-4 h-4 text-white" />}
                     </div>
                   </div>
                   <span className="text-sm font-medium text-foreground/90 max-w-full truncate">
@@ -420,54 +509,89 @@ export function ItemsPeopleBar({ scale = 30, view, spaceId, onItemClick, onClose
   };
 
   return (
-    <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
-      <div ref={panelRef} className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full pointer-events-auto">
-        <div className="w-full h-full glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
-          {/* Header with View Selector */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            {view === 'items' && (
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === 'tile' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('tile')}
-                >
-                  <Columns className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'icon' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('icon')}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'carousel' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('carousel')}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-            <h2 className="text-lg font-semibold text-foreground ml-auto">
-              {view === 'items' ? 'Items' : 'People'}
-            </h2>
-          </div>
-          
-          {/* Content */}
-          <div className="flex-1 overflow-hidden">
-            {renderContent()}
+    <>
+      <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+        <div ref={panelRef} className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full pointer-events-auto">
+          <div className="w-full h-full glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
+            {/* Header with View Selector */}
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              {view === 'items' && (
+                <div className="flex gap-2">
+                  <Button
+                    variant={viewMode === 'tile' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('tile')}
+                  >
+                    <Columns className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'icon' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('icon')}
+                  >
+                    <Grid3x3 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'carousel' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('carousel')}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <h2 className="text-lg font-semibold text-foreground ml-auto">
+                {view === 'items' ? 'Items' : 'People'}
+              </h2>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-hidden">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Context Menu for Spaces */}
+      {contextMenu && onDeleteSpace && onRenameSpace && onUpdateSpaceDescription && (
+        <SpaceContextMenu
+          space={contextMenu.space}
+          isOpen={true}
+          onClose={() => setContextMenu(null)}
+          onDelete={onDeleteSpace}
+          onRename={onRenameSpace}
+          onUpdateDescription={onUpdateSpaceDescription}
+          onUpdateThumbnail={onUpdateSpaceThumbnail}
+          onReorder={onReorderSpace || (() => {})}
+          onToggle360={onToggle360}
+          on360AxisChange={on360AxisChange}
+          on360VolumeChange={on360VolumeChange}
+          on360MuteToggle={on360MuteToggle}
+          on360RotationToggle={on360RotationToggle}
+          on360RotationSpeedChange={on360RotationSpeedChange}
+          on360RotationAxisChange={on360RotationAxisChange}
+          position={contextMenu.position}
+        />
+      )}
+
+      {/* Dial Popup for Files */}
+      <DialPopup
+        isOpen={showDialPopup}
+        item={dialPopupItem}
+        onClose={() => setShowDialPopup(false)}
+        onUseAsFilters={() => {
+          setShowDialPopup(false);
+          setDialPopupItem(null);
+        }}
+      />
+    </>
   );
 }

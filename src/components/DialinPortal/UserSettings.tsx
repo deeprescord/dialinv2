@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -197,9 +198,9 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
 
   // Show auth prompt if not logged in
   if (!isAuthenticated) {
-    return (
+    return createPortal(
       <AnimatePresence>
-        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+        <div className="fixed top-20 left-0 right-0 z-50 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -231,22 +232,24 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
             </div>
           </motion.div>
         </div>
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
     );
   }
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+    return createPortal(
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+        <div className="fixed top-20 left-0 right-0 z-50 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -531,6 +534,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
           }}
         />
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

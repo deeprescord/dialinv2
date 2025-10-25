@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Upload, Camera, Video, User, X, Plus, Trash2, Check, RefreshCw } from 'lucide-react';
+import { Upload, Camera, Video, User, X, Plus, Trash2, Check, RefreshCw, LogIn } from 'lucide-react';
 import { useProfile, CustomField } from '@/hooks/useProfile';
 import { VideoTrimmer } from './VideoTrimmer';
 import { toast } from 'sonner';
 import { regenerateAllThumbnails } from '@/utils/regenerateThumbnails';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthModal } from './AuthModal';
 
 interface UserSettingsProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ interface UserSettingsProps {
 
 export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) => {
   const { profile, loading, uploading, updateProfile, uploadProfileMedia, mediaHistory, selectMediaFromHistory } = useProfile();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     email: profile?.email || '',
@@ -38,6 +41,21 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const [regeneratingThumbs, setRegeneratingThumbs] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // ESC key handling
   useEffect(() => {
@@ -174,9 +192,52 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) =
     await selectMediaFromHistory(mediaUrl, mediaType);
   };
 
+  // Don't render anything when closed
+  if (!isOpen) return null;
+
+  // Show auth prompt if not logged in
+  if (!isAuthenticated) {
+    return (
+      <AnimatePresence>
+        <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+            className="relative z-10 w-[85vw] max-w-md"
+          >
+            <div className="glass-card border border-white/10 rounded-xl overflow-hidden backdrop-blur-xl bg-black/40 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-semibold text-white">Settings</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-center py-8">
+                <LogIn className="w-16 h-16 mx-auto mb-4 text-white/60" />
+                <p className="text-white/80 mb-6">Please sign in to access your settings</p>
+                <AuthModal
+                  isOpen={false}
+                  onClose={onClose}
+                  onSuccess={onClose}
+                />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </AnimatePresence>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );

@@ -19,6 +19,7 @@ interface HeroHeaderVideoProps {
   rotationSpeed?: number;
   flipHorizontal?: boolean;
   flipVertical?: boolean;
+  webUrl?: string; // New prop for displaying web pages
   onOpenAddPanel?: () => void;
   onVideoStateChange?: (state: {
     isPlaying: boolean;
@@ -54,6 +55,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   rotationSpeed,
   flipHorizontal,
   flipVertical,
+  webUrl,
   onOpenAddPanel,
   onVideoStateChange
 }: HeroHeaderVideoProps, ref) => {
@@ -354,8 +356,27 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       onTouchStart={handleMouseDown}
       onTouchEnd={handleMouseUp}
     >
+      {/* Web Page Iframe - highest priority */}
+      {webUrl && (
+        <div className="absolute inset-0 w-full h-full z-20">
+          <iframe
+            src={webUrl}
+            className="w-full h-full border-0"
+            title="Web Content"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          />
+          {/* Web indicator */}
+          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none z-30">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              Web View
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Video Background - only show for lobby */}
-      {showVideo && videoSrc && !videoError && (
+      {!webUrl && showVideo && videoSrc && !videoError && (
         <video
           ref={videoRef}
           playsInline
@@ -372,7 +393,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       )}
 
       {/* 360° Skybox View - for special floors */}
-      {show360 && (skyboxSrc || backgroundImage) && (
+      {!webUrl && show360 && (skyboxSrc || backgroundImage) && (
         <div className="absolute inset-0 w-full h-full z-10">
           <Suspense fallback={
             <div 
@@ -413,7 +434,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       )}
 
       {/* Background - Video or Image */}
-      {!show360 && (
+      {!webUrl && !show360 && (
         <>
           {isBackgroundVideo ? (
             <video
@@ -439,8 +460,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </>
       )}
 
-      {/* Gradient Overlay - don't interfere with 360° view */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />
+      {/* Gradient Overlay - don't show for web view or 360° view */}
+      {!webUrl && <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />}
 
 
       {/* Content - Only show for non-lobby spaces */}

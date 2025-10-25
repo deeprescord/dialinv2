@@ -232,6 +232,7 @@ export function HomeView({
            rotationSpeed={rotationSpeed}
            flipHorizontal={flipHorizontal}
            flipVertical={flipVertical}
+           webUrl={selectedItem?.type === 'web' ? selectedItem?.url : undefined}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
          />

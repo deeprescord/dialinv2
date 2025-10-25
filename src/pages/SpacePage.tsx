@@ -20,6 +20,7 @@ import { ChatWindow } from '@/components/DialinPortal/ChatWindow';
 import { AIChat } from '@/components/DialinPortal/AIChat';
 import { AddContactPanel } from '@/components/DialinPortal/AddContactPanel';
 import { AddOptionsModal } from '@/components/DialinPortal/AddOptionsModal';
+import { AddWebLinkModal } from '@/components/DialinPortal/AddWebLinkModal';
 import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { SpaceSelectionModal } from '@/components/DialinPortal/SpaceSelectionModal';
 import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjustmentPanel';
@@ -167,6 +168,7 @@ export default function SpacePage() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isWebLinkModalOpen, setIsWebLinkModalOpen] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
   const [showItemsBar, setShowItemsBar] = useState(false);
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
@@ -352,9 +354,64 @@ export default function SpacePage() {
       console.log('Setting isAddModalOpen to false and showCreateSpaceModal to true');
       setIsAddModalOpen(false);
       setShowCreateSpaceModal(true);
+    } else if (optionId === 'web') {
+      console.log('Opening web link modal');
+      setIsAddModalOpen(false);
+      setIsWebLinkModalOpen(true);
     }
     console.log('Selected option:', optionId);
   };
+
+  // Handle web link submission
+  const handleWebLinkSubmit = async (url: string, title: string) => {
+    const targetSpaceId = spaceId || 'lobby';
+    
+    if (targetSpaceId === 'lobby') {
+      toast.error('Cannot add web links to lobby. Please select a space first.');
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to add web links');
+        return;
+      }
+
+      // Create a file entry for the web link
+      const { data: file, error: fileError } = await supabase
+        .from('files')
+        .insert({
+          owner_id: user.id,
+          original_name: title,
+          file_type: 'web',
+          mime_type: 'text/html',
+          storage_path: url, // Store the URL in storage_path
+          file_size: 0,
+        })
+        .select()
+        .single();
+
+      if (fileError) throw fileError;
+
+      // Add to space_files
+      const { error: spaceFileError } = await supabase
+        .from('space_files')
+        .insert({
+          space_id: targetSpaceId,
+          file_id: file.id,
+          added_by: user.id,
+        });
+
+      if (spaceFileError) throw spaceFileError;
+
+      toast.success(`Web link "${title}" added to space`);
+    } catch (error) {
+      console.error('Error adding web link:', error);
+      toast.error('Failed to add web link');
+    }
+  };
+
 
   // Handle upload click from AddOptionsModal
   const handleUploadClick = (files: File[]) => {
@@ -713,9 +770,46 @@ export default function SpacePage() {
   };
 
   // Handle item selection
-  const handleItemSelect = (itemId: string) => {
+  const handleItemSelect = async (itemId: string) => {
     setSelectedItemId(itemId);
-    // Find the item data from catalogs
+    
+    // First check if it's a file from the database (including web links)
+    try {
+      const { data: file, error } = await supabase
+        .from('files')
+        .select('*')
+        .eq('id', itemId)
+        .maybeSingle();
+      
+      if (file) {
+        // It's a database item
+        if (file.file_type === 'web') {
+          // It's a web link - set the URL to display in iframe
+          setSelectedItemData({
+            id: file.id,
+            title: file.original_name,
+            type: 'web',
+            url: file.storage_path, // For web links, we store the URL in storage_path
+          } as any);
+          console.log('Selected web link:', file.storage_path);
+        } else {
+          // It's a regular file - set the storage_path for ContentViewer
+          setSelectedItemData({
+            id: file.id,
+            title: file.original_name,
+            type: file.file_type,
+            storage_path: file.storage_path,
+            file_type: file.file_type,
+            mime_type: file.mime_type,
+          } as any);
+        }
+        return;
+      }
+    } catch (error) {
+      console.log('Error fetching file:', error);
+    }
+    
+    // Otherwise find the item data from catalogs
     const item = [...videoCatalog, ...musicCatalog, ...locations].find(i => i.id === itemId);
     setSelectedItemData(item);
     
@@ -1203,6 +1297,12 @@ export default function SpacePage() {
           onClose={() => setIsAddModalOpen(false)}
           onOptionSelect={handleAddOptionSelect}
           onUploadClick={handleUploadClick}
+        />
+
+        <AddWebLinkModal
+          isOpen={isWebLinkModalOpen}
+          onClose={() => setIsWebLinkModalOpen(false)}
+          onSubmit={handleWebLinkSubmit}
         />
 
         <Settings360Modal

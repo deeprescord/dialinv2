@@ -152,7 +152,7 @@ export function SpacesBar({
   };
 
   const handleAddOptionSelect = (optionId: string) => {
-    if (optionId === 'space') {
+    if (optionId === 'SPACE') {
       onCreateSpace();
     }
     // Handle other options as needed

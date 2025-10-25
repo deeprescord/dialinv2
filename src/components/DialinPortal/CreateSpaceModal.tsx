@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 interface CreateSpaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (name: string, coverUrl: string, parentId?: string) => void;
+  onCreate: (name: string, description?: string) => void;
   parentId?: string;
 }
 
@@ -34,7 +34,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate, parentId }: Create
 
   const handleCreate = () => {
     if (spaceName.trim()) {
-      onCreate(spaceName.trim(), defaultCover, parentId);
+      onCreate(spaceName.trim());
       setSpaceName('');
       onClose();
     }

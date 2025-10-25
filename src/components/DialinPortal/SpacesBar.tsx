@@ -191,39 +191,51 @@ export function SpacesBar({
     }
   };
 
-  // Generate signed URLs for item thumbnails (skip spaces since they use public URLs)
+  // Optimized: Batch signed URL generation and use memo
   React.useEffect(() => {
     const generateUrls = async () => {
       const urls: Record<string, string> = {};
+      const filesToSign: Array<{ id: string; path: string }> = [];
+      
+      // First pass: collect items needing signed URLs
       for (const item of spaceItems) {
-        // Skip spaces - they use thumbnail_url which is already a public URL
         if (item.is_space) {
           if (item.thumbnail_path) {
             urls[item.id] = item.thumbnail_path;
           }
-          continue;
-        }
-        
-        // For files, generate signed URLs
-        const pathToUse = item.thumbnail_path || item.storage_path;
-        if (pathToUse) {
-          try {
-            const { data } = await supabase.storage
-              .from('user-files')
-              .createSignedUrl(pathToUse, 3600);
-            if (data?.signedUrl) {
-              urls[item.id] = data.signedUrl;
-            }
-          } catch (error) {
-            console.warn('Failed to generate signed URL for item:', item.id, error);
+        } else {
+          const pathToUse = item.thumbnail_path || item.storage_path;
+          if (pathToUse) {
+            filesToSign.push({ id: item.id, path: pathToUse });
           }
         }
       }
+      
+      // Batch sign URLs (Supabase supports this efficiently)
+      if (filesToSign.length > 0) {
+        const results = await Promise.allSettled(
+          filesToSign.map(file =>
+            supabase.storage
+              .from('user-files')
+              .createSignedUrl(file.path, 3600)
+              .then(({ data }) => ({ id: file.id, url: data?.signedUrl }))
+          )
+        );
+        
+        results.forEach((result, idx) => {
+          if (result.status === 'fulfilled' && result.value.url) {
+            urls[result.value.id] = result.value.url;
+          }
+        });
+      }
+      
       setThumbUrls(urls);
     };
 
     if (spaceItems.length > 0) {
       generateUrls();
+    } else {
+      setThumbUrls({});
     }
   }, [spaceItems]);
 

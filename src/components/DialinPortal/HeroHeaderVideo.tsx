@@ -142,6 +142,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     return () => {
       clearTimeout(fallbackTimeout);
+      video.pause();
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('error', handleError);
       video.removeEventListener('timeupdate', handleTimeUpdate);
@@ -324,6 +325,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     bgVideo.addEventListener('pause', handlePause);
 
     return () => {
+      bgVideo.pause();
       bgVideo.removeEventListener('canplay', handleCanPlay);
       bgVideo.removeEventListener('error', handleError);
       bgVideo.removeEventListener('timeupdate', handleTimeUpdate);

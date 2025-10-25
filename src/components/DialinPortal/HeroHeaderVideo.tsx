@@ -423,16 +423,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       onTouchStart={handleMouseDown}
       onTouchEnd={handleMouseUp}
     >
-      {/* Watermark Overlay - subtle content protection */}
-      <div className="absolute inset-0 pointer-events-none z-40 opacity-5">
-        <div className="absolute top-1/4 left-1/4 text-white text-6xl font-bold rotate-[-30deg] select-none">
-          DIALIN
-        </div>
-        <div className="absolute bottom-1/4 right-1/4 text-white text-6xl font-bold rotate-[-30deg] select-none">
-          DIALIN
-        </div>
-      </div>
-
       {/* Web Page Iframe - highest priority */}
       {webUrl && (
         <div className="absolute inset-0 w-full h-full z-20 bg-black">

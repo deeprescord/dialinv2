@@ -838,10 +838,12 @@ export default function SpacePage() {
   // Handle chat and AI chat toggles
   const handleToggleChatWindow = () => {
     setShowChatWindow(prev => !prev);
+    if (showAIChat) setShowAIChat(false);
   };
 
   const handleToggleAIChat = () => {
     setShowAIChat(prev => !prev);
+    if (showChatWindow) setShowChatWindow(false);
   };
 
   // Handle contact click from chat window
@@ -1059,12 +1061,20 @@ export default function SpacePage() {
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
             onToggleItemsBar={() => {
-              setItemsPeopleView('items');
-              setShowItemsBar(!showItemsBar);
+              if (showItemsBar && itemsPeopleView === 'items') {
+                setShowItemsBar(false);
+              } else {
+                setItemsPeopleView('items');
+                setShowItemsBar(true);
+              }
             }}
             onTogglePeopleBar={() => {
-              setItemsPeopleView('people');
-              setShowItemsBar(true);
+              if (showItemsBar && itemsPeopleView === 'people') {
+                setShowItemsBar(false);
+              } else {
+                setItemsPeopleView('people');
+                setShowItemsBar(true);
+              }
             }}
           />
         </div>

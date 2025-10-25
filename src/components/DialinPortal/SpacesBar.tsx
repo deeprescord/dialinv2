@@ -191,18 +191,31 @@ export function SpacesBar({
     }
   };
 
-  // Generate signed URLs for item thumbnails
+  // Generate signed URLs for item thumbnails (skip spaces since they use public URLs)
   React.useEffect(() => {
     const generateUrls = async () => {
       const urls: Record<string, string> = {};
       for (const item of spaceItems) {
+        // Skip spaces - they use thumbnail_url which is already a public URL
+        if (item.is_space) {
+          if (item.thumbnail_path) {
+            urls[item.id] = item.thumbnail_path;
+          }
+          continue;
+        }
+        
+        // For files, generate signed URLs
         const pathToUse = item.thumbnail_path || item.storage_path;
         if (pathToUse) {
-          const { data } = await supabase.storage
-            .from('user-files')
-            .createSignedUrl(pathToUse, 3600);
-          if (data?.signedUrl) {
-            urls[item.id] = data.signedUrl;
+          try {
+            const { data } = await supabase.storage
+              .from('user-files')
+              .createSignedUrl(pathToUse, 3600);
+            if (data?.signedUrl) {
+              urls[item.id] = data.signedUrl;
+            }
+          } catch (error) {
+            console.warn('Failed to generate signed URL for item:', item.id, error);
           }
         }
       }
@@ -422,11 +435,14 @@ export function SpacesBar({
                       <div 
                         className="flex flex-col items-center space-y-2 cursor-pointer group select-none"
                         onClick={() => {
+                          console.log('Item clicked:', item);
                           if (isSpace) {
                             // Navigate to the subspace
+                            console.log('Navigating to subspace:', item.id);
                             navigate(`/space/${item.id}`);
                           } else if (onItemClick) {
                             // Handle regular item click
+                            console.log('Handling regular item click');
                             onItemClick(item);
                           }
                         }}

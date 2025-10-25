@@ -60,6 +60,7 @@ export function useSpaceItems(spaceId?: string) {
 
       // Add child spaces as items
       if (childSpaces && childSpaces.length > 0) {
+        console.log('Child spaces found:', childSpaces);
         const spaceItems: SpaceItem[] = childSpaces.map(space => ({
           id: space.id,
           original_name: space.name,
@@ -67,8 +68,10 @@ export function useSpaceItems(spaceId?: string) {
           created_at: space.created_at,
           is_space: true,
           space_name: space.name,
-          thumbnail_path: space.thumbnail_url || undefined,
+          // Use thumbnail_url or cover_url or fallback to default
+          thumbnail_path: space.thumbnail_url || space.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
         }));
+        console.log('Converted space items:', spaceItems);
         allItems.push(...spaceItems);
       }
 

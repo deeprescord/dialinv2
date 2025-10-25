@@ -258,10 +258,10 @@ export function SpacesBar({
           )}
           {!hideActionButtons && (
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleItemsBar?.()}
-              className="h-7 px-2 text-xs hover:bg-white/10"
+               variant="ghost"
+               size="sm"
+               onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
+               className="h-7 px-2 text-xs hover:bg-white/10"
             >
               <Package size={14} className="mr-1" />
               Items
@@ -269,10 +269,10 @@ export function SpacesBar({
           )}
           {!hideActionButtons && (
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onTogglePeopleBar?.()}
-              className="h-7 px-2 text-xs hover:bg-white/10"
+               variant="ghost"
+               size="sm"
+               onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
+               className="h-7 px-2 text-xs hover:bg-white/10"
             >
               <Users size={14} className="mr-1" />
               People

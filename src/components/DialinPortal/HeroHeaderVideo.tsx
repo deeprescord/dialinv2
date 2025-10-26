@@ -353,19 +353,27 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
 
     const handleTimeUpdate = () => {
-      setCurrentTime(bgVideo.currentTime);
+      if (!showVideo) {
+        setCurrentTime(bgVideo.currentTime);
+      }
     };
 
     const handleLoadedMetadata = () => {
-      setDuration(bgVideo.duration);
+      if (!showVideo) {
+        setDuration(bgVideo.duration);
+      }
     };
 
     const handlePlay = () => {
-      setIsPlaying(true);
+      if (!showVideo) {
+        setIsPlaying(true);
+      }
     };
 
     const handlePause = () => {
-      setIsPlaying(false);
+      if (!showVideo) {
+        setIsPlaying(false);
+      }
     };
 
     bgVideo.addEventListener('canplay', handleCanPlay);
@@ -395,10 +403,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   }, [show360]);
 
   const isSkyboxVideo = show360 && getIsVideo(skyboxSrc || backgroundImage);
-  const hasVideoPlaying = (
-    (showVideo && !!videoSrc && !videoError && videoLoaded) ||
-    (isBackgroundVideo && !videoError && (!show360 ? videoLoaded : true)) ||
-    (isSkyboxVideo && !videoError)
+  const hasVideoPlaying = !webUrl && (
+    show360
+      ? (isSkyboxVideo && isPlaying)
+      : showVideo
+        ? (!!videoSrc && !videoError && videoLoaded)
+        : (isBackgroundVideo && !videoError && videoLoaded)
   );
 
   // Propagate state to parent controls (Spaces bar)

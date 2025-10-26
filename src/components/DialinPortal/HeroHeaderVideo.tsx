@@ -617,7 +617,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {!webUrl && !show360 && (
+      {!webUrl && !show360 && !showVideo && (
         <>
           {isBackgroundVideo ? (
             <video
@@ -626,18 +626,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               loop
               preload="auto"
               muted
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100"
               style={{ transform: 'scaleY(1)' }}
             >
-              {!showVideo && <source src={backgroundImage} />}
+              <source src={backgroundImage} />
             </video>
           ) : (
             <div 
-              className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 ${
-                !showVideo || videoError || !videoLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
+              className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 opacity-100"
               style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
             />
           )}

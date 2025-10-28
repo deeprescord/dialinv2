@@ -79,7 +79,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
   const audioContext = useAudioContext();
-  const audioIdRef = useRef(`hero-${Math.random().toString(36)}`);
+  // Use stable ID based on route/space instead of random
+  const audioIdRef = useRef<string>('hero-home');
 
   // Register this component's pause function with the audio context
   useEffect(() => {
@@ -97,6 +98,26 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       audioContext.unregisterAudioSource(audioIdRef.current);
     };
   }, [audioContext]);
+
+  // Push progress updates to AudioContext when playing
+  useEffect(() => {
+    if (!isPlaying) return;
+    
+    const interval = setInterval(() => {
+      const activeVideo = getActiveVideo();
+      if (activeVideo && !activeVideo.paused) {
+        audioContext.pushProgress(audioIdRef.current, {
+          currentTime: activeVideo.currentTime || 0,
+          duration: activeVideo.duration || 0,
+          volume: isVideoMuted ? 0 : (videoVolume > 1 ? videoVolume / 100 : videoVolume),
+          isMuted: isVideoMuted,
+          isPlaying: !activeVideo.paused
+        });
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isPlaying, isVideoMuted, videoVolume, audioContext]);
 
   // Sync incoming props to internal state (volume/mute)
   useEffect(() => {
@@ -186,20 +207,27 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
         video.volume = isVideoMuted ? 0 : norm;
         video.muted = !!isVideoMuted;
-        // Only claim audio focus if we're actually emitting sound
-        if (!isVideoMuted && (norm ?? 0) > 0) {
+        
+        // Only claim audio focus and autoplay if we're actually emitting sound AND we have focus or no one has focus
+        const currentActiveId = audioContext.getActiveId();
+        const shouldClaimFocus = !isVideoMuted && (norm ?? 0) > 0;
+        const canAutoplay = !currentActiveId || currentActiveId === audioIdRef.current;
+        
+        if (shouldClaimFocus && canAutoplay) {
           audioContext.playAudio(audioIdRef.current);
-        }
-        // Autoplay video when loaded
-        video.play().catch(err => {
-          console.log('Autoplay with sound prevented, keeping current mute state:', err);
-          // If autoplay with sound fails and not already muted, try muted
-          if (!isVideoMuted) {
+          video.play().catch(err => {
+            console.log('Autoplay with sound prevented, muting:', err);
             video.muted = true;
             setIsVideoMuted(true);
-            video.play().catch(e => console.log('Muted autoplay also prevented:', e));
-          }
-        });
+          });
+        } else if (!shouldClaimFocus && canAutoplay) {
+          // Silent video can still play
+          video.play().catch(() => {});
+        } else {
+          // Another source has focus, stay paused and muted
+          video.pause();
+          video.muted = true;
+        }
       } else {
         // Not active: ensure paused and muted
         try { video.pause(); } catch {}
@@ -404,20 +432,27 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
         bgVideo.volume = isVideoMuted ? 0 : norm;
         bgVideo.muted = !!isVideoMuted;
-        // Only claim audio focus if we're actually emitting sound
-        if (!isVideoMuted && (norm ?? 0) > 0) {
+        
+        // Only claim audio focus and autoplay if we're actually emitting sound AND we have focus or no one has focus
+        const currentActiveId = audioContext.getActiveId();
+        const shouldClaimFocus = !isVideoMuted && (norm ?? 0) > 0;
+        const canAutoplay = !currentActiveId || currentActiveId === audioIdRef.current;
+        
+        if (shouldClaimFocus && canAutoplay) {
           audioContext.playAudio(audioIdRef.current);
-        }
-        // Autoplay background video when loaded
-        bgVideo.play().catch(err => {
-          console.log('Background autoplay with sound prevented, keeping current mute state:', err);
-          if (!isVideoMuted) {
-            // If autoplay with sound fails and not already muted, try muted
+          bgVideo.play().catch(err => {
+            console.log('Background autoplay with sound prevented, muting:', err);
             bgVideo.muted = true;
             setIsVideoMuted(true);
-            bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
-          }
-        });
+          });
+        } else if (!shouldClaimFocus && canAutoplay) {
+          // Silent video can still play
+          bgVideo.play().catch(() => {});
+        } else {
+          // Another source has focus, stay paused and muted
+          bgVideo.pause();
+          bgVideo.muted = true;
+        }
       } else {
         // Not active: ensure paused and muted
         try { bgVideo.pause(); } catch {}

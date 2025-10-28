@@ -28,6 +28,7 @@ import { UploadLoader } from '@/components/DialinPortal/UploadLoader';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpacesContext } from '@/contexts/SpacesContext';
+import { useAudioContext } from '@/contexts/AudioContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
@@ -78,6 +79,7 @@ export default function SpacePage() {
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
+  const audioContext = useAudioContext();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
   
@@ -978,24 +980,32 @@ export default function SpacePage() {
     setShow360Settings(true);
   };
 
-  // Video control handlers
-  const handleVideoStateChange = (state: typeof videoState) => {
-    setVideoState(state);
-  };
+  // Read video state from AudioContext active progress
+  useEffect(() => {
+    const progress = audioContext.activeProgress;
+    if (progress) {
+      setVideoState({
+        isPlaying: progress.isPlaying,
+        currentTime: progress.currentTime,
+        duration: progress.duration,
+        volume: progress.volume,
+        isMuted: progress.isMuted,
+        hasVideo: true
+      });
+    }
+  }, [audioContext.activeProgress]);
 
+  // Video control handlers - delegate to hero or active source
   const handleVideoPlayPause = () => {
     heroRef.current?.playPause();
-    setVideoState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
   };
 
   const handleVideoSeek = (value: number) => {
     heroRef.current?.seek(value);
-    setVideoState(prev => ({ ...prev, currentTime: value }));
   };
 
   const handleVideoVolumeChange = (value: number) => {
     heroRef.current?.setVolume(value);
-    setVideoState(prev => ({ ...prev, volume: value, isMuted: value === 0 }));
   };
 
   const handleVideoMuteToggle = () => {
@@ -1074,7 +1084,6 @@ export default function SpacePage() {
                 onAddOptionSelect={handleAddOptionSelect}
                 onOpenAddPanel={() => openPanel('add')}
                 selectedItem={selectedItemData}
-                onVideoStateChange={handleVideoStateChange}
                 heroRef={heroRef}
                 spaceId={spaceId}
                 onItemClick={handleMediaClick}
@@ -1114,7 +1123,6 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onVideoClick={handleMediaClick}
               onVideoLongPress={handleMediaLongPress}
-              onVideoStateChange={handleVideoStateChange}
             />
           )}
 
@@ -1126,7 +1134,6 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onMusicClick={handleMediaClick}
               onMusicLongPress={handleMediaLongPress}
-              onVideoStateChange={handleVideoStateChange}
             />
           )}
 
@@ -1138,7 +1145,6 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onLocationClick={handleMediaClick}
               onLocationLongPress={handleMediaLongPress}
-              onVideoStateChange={handleVideoStateChange}
             />
           )}
         </main>

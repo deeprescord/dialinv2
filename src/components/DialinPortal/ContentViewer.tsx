@@ -70,6 +70,27 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     };
   }, [audioContext, content.id]);
 
+  // Push progress to AudioContext when playing
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const mediaRef = (videoRef.current || audioRef.current) as HTMLVideoElement | HTMLAudioElement | null;
+    if (!mediaRef) return;
+
+    const handleTimeUpdate = () => {
+      audioContext.pushProgress(audioIdRef.current, {
+        currentTime: mediaRef.currentTime || 0,
+        duration: mediaRef.duration || 0,
+        volume: isMuted ? 0 : volume,
+        isMuted,
+        isPlaying: !mediaRef.paused
+      });
+    };
+
+    mediaRef.addEventListener('timeupdate', handleTimeUpdate);
+    return () => mediaRef.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [isPlaying, isMuted, volume, audioContext]);
+
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
   const isImage = content.file_type === 'image' || content.mime_type?.startsWith('image/');

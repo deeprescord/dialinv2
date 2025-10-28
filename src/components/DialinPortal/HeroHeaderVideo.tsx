@@ -186,8 +186,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
         video.volume = isVideoMuted ? 0 : norm;
         video.muted = !!isVideoMuted;
-        // Tell audio context this is playing
-        audioContext.playAudio(audioIdRef.current);
+        // Only claim audio focus if we're actually emitting sound
+        if (!isVideoMuted && (norm ?? 0) > 0) {
+          audioContext.playAudio(audioIdRef.current);
+        }
         // Autoplay video when loaded
         video.play().catch(err => {
           console.log('Autoplay with sound prevented, keeping current mute state:', err);
@@ -402,8 +404,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
         bgVideo.volume = isVideoMuted ? 0 : norm;
         bgVideo.muted = !!isVideoMuted;
-        // Tell audio context this is playing
-        audioContext.playAudio(audioIdRef.current);
+        // Only claim audio focus if we're actually emitting sound
+        if (!isVideoMuted && (norm ?? 0) > 0) {
+          audioContext.playAudio(audioIdRef.current);
+        }
         // Autoplay background video when loaded
         bgVideo.play().catch(err => {
           console.log('Background autoplay with sound prevented, keeping current mute state:', err);

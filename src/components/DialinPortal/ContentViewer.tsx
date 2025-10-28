@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { SkyboxViewer } from './SkyboxViewer';
+import { useAudioContext } from '@/contexts/AudioContext';
 
 interface ContentViewerProps {
   content: {
@@ -47,6 +48,27 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  const audioContext = useAudioContext();
+  const audioIdRef = useRef<string>(`content-${content.id}`);
+
+  // Register with AudioContext and ensure pause on unmount or switch
+  useEffect(() => {
+    audioIdRef.current = `content-${content.id}`;
+    const pauseAll = () => {
+      const v = videoRef.current;
+      const a = audioRef.current;
+      try { if (v) { v.pause(); v.muted = true; } } catch {}
+      try { if (a) { a.pause(); a.muted = true; } } catch {}
+      setIsPlaying(false);
+    };
+
+    audioContext.registerAudioSource(audioIdRef.current, pauseAll);
+    return () => {
+      pauseAll();
+      audioContext.unregisterAudioSource(audioIdRef.current);
+    };
+  }, [audioContext, content.id]);
 
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
@@ -124,6 +146,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     if (isPlaying) {
       mediaRef.pause();
     } else {
+      // Ensure exclusive playback across the app
+      audioContext.playAudio(audioIdRef.current);
       mediaRef.play();
     }
     setIsPlaying(!isPlaying);

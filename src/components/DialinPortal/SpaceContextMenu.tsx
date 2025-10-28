@@ -844,17 +844,15 @@ export function SpaceContextMenu({
                     </div>
                   )}
 
-                  {/* Rename - disabled for Home */}
-                  {!space.isHome && (
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                      onClick={() => setIsRenaming(true)}
-                      disabled={isRenaming || isEditingDescription}
-                    >
-                      <Edit3 size={14} className="text-white" />
-                      <span className="text-xs text-white">Rename</span>
-                    </button>
-                  )}
+                  {/* Rename */}
+                  <button
+                    className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                    onClick={() => setIsRenaming(true)}
+                    disabled={isRenaming || isEditingDescription}
+                  >
+                    <Edit3 size={14} className="text-white" />
+                    <span className="text-xs text-white">Rename</span>
+                  </button>
 
                   {/* Edit Description */}
                   <button

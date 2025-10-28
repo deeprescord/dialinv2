@@ -176,6 +176,13 @@ export function useSpaces() {
   };
   const deleteSpace = async (id: string): Promise<boolean> => {
     try {
+      // Prevent deletion of home space
+      const spaceToDelete = spaces.find(s => s.id === id);
+      if (spaceToDelete?.is_home) {
+        toast.error('Cannot delete the Home space');
+        return false;
+      }
+
       const { error } = await supabase
         .from('spaces')
         .delete()

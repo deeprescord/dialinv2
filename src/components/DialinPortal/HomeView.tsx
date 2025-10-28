@@ -233,9 +233,7 @@ export function HomeView({
            title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
            subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
            backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-           skyboxSrc={(backgroundImage && /\.(mp4|webm|ogg|mov)$/i.test(backgroundImage) 
-               ? backgroundImage 
-               : (isLobby && !hasCustomBackground ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))}
+           skyboxSrc={show360 ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)) : undefined}
            showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360)}
            show360={show360}
            xAxisOffset={xAxisOffset}

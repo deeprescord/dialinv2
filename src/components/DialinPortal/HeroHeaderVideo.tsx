@@ -491,25 +491,26 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
   return (
     <div 
-      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl cursor-pointer select-none hero-protected-content"
+      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl hero-protected-content"
       style={{ 
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-        pointerEvents: 'auto'
+        userSelect: webUrl ? 'auto' : 'none',
+        WebkitUserSelect: webUrl ? 'auto' : 'none',
+        WebkitTouchCallout: webUrl ? 'auto' : 'none',
+        pointerEvents: 'auto',
+        cursor: webUrl ? 'auto' : 'pointer'
       } as React.CSSProperties}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleMouseDown}
-      onTouchEnd={handleMouseUp}
+      onMouseDown={webUrl ? undefined : handleMouseDown}
+      onMouseUp={webUrl ? undefined : handleMouseUp}
+      onMouseLeave={webUrl ? undefined : handleMouseLeave}
+      onTouchStart={webUrl ? undefined : handleMouseDown}
+      onTouchEnd={webUrl ? undefined : handleMouseUp}
     >
       {/* Web Page Iframe - highest priority */}
       {webUrl && (
-        <div className="absolute inset-0 w-full h-full z-20 bg-black">
+        <div className="absolute inset-0 w-full h-full z-20 bg-black" style={{ pointerEvents: 'auto' }}>
           {/* Loading indicator */}
           {!iframeLoaded && !proxiedHtml && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-white border-r-transparent mb-4"></div>
                 <p className="text-white text-sm">Loading webpage...</p>
@@ -522,18 +523,20 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               srcDoc={proxiedHtml}
               className="w-full h-full border-0"
               title="Web Content (proxied)"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-modals allow-downloads"
               scrolling="yes"
-              style={{ overflow: 'auto' }}
+              style={{ overflow: 'auto', pointerEvents: 'auto' }}
+              allow="autoplay; fullscreen; picture-in-picture"
             />
           ) : (
             <iframe
               src={webUrl}
               className="w-full h-full border-0"
               title="Web Content"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-modals allow-downloads"
               scrolling="yes"
-              style={{ overflow: 'auto' }}
+              style={{ overflow: 'auto', pointerEvents: 'auto' }}
+              allow="autoplay; fullscreen; picture-in-picture"
               onLoad={() => {
                 console.log('Iframe loaded successfully');
                 setIframeLoaded(true);

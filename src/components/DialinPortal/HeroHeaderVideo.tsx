@@ -82,7 +82,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   // Use stable ID based on route/space instead of random
   const audioIdRef = useRef<string>('hero-home');
 
-  // Register this component's pause function with the audio context
+  // Phase B: Register full controller with AudioContext
   useEffect(() => {
     const pauseAudio = () => {
       const fg = videoRef.current;
@@ -91,13 +91,56 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       if (bg) { bg.pause(); bg.muted = true; }
       setIsPlaying(false);
     };
+
+    const controller = {
+      playPause: () => {
+        console.debug('[HeroHeader] Controller playPause called');
+        togglePlayPause();
+      },
+      seek: (value: number) => {
+        console.debug('[HeroHeader] Controller seek called:', value);
+        const activeVideo = getActiveVideo();
+        if (activeVideo) activeVideo.currentTime = value;
+        if (show360) setSkyboxSeekTo(value);
+      },
+      setVolume: (value: number) => {
+        console.debug('[HeroHeader] Controller setVolume called:', value);
+        const norm = value > 1 ? value / 100 : value;
+        setVideoVolume(norm);
+        const activeVideo = getActiveVideo();
+        if (activeVideo && !isVideoMuted) {
+          activeVideo.volume = norm;
+        }
+      },
+      toggleMute: () => {
+        console.debug('[HeroHeader] Controller toggleMute called');
+        toggleMute();
+      },
+      pause: pauseAudio,
+      getState: () => {
+        const activeVideo = getActiveVideo();
+        return {
+          currentTime: activeVideo?.currentTime || 0,
+          duration: activeVideo?.duration || 0,
+          volume: isVideoMuted ? 0 : videoVolume,
+          isMuted: isVideoMuted,
+          isPlaying: activeVideo ? !activeVideo.paused : false
+        };
+      }
+    };
     
     audioContext.registerAudioSource(audioIdRef.current, pauseAudio);
+    audioContext.registerController(audioIdRef.current, controller);
+    
+    console.debug('[HeroHeader] Registered controller');
     
     return () => {
+      console.debug('[HeroHeader] Unregistering controller');
+      pauseAudio();
       audioContext.unregisterAudioSource(audioIdRef.current);
+      audioContext.unregisterController(audioIdRef.current);
     };
-  }, [audioContext]);
+  }, [audioContext, isVideoMuted, videoVolume, showVideo, show360]);
 
   // Push progress updates to AudioContext via timeupdate (more consistent than interval)
   useEffect(() => {
@@ -273,12 +316,15 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const togglePlayPause = () => {
+    console.debug('[HeroHeader] togglePlayPause - isPlaying:', isPlaying, 'show360:', show360);
+    
     // 360 content uses internal video texture
     if (show360) {
       const newPlayingState = !isPlaying;
       setIsPlaying(newPlayingState);
       if (newPlayingState && !isVideoMuted && videoVolume > 0) {
-        audioContext.playAudio(audioIdRef.current);
+        console.debug('[HeroHeader] 360 Playing - claiming audio focus');
+        audioContext.setActive(audioIdRef.current);
       }
       return;
     }
@@ -288,14 +334,16 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
 
     if (isPlaying) {
+      console.debug('[HeroHeader] Pausing');
       try { fg?.pause(); } catch {}
       try { bg?.pause(); } catch {}
       setIsPlaying(false);
       return;
     }
 
+    console.debug('[HeroHeader] Playing - claiming audio focus');
     // Play path: ensure exclusivity, unmute and play only the active element
-    audioContext.playAudio(audioIdRef.current);
+    audioContext.setActive(audioIdRef.current);
 
     if (showVideo) {
       try { bg?.pause(); } catch {}

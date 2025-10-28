@@ -996,38 +996,25 @@ export default function SpacePage() {
     }
   }, [audioContext.activeProgress]);
 
-  // Video control handlers - prioritize ContentViewer when visible, fallback to hero
+  // Video control handlers - use new controlActive method from AudioContext
   const handleVideoPlayPause = () => {
-    // If ContentViewer is showing media, control it; otherwise control hero
-    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
-      contentViewerRef.current?.playPause();
-    } else {
-      heroRef.current?.playPause();
-    }
+    console.debug('[SpacePage] handleVideoPlayPause - activeId:', audioContext.activeId);
+    audioContext.controlActive('playPause');
   };
 
   const handleVideoSeek = (value: number) => {
-    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
-      contentViewerRef.current?.seek(value);
-    } else {
-      heroRef.current?.seek(value);
-    }
+    console.debug('[SpacePage] handleVideoSeek - activeId:', audioContext.activeId, 'value:', value);
+    audioContext.controlActive('seek', value);
   };
 
   const handleVideoVolumeChange = (value: number) => {
-    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
-      contentViewerRef.current?.setVolume(value);
-    } else {
-      heroRef.current?.setVolume(value);
-    }
+    console.debug('[SpacePage] handleVideoVolumeChange - activeId:', audioContext.activeId, 'value:', value);
+    audioContext.controlActive('setVolume', value);
   };
 
   const handleVideoMuteToggle = () => {
-    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
-      contentViewerRef.current?.toggleMute();
-    } else {
-      heroRef.current?.toggleMute();
-    }
+    console.debug('[SpacePage] handleVideoMuteToggle - activeId:', audioContext.activeId);
+    audioContext.controlActive('toggleMute');
   };
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;

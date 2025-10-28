@@ -52,9 +52,11 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const audioContext = useAudioContext();
   const audioIdRef = useRef<string>(`content-${content.id}`);
 
-  // Register with AudioContext and ensure pause on unmount or switch
+  // Phase B: Register full controller with AudioContext
   useEffect(() => {
     audioIdRef.current = `content-${content.id}`;
+    const mediaRef = (videoRef.current || audioRef.current) as HTMLVideoElement | HTMLAudioElement | null;
+    
     const pauseAll = () => {
       const v = videoRef.current;
       const a = audioRef.current;
@@ -63,10 +65,44 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       setIsPlaying(false);
     };
 
+    const controller = {
+      playPause: () => {
+        console.debug('[ContentViewer] Controller playPause called for:', audioIdRef.current);
+        togglePlay();
+      },
+      seek: (value: number) => {
+        console.debug('[ContentViewer] Controller seek called for:', audioIdRef.current, value);
+        handleSeek([value]);
+      },
+      setVolume: (value: number) => {
+        console.debug('[ContentViewer] Controller setVolume called for:', audioIdRef.current, value);
+        handleVolumeChange([value]);
+      },
+      toggleMute: () => {
+        console.debug('[ContentViewer] Controller toggleMute called for:', audioIdRef.current);
+        toggleMute();
+      },
+      pause: pauseAll,
+      getState: () => ({
+        currentTime: mediaRef?.currentTime || 0,
+        duration: mediaRef?.duration || 0,
+        volume: isMuted ? 0 : volume,
+        isMuted,
+        isPlaying: mediaRef ? !mediaRef.paused : false
+      })
+    };
+
+    // Register both old and new methods for compatibility
     audioContext.registerAudioSource(audioIdRef.current, pauseAll);
+    audioContext.registerController(audioIdRef.current, controller);
+    
+    console.debug('[ContentViewer] Registered controller for:', audioIdRef.current);
+    
     return () => {
+      console.debug('[ContentViewer] Unregistering controller for:', audioIdRef.current);
       pauseAll();
       audioContext.unregisterAudioSource(audioIdRef.current);
+      audioContext.unregisterController(audioIdRef.current);
     };
   }, [audioContext, content.id]);
 
@@ -177,10 +213,12 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     if (!mediaRef) return;
 
     if (isPlaying) {
+      console.debug('[ContentViewer] Pausing:', audioIdRef.current);
       mediaRef.pause();
     } else {
+      console.debug('[ContentViewer] Playing:', audioIdRef.current, '- claiming audio focus');
       // Ensure exclusive playback across the app
-      audioContext.playAudio(audioIdRef.current);
+      audioContext.setActive(audioIdRef.current);
       mediaRef.play();
     }
   };

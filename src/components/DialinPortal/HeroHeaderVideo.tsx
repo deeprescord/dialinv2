@@ -99,13 +99,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
   }, [audioContext]);
 
-  // Push progress updates to AudioContext when playing
+  // Push progress updates to AudioContext via timeupdate (more consistent than interval)
   useEffect(() => {
-    if (!isPlaying) return;
-    
-    const interval = setInterval(() => {
-      const activeVideo = getActiveVideo();
-      if (activeVideo && !activeVideo.paused) {
+    const activeVideo = getActiveVideo();
+    if (!activeVideo) return;
+
+    const handleTimeUpdate = () => {
+      if (!activeVideo.paused) {
         audioContext.pushProgress(audioIdRef.current, {
           currentTime: activeVideo.currentTime || 0,
           duration: activeVideo.duration || 0,
@@ -114,10 +114,11 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           isPlaying: !activeVideo.paused
         });
       }
-    }, 100);
+    };
 
-    return () => clearInterval(interval);
-  }, [isPlaying, isVideoMuted, videoVolume, audioContext]);
+    activeVideo.addEventListener('timeupdate', handleTimeUpdate);
+    return () => activeVideo.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [isPlaying, isVideoMuted, videoVolume, audioContext, showVideo]);
 
   // Sync incoming props to internal state (volume/mute)
   useEffect(() => {
@@ -670,7 +671,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           playsInline
           loop
           preload="auto"
-          muted
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
@@ -759,7 +759,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               playsInline
               loop
               preload="auto"
-              muted
               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100"
               style={{ transform: 'scaleY(1)' }}
             >

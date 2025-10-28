@@ -996,10 +996,10 @@ export default function SpacePage() {
     }
   }, [audioContext.activeProgress]);
 
-  // Video control handlers - delegate to active source (hero or content viewer)
+  // Video control handlers - prioritize ContentViewer when visible, fallback to hero
   const handleVideoPlayPause = () => {
-    const activeId = audioContext.getActiveId();
-    if (activeId?.startsWith('content-')) {
+    // If ContentViewer is showing media, control it; otherwise control hero
+    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
       contentViewerRef.current?.playPause();
     } else {
       heroRef.current?.playPause();
@@ -1007,8 +1007,7 @@ export default function SpacePage() {
   };
 
   const handleVideoSeek = (value: number) => {
-    const activeId = audioContext.getActiveId();
-    if (activeId?.startsWith('content-')) {
+    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
       contentViewerRef.current?.seek(value);
     } else {
       heroRef.current?.seek(value);
@@ -1016,8 +1015,7 @@ export default function SpacePage() {
   };
 
   const handleVideoVolumeChange = (value: number) => {
-    const activeId = audioContext.getActiveId();
-    if (activeId?.startsWith('content-')) {
+    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
       contentViewerRef.current?.setVolume(value);
     } else {
       heroRef.current?.setVolume(value);
@@ -1025,8 +1023,7 @@ export default function SpacePage() {
   };
 
   const handleVideoMuteToggle = () => {
-    const activeId = audioContext.getActiveId();
-    if (activeId?.startsWith('content-')) {
+    if (selectedItemData && selectedItemData.storage_path && !selectedItemData.web_url) {
       contentViewerRef.current?.toggleMute();
     } else {
       heroRef.current?.toggleMute();

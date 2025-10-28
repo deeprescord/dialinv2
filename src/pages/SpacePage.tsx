@@ -79,6 +79,7 @@ export default function SpacePage() {
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
   
   // Sync UI spaces with database spaces (plus Lobby)
   useEffect(() => {
@@ -118,12 +119,12 @@ export default function SpacePage() {
     
     // Listen for lobby updates
     const handleLobbyUpdate = () => {
-      updateSpaces();
+      setLobbyRefreshTrigger(prev => prev + 1);
     };
     
     window.addEventListener('refetch-spaces', handleLobbyUpdate);
     return () => window.removeEventListener('refetch-spaces', handleLobbyUpdate);
-  }, [dbSpaces]);
+  }, [dbSpaces, lobbyRefreshTrigger]);
   
   // Listen for refetch events from SpaceContextMenu
   useEffect(() => {

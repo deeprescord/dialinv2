@@ -117,8 +117,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Only autoplay if this is the active video (showVideo is true)
-      if (showVideo) {
+      // Only autoplay if this is the active video (showVideo is true AND no 360 or web content)
+      if (showVideo && !show360 && !webUrl) {
         // Ensure background video is paused
         if (bgVideoRef.current) {
           try { bgVideoRef.current.pause(); } catch {}
@@ -136,6 +136,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           setIsVideoMuted(true);
           video.play().catch(e => console.log('Muted autoplay also prevented:', e));
         });
+      } else {
+        // Not active: ensure paused and muted
+        try { video.pause(); } catch {}
+        video.muted = true;
       }
     };
 
@@ -326,8 +330,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Only autoplay if this is the active video (showVideo is false AND show360 is false)
-      if (!showVideo && !show360) {
+      // Only autoplay if this is the active video (showVideo is false AND show360 is false AND no web)
+      if (!showVideo && !show360 && !webUrl) {
         // Ensure foreground video is paused
         if (videoRef.current) {
           try { videoRef.current.pause(); } catch {}
@@ -345,6 +349,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           setIsVideoMuted(true);
           bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
         });
+      } else {
+        // Not active: ensure paused and muted
+        try { bgVideo.pause(); } catch {}
+        bgVideo.muted = true;
       }
     };
 
@@ -399,8 +407,25 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     if (show360) {
       try { videoRef.current?.pause(); } catch {}
       try { bgVideoRef.current?.pause(); } catch {}
+      // Also ensure both are muted when 360 is active
+      if (videoRef.current) videoRef.current.muted = true;
+      if (bgVideoRef.current) bgVideoRef.current.muted = true;
+      setIsVideoMuted(true);
+      setIsPlaying(false);
     }
   }, [show360]);
+
+  // If a web page is displayed, pause and mute all internal videos to avoid dual audio
+  useEffect(() => {
+    if (webUrl) {
+      try { videoRef.current?.pause(); } catch {}
+      try { bgVideoRef.current?.pause(); } catch {}
+      if (videoRef.current) videoRef.current.muted = true;
+      if (bgVideoRef.current) bgVideoRef.current.muted = true;
+      setIsVideoMuted(true);
+      setIsPlaying(false);
+    }
+  }, [webUrl]);
 
   const isSkyboxVideo = show360 && getIsVideo(skyboxSrc || backgroundImage);
   const hasVideoPlaying = !webUrl && (

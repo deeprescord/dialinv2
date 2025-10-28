@@ -137,6 +137,33 @@ useEffect(() => {
   });
 }, [dbSpaces]);
 
+// Keep lobby background/thumbnail in sync with localStorage (used by context menu)
+useEffect(() => {
+  const applyLobbyLocal = () => {
+    try {
+      const thumb = localStorage.getItem('lobby-thumbnail') || undefined;
+      const bg = localStorage.getItem('lobby-background') || undefined;
+      if (!thumb && !bg) return;
+      setSpaces(prev => prev.map(s => {
+        if (s.id !== 'lobby') return s;
+        const newThumb = appendCacheBuster(thumb || s.thumb);
+        const newBg = appendCacheBuster(bg || thumb || s.backgroundImage);
+        return { ...s, thumb: newThumb || s.thumb, backgroundImage: newBg || s.backgroundImage };
+      }));
+    } catch (e) {
+      console.warn('Failed to apply lobby settings from localStorage', e);
+    }
+  };
+
+  // Apply immediately on mount
+  applyLobbyLocal();
+
+  // And whenever SpaceContextMenu asks to refetch
+  const handler = () => applyLobbyLocal();
+  window.addEventListener('refetch-spaces', handler);
+  return () => window.removeEventListener('refetch-spaces', handler);
+}, []);
+
 const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);

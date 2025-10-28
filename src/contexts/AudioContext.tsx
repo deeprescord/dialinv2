@@ -20,7 +20,7 @@ interface AudioContextType {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-const DEBUG = false; // Set to true to enable debug logging
+const DEBUG = true; // Set to true to enable debug logging
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const audioSourcesRef = useRef<Map<string, () => void>>(new Map());
@@ -43,13 +43,16 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   }, [activeId]);
 
   const playAudio = useCallback((id: string) => {
-    if (DEBUG) console.debug('[AudioContext] Focus changed to:', id, 'from:', activeId);
+    if (DEBUG) console.debug('[AudioContext] Focus changed to:', id, '(was:', activeId, ')');
     // Pause all other audio sources
+    let pausedCount = 0;
     audioSourcesRef.current.forEach((pauseFn, sourceId) => {
       if (sourceId !== id) {
         pauseFn();
+        pausedCount++;
       }
     });
+    if (DEBUG) console.debug('[AudioContext] Paused', pausedCount, 'other sources');
     setActiveId(id);
   }, [activeId]);
 

@@ -305,7 +305,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
   const togglePlayPause = () => {
     if (show360) {
-      setIsPlaying((prev) => !prev);
+      const newPlayingState = !isPlaying;
+      setIsPlaying(newPlayingState);
+      // Claim audio focus when playing 360
+      if (newPlayingState && !isVideoMuted && videoVolume > 0) {
+        console.log('[HeroHeader] 360 play - claiming audio focus');
+        audioContext.playAudio(audioIdRef.current);
+      }
       return;
     }
     const activeVideo = getActiveVideo();
@@ -313,6 +319,11 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       if (isPlaying) {
         activeVideo.pause();
       } else {
+        // Claim audio focus before playing if not muted
+        if (!isVideoMuted && (videoVolume > 0)) {
+          console.log('[HeroHeader] HTML5 play - claiming audio focus');
+          audioContext.playAudio(audioIdRef.current);
+        }
         activeVideo.play();
       }
     }
@@ -506,7 +517,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
   }, [isBackgroundVideo, backgroundImage, showVideo]);
 
-  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos
+  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos and claim audio focus if playing with sound
   useEffect(() => {
     if (show360) {
       try { videoRef.current?.pause(); } catch {}
@@ -514,10 +525,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       // Also ensure both are muted when 360 is active
       if (videoRef.current) videoRef.current.muted = true;
       if (bgVideoRef.current) bgVideoRef.current.muted = true;
-      setIsVideoMuted(true);
-      setIsPlaying(false);
+      
+      // If 360 is playing with sound, claim audio focus
+      if (isPlaying && !isVideoMuted && videoVolume > 0) {
+        console.log('[HeroHeader] 360 mode activated with sound - claiming audio focus');
+        audioContext.playAudio(audioIdRef.current);
+      }
     }
-  }, [show360]);
+  }, [show360, isPlaying, isVideoMuted, videoVolume, audioContext]);
 
   // If a web page is displayed, pause and mute all internal videos to avoid dual audio
   useEffect(() => {
@@ -540,17 +555,11 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         : (isBackgroundVideo && !videoError && videoLoaded)
   );
 
-  // Propagate state to parent controls (Spaces bar)
-  React.useEffect(() => {
-    onVideoStateChange?.({
-      isPlaying,
-      currentTime,
-      duration,
-      volume: videoVolume,
-      isMuted: isVideoMuted,
-      hasVideo: hasVideoPlaying,
-    });
-  }, [isPlaying, currentTime, duration, videoVolume, isVideoMuted, hasVideoPlaying, onVideoStateChange]);
+  // Remove old onVideoStateChange callback - now using AudioContext
+  // Propagate state to parent controls (Spaces bar) via AudioContext
+  // The progress push happens either via:
+  // - The interval in useEffect for HTML5 videos
+  // - The onStateChange callback for 360 SkyboxViewer
 
   // Auto-fallback to proxy embed if direct iframe doesn't load
   useEffect(() => {
@@ -760,12 +769,21 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               rotationSpeed={rotationSpeed}
               flipHorizontal={flipHorizontal}
               flipVertical={flipVertical}
-              onStateChange={({ currentTime, duration, isPlaying, volume, isMuted }) => {
+              onStateChange={({ currentTime, duration, isPlaying: skyboxPlaying, volume, isMuted }) => {
                 setCurrentTime(currentTime);
                 setDuration(duration);
-                setIsPlaying(isPlaying);
+                setIsPlaying(skyboxPlaying);
                 setVideoVolume(volume);
                 setIsVideoMuted(isMuted);
+                
+                // Push progress to AudioContext for 360 videos
+                audioContext.pushProgress(audioIdRef.current, {
+                  currentTime,
+                  duration,
+                  isPlaying: skyboxPlaying,
+                  volume,
+                  isMuted
+                });
               }}
             />
           </Suspense>

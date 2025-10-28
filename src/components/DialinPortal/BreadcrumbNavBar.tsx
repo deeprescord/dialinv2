@@ -97,7 +97,7 @@ export function BreadcrumbNavBar({
 
   const getSpace = (spaceId: string): Space => {
     if (spaceId === 'lobby') {
-      return { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
+      return { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' };
     }
     return spaces.find(s => s.id === spaceId) || { id: spaceId, name: spaceId, thumb: '/placeholder.svg' };
   };

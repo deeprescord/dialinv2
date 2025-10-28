@@ -123,7 +123,7 @@ export function CombinedBottomBar({
   };
 
   // Create spaces with lobby at the start, filtering out any existing lobby
-  const lobbySpace: Space = { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
+  const lobbySpace: Space = { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' };
   const filteredSpaces = spaces.filter(space => space.id !== 'lobby');
   const allSpaces = [lobbySpace, ...filteredSpaces];
 

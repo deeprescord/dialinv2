@@ -175,7 +175,7 @@ export function SpacesBar({
 
   // Create spaces with lobby at the start, preferring provided lobby if present
   const lobbyFromProps = spaces.find(space => space.id === 'lobby');
-  const lobbySpace: Space = lobbyFromProps || { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' };
+  const lobbySpace: Space = lobbyFromProps || { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' };
   const filteredSpaces = spaces.filter(space => space.id !== 'lobby');
   const allSpaces: Space[] = [lobbySpace, ...filteredSpaces];
 

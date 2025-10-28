@@ -54,7 +54,7 @@ export default function SpacePage() {
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([
-    { id: 'lobby', name: 'Lobby', thumb: '/media/lobby-poster.png' },
+    { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' },
   ]);
   
   // Video controls state
@@ -90,7 +90,7 @@ export default function SpacePage() {
       
       const lobby: Space = { 
         id: 'lobby', 
-        name: 'Lobby', 
+        name: 'Home', 
         thumb: lobbyThumbnail,
         backgroundImage: lobbyBackground
       };
@@ -139,7 +139,7 @@ export default function SpacePage() {
 
   // Footer spaces (main navigation spaces)
   const footerSpaces = [
-    { id: 'lobby', name: 'Lobby' },
+    { id: 'lobby', name: 'Home' },
     { id: 'videos', name: 'Videos' },
     { id: 'music', name: 'Music' },
     { id: 'locations', name: 'Locations' },
@@ -1054,7 +1054,7 @@ export default function SpacePage() {
                 onMediaClick={handleMediaClick}
                 onMediaLongPress={handleMediaLongPress}
                 backgroundImage={backgroundImage}
-                spaceName={currentSpace?.name || 'Lobby'}
+                spaceName={currentSpace?.name || 'Home'}
                 spaceDescription={currentSpace?.description}
                 isLobby={spaceId === 'lobby'}
                 show360={show360}

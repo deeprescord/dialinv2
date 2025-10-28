@@ -326,8 +326,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Only autoplay if this is the active video (showVideo is false, meaning background is active)
-      if (!showVideo) {
+      // Only autoplay if this is the active video (showVideo is false AND show360 is false)
+      if (!showVideo && !show360) {
         // Ensure foreground video is paused
         if (videoRef.current) {
           try { videoRef.current.pause(); } catch {}

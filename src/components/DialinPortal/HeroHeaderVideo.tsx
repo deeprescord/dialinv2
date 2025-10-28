@@ -589,6 +589,26 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {/* 360° Skybox View - for special floors */}
       {!webUrl && show360 && (skyboxSrc || backgroundImage) && (
         <div className="absolute inset-0 w-full h-full z-10">
+          {/* Fallback layer underneath to avoid black while 360 loads or fails */}
+          <div className="absolute inset-0 w-full h-full z-0">
+            {isSkyboxVideo ? (
+              <video
+                src={(skyboxSrc || backgroundImage)!}
+                className="absolute inset-0 w-full h-full object-cover"
+                loop
+                muted
+                autoPlay
+                playsInline
+                preload="auto"
+                poster={posterSrc}
+              />
+            ) : (
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
+              />
+            )}
+          </div>
           <Suspense fallback={
             <div 
               className="w-full h-full bg-cover bg-center"
@@ -597,7 +617,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           }>
             <SkyboxViewer 
               mediaUrl={(skyboxSrc || backgroundImage)!} 
-              className="w-full h-full"
+              className="w-full h-full relative z-10"
               xAxisOffset={xAxisOffset}
               yAxisOffset={yAxisOffset}
               volume={videoVolume}

@@ -112,8 +112,7 @@ export function SpacesBar({
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
 
   // Fetch items for selected space
-  const { items: spaceItems } = useSpaceItems(currentSpaceId);
-
+  const { items: spaceItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -174,15 +173,21 @@ export function SpacesBar({
     }
   };
 
-  // Use provided spaces as-is; Home is a real space now
-  const allSpaces: Space[] = spaces;
-
+  // Create spaces with lobby at the start, preferring provided lobby if present
+  const lobbyFromProps = spaces.find(space => space.id === 'lobby');
+  const lobbySpace: Space = lobbyFromProps || { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' };
+  const filteredSpaces = spaces.filter(space => space.id !== 'lobby');
+  const allSpaces: Space[] = [lobbySpace, ...filteredSpaces];
 
   const handleSpaceClick = (space: Space) => {
     if (onSpaceClick) {
       onSpaceClick(space);
     } else {
-      navigate(`/space/${space.id}`);
+      if (space.id === 'lobby') {
+        navigate('/');
+      } else {
+        navigate(`/space/${space.id}`);
+      }
     }
   };
 
@@ -506,9 +511,9 @@ export function SpacesBar({
             ) : (
               // Default mode: Show all spaces
               <>
-                 {allSpaces.map((space, index) => {
-                   const isCurrentSpace = currentSpaceId === space.id;
-
+                {allSpaces.map((space, index) => {
+                  const isLobby = space.id === 'lobby';
+                  const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
                   
                   return (
                     <motion.div

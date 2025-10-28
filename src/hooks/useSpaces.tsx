@@ -20,6 +20,7 @@ export interface Space {
   rotation_axis?: string;
   flip_horizontal?: boolean;
   flip_vertical?: boolean;
+  is_home?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -28,15 +29,73 @@ export function useSpaces() {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const ensureHomeSpaceExists = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if home space exists
+      const { data: existingHome } = await supabase
+        .from('spaces')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_home', true)
+        .maybeSingle();
+
+      if (!existingHome) {
+        // Create home space
+        const { data: newHome, error } = await supabase
+          .from('spaces')
+          .insert({
+            user_id: user.id,
+            name: 'Home',
+            is_home: true,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating home space:', error);
+          return;
+        }
+
+        // Migrate localStorage lobby settings if they exist
+        const lobbyThumbnail = localStorage.getItem('lobby-thumbnail');
+        const lobbyBackground = localStorage.getItem('lobby-background');
+        
+        if (lobbyThumbnail || lobbyBackground) {
+          const updates: any = {};
+          if (lobbyThumbnail) updates.thumbnail_url = lobbyThumbnail;
+          if (lobbyBackground) updates.cover_url = lobbyBackground;
+          
+          await supabase
+            .from('spaces')
+            .update(updates)
+            .eq('id', newHome.id);
+          
+          // Clear localStorage
+          localStorage.removeItem('lobby-thumbnail');
+          localStorage.removeItem('lobby-background');
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring home space exists:', error);
+    }
+  };
+
   const fetchSpaces = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Ensure home space exists
+      await ensureHomeSpaceExists();
+
       const { data, error } = await supabase
         .from('spaces')
         .select('*')
         .eq('user_id', user.id)
+        .order('is_home', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -89,7 +148,7 @@ export function useSpaces() {
     }
   };
 
-  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'thumbnail_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis' | 'flip_horizontal' | 'flip_vertical'>>, options?: { silent?: boolean }): Promise<boolean> => {
+  const updateSpace = async (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'thumbnail_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis' | 'flip_horizontal' | 'flip_vertical' | 'is_home'>>, options?: { silent?: boolean }): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('spaces')

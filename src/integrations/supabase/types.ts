@@ -341,6 +341,7 @@ export type Database = {
           flip_vertical: boolean | null
           horizontal_flip: boolean | null
           id: string
+          is_home: boolean
           is_muted: boolean | null
           name: string
           parent_id: string | null
@@ -364,6 +365,7 @@ export type Database = {
           flip_vertical?: boolean | null
           horizontal_flip?: boolean | null
           id?: string
+          is_home?: boolean
           is_muted?: boolean | null
           name: string
           parent_id?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           flip_vertical?: boolean | null
           horizontal_flip?: boolean | null
           id?: string
+          is_home?: boolean
           is_muted?: boolean | null
           name?: string
           parent_id?: string | null

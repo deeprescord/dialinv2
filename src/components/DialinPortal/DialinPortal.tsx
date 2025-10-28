@@ -104,9 +104,7 @@ export function DialinPortal() {
     setUserPoints(prev => prev + 1);
     setShowCelebration(true);
   };
-const [spaces, setSpaces] = useState<Space[]>([
-  { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' }
-]);
+const [spaces, setSpaces] = useState<Space[]>([]);
 const { spaces: dbSpaces, createSpace: createDbSpace, updateSpace, deleteSpace, refetch } = useSpacesContext();
 
 useEffect(() => {
@@ -116,53 +114,19 @@ useEffect(() => {
     thumb: (dbSpace as any).thumbnail_url ? appendCacheBuster((dbSpace as any).thumbnail_url, (dbSpace as any).updated_at) : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
     parentId: (dbSpace as any).parent_id || undefined,
     backgroundImage: (dbSpace as any).cover_url ? appendCacheBuster((dbSpace as any).cover_url, (dbSpace as any).updated_at) : undefined,
+    show360: (dbSpace as any).show_360,
+    xAxis: (dbSpace as any).x_axis_offset,
+    yAxis: (dbSpace as any).y_axis_offset,
+    volume: (dbSpace as any).volume,
+    isMuted: (dbSpace as any).is_muted,
+    rotationEnabled: (dbSpace as any).rotation_enabled,
+    rotationSpeed: (dbSpace as any).rotation_speed,
+    flipHorizontal: (dbSpace as any).flip_horizontal,
+    flipVertical: (dbSpace as any).flip_vertical,
+    isHome: (dbSpace as any).is_home,
   }));
-  setSpaces(prev => {
-    const prevLobby = prev.find(s => s.id === 'lobby') || { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png', backgroundImage: '' };
-    const lobby: Space = {
-      id: 'lobby',
-      name: 'Home',
-      thumb: prevLobby.thumb || '/media/lobby-poster.png',
-      backgroundImage: prevLobby.backgroundImage || prevLobby.thumb || '/media/lobby-poster.png',
-      // Preserve 360 settings across refetches
-      show360: prevLobby.show360,
-      xAxis: prevLobby.xAxis,
-      yAxis: prevLobby.yAxis,
-      volume: prevLobby.volume,
-      isMuted: prevLobby.isMuted,
-      rotationEnabled: prevLobby.rotationEnabled,
-      rotationSpeed: prevLobby.rotationSpeed,
-    };
-    return [lobby, ...convertedDbSpaces];
-  });
+  setSpaces(convertedDbSpaces);
 }, [dbSpaces]);
-
-// Keep lobby background/thumbnail in sync with localStorage (used by context menu)
-useEffect(() => {
-  const applyLobbyLocal = () => {
-    try {
-      const thumb = localStorage.getItem('lobby-thumbnail') || undefined;
-      const bg = localStorage.getItem('lobby-background') || undefined;
-      if (!thumb && !bg) return;
-      setSpaces(prev => prev.map(s => {
-        if (s.id !== 'lobby') return s;
-        const newThumb = appendCacheBuster(thumb || s.thumb);
-        const newBg = appendCacheBuster(bg || thumb || s.backgroundImage);
-        return { ...s, thumb: newThumb || s.thumb, backgroundImage: newBg || s.backgroundImage };
-      }));
-    } catch (e) {
-      console.warn('Failed to apply lobby settings from localStorage', e);
-    }
-  };
-
-  // Apply immediately on mount
-  applyLobbyLocal();
-
-  // And whenever SpaceContextMenu asks to refetch
-  const handler = () => applyLobbyLocal();
-  window.addEventListener('refetch-spaces', handler);
-  return () => window.removeEventListener('refetch-spaces', handler);
-}, []);
 
 const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showChatWindow, setShowChatWindow] = useState(false);
@@ -413,24 +377,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
 // Handle space thumbnail update
   const handleUpdateSpaceThumbnail = async (spaceId: string, thumbnailUrl: string) => {
-    // Lobby is a special case - update it in local state only
-    if (spaceId === 'lobby') {
-      const url = appendCacheBuster(thumbnailUrl);
-      setSpaces(prev => prev.map(space =>
-        space.id === 'lobby' ? { ...space, thumb: url!, backgroundImage: url } : space
-      ));
-      toast.success('Lobby cover updated');
-      return;
-    }
-    
-    // For other spaces, update in database
     const success = await updateSpace(spaceId, { cover_url: thumbnailUrl } as any);
     if (success) {
-      // Update local state immediately
-      const url = appendCacheBuster(thumbnailUrl);
-      setSpaces(prev => prev.map(space =>
-        space.id === spaceId ? { ...space, thumb: url!, backgroundImage: url } : space
-      ));
       toast.success('Cover updated');
     } else {
       refetch();
@@ -456,9 +404,10 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
   // Handle space navigation
   const handleSpaceClick = (space: Space) => {
-    if (space.id === 'lobby') {
-      // Already on lobby (home page)
-      return;
+    if (space.isHome) {
+      // Navigate to home
+      setCurrentTab('home');
+      navigate('/');
     } else {
       navigate(`/space/${space.id}`);
     }
@@ -478,59 +427,35 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   };
 
   const handleToggle360 = (spaceId: string, enabled: boolean) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId 
-        ? { ...space, show360: enabled }
-        : space
-    ));
+    updateSpace(spaceId, { show_360: enabled }, { silent: true });
   };
 
   const handle360AxisChange = (spaceId: string, axis: 'x' | 'y', value: number) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId 
-        ? { ...space, [axis === 'x' ? 'xAxis' : 'yAxis']: value }
-        : space
-    ));
+    updateSpace(spaceId, axis === 'x' ? { x_axis_offset: value } : { y_axis_offset: value }, { silent: true });
   };
 
   const handle360VolumeChange = (spaceId: string, volume: number) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId 
-        ? { ...space, volume }
-        : space
-    ));
+    updateSpace(spaceId, { volume }, { silent: true });
   };
 
   const handle360MuteToggle = (spaceId: string, muted: boolean) => {
-    setSpaces(prev => prev.map(space => 
-      space.id === spaceId 
-        ? { ...space, isMuted: muted }
-        : space
-    ));
+    updateSpace(spaceId, { is_muted: muted }, { silent: true });
   };
 
   const handle360RotationToggle = (spaceId: string, enabled: boolean) => {
-    setSpaces(prev => prev.map(space =>
-      space.id === spaceId
-        ? { ...space, rotationEnabled: enabled }
-        : space
-    ));
+    updateSpace(spaceId, { rotation_enabled: enabled }, { silent: true });
   };
 
   const handle360RotationSpeedChange = (spaceId: string, speed: number) => {
-    setSpaces(prev => prev.map(space =>
-      space.id === spaceId
-        ? { ...space, rotationSpeed: speed }
-        : space
-    ));
+    updateSpace(spaceId, { rotation_speed: speed }, { silent: true });
   };
 
   const handleFlipHorizontalToggle = (spaceId: string, flipped: boolean) => {
-    updateSpace(spaceId, { flip_horizontal: flipped });
+    updateSpace(spaceId, { flip_horizontal: flipped }, { silent: true });
   };
 
   const handleFlipVerticalToggle = (spaceId: string, flipped: boolean) => {
-    updateSpace(spaceId, { flip_vertical: flipped });
+    updateSpace(spaceId, { flip_vertical: flipped }, { silent: true });
   };
 
   // Handle contact click from chat window
@@ -653,9 +578,9 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
   
-  // Get lobby space for 360 settings
-  const lobbySpace = spaces.find(space => space.id === 'lobby');
-  const show360 = lobbySpace?.show360 || false;
+  // Get home space for 360 settings
+  const homeSpace = spaces.find(space => space.isHome);
+  const show360 = homeSpace?.show360 || false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -685,19 +610,19 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             onContactClick={handleContactClick}
             onMediaClick={handleMediaClick}
             onMediaLongPress={handleMediaLongPress}
-            backgroundImage={lobbySpace?.backgroundImage || lobbySpace?.thumb}
-            spaceName={lobbySpace?.name}
-            spaceDescription={lobbySpace?.description}
+            backgroundImage={homeSpace?.backgroundImage || homeSpace?.thumb}
+            spaceName={homeSpace?.name}
+            spaceDescription={homeSpace?.description}
             isLobby={true}
             show360={show360}
-            xAxisOffset={lobbySpace?.xAxis}
-            yAxisOffset={lobbySpace?.yAxis}
-            volume={lobbySpace?.volume}
-            isMuted={lobbySpace?.isMuted}
-            rotationEnabled={lobbySpace?.rotationEnabled}
-            rotationSpeed={lobbySpace?.rotationSpeed}
-            flipHorizontal={lobbySpace?.flipHorizontal}
-            flipVertical={lobbySpace?.flipVertical}
+            xAxisOffset={homeSpace?.xAxis}
+            yAxisOffset={homeSpace?.yAxis}
+            volume={homeSpace?.volume}
+            isMuted={homeSpace?.isMuted}
+            rotationEnabled={homeSpace?.rotationEnabled}
+            rotationSpeed={homeSpace?.rotationSpeed}
+            flipHorizontal={homeSpace?.flipHorizontal}
+            flipVertical={homeSpace?.flipVertical}
             spaces={spaces}
             onFilesDrop={handleFilesDropped}
             onCreateSpace={handleCreateSpaceFromDrop}
@@ -762,8 +687,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
       ) : showSpacesBar ? (
         <div className="fixed bottom-0 left-0 right-0 z-30">
           <CombinedBottomBar
-            spaces={spaces.filter(s => s.id === 'lobby' || s.parentId === undefined)}
-            currentSpaceId="lobby"
+            spaces={spaces.filter(s => s.isHome || s.parentId === undefined)}
+            currentSpaceId={homeSpace?.id || ''}
             onCreateSpace={() => openPanel('add')}
             onDeleteSpace={handleDeleteSpace}
             onRenameSpace={handleRenameSpace}
@@ -870,14 +795,14 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         isOpen={show360Settings}
         onClose={() => setShow360Settings(false)}
         show360={show360}
-        onToggle360={() => handleToggle360('lobby', !show360)}
-        xAxisOffset={lobbySpace?.xAxis || 0}
-        yAxisOffset={lobbySpace?.yAxis || 0}
-        onAxisChange={(axis, value) => handle360AxisChange('lobby', axis, value)}
-        volume={lobbySpace?.volume || 0.5}
-        isMuted={lobbySpace?.isMuted || false}
-        onVolumeChange={(volume) => handle360VolumeChange('lobby', volume)}
-        onMuteToggle={() => handle360MuteToggle('lobby', !lobbySpace?.isMuted)}
+        onToggle360={() => homeSpace && handleToggle360(homeSpace.id, !show360)}
+        xAxisOffset={homeSpace?.xAxis || 0}
+        yAxisOffset={homeSpace?.yAxis || 0}
+        onAxisChange={(axis, value) => homeSpace && handle360AxisChange(homeSpace.id, axis, value)}
+        volume={homeSpace?.volume || 0.5}
+        isMuted={homeSpace?.isMuted || false}
+        onVolumeChange={(volume) => homeSpace && handle360VolumeChange(homeSpace.id, volume)}
+        onMuteToggle={() => homeSpace && handle360MuteToggle(homeSpace.id, !homeSpace?.isMuted)}
       />
 
       <AuthModal

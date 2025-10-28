@@ -62,6 +62,7 @@ export interface Space {
   flipHorizontal?: boolean;
   flipVertical?: boolean;
   parentId?: string; // For nested spaces
+  isHome?: boolean; // Marks the permanent Home space
 }
 
 export interface Post {

@@ -390,18 +390,7 @@ export function SpaceContextMenu({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Handle lobby as a special case - store in localStorage
-    if (space.id === 'lobby') {
-      localStorage.setItem('lobby-thumbnail', imageUrl);
-      if (onUpdateThumbnail) {
-        onUpdateThumbnail(space.id, imageUrl);
-      }
-      toast.success('Lobby thumbnail updated');
-      window.dispatchEvent(new CustomEvent('refetch-spaces'));
-      return;
-    }
-
-    // Update regular spaces in database
+    // Update space in database
     const { error } = await supabase
       .from('spaces')
       .update({ thumbnail_url: imageUrl })
@@ -430,14 +419,6 @@ export function SpaceContextMenu({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      // Handle lobby as a special case - store in localStorage
-      if (space.id === 'lobby') {
-        localStorage.setItem('lobby-background', imageUrl);
-        toast.success('Lobby background updated');
-        window.dispatchEvent(new CustomEvent('refetch-spaces'));
-        return;
-      }
 
       const { error } = await supabase
         .from('spaces')
@@ -863,8 +844,8 @@ export function SpaceContextMenu({
                     </div>
                   )}
 
-                  {/* Rename */}
-                  {space.id !== 'lobby' && (
+                  {/* Rename - disabled for Home */}
+                  {!space.isHome && (
                     <button
                       className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
                       onClick={() => setIsRenaming(true)}
@@ -906,14 +887,16 @@ export function SpaceContextMenu({
                     <span className="text-xs text-white">Move Right</span>
                   </button>
 
-                  {/* Delete */}
-                  <button
-                    className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 size={14} />
-                    <span className="text-xs">Delete</span>
-                  </button>
+                  {/* Delete - disabled for Home */}
+                  {!space.isHome && (
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 size={14} />
+                      <span className="text-xs">Delete</span>
+                    </button>
+                  )}
                 </div>
                 </div>
               </div>

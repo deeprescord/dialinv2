@@ -5,7 +5,7 @@ interface SpacesContextType {
   spaces: Space[];
   loading: boolean;
   createSpace: (name: string, description?: string, parentId?: string) => Promise<Space | null>;
-  updateSpace: (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'thumbnail_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis' | 'flip_horizontal' | 'flip_vertical'>>, options?: { silent?: boolean }) => Promise<boolean>;
+  updateSpace: (id: string, updates: Partial<Pick<Space, 'name' | 'description' | 'cover_url' | 'thumbnail_url' | 'show_360' | 'x_axis_offset' | 'y_axis_offset' | 'volume' | 'is_muted' | 'rotation_enabled' | 'rotation_speed' | 'rotation_axis' | 'flip_horizontal' | 'flip_vertical' | 'is_home'>>, options?: { silent?: boolean }) => Promise<boolean>;
   deleteSpace: (id: string) => Promise<boolean>;
   refetch: () => Promise<void>;
 }

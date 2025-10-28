@@ -150,12 +150,24 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           videoTexture.flipY = true;
           setTexture(videoTexture);
           setError(false);
-          // Notify parent/outer components that the texture is ready
-          try { window.dispatchEvent(new CustomEvent('skybox-texture-ready')); } catch {}
-          // Start playing
+          
+          // Start playing with autoplay fallback
           video.play().catch((playError) => {
-            console.warn('Video play failed:', playError);
+            console.warn('Video autoplay failed, trying muted:', playError);
+            // Fallback: mute and try again for autoplay policy
+            video.muted = true;
+            video.setAttribute('muted', '');
+            video.play().catch((e) => console.error('Video play failed even when muted:', e));
           });
+
+          // Dispatch ready event only when video is actually playing
+          const onPlaying = () => {
+            try { 
+              window.dispatchEvent(new CustomEvent('skybox-texture-ready')); 
+            } catch {}
+            video.removeEventListener('playing', onPlaying);
+          };
+          video.addEventListener('playing', onPlaying);
         } catch (textureError: any) {
           console.warn('VideoTexture creation failed:', textureError);
           setError(true);

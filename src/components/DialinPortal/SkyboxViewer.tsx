@@ -150,6 +150,8 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
           videoTexture.flipY = true;
           setTexture(videoTexture);
           setError(false);
+          // Notify parent/outer components that the texture is ready
+          try { window.dispatchEvent(new CustomEvent('skybox-texture-ready')); } catch {}
           // Start playing
           video.play().catch((playError) => {
             console.warn('Video play failed:', playError);
@@ -245,6 +247,7 @@ function Skybox({ mediaUrl, xAxisOffset = 0, yAxisOffset = 0, volume = 50, isMut
         (loadedTexture) => {
           setTexture(loadedTexture);
           setError(false);
+          try { window.dispatchEvent(new CustomEvent('skybox-texture-ready')); } catch {}
         },
         undefined,
         (err) => {
@@ -387,6 +390,8 @@ export function SkyboxViewer({
   const [gyroscopeEnabled, setGyroscopeEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [gyroscopeActive, setGyroscopeActive] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [contextLost, setContextLost] = useState(false);
 
   useEffect(() => {
     // Detect if device is mobile and has gyroscope capability
@@ -409,6 +414,14 @@ export function SkyboxViewer({
       window.removeEventListener('webgl-security-error', handleWebGLError);
     };
   }, [enableGyroscope, mediaUrl]);
+
+  // Listen for texture readiness to fade in Canvas
+  useEffect(() => {
+    setIsReady(false);
+    const onReady = () => setIsReady(true);
+    window.addEventListener('skybox-texture-ready', onReady);
+    return () => window.removeEventListener('skybox-texture-ready', onReady);
+  }, [mediaUrl]);
 
   if (webglError) {
     const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl);
@@ -498,6 +511,21 @@ export function SkyboxViewer({
           near: 0.1,
           far: 1000
         }}
+        gl={{ alpha: true, antialias: false, powerPreference: 'low-power', preserveDrawingBuffer: false }}
+        dpr={[1, 1]}
+        onCreated={({ gl }) => {
+          try {
+            gl.setClearAlpha(0);
+            // Make canvas background transparent so fallback can show through
+            // @ts-ignore
+            gl.domElement.style.background = 'transparent';
+            const handleLost = (e: Event) => { e.preventDefault(); setContextLost(true); setWebglError(true); };
+            const handleRestored = () => { setContextLost(false); setWebglError(false); };
+            gl.domElement.addEventListener('webglcontextlost', handleLost as any, { passive: false } as any);
+            gl.domElement.addEventListener('webglcontextrestored', handleRestored as any);
+          } catch {}
+        }}
+        style={{ opacity: isReady && !contextLost ? 1 : 0, transition: 'opacity 300ms ease', background: 'transparent' }}
       >
         <Suspense fallback={null}>
           <Skybox 

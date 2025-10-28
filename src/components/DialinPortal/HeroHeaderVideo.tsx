@@ -197,10 +197,33 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // DON'T autoplay - wait for user interaction via controls
-      const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-      video.volume = isVideoMuted ? 0 : norm;
-      video.muted = !!isVideoMuted;
+      // Only autoplay if this is the active video (showVideo is true AND no 360 or web content)
+      if (showVideo && !show360 && !webUrl) {
+        // Ensure background video is paused
+        if (bgVideoRef.current) {
+          try { bgVideoRef.current.pause(); } catch {}
+        }
+        // Apply configured volume/mute before playing
+        const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+        video.volume = isVideoMuted ? 0 : norm;
+        video.muted = !!isVideoMuted;
+        
+        // Claim audio focus if we're emitting sound
+        const currentActiveId = audioContext.getActiveId();
+        const shouldClaimFocus = !isVideoMuted && (norm ?? 0) > 0;
+        
+        if (shouldClaimFocus && !currentActiveId) {
+          // No one has focus, claim it
+          audioContext.playAudio(audioIdRef.current);
+        }
+        
+        // Always try to play (browser will handle autoplay policy)
+        video.play().catch(err => {
+          console.log('Autoplay prevented, muting:', err);
+          video.muted = true;
+          setIsVideoMuted(true);
+        });
+      }
     };
 
     const handleError = () => {
@@ -401,10 +424,33 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // DON'T autoplay - wait for user interaction via controls
-      const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-      bgVideo.volume = isVideoMuted ? 0 : norm;
-      bgVideo.muted = !!isVideoMuted;
+      // Only autoplay if this is the active video (showVideo is false AND show360 is false AND no web)
+      if (!showVideo && !show360 && !webUrl) {
+        // Ensure foreground video is paused
+        if (videoRef.current) {
+          try { videoRef.current.pause(); } catch {}
+        }
+        // Apply configured volume/mute before playing
+        const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+        bgVideo.volume = isVideoMuted ? 0 : norm;
+        bgVideo.muted = !!isVideoMuted;
+        
+        // Claim audio focus if we're emitting sound
+        const currentActiveId = audioContext.getActiveId();
+        const shouldClaimFocus = !isVideoMuted && (norm ?? 0) > 0;
+        
+        if (shouldClaimFocus && !currentActiveId) {
+          // No one has focus, claim it
+          audioContext.playAudio(audioIdRef.current);
+        }
+        
+        // Always try to play (browser will handle autoplay policy)
+        bgVideo.play().catch(err => {
+          console.log('Background autoplay prevented, muting:', err);
+          bgVideo.muted = true;
+          setIsVideoMuted(true);
+        });
+      }
     };
 
     const handleError = () => {

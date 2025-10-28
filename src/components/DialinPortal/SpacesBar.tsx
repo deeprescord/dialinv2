@@ -173,17 +173,14 @@ export function SpacesBar({
     }
   };
 
-  // Create spaces with lobby at the start, preferring provided lobby if present
-  const lobbyFromProps = spaces.find(space => space.id === 'lobby');
-  const lobbySpace: Space = lobbyFromProps || { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' };
-  const filteredSpaces = spaces.filter(space => space.id !== 'lobby');
-  const allSpaces: Space[] = [lobbySpace, ...filteredSpaces];
+  // Use spaces from database, with home space first (already ordered correctly from useSpaces hook)
+  const allSpaces: Space[] = spaces;
 
   const handleSpaceClick = (space: Space) => {
     if (onSpaceClick) {
       onSpaceClick(space);
     } else {
-      if (space.id === 'lobby') {
+      if (space.isHome) {
         navigate('/');
       } else {
         navigate(`/space/${space.id}`);

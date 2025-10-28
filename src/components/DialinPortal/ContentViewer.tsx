@@ -149,14 +149,26 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       setIsPlaying(false);
     };
 
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
     mediaRef.addEventListener('timeupdate', handleTimeUpdate);
     mediaRef.addEventListener('loadedmetadata', handleLoadedMetadata);
     mediaRef.addEventListener('ended', handleEnded);
+    mediaRef.addEventListener('play', handlePlay);
+    mediaRef.addEventListener('pause', handlePause);
 
     return () => {
       mediaRef.removeEventListener('timeupdate', handleTimeUpdate);
       mediaRef.removeEventListener('loadedmetadata', handleLoadedMetadata);
       mediaRef.removeEventListener('ended', handleEnded);
+      mediaRef.removeEventListener('play', handlePlay);
+      mediaRef.removeEventListener('pause', handlePause);
     };
   }, [isVideo, isAudio]);
 
@@ -171,7 +183,6 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       audioContext.playAudio(audioIdRef.current);
       mediaRef.play();
     }
-    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = () => {

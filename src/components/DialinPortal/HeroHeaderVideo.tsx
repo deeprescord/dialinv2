@@ -197,42 +197,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Only autoplay if this is the active video (showVideo is true AND no 360 or web content)
-      if (showVideo && !show360 && !webUrl) {
-        // Ensure background video is paused
-        if (bgVideoRef.current) {
-          try { bgVideoRef.current.pause(); } catch {}
-        }
-        // Apply configured volume/mute before playing
-        const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-        video.volume = isVideoMuted ? 0 : norm;
-        video.muted = !!isVideoMuted;
-        
-        // Only claim audio focus and autoplay if we're actually emitting sound AND we have focus or no one has focus
-        const currentActiveId = audioContext.getActiveId();
-        const shouldClaimFocus = !isVideoMuted && (norm ?? 0) > 0;
-        const canAutoplay = !currentActiveId || currentActiveId === audioIdRef.current;
-        
-        if (shouldClaimFocus && canAutoplay) {
-          audioContext.playAudio(audioIdRef.current);
-          video.play().catch(err => {
-            console.log('Autoplay with sound prevented, muting:', err);
-            video.muted = true;
-            setIsVideoMuted(true);
-          });
-        } else if (!shouldClaimFocus && canAutoplay) {
-          // Silent video can still play
-          video.play().catch(() => {});
-        } else {
-          // Another source has focus, stay paused and muted
-          video.pause();
-          video.muted = true;
-        }
-      } else {
-        // Not active: ensure paused and muted
-        try { video.pause(); } catch {}
-        video.muted = true;
-      }
+      // DON'T autoplay - wait for user interaction via controls
+      const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+      video.volume = isVideoMuted ? 0 : norm;
+      video.muted = !!isVideoMuted;
     };
 
     const handleError = () => {
@@ -433,42 +401,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Only autoplay if this is the active video (showVideo is false AND show360 is false AND no web)
-      if (!showVideo && !show360 && !webUrl) {
-        // Ensure foreground video is paused
-        if (videoRef.current) {
-          try { videoRef.current.pause(); } catch {}
-        }
-        // Apply configured volume/mute before playing
-        const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-        bgVideo.volume = isVideoMuted ? 0 : norm;
-        bgVideo.muted = !!isVideoMuted;
-        
-        // Only claim audio focus and autoplay if we're actually emitting sound AND we have focus or no one has focus
-        const currentActiveId = audioContext.getActiveId();
-        const shouldClaimFocus = !isVideoMuted && (norm ?? 0) > 0;
-        const canAutoplay = !currentActiveId || currentActiveId === audioIdRef.current;
-        
-        if (shouldClaimFocus && canAutoplay) {
-          audioContext.playAudio(audioIdRef.current);
-          bgVideo.play().catch(err => {
-            console.log('Background autoplay with sound prevented, muting:', err);
-            bgVideo.muted = true;
-            setIsVideoMuted(true);
-          });
-        } else if (!shouldClaimFocus && canAutoplay) {
-          // Silent video can still play
-          bgVideo.play().catch(() => {});
-        } else {
-          // Another source has focus, stay paused and muted
-          bgVideo.pause();
-          bgVideo.muted = true;
-        }
-      } else {
-        // Not active: ensure paused and muted
-        try { bgVideo.pause(); } catch {}
-        bgVideo.muted = true;
-      }
+      // DON'T autoplay - wait for user interaction via controls
+      const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+      bgVideo.volume = isVideoMuted ? 0 : norm;
+      bgVideo.muted = !!isVideoMuted;
     };
 
     const handleError = () => {

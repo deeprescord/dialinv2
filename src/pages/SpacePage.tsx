@@ -75,6 +75,7 @@ export default function SpacePage() {
     hasVideo: false
   });
   const heroRef = React.useRef<HeroHeaderVideoHandle>(null);
+  const contentViewerRef = React.useRef<any>(null);
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
@@ -995,22 +996,41 @@ export default function SpacePage() {
     }
   }, [audioContext.activeProgress]);
 
-  // Video control handlers - delegate to hero or active source
+  // Video control handlers - delegate to active source (hero or content viewer)
   const handleVideoPlayPause = () => {
-    heroRef.current?.playPause();
+    const activeId = audioContext.getActiveId();
+    if (activeId?.startsWith('content-')) {
+      contentViewerRef.current?.playPause();
+    } else {
+      heroRef.current?.playPause();
+    }
   };
 
   const handleVideoSeek = (value: number) => {
-    heroRef.current?.seek(value);
+    const activeId = audioContext.getActiveId();
+    if (activeId?.startsWith('content-')) {
+      contentViewerRef.current?.seek(value);
+    } else {
+      heroRef.current?.seek(value);
+    }
   };
 
   const handleVideoVolumeChange = (value: number) => {
-    heroRef.current?.setVolume(value);
+    const activeId = audioContext.getActiveId();
+    if (activeId?.startsWith('content-')) {
+      contentViewerRef.current?.setVolume(value);
+    } else {
+      heroRef.current?.setVolume(value);
+    }
   };
 
   const handleVideoMuteToggle = () => {
-    heroRef.current?.toggleMute();
-    setVideoState(prev => ({ ...prev, isMuted: !prev.isMuted }));
+    const activeId = audioContext.getActiveId();
+    if (activeId?.startsWith('content-')) {
+      contentViewerRef.current?.toggleMute();
+    } else {
+      heroRef.current?.toggleMute();
+    }
   };
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
@@ -1085,6 +1105,7 @@ export default function SpacePage() {
                 onOpenAddPanel={() => openPanel('add')}
                 selectedItem={selectedItemData}
                 heroRef={heroRef}
+                contentViewerRef={contentViewerRef}
                 spaceId={spaceId}
                 onItemClick={handleMediaClick}
                 showItemsBar={showItemsBar}

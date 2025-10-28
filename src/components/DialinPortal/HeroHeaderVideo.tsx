@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, Suspense, useImperativeHandle } fro
 import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
 import { supabase } from '@/integrations/supabase/client';
+import { useAudioContext } from '@/contexts/AudioContext';
 
 interface HeroHeaderVideoProps {
   videoSrc?: string;
@@ -77,6 +78,25 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [isBlurred, setIsBlurred] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
+  const audioContext = useAudioContext();
+  const audioIdRef = useRef(`hero-${Math.random().toString(36)}`);
+
+  // Register this component's pause function with the audio context
+  useEffect(() => {
+    const pauseAudio = () => {
+      const fg = videoRef.current;
+      const bg = bgVideoRef.current;
+      if (fg) { fg.pause(); fg.muted = true; }
+      if (bg) { bg.pause(); bg.muted = true; }
+      setIsPlaying(false);
+    };
+    
+    audioContext.registerAudioSource(audioIdRef.current, pauseAudio);
+    
+    return () => {
+      audioContext.unregisterAudioSource(audioIdRef.current);
+    };
+  }, [audioContext]);
 
   // Sync incoming props to internal state (volume/mute)
   useEffect(() => {
@@ -166,6 +186,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
         video.volume = isVideoMuted ? 0 : norm;
         video.muted = !!isVideoMuted;
+        // Tell audio context this is playing
+        audioContext.playAudio(audioIdRef.current);
         // Autoplay video when loaded
         video.play().catch(err => {
           console.log('Autoplay with sound prevented, keeping current mute state:', err);
@@ -380,6 +402,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
         bgVideo.volume = isVideoMuted ? 0 : norm;
         bgVideo.muted = !!isVideoMuted;
+        // Tell audio context this is playing
+        audioContext.playAudio(audioIdRef.current);
         // Autoplay background video when loaded
         bgVideo.play().catch(err => {
           console.log('Background autoplay with sound prevented, keeping current mute state:', err);

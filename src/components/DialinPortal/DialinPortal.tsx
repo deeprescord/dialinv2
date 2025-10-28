@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,7 +28,6 @@ import { SpaceSelectionModal } from './SpaceSelectionModal';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useSpacesContext } from '@/contexts/SpacesContext';
 import { useFileUpload } from '@/hooks/useFileUpload';
-import { useAudioContext } from '@/contexts/AudioContext';
 
 import { 
   videoCatalog, 
@@ -57,8 +56,6 @@ const appendCacheBuster = (url?: string, seed?: string | number): string | undef
 
 export function DialinPortal() {
   const navigate = useNavigate();
-  const audioContext = useAudioContext();
-  const musicPlayerIdRef = useRef('music-player');
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -256,8 +253,6 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
 
   // Handle media interactions
   const handleMediaClick = (item: any) => {
-    // Notify audio context that music player is now active (pauses all other audio)
-    audioContext.playAudio(musicPlayerIdRef.current);
     setFloatingPlayer({
       isVisible: true,
       item,
@@ -418,22 +413,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     }
   };
 
-  // Register music player with audio context
-  useEffect(() => {
-    const pauseMusic = () => {
-      setFloatingPlayer(prev => ({ ...prev, isPlaying: false }));
-    };
-    
-    audioContext.registerAudioSource(musicPlayerIdRef.current, pauseMusic);
-    
-    return () => {
-      audioContext.unregisterAudioSource(musicPlayerIdRef.current);
-    };
-  }, [audioContext]);
-
   // Handle floating player actions
   const handlePlayerPlay = () => {
-    audioContext.playAudio(musicPlayerIdRef.current);
     setFloatingPlayer(prev => ({ ...prev, isPlaying: true }));
   };
 

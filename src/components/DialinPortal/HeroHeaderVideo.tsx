@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, Suspense, useImperativeHandle } fro
 import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
 import { supabase } from '@/integrations/supabase/client';
-import { useAudioContext } from '@/contexts/AudioContext';
 
 interface HeroHeaderVideoProps {
   videoSrc?: string;
@@ -78,124 +77,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [isBlurred, setIsBlurred] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
-  const audioContext = useAudioContext();
-  // Use stable ID based on route/space instead of random
-  const audioIdRef = useRef<string>('hero-home');
-
-  // Phase B: Register full controller with AudioContext
-  useEffect(() => {
-    const pauseAudio = () => {
-      const fg = videoRef.current;
-      const bg = bgVideoRef.current;
-      if (fg) { fg.pause(); fg.muted = true; }
-      if (bg) { bg.pause(); bg.muted = true; }
-      setIsPlaying(false);
-    };
-
-    const controller = {
-      playPause: () => {
-        console.debug('[HeroHeader] Controller playPause called');
-        togglePlayPause();
-      },
-      seek: (value: number) => {
-        console.debug('[HeroHeader] Controller seek called:', value);
-        const activeVideo = getActiveVideo();
-        if (activeVideo) activeVideo.currentTime = value;
-        if (show360) setSkyboxSeekTo(value);
-      },
-      setVolume: (value: number) => {
-        console.debug('[HeroHeader] Controller setVolume called:', value);
-        const norm = value > 1 ? value / 100 : value;
-        setVideoVolume(norm);
-        const activeVideo = getActiveVideo();
-        if (activeVideo && !isVideoMuted) {
-          activeVideo.volume = norm;
-        }
-      },
-      toggleMute: () => {
-        console.debug('[HeroHeader] Controller toggleMute called');
-        toggleMute();
-      },
-      pause: pauseAudio,
-      getState: () => {
-        const activeVideo = getActiveVideo();
-        return {
-          currentTime: activeVideo?.currentTime || 0,
-          duration: activeVideo?.duration || 0,
-          volume: isVideoMuted ? 0 : videoVolume,
-          isMuted: isVideoMuted,
-          isPlaying: activeVideo ? !activeVideo.paused : false
-        };
-      }
-    };
-    
-    audioContext.registerAudioSource(audioIdRef.current, pauseAudio);
-    audioContext.registerController(audioIdRef.current, controller);
-    
-    console.debug('[HeroHeader] Registered controller');
-    
-    return () => {
-      console.debug('[HeroHeader] Unregistering controller');
-      pauseAudio();
-      audioContext.unregisterAudioSource(audioIdRef.current);
-      audioContext.unregisterController(audioIdRef.current);
-    };
-  }, [audioContext, isVideoMuted, videoVolume, showVideo, show360]);
-
-  // Push progress updates to AudioContext via timeupdate (more consistent than interval)
-  useEffect(() => {
-    const activeVideo = getActiveVideo();
-    if (!activeVideo) return;
-
-    const handleTimeUpdate = () => {
-      if (!activeVideo.paused) {
-        audioContext.pushProgress(audioIdRef.current, {
-          currentTime: activeVideo.currentTime || 0,
-          duration: activeVideo.duration || 0,
-          volume: isVideoMuted ? 0 : (videoVolume > 1 ? videoVolume / 100 : videoVolume),
-          isMuted: isVideoMuted,
-          isPlaying: !activeVideo.paused
-        });
-      }
-    };
-
-    activeVideo.addEventListener('timeupdate', handleTimeUpdate);
-    return () => activeVideo.removeEventListener('timeupdate', handleTimeUpdate);
-  }, [isPlaying, isVideoMuted, videoVolume, audioContext, showVideo]);
-
-  // Sync incoming props to internal state (volume/mute)
-  useEffect(() => {
-    if (typeof volume === 'number') {
-      const norm = volume > 1 ? volume / 100 : volume;
-      setVideoVolume(norm);
-      setLastUnmutedVolume(norm || 0.7);
-      // Apply to active HTML5 video if not in 360 mode
-      if (!show360) {
-        const v = getActiveVideo();
-        if (v) {
-          v.volume = norm;
-          v.muted = !!isVideoMuted;
-        }
-      }
-    }
-  }, [volume, show360, isVideoMuted]);
-
-  useEffect(() => {
-    if (typeof isMuted === 'boolean') {
-      setIsVideoMuted(isMuted);
-      // Apply to active HTML5 video if not in 360 mode
-      if (!show360) {
-        const v = getActiveVideo();
-        if (v) {
-          v.muted = isMuted;
-          if (!isMuted) {
-            const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-            v.volume = norm;
-          }
-        }
-      }
-    }
-  }, [isMuted, show360, videoVolume]);
 
   // Determine which video element is active (foreground vs background)
   const getActiveVideo = (): HTMLVideoElement | null => {
@@ -209,21 +90,16 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   useEffect(() => {
     const fg = videoRef.current;
     const bg = bgVideoRef.current;
-    const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
     if (showVideo) {
-      if (bg) { try { bg.pause(); bg.muted = true; } catch {} }
-      if (fg) {
-        fg.muted = !!isVideoMuted;
-        fg.volume = isVideoMuted ? 0 : norm;
+      if (bg) { try { bg.pause(); bg.muted = true; } catch {}
       }
+      if (fg) { fg.muted = false; }
     } else {
-      if (fg) { try { fg.pause(); fg.muted = true; } catch {} }
-      if (bg) {
-        bg.muted = !!isVideoMuted;
-        bg.volume = isVideoMuted ? 0 : norm;
+      if (fg) { try { fg.pause(); fg.muted = true; } catch {}
       }
+      if (bg) { bg.muted = false; }
     }
-  }, [showVideo, isVideoMuted, videoVolume]);
+  }, [showVideo]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -241,10 +117,30 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Do not autoplay; wait for explicit user control
-      const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-      video.volume = isVideoMuted ? 0 : norm;
-      video.muted = !!isVideoMuted;
+      // Only autoplay if this is the active video (showVideo is true AND no 360 or web content)
+      if (showVideo && !show360 && !webUrl) {
+        // Ensure background video is paused
+        if (bgVideoRef.current) {
+          try { bgVideoRef.current.pause(); } catch {}
+        }
+        // Set volume and unmute before playing
+        video.volume = 0.7;
+        video.muted = false;
+        setIsVideoMuted(false);
+        setVideoVolume(0.7);
+        // Autoplay video when loaded
+        video.play().catch(err => {
+          console.log('Autoplay with sound prevented, trying muted:', err);
+          // If autoplay with sound fails, try muted
+          video.muted = true;
+          setIsVideoMuted(true);
+          video.play().catch(e => console.log('Muted autoplay also prevented:', e));
+        });
+      } else {
+        // Not active: ensure paused and muted
+        try { video.pause(); } catch {}
+        video.muted = true;
+      }
     };
 
     const handleError = () => {
@@ -316,52 +212,18 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   };
 
   const togglePlayPause = () => {
-    console.debug('[HeroHeader] togglePlayPause - isPlaying:', isPlaying, 'show360:', show360);
-    
-    // 360 content uses internal video texture
     if (show360) {
-      const newPlayingState = !isPlaying;
-      setIsPlaying(newPlayingState);
-      if (newPlayingState && !isVideoMuted && videoVolume > 0) {
-        console.debug('[HeroHeader] 360 Playing - claiming audio focus');
-        audioContext.setActive(audioIdRef.current);
-      }
+      setIsPlaying((prev) => !prev);
       return;
     }
-
-    const fg = videoRef.current;
-    const bg = bgVideoRef.current;
-    const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-
-    if (isPlaying) {
-      console.debug('[HeroHeader] Pausing');
-      try { fg?.pause(); } catch {}
-      try { bg?.pause(); } catch {}
-      setIsPlaying(false);
-      return;
-    }
-
-    console.debug('[HeroHeader] Playing - claiming audio focus');
-    // Play path: ensure exclusivity, unmute and play only the active element
-    audioContext.setActive(audioIdRef.current);
-
-    if (showVideo) {
-      try { bg?.pause(); } catch {}
-      if (fg) {
-        fg.muted = !!isVideoMuted;
-        fg.volume = isVideoMuted ? 0 : norm;
-        fg.play().catch(() => {});
-      }
-    } else {
-      try { fg?.pause(); } catch {}
-      if (bg) {
-        bg.muted = !!isVideoMuted;
-        bg.volume = isVideoMuted ? 0 : norm;
-        bg.play().catch(() => {});
+    const activeVideo = getActiveVideo();
+    if (activeVideo) {
+      if (isPlaying) {
+        activeVideo.pause();
+      } else {
+        activeVideo.play();
       }
     }
-
-    setIsPlaying(true);
   };
 
   const toggleMute = () => {
@@ -468,10 +330,30 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
-      // Do not autoplay; wait for explicit user control
-      const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
-      bgVideo.volume = isVideoMuted ? 0 : norm;
-      bgVideo.muted = !!isVideoMuted;
+      // Only autoplay if this is the active video (showVideo is false AND show360 is false AND no web)
+      if (!showVideo && !show360 && !webUrl) {
+        // Ensure foreground video is paused
+        if (videoRef.current) {
+          try { videoRef.current.pause(); } catch {}
+        }
+        // Set volume and unmute before playing
+        bgVideo.volume = 0.7;
+        bgVideo.muted = false;
+        setIsVideoMuted(false);
+        setVideoVolume(0.7);
+        // Autoplay background video when loaded
+        bgVideo.play().catch(err => {
+          console.log('Background autoplay with sound prevented, trying muted:', err);
+          // If autoplay with sound fails, try muted
+          bgVideo.muted = true;
+          setIsVideoMuted(true);
+          bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
+        });
+      } else {
+        // Not active: ensure paused and muted
+        try { bgVideo.pause(); } catch {}
+        bgVideo.muted = true;
+      }
     };
 
     const handleError = () => {
@@ -520,7 +402,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
   }, [isBackgroundVideo, backgroundImage, showVideo]);
 
-  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos and claim audio focus if playing with sound
+  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos
   useEffect(() => {
     if (show360) {
       try { videoRef.current?.pause(); } catch {}
@@ -528,14 +410,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       // Also ensure both are muted when 360 is active
       if (videoRef.current) videoRef.current.muted = true;
       if (bgVideoRef.current) bgVideoRef.current.muted = true;
-      
-      // If 360 is playing with sound, claim audio focus
-      if (isPlaying && !isVideoMuted && videoVolume > 0) {
-        console.log('[HeroHeader] 360 mode activated with sound - claiming audio focus');
-        audioContext.playAudio(audioIdRef.current);
-      }
+      setIsVideoMuted(true);
+      setIsPlaying(false);
     }
-  }, [show360, isPlaying, isVideoMuted, videoVolume, audioContext]);
+  }, [show360]);
 
   // If a web page is displayed, pause and mute all internal videos to avoid dual audio
   useEffect(() => {
@@ -558,11 +436,17 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         : (isBackgroundVideo && !videoError && videoLoaded)
   );
 
-  // Remove old onVideoStateChange callback - now using AudioContext
-  // Propagate state to parent controls (Spaces bar) via AudioContext
-  // The progress push happens either via:
-  // - The interval in useEffect for HTML5 videos
-  // - The onStateChange callback for 360 SkyboxViewer
+  // Propagate state to parent controls (Spaces bar)
+  React.useEffect(() => {
+    onVideoStateChange?.({
+      isPlaying,
+      currentTime,
+      duration,
+      volume: videoVolume,
+      isMuted: isVideoMuted,
+      hasVideo: hasVideoPlaying,
+    });
+  }, [isPlaying, currentTime, duration, videoVolume, isVideoMuted, hasVideoPlaying, onVideoStateChange]);
 
   // Auto-fallback to proxy embed if direct iframe doesn't load
   useEffect(() => {
@@ -719,6 +603,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           playsInline
           loop
           preload="auto"
+          muted
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
@@ -771,21 +656,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               rotationSpeed={rotationSpeed}
               flipHorizontal={flipHorizontal}
               flipVertical={flipVertical}
-              onStateChange={({ currentTime, duration, isPlaying: skyboxPlaying, volume, isMuted }) => {
+              onStateChange={({ currentTime, duration, isPlaying, volume, isMuted }) => {
                 setCurrentTime(currentTime);
                 setDuration(duration);
-                setIsPlaying(skyboxPlaying);
+                setIsPlaying(isPlaying);
                 setVideoVolume(volume);
                 setIsVideoMuted(isMuted);
-                
-                // Push progress to AudioContext for 360 videos
-                audioContext.pushProgress(audioIdRef.current, {
-                  currentTime,
-                  duration,
-                  isPlaying: skyboxPlaying,
-                  volume,
-                  isMuted
-                });
               }}
             />
           </Suspense>
@@ -807,6 +683,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               playsInline
               loop
               preload="auto"
+              muted
               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100"
               style={{ transform: 'scaleY(1)' }}
             >

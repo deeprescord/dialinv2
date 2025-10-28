@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { SkyboxViewer } from './SkyboxViewer';
-import { useAudioContext } from '@/contexts/AudioContext';
 
 interface ContentViewerProps {
   content: {
@@ -48,84 +47,6 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
-
-  const audioContext = useAudioContext();
-  const audioIdRef = useRef<string>(`content-${content.id}`);
-
-  // Phase B: Register full controller with AudioContext
-  useEffect(() => {
-    audioIdRef.current = `content-${content.id}`;
-    const mediaRef = (videoRef.current || audioRef.current) as HTMLVideoElement | HTMLAudioElement | null;
-    
-    const pauseAll = () => {
-      const v = videoRef.current;
-      const a = audioRef.current;
-      try { if (v) { v.pause(); v.muted = true; } } catch {}
-      try { if (a) { a.pause(); a.muted = true; } } catch {}
-      setIsPlaying(false);
-    };
-
-    const controller = {
-      playPause: () => {
-        console.debug('[ContentViewer] Controller playPause called for:', audioIdRef.current);
-        togglePlay();
-      },
-      seek: (value: number) => {
-        console.debug('[ContentViewer] Controller seek called for:', audioIdRef.current, value);
-        handleSeek([value]);
-      },
-      setVolume: (value: number) => {
-        console.debug('[ContentViewer] Controller setVolume called for:', audioIdRef.current, value);
-        handleVolumeChange([value]);
-      },
-      toggleMute: () => {
-        console.debug('[ContentViewer] Controller toggleMute called for:', audioIdRef.current);
-        toggleMute();
-      },
-      pause: pauseAll,
-      getState: () => ({
-        currentTime: mediaRef?.currentTime || 0,
-        duration: mediaRef?.duration || 0,
-        volume: isMuted ? 0 : volume,
-        isMuted,
-        isPlaying: mediaRef ? !mediaRef.paused : false
-      })
-    };
-
-    // Register both old and new methods for compatibility
-    audioContext.registerAudioSource(audioIdRef.current, pauseAll);
-    audioContext.registerController(audioIdRef.current, controller);
-    
-    console.debug('[ContentViewer] Registered controller for:', audioIdRef.current);
-    
-    return () => {
-      console.debug('[ContentViewer] Unregistering controller for:', audioIdRef.current);
-      pauseAll();
-      audioContext.unregisterAudioSource(audioIdRef.current);
-      audioContext.unregisterController(audioIdRef.current);
-    };
-  }, [audioContext, content.id]);
-
-  // Push progress to AudioContext when playing
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const mediaRef = (videoRef.current || audioRef.current) as HTMLVideoElement | HTMLAudioElement | null;
-    if (!mediaRef) return;
-
-    const handleTimeUpdate = () => {
-      audioContext.pushProgress(audioIdRef.current, {
-        currentTime: mediaRef.currentTime || 0,
-        duration: mediaRef.duration || 0,
-        volume: isMuted ? 0 : volume,
-        isMuted,
-        isPlaying: !mediaRef.paused
-      });
-    };
-
-    mediaRef.addEventListener('timeupdate', handleTimeUpdate);
-    return () => mediaRef.removeEventListener('timeupdate', handleTimeUpdate);
-  }, [isPlaying, isMuted, volume, audioContext]);
 
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
@@ -185,26 +106,14 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       setIsPlaying(false);
     };
 
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
-
     mediaRef.addEventListener('timeupdate', handleTimeUpdate);
     mediaRef.addEventListener('loadedmetadata', handleLoadedMetadata);
     mediaRef.addEventListener('ended', handleEnded);
-    mediaRef.addEventListener('play', handlePlay);
-    mediaRef.addEventListener('pause', handlePause);
 
     return () => {
       mediaRef.removeEventListener('timeupdate', handleTimeUpdate);
       mediaRef.removeEventListener('loadedmetadata', handleLoadedMetadata);
       mediaRef.removeEventListener('ended', handleEnded);
-      mediaRef.removeEventListener('play', handlePlay);
-      mediaRef.removeEventListener('pause', handlePause);
     };
   }, [isVideo, isAudio]);
 
@@ -213,14 +122,11 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     if (!mediaRef) return;
 
     if (isPlaying) {
-      console.debug('[ContentViewer] Pausing:', audioIdRef.current);
       mediaRef.pause();
     } else {
-      console.debug('[ContentViewer] Playing:', audioIdRef.current, '- claiming audio focus');
-      // Ensure exclusive playback across the app
-      audioContext.setActive(audioIdRef.current);
       mediaRef.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = () => {

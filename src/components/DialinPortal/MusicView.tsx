@@ -70,10 +70,11 @@ export function MusicView({
         backgroundImage="/media/elton-john-360.mp4"
         showVideo={false}
         show360={true}
-        isMuted={true}
-        volume={0.0}
+        isMuted={false}
+        volume={0.7}
         xAxisOffset={0}
         yAxisOffset={0}
+        onVideoStateChange={onVideoStateChange}
       />
 
       <div className="mt-8">

@@ -28,7 +28,6 @@ import { UploadLoader } from '@/components/DialinPortal/UploadLoader';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpacesContext } from '@/contexts/SpacesContext';
-import { useAudioContext } from '@/contexts/AudioContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
@@ -75,12 +74,10 @@ export default function SpacePage() {
     hasVideo: false
   });
   const heroRef = React.useRef<HeroHeaderVideoHandle>(null);
-  const contentViewerRef = React.useRef<any>(null);
   
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
-  const audioContext = useAudioContext();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
   
@@ -981,40 +978,29 @@ export default function SpacePage() {
     setShow360Settings(true);
   };
 
-  // Read video state from AudioContext active progress
-  useEffect(() => {
-    const progress = audioContext.activeProgress;
-    if (progress) {
-      setVideoState({
-        isPlaying: progress.isPlaying,
-        currentTime: progress.currentTime,
-        duration: progress.duration,
-        volume: progress.volume,
-        isMuted: progress.isMuted,
-        hasVideo: true
-      });
-    }
-  }, [audioContext.activeProgress]);
+  // Video control handlers
+  const handleVideoStateChange = (state: typeof videoState) => {
+    setVideoState(state);
+  };
 
-  // Video control handlers - use new controlActive method from AudioContext
   const handleVideoPlayPause = () => {
-    console.debug('[SpacePage] handleVideoPlayPause - activeId:', audioContext.activeId);
-    audioContext.controlActive('playPause');
+    heroRef.current?.playPause();
+    setVideoState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
   };
 
   const handleVideoSeek = (value: number) => {
-    console.debug('[SpacePage] handleVideoSeek - activeId:', audioContext.activeId, 'value:', value);
-    audioContext.controlActive('seek', value);
+    heroRef.current?.seek(value);
+    setVideoState(prev => ({ ...prev, currentTime: value }));
   };
 
   const handleVideoVolumeChange = (value: number) => {
-    console.debug('[SpacePage] handleVideoVolumeChange - activeId:', audioContext.activeId, 'value:', value);
-    audioContext.controlActive('setVolume', value);
+    heroRef.current?.setVolume(value);
+    setVideoState(prev => ({ ...prev, volume: value, isMuted: value === 0 }));
   };
 
   const handleVideoMuteToggle = () => {
-    console.debug('[SpacePage] handleVideoMuteToggle - activeId:', audioContext.activeId);
-    audioContext.controlActive('toggleMute');
+    heroRef.current?.toggleMute();
+    setVideoState(prev => ({ ...prev, isMuted: !prev.isMuted }));
   };
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
@@ -1088,8 +1074,8 @@ export default function SpacePage() {
                 onAddOptionSelect={handleAddOptionSelect}
                 onOpenAddPanel={() => openPanel('add')}
                 selectedItem={selectedItemData}
+                onVideoStateChange={handleVideoStateChange}
                 heroRef={heroRef}
-                contentViewerRef={contentViewerRef}
                 spaceId={spaceId}
                 onItemClick={handleMediaClick}
                 showItemsBar={showItemsBar}
@@ -1128,6 +1114,7 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onVideoClick={handleMediaClick}
               onVideoLongPress={handleMediaLongPress}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
 
@@ -1139,6 +1126,7 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onMusicClick={handleMediaClick}
               onMusicLongPress={handleMediaLongPress}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
 
@@ -1150,6 +1138,7 @@ export default function SpacePage() {
               onClearAll={handleClearAllFilters}
               onLocationClick={handleMediaClick}
               onLocationLongPress={handleMediaLongPress}
+              onVideoStateChange={handleVideoStateChange}
             />
           )}
         </main>

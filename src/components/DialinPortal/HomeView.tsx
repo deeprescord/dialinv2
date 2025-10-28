@@ -68,7 +68,6 @@ interface HomeViewProps {
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
-  contentViewerRef?: React.Ref<any>;
 }
 
 export function HomeView({ 
@@ -99,7 +98,6 @@ export function HomeView({
   selectedItem,
   onVideoStateChange,
   heroRef,
-  contentViewerRef,
   spaceId,
   onItemClick,
   showItemsBar = false,
@@ -211,7 +209,7 @@ export function HomeView({
       {/* Hero Header - Show ContentViewer for files (excluding web links), otherwise HeroHeaderVideo */}
       {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web') ? (
         <ContentViewer
-          ref={contentViewerRef as any}
+          ref={heroRef as any}
           content={{
             id: selectedItem.id || selectedItem.thumb,
             storage_path: selectedItem.storage_path,

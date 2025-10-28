@@ -74,7 +74,6 @@ export function MusicView({
         volume={0.0}
         xAxisOffset={0}
         yAxisOffset={0}
-        onVideoStateChange={onVideoStateChange}
       />
 
       <div className="mt-8">

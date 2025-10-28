@@ -78,6 +78,40 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
+  // Sync incoming props to internal state (volume/mute)
+  useEffect(() => {
+    if (typeof volume === 'number') {
+      const norm = volume > 1 ? volume / 100 : volume;
+      setVideoVolume(norm);
+      setLastUnmutedVolume(norm || 0.7);
+      // Apply to active HTML5 video if not in 360 mode
+      if (!show360) {
+        const v = getActiveVideo();
+        if (v) {
+          v.volume = norm;
+          v.muted = !!isVideoMuted;
+        }
+      }
+    }
+  }, [volume, show360, isVideoMuted]);
+
+  useEffect(() => {
+    if (typeof isMuted === 'boolean') {
+      setIsVideoMuted(isMuted);
+      // Apply to active HTML5 video if not in 360 mode
+      if (!show360) {
+        const v = getActiveVideo();
+        if (v) {
+          v.muted = isMuted;
+          if (!isMuted) {
+            const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+            v.volume = norm;
+          }
+        }
+      }
+    }
+  }, [isMuted, show360, videoVolume]);
+
   // Determine which video element is active (foreground vs background)
   const getActiveVideo = (): HTMLVideoElement | null => {
     if (showVideo && videoRef.current) return videoRef.current;
@@ -90,16 +124,21 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   useEffect(() => {
     const fg = videoRef.current;
     const bg = bgVideoRef.current;
+    const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
     if (showVideo) {
-      if (bg) { try { bg.pause(); bg.muted = true; } catch {}
+      if (bg) { try { bg.pause(); bg.muted = true; } catch {} }
+      if (fg) {
+        fg.muted = !!isVideoMuted;
+        fg.volume = isVideoMuted ? 0 : norm;
       }
-      if (fg) { fg.muted = false; }
     } else {
-      if (fg) { try { fg.pause(); fg.muted = true; } catch {}
+      if (fg) { try { fg.pause(); fg.muted = true; } catch {} }
+      if (bg) {
+        bg.muted = !!isVideoMuted;
+        bg.volume = isVideoMuted ? 0 : norm;
       }
-      if (bg) { bg.muted = false; }
     }
-  }, [showVideo]);
+  }, [showVideo, isVideoMuted, videoVolume]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -123,18 +162,19 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         if (bgVideoRef.current) {
           try { bgVideoRef.current.pause(); } catch {}
         }
-        // Set volume and unmute before playing
-        video.volume = 0.7;
-        video.muted = false;
-        setIsVideoMuted(false);
-        setVideoVolume(0.7);
+        // Apply configured volume/mute before playing
+        const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+        video.volume = isVideoMuted ? 0 : norm;
+        video.muted = !!isVideoMuted;
         // Autoplay video when loaded
         video.play().catch(err => {
-          console.log('Autoplay with sound prevented, trying muted:', err);
-          // If autoplay with sound fails, try muted
-          video.muted = true;
-          setIsVideoMuted(true);
-          video.play().catch(e => console.log('Muted autoplay also prevented:', e));
+          console.log('Autoplay with sound prevented, keeping current mute state:', err);
+          // If autoplay with sound fails and not already muted, try muted
+          if (!isVideoMuted) {
+            video.muted = true;
+            setIsVideoMuted(true);
+            video.play().catch(e => console.log('Muted autoplay also prevented:', e));
+          }
         });
       } else {
         // Not active: ensure paused and muted
@@ -336,18 +376,19 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         if (videoRef.current) {
           try { videoRef.current.pause(); } catch {}
         }
-        // Set volume and unmute before playing
-        bgVideo.volume = 0.7;
-        bgVideo.muted = false;
-        setIsVideoMuted(false);
-        setVideoVolume(0.7);
+        // Apply configured volume/mute before playing
+        const norm = videoVolume > 1 ? videoVolume / 100 : videoVolume;
+        bgVideo.volume = isVideoMuted ? 0 : norm;
+        bgVideo.muted = !!isVideoMuted;
         // Autoplay background video when loaded
         bgVideo.play().catch(err => {
-          console.log('Background autoplay with sound prevented, trying muted:', err);
-          // If autoplay with sound fails, try muted
-          bgVideo.muted = true;
-          setIsVideoMuted(true);
-          bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
+          console.log('Background autoplay with sound prevented, keeping current mute state:', err);
+          if (!isVideoMuted) {
+            // If autoplay with sound fails and not already muted, try muted
+            bgVideo.muted = true;
+            setIsVideoMuted(true);
+            bgVideo.play().catch(e => console.log('Muted autoplay also prevented:', e));
+          }
         });
       } else {
         // Not active: ensure paused and muted

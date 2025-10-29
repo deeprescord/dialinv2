@@ -206,8 +206,8 @@ export function HomeView({
         />
       )}
 
-      {/* Hero Header - Show ContentViewer for files (excluding web links), otherwise HeroHeaderVideo */}
-      {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web') ? (
+      {/* Hero Header - Show ContentViewer for files (excluding web links and PDFs), otherwise HeroHeaderVideo */}
+      {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web' && selectedItem?.file_type !== 'document' && selectedItem?.mime_type !== 'application/pdf') ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
@@ -244,7 +244,8 @@ export function HomeView({
            rotationSpeed={rotationSpeed}
            flipHorizontal={flipHorizontal}
            flipVertical={flipVertical}
-           webUrl={(selectedItem?.type === 'web' || selectedItem?.file_type === 'web') ? (selectedItem?.url || selectedItem?.storage_path) : undefined}
+           webUrl={(selectedItem?.type === 'web' || selectedItem?.file_type === 'web') ? (selectedItem?.url || selectedItem?.storage_path) : 
+                   (selectedItem?.file_type === 'document' || selectedItem?.mime_type === 'application/pdf') ? selectedItem?.url : undefined}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
          />

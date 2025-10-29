@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect, Suspense, useImperativeHandle } fro
 import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
 import { supabase } from '@/integrations/supabase/client';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ZoomIn, ZoomOut } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 
 interface HeroHeaderVideoProps {
   videoSrc?: string;
@@ -75,6 +78,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
   const [proxyError, setProxyError] = useState<string | null>(null);
   const [isBlurred, setIsBlurred] = useState(false);
+  const [pdfZoom, setPdfZoom] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -311,7 +315,15 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const clean = url.split('?')[0].split('#')[0];
     return /\.(mp4|webm|ogg|mov)$/i.test(clean);
   };
+  
+  const getIsPDF = (url?: string) => {
+    if (!url) return false;
+    const clean = url.split('?')[0].split('#')[0];
+    return /\.pdf$/i.test(clean) || url.includes('application/pdf');
+  };
+  
   const isBackgroundVideo = getIsVideo(backgroundImage);
+  const isPDF = getIsPDF(webUrl);
 
   // Setup event listeners for background video
   useEffect(() => {
@@ -530,8 +542,66 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       onTouchStart={webUrl ? undefined : handleMouseDown}
       onTouchEnd={webUrl ? undefined : handleMouseUp}
     >
-      {/* Web Page Iframe - highest priority */}
-      {webUrl && (
+      {/* PDF Viewer - highest priority for PDF content */}
+      {webUrl && isPDF && (
+        <div className="absolute inset-0 w-full h-full z-20 bg-background" style={{ pointerEvents: 'auto' }}>
+          <ScrollArea className="h-full w-full">
+            <div className="flex items-center justify-center p-4" style={{ minHeight: '100%' }}>
+              <iframe
+                src={`${webUrl}#view=FitH`}
+                className="border-0 transition-transform duration-200"
+                title="PDF Document"
+                style={{ 
+                  width: `${100 * pdfZoom}%`,
+                  height: `${100 * pdfZoom}vh`,
+                  minHeight: '100vh',
+                  pointerEvents: 'auto'
+                }}
+                onLoad={() => setIframeLoaded(true)}
+              />
+            </div>
+          </ScrollArea>
+          
+          {/* PDF Zoom Controls */}
+          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 min-w-[280px]">
+            <ZoomOut className="w-4 h-4 text-white flex-shrink-0" />
+            <Slider
+              value={[pdfZoom]}
+              onValueChange={(values) => setPdfZoom(values[0])}
+              min={0.5}
+              max={3}
+              step={0.1}
+              className="flex-1"
+            />
+            <ZoomIn className="w-4 h-4 text-white flex-shrink-0" />
+            <button
+              onClick={() => setPdfZoom(1)}
+              className="px-3 py-1 text-white text-sm hover:bg-white/20 rounded transition-colors flex-shrink-0"
+            >
+              {Math.round(pdfZoom * 100)}%
+            </button>
+          </div>
+
+          {/* PDF indicator */}
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-30">
+            <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm font-medium pointer-events-none">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                PDF Document
+              </div>
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); window.open(webUrl, '_blank', 'noopener'); }}
+              className="px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs hover:opacity-90"
+            >
+              Open
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Web Page Iframe - for non-PDF web content */}
+      {webUrl && !isPDF && (
         <div className="absolute inset-0 w-full h-full z-20 bg-black" style={{ pointerEvents: 'auto' }}>
           {/* Loading indicator */}
           {!iframeLoaded && !proxiedHtml && (

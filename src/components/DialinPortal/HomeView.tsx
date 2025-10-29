@@ -119,7 +119,42 @@ export function HomeView({
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  // PDF URL for hero header (signed if needed)
+  const [pdfUrlForHero, setPdfUrlForHero] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    const loadPdfUrl = async () => {
+      const si = selectedItem;
+      const isPdf =
+        !!si &&
+        (si?.type === 'document' ||
+         si?.file_type === 'document' ||
+         si?.mime_type === 'application/pdf' ||
+         (typeof si?.storage_path === 'string' && si.storage_path.toLowerCase().endsWith('.pdf')));
+      if (!isPdf) {
+        setPdfUrlForHero(undefined);
+        return;
+      }
+      // Prefer provided URL
+      if (si?.url) {
+        setPdfUrlForHero(si.url);
+        return;
+      }
+      if (si?.storage_path) {
+        try {
+          const { data } = await supabase.storage.from('user-files').createSignedUrl(si.storage_path, 3600);
+          setPdfUrlForHero(data?.signedUrl);
+        } catch (e) {
+          console.warn('Failed to sign PDF URL', e);
+          setPdfUrlForHero(undefined);
+        }
+      } else {
+        setPdfUrlForHero(undefined);
+      }
+    };
+    loadPdfUrl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItem?.id, selectedItem?.url, selectedItem?.storage_path, selectedItem?.mime_type, selectedItem?.file_type, selectedItem?.type]);
   const handleAddOptionSelect = (optionId: string) => {
     if (onAddOptionSelect) {
       onAddOptionSelect(optionId);
@@ -207,7 +242,7 @@ export function HomeView({
       )}
 
       {/* Hero Header - Show ContentViewer for files (excluding web links and PDFs), otherwise HeroHeaderVideo */}
-      {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web' && selectedItem?.file_type !== 'document' && selectedItem?.mime_type !== 'application/pdf') ? (
+      {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web' && selectedItem?.type !== 'document' && selectedItem?.file_type !== 'document' && selectedItem?.mime_type !== 'application/pdf') ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
@@ -244,8 +279,13 @@ export function HomeView({
            rotationSpeed={rotationSpeed}
            flipHorizontal={flipHorizontal}
            flipVertical={flipVertical}
-           webUrl={(selectedItem?.type === 'web' || selectedItem?.file_type === 'web') ? (selectedItem?.url || selectedItem?.storage_path) : 
-                   (selectedItem?.file_type === 'document' || selectedItem?.mime_type === 'application/pdf') ? selectedItem?.url : undefined}
+           webUrl={
+             (selectedItem?.type === 'web' || selectedItem?.file_type === 'web')
+               ? (selectedItem?.url || selectedItem?.storage_path)
+               : (selectedItem?.type === 'document' || selectedItem?.file_type === 'document' || selectedItem?.mime_type === 'application/pdf')
+               ? (selectedItem?.url || pdfUrlForHero)
+               : undefined
+           }
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
          />

@@ -10,6 +10,7 @@ export interface Space {
   parent_id?: string | null;
   cover_url?: string | null;
   thumbnail_url?: string | null;
+  thumb?: string; // Alias for thumbnail_url for backwards compatibility
   show_360?: boolean;
   x_axis_offset?: number;
   y_axis_offset?: number;
@@ -21,6 +22,7 @@ export interface Space {
   flip_horizontal?: boolean;
   flip_vertical?: boolean;
   is_home?: boolean;
+  isHome?: boolean; // Alias for is_home for backwards compatibility
   created_at: string;
   updated_at: string;
 }
@@ -104,7 +106,14 @@ export function useSpaces() {
         return;
       }
 
-      setSpaces(data || []);
+      // Map database fields to component-friendly aliases
+      const mappedSpaces = (data || []).map(space => ({
+        ...space,
+        thumb: space.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        isHome: space.is_home
+      }));
+
+      setSpaces(mappedSpaces);
     } catch (error) {
       console.error('Error fetching spaces:', error);
       toast.error('Failed to load spaces');

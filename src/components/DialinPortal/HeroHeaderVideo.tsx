@@ -83,6 +83,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [isBlurred, setIsBlurred] = useState(false);
   const [pdfZoom, setPdfZoom] = useState(1);
   const [videoDimensions, setVideoDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [bgVideoDimensions, setBgVideoDimensions] = useState<{ width: number; height: number } | null>(null);
   const [iframeHeight, setIframeHeight] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
@@ -358,9 +359,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const isScrollableVideo = allowDynamicHeight && videoDimensions 
     ? videoDimensions.height > window.innerHeight * 1.1
     : false;
+  // Determine if background video is tall and should be scrollable
+  const isScrollableBackgroundVideo = allowDynamicHeight && bgVideoDimensions 
+    ? bgVideoDimensions.height > window.innerHeight * 1.1
+    : false;
   
   // Determine if content needs scrolling
-  const needsScrolling = allowDynamicHeight && (isScrollableVideo || isPDF || webUrl);
+  const needsScrolling = allowDynamicHeight && (isScrollableVideo || isScrollableBackgroundVideo || isPDF || webUrl);
 
   // Setup event listeners for background video
   useEffect(() => {
@@ -418,6 +423,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const handleLoadedMetadata = () => {
       if (!showVideo) {
         setDuration(bgVideo.duration);
+      }
+      if (bgVideo.videoWidth && bgVideo.videoHeight) {
+        setBgVideoDimensions({ width: bgVideo.videoWidth, height: bgVideo.videoHeight });
       }
     };
 
@@ -796,18 +804,24 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {!webUrl && !show360 && (!showVideo || !videoSrc) && (
         <>
           {isBackgroundVideo ? (
-            <video
-              ref={bgVideoRef}
-              playsInline
-              loop
-              preload="auto"
-              muted
-              autoPlay
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100"
-              style={{ transform: 'scaleY(1)' }}
-            >
-              <source src={backgroundImage} />
-            </video>
+            <div className={isScrollableBackgroundVideo ? 'w-full' : 'absolute inset-0'}>
+              <video
+                ref={bgVideoRef}
+                playsInline
+                loop
+                preload="auto"
+                muted
+                autoPlay
+                className={`transition-opacity duration-500 opacity-100 ${
+                  isScrollableBackgroundVideo 
+                    ? 'w-full h-auto object-contain block' 
+                    : 'absolute inset-0 w-full h-full object-cover'
+                }`}
+                style={{ transform: 'scaleY(1)' }}
+              >
+                <source src={backgroundImage} />
+              </video>
+            </div>
           ) : (
             <div 
               className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 opacity-100"
@@ -839,7 +853,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       )}
 
       {/* Scroll Indicator for tall content */}
-      {needsScrolling && (isScrollableVideo || isPDF) && (
+      {needsScrolling && (isScrollableVideo || isScrollableBackgroundVideo || isPDF) && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none">
           <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium">
             {isScrollableVideo ? 'Scrollable Video' : 'Scroll to view document'}

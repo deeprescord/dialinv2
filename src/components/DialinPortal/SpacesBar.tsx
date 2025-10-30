@@ -286,7 +286,7 @@ export function SpacesBar({
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
       <div className="relative">
         {/* Spaces Bar */}
-        <div className="flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
+        <div className="flex items-center justify-between overflow-x-auto scrollbar-thin pt-4" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
           {/* Show spaces with breadcrumb flow when a space is selected */}
           <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
             {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (

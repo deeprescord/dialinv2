@@ -286,27 +286,26 @@ export function SpacesBar({
         {/* Spaces Bar - Floating with subtle gradient background */}
         <div className="relative">
           <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm"></div>
-          <div className="relative z-10 flex items-center justify-between overflow-x-auto scrollbar-thin pt-4 text-foreground" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
           {/* Spaces list */}
-          <div className="relative z-10 overflow-x-auto scrollbar-thin pt-4 text-foreground" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
-            <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
+          <div className="relative z-10 overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
+            <div className="flex items-start" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 40}px` }}>
               {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
                 <>
                   {breadcrumbs.map((breadcrumb, idx) => {
                     const space = allSpaces.find(s => s.id === breadcrumb.id) || { id: breadcrumb.id, name: breadcrumb.name, thumb: '/media/lobby-poster.png' } as any;
                     const isCurrentSpace = idx === breadcrumbs.length - 1;
                     return (
-                      <motion.div key={space.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0">
-                        <div className="flex flex-col items-center gap-2 cursor-pointer group select-none relative" style={{ width: `${thumbWidth}px` }} onClick={() => handleSpaceClick(space)} onMouseDown={(e) => handleMouseDown(space, e)} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onContextMenu={(e) => handleContextMenu(space, e)}>
+                      <motion.div key={space.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
+                        <div className="flex flex-col items-center cursor-pointer group select-none relative" style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} onClick={() => handleSpaceClick(space)} onMouseDown={(e) => handleMouseDown(space, e)} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onContextMenu={(e) => handleContextMenu(space, e)}>
                           {isCurrentSpace && (
-                            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                            <div className="absolute left-1/2 -translate-x-1/2 -top-2">
                               <div className="border-l-transparent border-r-transparent border-b-primary" style={{ width: 0, height: 0, borderLeftWidth: `${getScaled(8)}px`, borderRightWidth: `${getScaled(8)}px`, borderBottomWidth: `${getScaled(8)}px`, borderStyle: 'solid' }}></div>
                             </div>
                           )}
-                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px`, minWidth: `${thumbWidth}px`, minHeight: `${thumbHeight}px` }}>
+                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             <ImageFallback src={space.thumb} alt={space.name} className="w-full h-full object-cover" />
                           </div>
-                          <span className={`${fontSize} font-medium text-center ${isCurrentSpace ? 'text-primary' : ''}`} style={{ maxWidth: `${thumbWidth}px` }}>{space.name}</span>
+                          <span className={`${fontSize} font-medium text-center line-clamp-2 ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px` }}>{space.name}</span>
                         </div>
                       </motion.div>
                     );
@@ -317,8 +316,8 @@ export function SpacesBar({
                   {spaceItems.map((item, idx) => {
                     const isSpace = item.is_space;
                     return (
-                      <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0">
-                        <div className="flex flex-col items-center gap-2 cursor-pointer group select-none" onClick={() => {
+                      <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
+                        <div className="flex flex-col items-center cursor-pointer group select-none" style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} onClick={() => {
                           if (isSpace) {
                             handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
                           } else {
@@ -326,14 +325,14 @@ export function SpacesBar({
                             setShowDialPopup(true);
                           }
                         }}>
-                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 relative" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
+                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {thumbUrls[item.id] ? (
                               <ImageFallback src={thumbUrls[item.id]} alt={item.original_name} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full bg-background/60 flex items-center justify-center">{getFileIcon(item.file_type)}</div>
                             )}
                           </div>
-                          <span className={`${fontSize} text-xs text-center`} style={{ maxWidth: `${thumbWidth}px` }}>{item.original_name}</span>
+                          <span className={`${fontSize} text-center line-clamp-2`} style={{ width: `${thumbWidth}px` }}>{item.original_name}</span>
                         </div>
                       </motion.div>
                     );
@@ -345,17 +344,17 @@ export function SpacesBar({
                     const isLobby = space.id === 'lobby';
                     const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
                     return (
-                      <motion.div key={space.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.05 }} className="flex-shrink-0">
-                        <div className="flex flex-col items-center gap-2 cursor-pointer group select-none relative" style={{ width: `${thumbWidth}px` }} onClick={(e) => { if (wasLongPress) return; handleSpaceClick(space); }} onMouseDown={(e) => handleMouseDown(space, e)} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onContextMenu={(e) => handleContextMenu(space, e)} onTouchStart={(e) => { const touch = e.touches[0]; handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent); }} onTouchEnd={handleMouseUp}>
+                      <motion.div key={space.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
+                        <div className="flex flex-col items-center cursor-pointer group select-none relative" style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} onClick={(e) => { if (wasLongPress) return; handleSpaceClick(space); }} onMouseDown={(e) => handleMouseDown(space, e)} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onContextMenu={(e) => handleContextMenu(space, e)} onTouchStart={(e) => { const touch = e.touches[0]; handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent); }} onTouchEnd={handleMouseUp}>
                           {isCurrentSpace && (
-                            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                            <div className="absolute left-1/2 -translate-x-1/2 -top-2">
                               <div className="border-l-transparent border-r-transparent border-b-primary" style={{ width: 0, height: 0, borderLeftWidth: `${getScaled(8)}px`, borderRightWidth: `${getScaled(8)}px`, borderBottomWidth: `${getScaled(8)}px`, borderStyle: 'solid' }}></div>
                             </div>
                           )}
-                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px`, minWidth: `${thumbWidth}px`, minHeight: `${thumbHeight}px` }}>
+                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             <ImageFallback src={space.thumb} alt={space.name} className="w-full h-full object-cover" />
                           </div>
-                          <span className={`${fontSize} font-medium text-center ${isCurrentSpace ? 'text-primary' : ''}`} style={{ maxWidth: `${thumbWidth}px` }}>{space.name}</span>
+                          <span className={`${fontSize} font-medium text-center line-clamp-2 ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px` }}>{space.name}</span>
                         </div>
                       </motion.div>
                     );
@@ -364,7 +363,6 @@ export function SpacesBar({
               )}
             </div>
           </div>
-        </div>
         </div>
 
         {/* Action Buttons (moved below spaces) - with border */}

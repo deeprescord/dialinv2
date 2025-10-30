@@ -495,14 +495,14 @@ export function SpacesBar({
                         onTouchEnd={handleMouseUp}
                       >
                         <div 
-                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
+                          className="rounded-2xl overflow-auto glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
                           style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
                         >
                           {thumbUrls[item.id] ? (
                             <ImageFallback 
                               src={thumbUrls[item.id]} 
                               alt={item.original_name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-auto object-contain"
                             />
                           ) : (
                             <div className="w-full h-full bg-background/60 flex items-center justify-center">

@@ -285,7 +285,7 @@ export function SpacesBar({
       <div className="relative">
         {/* Spaces Bar - Floating with subtle gradient background */}
         <div className="relative">
-          <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm"></div>
+          <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm"></div>
           {/* Spaces list */}
           <div className="relative z-10 overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
             <div className="flex items-start" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 40}px` }}>

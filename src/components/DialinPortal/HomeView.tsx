@@ -261,7 +261,7 @@ export function HomeView({
           }}
         />
       ) : (
-        <HeroHeaderVideo
+         <HeroHeaderVideo
            ref={heroRef as any}
            videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby && !hasCustomBackground && !show360 ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
            posterSrc={selectedItem?.thumb || selectedItem?.art || backgroundImage || "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png"}
@@ -286,6 +286,7 @@ export function HomeView({
                ? (selectedItem?.url || pdfUrlForHero)
                : undefined
            }
+           allowDynamicHeight={true}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
          />

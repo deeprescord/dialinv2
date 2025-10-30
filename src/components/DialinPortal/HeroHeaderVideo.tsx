@@ -23,7 +23,8 @@ interface HeroHeaderVideoProps {
   rotationSpeed?: number;
   flipHorizontal?: boolean;
   flipVertical?: boolean;
-  webUrl?: string; // New prop for displaying web pages
+  webUrl?: string;
+  allowDynamicHeight?: boolean; // Enable dynamic height for tall content
   onOpenAddPanel?: () => void;
   onVideoStateChange?: (state: {
     isPlaying: boolean;
@@ -60,6 +61,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   flipHorizontal,
   flipVertical,
   webUrl,
+  allowDynamicHeight = false,
   onOpenAddPanel,
   onVideoStateChange
 }: HeroHeaderVideoProps, ref) => {
@@ -71,7 +73,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [duration, setDuration] = useState(0);
   const [videoVolume, setVideoVolume] = useState(0.7);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
-  const [lastUnmutedVolume, setLastUnmutedVolume] = useState(0.7); // Track last volume before mute
+  const [lastUnmutedVolume, setLastUnmutedVolume] = useState(0.7);
   const [skyboxSeekTo, setSkyboxSeekTo] = useState<number | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [proxyAttempted, setProxyAttempted] = useState(false);
@@ -79,6 +81,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [proxyError, setProxyError] = useState<string | null>(null);
   const [isBlurred, setIsBlurred] = useState(false);
   const [pdfZoom, setPdfZoom] = useState(1);
+  const [videoDimensions, setVideoDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [iframeHeight, setIframeHeight] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -157,6 +161,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
+      // Capture video dimensions for tall video detection
+      if (video.videoWidth && video.videoHeight) {
+        setVideoDimensions({ width: video.videoWidth, height: video.videoHeight });
+      }
     };
 
     const handlePlay = () => {
@@ -324,6 +332,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   
   const isBackgroundVideo = getIsVideo(backgroundImage);
   const isPDF = getIsPDF(webUrl);
+  
+  // Determine if video is "tall" (height > 2x width) and should be scrollable
+  const isScrollableVideo = allowDynamicHeight && videoDimensions 
+    ? videoDimensions.height / videoDimensions.width > 2 
+    : false;
+  
+  // Determine if content needs scrolling
+  const needsScrolling = allowDynamicHeight && (isScrollableVideo || isPDF || webUrl);
 
   // Setup event listeners for background video
   useEffect(() => {
@@ -526,9 +542,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
   }, []);
 
-  return (
+  const containerContent = (
     <div 
-      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl hero-protected-content"
+      className={`relative w-full rounded-2xl hero-protected-content ${
+        needsScrolling 
+          ? 'min-h-[85vh] lg:min-h-[90vh] max-h-[500vh] h-auto' 
+          : 'h-[85vh] lg:h-[90vh] overflow-hidden'
+      }`}
       style={{ 
         userSelect: webUrl ? 'auto' : 'none',
         WebkitUserSelect: webUrl ? 'auto' : 'none',
@@ -544,23 +564,21 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     >
       {/* PDF Viewer - highest priority for PDF content */}
       {webUrl && isPDF && (
-        <div className="absolute inset-0 w-full h-full z-20 bg-background" style={{ pointerEvents: 'auto' }}>
-          <ScrollArea className="h-full w-full">
-            <div className="flex items-center justify-center p-4" style={{ minHeight: '100%' }}>
-              <iframe
-                src={`${webUrl}#view=FitH`}
-                className="border-0 transition-transform duration-200"
-                title="PDF Document"
-                style={{ 
-                  width: `${100 * pdfZoom}%`,
-                  height: `${100 * pdfZoom}vh`,
-                  minHeight: '100vh',
-                  pointerEvents: 'auto'
-                }}
-                onLoad={() => setIframeLoaded(true)}
-              />
-            </div>
-          </ScrollArea>
+        <div className={`w-full z-20 bg-background ${needsScrolling ? 'relative' : 'absolute inset-0 h-full'}`} style={{ pointerEvents: 'auto' }}>
+          <div className="w-full" style={{ minHeight: needsScrolling ? '85vh' : '100%' }}>
+            <iframe
+              src={`${webUrl}#view=FitH`}
+              className="border-0 w-full transition-transform duration-200"
+              title="PDF Document"
+              style={{ 
+                width: `${100 * pdfZoom}%`,
+                height: needsScrolling ? 'auto' : `${100 * pdfZoom}vh`,
+                minHeight: needsScrolling ? `${200 * pdfZoom}vh` : '100vh',
+                pointerEvents: 'auto'
+              }}
+              onLoad={() => setIframeLoaded(true)}
+            />
+          </div>
           
           {/* PDF Zoom Controls */}
           <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 min-w-[280px]">
@@ -602,7 +620,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
       {/* Web Page Iframe - for non-PDF web content */}
       {webUrl && !isPDF && (
-        <div className="absolute inset-0 w-full h-full z-20 bg-black" style={{ pointerEvents: 'auto' }}>
+        <div className={`w-full z-20 bg-black ${needsScrolling ? 'relative' : 'absolute inset-0 h-full'}`} style={{ pointerEvents: 'auto', minHeight: needsScrolling ? '85vh' : undefined }}>
           {/* Loading indicator */}
           {!iframeLoaded && !proxiedHtml && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -616,21 +634,31 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           {proxiedHtml ? (
             <iframe
               srcDoc={proxiedHtml}
-              className="w-full h-full border-0"
+              className="w-full border-0"
               title="Web Content (proxied)"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-modals allow-downloads"
               scrolling="yes"
-              style={{ overflow: 'auto', pointerEvents: 'auto' }}
+              style={{ 
+                overflow: 'auto', 
+                pointerEvents: 'auto',
+                height: needsScrolling ? (iframeHeight ? `${iframeHeight}px` : '200vh') : '100%',
+                minHeight: needsScrolling ? '85vh' : undefined
+              }}
               allow="autoplay; fullscreen; picture-in-picture"
             />
           ) : (
             <iframe
               src={webUrl}
-              className="w-full h-full border-0"
+              className="w-full border-0"
               title="Web Content"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-modals allow-downloads"
               scrolling="yes"
-              style={{ overflow: 'auto', pointerEvents: 'auto' }}
+              style={{ 
+                overflow: 'auto', 
+                pointerEvents: 'auto',
+                height: needsScrolling ? (iframeHeight ? `${iframeHeight}px` : '200vh') : '100%',
+                minHeight: needsScrolling ? '85vh' : undefined
+              }}
               allow="autoplay; fullscreen; picture-in-picture"
               onLoad={() => {
                 console.log('Iframe loaded successfully');
@@ -666,18 +694,25 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {/* Video Background - only show for lobby */}
-       {!webUrl && showVideo && videoSrc && !videoError && (
+      {/* Video - dynamic sizing for tall videos */}
+      {!webUrl && showVideo && videoSrc && !videoError && (
         <video
           ref={videoRef}
           playsInline
           loop
           preload="auto"
           muted
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+          className={`transition-opacity duration-500 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
+          } ${
+            isScrollableVideo 
+              ? 'relative w-full h-auto' 
+              : 'absolute inset-0 w-full h-full object-cover'
           }`}
-          style={{ transform: 'scaleY(1)' }}
+          style={{ 
+            transform: 'scaleY(1)',
+            objectFit: isScrollableVideo ? 'contain' : 'cover'
+          }}
           poster={posterSrc}
         >
           {showVideo && <source src={videoSrc} type="video/mp4" />}
@@ -768,13 +803,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </>
       )}
 
-      {/* Gradient Overlay - don't show for web view or 360° view */}
-      {!webUrl && <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />}
-
+      {/* Gradient Overlay - don't show for web view, 360° view, or scrollable content */}
+      {!webUrl && !needsScrolling && <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />}
 
       {/* Content - Only show for non-lobby spaces */}
       {title && subtitle && (
-        <div className={`absolute bottom-32 left-8 ${show360 ? 'z-30' : ''}`}>
+        <div className={`${needsScrolling ? 'relative mt-8 px-8' : 'absolute bottom-32 left-8'} ${show360 ? 'z-30' : ''}`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -789,7 +823,35 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           </motion.div>
         </div>
       )}
+
+      {/* Scroll Indicator for tall content */}
+      {needsScrolling && (isScrollableVideo || isPDF) && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none">
+          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium">
+            {isScrollableVideo ? 'Scrollable Video' : 'Scroll to view document'}
+            {videoDimensions && isScrollableVideo && (
+              <span className="ml-2 text-white/60">
+                {videoDimensions.width}×{videoDimensions.height}
+              </span>
+            )}
+          </div>
+          <div className="animate-bounce">
+            <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </div>
+        </div>
+      )}
     </div>
+  );
+
+  // Wrap in ScrollArea if content needs scrolling
+  return needsScrolling ? (
+    <ScrollArea className="w-full max-h-[500vh]">
+      {containerContent}
+    </ScrollArea>
+  ) : (
+    containerContent
   );
 }
 );

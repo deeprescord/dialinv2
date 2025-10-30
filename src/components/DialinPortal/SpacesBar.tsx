@@ -285,91 +285,6 @@ export function SpacesBar({
 
       <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
       <div className="relative">
-        {/* Top Action Buttons */}
-        <div className="flex items-center justify-between gap-2 px-3 py-1.5">
-          <div className="flex items-center gap-2">
-            {/* Video Controls - Always show (disabled when no video) */}
-            {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
-              <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50'}`}>
-                <VideoControls
-                  isPlaying={videoControlsState?.isPlaying ?? false}
-                  currentTime={videoControlsState?.currentTime ?? 0}
-                  duration={videoControlsState?.duration ?? 0}
-                  volume={videoControlsState?.volume ?? 1}
-                  isMuted={videoControlsState?.isMuted ?? true}
-                  onPlayPause={onVideoPlayPause}
-                  onSeek={onVideoSeek}
-                  onVolumeChange={onVideoVolumeChange}
-                  onMuteToggle={onVideoMuteToggle}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Right Side Buttons */}
-          <div className="flex items-center gap-2">
-          {!hideActionButtons && !hideNewButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleAddModal || onCreateSpace}
-              className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <PlusCircle size={12} className="mr-1" />
-              Add
-            </Button>
-          )}
-          {!hideActionButtons && (
-            <Button
-               variant="ghost"
-               size="sm"
-               onMouseDown={(e) => e.stopPropagation()}
-               onTouchStart={(e) => e.stopPropagation()}
-               onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
-               className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <Package size={12} className="mr-1" />
-              Items
-            </Button>
-          )}
-          {!hideActionButtons && (
-            <Button
-               variant="ghost"
-               size="sm"
-               onMouseDown={(e) => e.stopPropagation()}
-               onTouchStart={(e) => e.stopPropagation()}
-               onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
-               className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <Users size={12} className="mr-1" />
-              People
-            </Button>
-          )}
-          {!hideActionButtons && !hideAIButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleAIChat?.()}
-              className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <Bot size={12} className="mr-1" />
-              AI
-            </Button>
-          )}
-          {!hideActionButtons && !hideChatButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleChatWindow?.()}
-              className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <MessageSquare size={12} className="mr-1" />
-              Chat
-            </Button>
-          )}
-          </div>
-        </div>
-
         {/* Spaces Bar */}
         <div className="flex items-center justify-between overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px` }}>
           {/* Show spaces with breadcrumb flow when a space is selected */}
@@ -622,6 +537,91 @@ export function SpacesBar({
                 })}
               </>
             )}
+          </div>
+        </div>
+
+        {/* Action Buttons (moved below spaces) */}
+        <div className="flex items-center justify-between gap-2 px-3 py-1.5">
+          <div className="flex items-center gap-2">
+            {/* Video Controls - Always show (disabled when no video) */}
+            {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
+              <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50'}`}>
+                <VideoControls
+                  isPlaying={videoControlsState?.isPlaying ?? false}
+                  currentTime={videoControlsState?.currentTime ?? 0}
+                  duration={videoControlsState?.duration ?? 0}
+                  volume={videoControlsState?.volume ?? 1}
+                  isMuted={videoControlsState?.isMuted ?? true}
+                  onPlayPause={onVideoPlayPause}
+                  onSeek={onVideoSeek}
+                  onVolumeChange={onVideoVolumeChange}
+                  onMuteToggle={onVideoMuteToggle}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Right Side Buttons */}
+          <div className="flex items-center gap-2">
+          {!hideActionButtons && !hideNewButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleAddModal || onCreateSpace}
+              className="h-6 px-2 text-xs hover:bg-white/10"
+            >
+              <PlusCircle size={12} className="mr-1" />
+              Add
+            </Button>
+          )}
+          {!hideActionButtons && (
+            <Button
+               variant="ghost"
+               size="sm"
+               onMouseDown={(e) => e.stopPropagation()}
+               onTouchStart={(e) => e.stopPropagation()}
+               onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
+               className="h-6 px-2 text-xs hover:bg-white/10"
+            >
+              <Package size={12} className="mr-1" />
+              Items
+            </Button>
+          )}
+          {!hideActionButtons && (
+            <Button
+               variant="ghost"
+               size="sm"
+               onMouseDown={(e) => e.stopPropagation()}
+               onTouchStart={(e) => e.stopPropagation()}
+               onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
+               className="h-6 px-2 text-xs hover:bg-white/10"
+            >
+              <Users size={12} className="mr-1" />
+              People
+            </Button>
+          )}
+          {!hideActionButtons && !hideAIButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleAIChat?.()}
+              className="h-6 px-2 text-xs hover:bg-white/10"
+            >
+              <Bot size={12} className="mr-1" />
+              AI
+            </Button>
+          )}
+          {!hideActionButtons && !hideChatButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleChatWindow?.()}
+              className="h-6 px-2 text-xs hover:bg-white/10"
+            >
+              <MessageSquare size={12} className="mr-1" />
+              Chat
+            </Button>
+          )}
           </div>
         </div>
       </div>

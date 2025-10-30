@@ -118,7 +118,7 @@ export function SpacesBar({
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
   const thumbWidth = getScaled(160); // Larger width
-  const thumbHeight = getScaled(120); // Taller and more vertical
+  const thumbHeight = getScaled(240); // Double height for more vertical space
   const buttonSize = getScaled(108);
   const iconSize = getScaled(34);
   const actionButtonIconSize = getScaled(17);

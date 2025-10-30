@@ -234,7 +234,11 @@ export function SpacesBar({
       // First pass: collect items needing signed URLs
       for (const item of spaceItems) {
         const pathToUse = item.thumbnail_path || item.storage_path;
-        if (pathToUse) {
+        if (!pathToUse) continue;
+        // If it's already a public URL (e.g., from space-covers), use directly
+        if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
+          urls[item.id] = pathToUse;
+        } else {
           filesToSign.push({ id: item.id, path: pathToUse });
         }
       }
@@ -250,7 +254,7 @@ export function SpacesBar({
           )
         );
         
-        results.forEach((result, idx) => {
+        results.forEach((result) => {
           if (result.status === 'fulfilled' && result.value.url) {
             urls[result.value.id] = result.value.url;
           }

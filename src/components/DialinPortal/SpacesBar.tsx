@@ -510,7 +510,7 @@ export function SpacesBar({
                             </div>
                           )}
                         </div>
-                        <span className={`${fontSize} text-xs text-center truncate max-w-[${thumbWidth}px]`}>
+                        <span className={`${fontSize} text-xs text-center max-w-[${thumbWidth}px] break-words line-clamp-2`}>
                           {item.original_name}
                         </span>
                       </div>

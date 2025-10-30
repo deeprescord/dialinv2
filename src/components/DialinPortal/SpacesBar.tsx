@@ -275,9 +275,15 @@ export function SpacesBar({
     if (fileType.startsWith('image')) return <ImageIcon size={iconSize * 0.4} />;
     if (fileType.startsWith('video')) return <Video size={iconSize * 0.4} />;
     if (fileType.startsWith('audio')) return <Music size={iconSize * 0.4} />;
+    if (fileType === 'space') return <ImageIcon size={iconSize * 0.4} />;
     return <FileText size={iconSize * 0.4} />;
   };
 
+  const isVideoUrl = (url?: string) => {
+    if (!url) return false;
+    const clean = url.split('?')[0].split('#')[0];
+    return /(\.mp4|\.webm|\.ogg|\.mov)$/i.test(clean);
+  };
   return (
     <>
       <div className="relative">
@@ -353,11 +359,26 @@ export function SpacesBar({
                           onTouchEnd={handleMouseUp}
                         >
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
-                            {thumbUrls[item.id] ? (
-                              <ImageFallback src={thumbUrls[item.id]} alt={item.original_name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full bg-background/60 flex items-center justify-center">{getFileIcon(item.file_type)}</div>
-                            )}
+                            {(() => {
+                              const url = thumbUrls[item.id];
+                              if (url) {
+                                return isVideoUrl(url) ? (
+                                  <video
+                                    src={url}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    playsInline
+                                    loop
+                                    preload="metadata"
+                                  />
+                                ) : (
+                                  <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />
+                                );
+                              }
+                              return (
+                                <div className="w-full h-full bg-background/60 flex items-center justify-center">{getFileIcon(item.file_type)}</div>
+                              );
+                            })()}
                           </div>
                           <span className={`${fontSize} text-center overflow-hidden text-ellipsis`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.original_name}</span>
                         </div>

@@ -547,7 +547,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     <div 
       className={`relative w-full rounded-2xl hero-protected-content ${
         needsScrolling 
-          ? 'min-h-[85vh] lg:min-h-[90vh] max-h-[500vh] h-auto' 
+          ? 'h-auto overflow-y-auto' 
           : 'h-[85vh] lg:h-[90vh] overflow-hidden'
       }`}
       style={{ 
@@ -686,7 +686,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
       {/* Video - dynamic sizing for tall videos */}
       {!webUrl && showVideo && videoSrc && !videoError && (
-        <div className={isScrollableVideo ? 'w-full overflow-y-auto h-full' : 'absolute inset-0'}>
+        <div className={isScrollableVideo ? 'w-full' : 'absolute inset-0'}>
           <video
             ref={videoRef}
             playsInline
@@ -697,7 +697,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               videoLoaded ? 'opacity-100' : 'opacity-0'
             } ${
               isScrollableVideo 
-                ? 'w-full h-auto object-contain' 
+                ? 'w-full h-auto' 
                 : 'absolute inset-0 w-full h-full object-cover'
             }`}
             style={{ 
@@ -837,13 +837,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     </div>
   );
 
-  // Wrap in ScrollArea if content needs scrolling
-  return needsScrolling ? (
-    <ScrollArea className="w-full max-h-[500vh]">
-      {containerContent}
-    </ScrollArea>
-  ) : (
-    containerContent
-  );
+  // Return content directly (scrolling handled by container)
+  return containerContent;
 }
 );

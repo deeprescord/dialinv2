@@ -714,7 +714,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
       {/* Video - dynamic sizing for tall videos - ONLY render when this is the active video */}
       {!webUrl && !show360 && showVideo && videoSrc && !videoError && (
-        <div className={isScrollableVideo ? 'w-full' : 'absolute inset-0'}>
+        <div className={isScrollableVideo ? 'w-full h-screen overflow-y-auto' : 'absolute inset-0'}>
           <video
             ref={videoRef}
             playsInline

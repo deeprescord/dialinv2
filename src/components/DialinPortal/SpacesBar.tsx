@@ -122,9 +122,9 @@ export function SpacesBar({
   const buttonSize = getScaled(108);
   const iconSize = getScaled(34);
   const actionButtonIconSize = getScaled(17);
-  const spacing = getScaled(12); // Increased from 8 for more space between items
-  const padding = getScaled(6); // Reduced padding
-  const fontSize = 'text-sm'; // Smaller font
+  const spacing = getScaled(16); // Increased from 12 for more space between items
+  const padding = getScaled(6);
+  const fontSize = 'text-xs'; // Smaller font to prevent overflow
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     setWasLongPress(false);
@@ -288,7 +288,7 @@ export function SpacesBar({
           <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm"></div>
           {/* Spaces list */}
           <div className="relative z-10 overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
-            <div className="flex items-start" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 40}px` }}>
+            <div className="flex items-start" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 50}px` }}>
               {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
                 <>
                   {breadcrumbs.map((breadcrumb, idx) => {
@@ -305,7 +305,7 @@ export function SpacesBar({
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             <ImageFallback src={space.thumb} alt={space.name} className="w-full h-full object-cover" />
                           </div>
-                          <span className={`${fontSize} font-medium text-center line-clamp-2 ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px` }}>{space.name}</span>
+                          <span className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{space.name}</span>
                         </div>
                       </motion.div>
                     );
@@ -317,14 +317,43 @@ export function SpacesBar({
                     const isSpace = item.is_space;
                     return (
                       <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
-                        <div className="flex flex-col items-center cursor-pointer group select-none" style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} onClick={() => {
-                          if (isSpace) {
-                            handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
-                          } else {
-                            setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
-                            setShowDialPopup(true);
-                          }
-                        }}>
+                        <div 
+                          className="flex flex-col items-center cursor-pointer group select-none" 
+                          style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
+                          onClick={() => {
+                            if (wasLongPress) return;
+                            if (isSpace) {
+                              handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
+                            } else {
+                              onItemClick?.(item);
+                            }
+                          }}
+                          onMouseDown={(e) => {
+                            if (!isSpace) {
+                              setWasLongPress(false);
+                              const timer = setTimeout(() => {
+                                setWasLongPress(true);
+                                setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
+                                setShowDialPopup(true);
+                              }, 500);
+                              setPressTimer(timer);
+                            }
+                          }}
+                          onMouseUp={handleMouseUp}
+                          onMouseLeave={handleMouseLeave}
+                          onTouchStart={(e) => {
+                            if (!isSpace) {
+                              setWasLongPress(false);
+                              const timer = setTimeout(() => {
+                                setWasLongPress(true);
+                                setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
+                                setShowDialPopup(true);
+                              }, 500);
+                              setPressTimer(timer);
+                            }
+                          }}
+                          onTouchEnd={handleMouseUp}
+                        >
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {thumbUrls[item.id] ? (
                               <ImageFallback src={thumbUrls[item.id]} alt={item.original_name} className="w-full h-full object-cover" />
@@ -332,7 +361,7 @@ export function SpacesBar({
                               <div className="w-full h-full bg-background/60 flex items-center justify-center">{getFileIcon(item.file_type)}</div>
                             )}
                           </div>
-                          <span className={`${fontSize} text-center line-clamp-2`} style={{ width: `${thumbWidth}px` }}>{item.original_name}</span>
+                          <span className={`${fontSize} text-center overflow-hidden text-ellipsis`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.original_name}</span>
                         </div>
                       </motion.div>
                     );
@@ -354,7 +383,7 @@ export function SpacesBar({
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             <ImageFallback src={space.thumb} alt={space.name} className="w-full h-full object-cover" />
                           </div>
-                          <span className={`${fontSize} font-medium text-center line-clamp-2 ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px` }}>{space.name}</span>
+                          <span className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{space.name}</span>
                         </div>
                       </motion.div>
                     );

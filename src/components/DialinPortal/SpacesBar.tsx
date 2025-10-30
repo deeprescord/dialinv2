@@ -311,7 +311,13 @@ export function SpacesBar({
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
-                              const url = (space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '/media/lobby-poster.png';
+                              // Resolve correct image for breadcrumbs, especially Home
+                              const homeSpace = allSpaces.find(s => (s as any).is_home || (s as any).isHome);
+                              const isHomeCrumb = (space as any).is_home || (space as any).isHome || breadcrumb.name?.toLowerCase() === 'home' || breadcrumb.id === 'home' || breadcrumb.id === 'lobby';
+                              const baseUrl = (space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '/media/lobby-poster.png';
+                              const url = isHomeCrumb && homeSpace
+                                ? ((homeSpace as any).thumbnail_url || (homeSpace as any).cover_url || baseUrl)
+                                : baseUrl;
                               return isVideoUrl(url) ? (
                                 <video
                                   src={url}

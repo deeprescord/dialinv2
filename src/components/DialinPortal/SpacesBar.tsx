@@ -149,37 +149,40 @@ export function SpacesBar({
 
   const handleDeleteItem = async (itemId: string) => {
     try {
+      if (!currentSpaceId) throw new Error('No current space id');
       const { error } = await supabase
-        .from('space_items' as any)
+        .from('space_files')
         .delete()
-        .eq('id', itemId);
+        .match({ space_id: currentSpaceId, file_id: itemId });
       
       if (error) throw error;
-      toast.success('Item deleted successfully');
+      toast.success('Removed from space');
       setShowDialPopup(false);
       // Trigger refetch by navigation or state update
       window.location.reload();
     } catch (error) {
       console.error('Error deleting item:', error);
-      toast.error('Failed to delete item');
+      toast.error('Failed to remove');
     }
   };
 
   const handleRenameItem = async (itemId: string, newName: string) => {
     try {
+      const name = newName.trim();
+      if (!name) throw new Error('Empty name');
       const { error } = await supabase
-        .from('space_items' as any)
-        .update({ original_name: newName })
+        .from('files')
+        .update({ original_name: name })
         .eq('id', itemId);
       
       if (error) throw error;
-      toast.success('Item renamed successfully');
+      toast.success('Item renamed');
       setShowDialPopup(false);
       // Trigger refetch
       window.location.reload();
     } catch (error) {
       console.error('Error renaming item:', error);
-      toast.error('Failed to rename item');
+      toast.error('Failed to rename');
     }
   };
 

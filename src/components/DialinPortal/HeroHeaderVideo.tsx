@@ -334,9 +334,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const isBackgroundVideo = getIsVideo(backgroundImage);
   const isPDF = getIsPDF(webUrl);
   
-  // Determine if video is "tall" (height > 2x width) and should be scrollable
+  // Determine if video is tall (height taller than browser window by 10%) and should be scrollable
   const isScrollableVideo = allowDynamicHeight && videoDimensions 
-    ? videoDimensions.height / videoDimensions.width > 2 
+    ? videoDimensions.height > window.innerHeight * 1.1
     : false;
   
   // Determine if content needs scrolling

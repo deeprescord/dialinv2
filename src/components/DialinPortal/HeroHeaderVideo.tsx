@@ -836,14 +836,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
             ) : (
               <div 
                 className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
+                style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'))})` }}
               />
             )}
           </div>
           <Suspense fallback={
             <div 
               className="w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
+              style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'))})` }}
             />
           }>
             <SkyboxViewer 
@@ -889,12 +889,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                 loop
                 preload="metadata"
                 muted
+                poster={(posterSrc && !getIsVideo(posterSrc)) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'}
                 className={`transition-opacity duration-500 opacity-100 ${
                   isScrollableBackgroundVideo 
                     ? 'w-full h-auto object-contain block' 
                     : 'absolute inset-0 w-full h-full object-cover'
                 }`}
                 style={{ transform: 'scaleY(1)' }}
+                onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.1; } catch {} }}
               >
                 <source src={backgroundImage} />
               </video>
@@ -902,7 +904,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           ) : (
             <div 
               className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 opacity-100"
-              style={{ backgroundImage: `url(${backgroundImage || posterSrc})` }}
+              style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'))})` }}
             />
           )}
         </>

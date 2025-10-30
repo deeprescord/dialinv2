@@ -43,8 +43,10 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
                 muted
                 playsInline
                 preload="metadata"
-                onLoadedData={(e) => {
-                  // Ensure thumbnails don't play; just show first frame
+                onLoadedMetadata={(e) => {
+                  try { e.currentTarget.currentTime = 0.1; } catch {}
+                }}
+                onSeeked={(e) => {
                   try { e.currentTarget.pause(); } catch {}
                 }}
               />

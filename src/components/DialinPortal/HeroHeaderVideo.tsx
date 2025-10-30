@@ -367,6 +367,20 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   // Determine if content needs scrolling
   const needsScrolling = allowDynamicHeight && (isScrollableVideo || isScrollableBackgroundVideo || isPDF || webUrl);
 
+  // Debug: log sizing decisions
+  useEffect(() => {
+    console.log('[HeroHeaderVideo] debug', {
+      showVideo,
+      videoSrc,
+      videoDimensions,
+      bgVideoDimensions,
+      isScrollableVideo,
+      isScrollableBackgroundVideo,
+      needsScrolling,
+      allowDynamicHeight,
+    });
+  }, [showVideo, videoSrc, videoDimensions, bgVideoDimensions, isScrollableVideo, isScrollableBackgroundVideo, needsScrolling, allowDynamicHeight]);
+
   // Setup event listeners for background video
   useEffect(() => {
     const bgVideo = bgVideoRef.current;
@@ -723,9 +737,24 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
             muted
             onLoadedMetadata={(e) => {
               const video = e.currentTarget;
+              console.log('[HeroHeaderVideo] foreground loadedmetadata', video.videoWidth, video.videoHeight);
               if (video.videoWidth && video.videoHeight) {
                 setVideoDimensions({ width: video.videoWidth, height: video.videoHeight });
               }
+            }}
+            onCanPlay={(e) => {
+              setVideoLoaded(true);
+              const v = e.currentTarget;
+              setDuration(v.duration || 0);
+              console.log('[HeroHeaderVideo] foreground canplay duration', v.duration);
+            }}
+            onTimeUpdate={(e) => {
+              if (showVideo) setCurrentTime(e.currentTarget.currentTime);
+            }}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onError={(e) => {
+              console.error('[HeroHeaderVideo] foreground video error', e);
             }}
             className={`transition-opacity duration-500 ${
               videoLoaded ? 'opacity-100' : 'opacity-0'

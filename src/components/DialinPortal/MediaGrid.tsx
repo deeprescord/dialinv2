@@ -54,7 +54,7 @@ export function MediaGrid({ items, onItemClick, onItemLongPress }: MediaGridProp
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
       {items.map((item, index) => (
         <motion.div
           key={item.id}
@@ -84,10 +84,10 @@ export function MediaGrid({ items, onItemClick, onItemLongPress }: MediaGridProp
               )}
             </div>
             <div className="p-3 sm:p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0 mr-2">
-                  <h3 className="font-semibold text-sm mb-1 line-clamp-2">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm mb-1 line-clamp-3">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
                     {item.sharedBy || item.artist || item.distance || ''}
                   </p>
                 </div>

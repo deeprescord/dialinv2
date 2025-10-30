@@ -121,7 +121,7 @@ export function SpacesBar({
   const buttonSize = getScaled(108);
   const iconSize = getScaled(34);
   const actionButtonIconSize = getScaled(17); // Half size for action buttons
-  const spacing = getScaled(7);
+  const spacing = getScaled(12); // Increased from 7 to 12
   const padding = getScaled(8);
   const fontSize = 'text-base';
 

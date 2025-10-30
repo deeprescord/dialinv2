@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, Suspense, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, Suspense, useImperativeHandle } from 'react';
 import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
 import { supabase } from '@/integrations/supabase/client';
@@ -405,6 +405,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const bgVideo = bgVideoRef.current;
     if (!bgVideo || !isBackgroundVideo) return;
 
+    // If web content is active, ensure background video is paused and muted
+    if (webUrl) {
+      try { bgVideo.pause(); } catch {}
+      bgVideo.muted = true;
+      return;
+    }
+
     // Pause video when switching spaces
     bgVideo.pause();
     
@@ -490,7 +497,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       bgVideo.removeEventListener('play', handlePlay);
       bgVideo.removeEventListener('pause', handlePause);
     };
-  }, [isBackgroundVideo, backgroundImage, showVideo]);
+  }, [isBackgroundVideo, backgroundImage, showVideo, show360, webUrl]);
 
   // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos
   useEffect(() => {
@@ -504,6 +511,18 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       setIsPlaying(false);
     }
   }, [show360]);
+
+  // If a web page is displayed, pause and mute all internal videos to avoid dual audio (run before paint)
+  useLayoutEffect(() => {
+    if (webUrl) {
+      try { videoRef.current?.pause(); } catch {}
+      try { bgVideoRef.current?.pause(); } catch {}
+      if (videoRef.current) videoRef.current.muted = true;
+      if (bgVideoRef.current) bgVideoRef.current.muted = true;
+      setIsVideoMuted(true);
+      setIsPlaying(false);
+    }
+  }, [webUrl]);
 
   // If a web page is displayed, pause and mute all internal videos to avoid dual audio
   useEffect(() => {
@@ -865,7 +884,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                 loop
                 preload="auto"
                 muted
-                autoPlay
                 className={`transition-opacity duration-500 opacity-100 ${
                   isScrollableBackgroundVideo 
                     ? 'w-full h-auto object-contain block' 

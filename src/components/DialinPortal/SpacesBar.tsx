@@ -311,16 +311,18 @@ export function SpacesBar({
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
-                              // Resolve correct image for breadcrumbs, especially Home
                               const homeSpace = allSpaces.find(s => (s as any).is_home || (s as any).isHome);
                               const isHomeCrumb = (space as any).is_home || (space as any).isHome || breadcrumb.name?.toLowerCase() === 'home' || breadcrumb.id === 'home' || breadcrumb.id === 'lobby';
-                              const baseUrl = (space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '/media/lobby-poster.png';
-                              const url = isHomeCrumb && homeSpace
-                                ? ((homeSpace as any).thumbnail_url || (homeSpace as any).cover_url || baseUrl)
-                                : baseUrl;
-                              return isVideoUrl(url) ? (
+                              const pickBest = (obj: any) => {
+                                const candidates = [obj?.thumbnail_url, obj?.cover_url, obj?.thumb].filter(Boolean) as string[];
+                                // Prefer non-video image first
+                                const imageFirst = candidates.find(u => !isVideoUrl(u));
+                                return imageFirst || candidates[0] || '/media/lobby-poster.png';
+                              };
+                              const chosen = isHomeCrumb && homeSpace ? pickBest(homeSpace as any) : pickBest(space as any);
+                              return isVideoUrl(chosen) ? (
                                 <video
-                                  src={url}
+                                  src={chosen}
                                   className="w-full h-full object-cover"
                                   muted
                                   playsInline
@@ -333,7 +335,7 @@ export function SpacesBar({
                                   }}
                                 />
                               ) : (
-                                <ImageFallback src={url} alt={space.name} className="w-full h-full object-cover" />
+                                <ImageFallback src={chosen} alt={space.name} className="w-full h-full object-cover" />
                               );
                             })()}
                           </div>

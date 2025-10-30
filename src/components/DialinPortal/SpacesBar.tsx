@@ -285,11 +285,72 @@ export function SpacesBar({
       <div className="relative">
         {/* Spaces Bar - Floating with subtle gradient background */}
         <div className="relative">
-          <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-black/50 via-black/30 to-transparent rounded-2xl backdrop-blur-sm"></div>
+          <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm"></div>
           <div className="relative z-10 flex items-center justify-between overflow-x-auto scrollbar-thin pt-4 text-foreground" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
-          {/* Show spaces with breadcrumb flow when a space is selected */}
-          <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
-...
+          {/* Spaces list */}
+          <div className="relative z-10 flex items-center justify-between overflow-x-auto scrollbar-thin pt-4 text-foreground" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
+            <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
+              {allSpaces.map((space, index) => {
+                const isLobby = space.id === 'lobby';
+                const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
+                return (
+                  <motion.div
+                    key={space.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="flex-shrink-0"
+                  >
+                    <div
+                      className="flex flex-col items-center gap-2 cursor-pointer group select-none relative"
+                      style={{ width: `${thumbWidth}px` }}
+                      onClick={(e) => {
+                        if (wasLongPress) return;
+                        handleSpaceClick(space);
+                      }}
+                      onMouseDown={(e) => handleMouseDown(space, e)}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseLeave}
+                      onContextMenu={(e) => handleContextMenu(space, e)}
+                      onTouchStart={(e) => {
+                        const touch = e.touches[0];
+                        handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+                      }}
+                      onTouchEnd={handleMouseUp}
+                    >
+                      {isCurrentSpace && (
+                        <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
+                          <div
+                            className="border-l-transparent border-r-transparent border-b-primary"
+                            style={{
+                              width: 0,
+                              height: 0,
+                              borderLeftWidth: `${getScaled(8)}px`,
+                              borderRightWidth: `${getScaled(8)}px`,
+                              borderBottomWidth: `${getScaled(8)}px`,
+                              borderStyle: 'solid'
+                            }}
+                          ></div>
+                        </div>
+                      )}
+                      <div
+                        className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0"
+                        style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px`, minWidth: `${thumbWidth}px`, minHeight: `${thumbHeight}px` }}
+                      >
+                        <ImageFallback
+                          src={space.thumb}
+                          alt={space.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className={`${fontSize} font-medium text-center ${isCurrentSpace ? 'text-primary' : ''}`} style={{ maxWidth: `${thumbWidth}px` }}>
+                        {space.name}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </div>
         </div>
@@ -298,7 +359,85 @@ export function SpacesBar({
         <div className="relative mt-2">
           <div className="absolute inset-0 z-0 pointer-events-none bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
           <div className="relative z-10 flex items-center justify-between gap-2 px-3 py-1.5 text-foreground">
-...
+            <div className="flex items-center gap-2">
+              {/* Video Controls - visible when handlers provided */}
+              {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
+                <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50'}`}>
+                  <VideoControls
+                    isPlaying={videoControlsState?.isPlaying ?? false}
+                    currentTime={videoControlsState?.currentTime ?? 0}
+                    duration={videoControlsState?.duration ?? 0}
+                    volume={videoControlsState?.volume ?? 1}
+                    isMuted={videoControlsState?.isMuted ?? true}
+                    onPlayPause={onVideoPlayPause}
+                    onSeek={onVideoSeek}
+                    onVolumeChange={onVideoVolumeChange}
+                    onMuteToggle={onVideoMuteToggle}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {!hideActionButtons && !hideNewButton && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggleAddModal || onCreateSpace}
+                  className="h-6 px-2 text-xs hover:bg-white/10"
+                >
+                  <PlusCircle size={12} className="mr-1" />
+                  Add
+                </Button>
+              )}
+              {!hideActionButtons && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
+                  className="h-6 px-2 text-xs hover:bg-white/10"
+                >
+                  <Package size={12} className="mr-1" />
+                  Items
+                </Button>
+              )}
+              {!hideActionButtons && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
+                  className="h-6 px-2 text-xs hover:bg-white/10"
+                >
+                  <Users size={12} className="mr-1" />
+                  People
+                </Button>
+              )}
+              {!hideActionButtons && !hideAIButton && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onToggleAIChat?.()}
+                  className="h-6 px-2 text-xs hover:bg-white/10"
+                >
+                  <Bot size={12} className="mr-1" />
+                  AI
+                </Button>
+              )}
+              {!hideActionButtons && !hideChatButton && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onToggleChatWindow?.()}
+                  className="h-6 px-2 text-xs hover:bg-white/10"
+                >
+                  <MessageSquare size={12} className="mr-1" />
+                  Chat
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

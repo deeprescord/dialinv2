@@ -92,16 +92,18 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
           onDelete(item.id);
           onClose();
         } else {
-          // Default delete handler
+          // Default delete handler - delete from files table
           try {
             const { error } = await supabase
-              .from('space_items' as any)
+              .from('files')
               .delete()
               .eq('id', item.id);
             
             if (error) throw error;
             toast.success('Item deleted successfully');
             onClose();
+            // Trigger a refetch
+            window.location.reload();
           } catch (error) {
             console.error('Error deleting item:', error);
             toast.error('Failed to delete item');
@@ -113,22 +115,28 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
         // Get the file URL and download it
         try {
           const { data, error: fetchError } = await supabase
-            .from('space_items' as any)
-            .select('storage_path, url')
+            .from('files')
+            .select('storage_path, original_name')
             .eq('id', item.id)
             .single();
           
           if (fetchError) throw fetchError;
           
-          if (data && ((data as any).url || (data as any).storage_path)) {
-            const downloadUrl = (data as any).url || (data as any).storage_path;
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = item.title;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            toast.success('Download started');
+          if (data && data.storage_path) {
+            // Get signed URL
+            const { data: signedData } = await supabase.storage
+              .from('user-files')
+              .createSignedUrl(data.storage_path, 3600);
+            
+            if (signedData?.signedUrl) {
+              const link = document.createElement('a');
+              link.href = signedData.signedUrl;
+              link.download = data.original_name || item.title;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              toast.success('Download started');
+            }
           }
         } catch (error) {
           console.error('Error downloading:', error);
@@ -155,10 +163,10 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
       setNewName('');
       onClose();
     } else {
-      // Default rename handler
+      // Default rename handler - update the files table
       try {
         const { error } = await supabase
-          .from('space_items' as any)
+          .from('files')
           .update({ original_name: newName.trim() })
           .eq('id', item.id);
         
@@ -167,6 +175,8 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
         setIsRenaming(false);
         setNewName('');
         onClose();
+        // Trigger a refetch
+        window.location.reload();
       } catch (error) {
         console.error('Error renaming item:', error);
         toast.error('Failed to rename item');

@@ -101,6 +101,25 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const fg = videoRef.current;
     const bg = bgVideoRef.current;
     
+    // If web content (PDF, iframe) is showing, pause and mute everything
+    if (webUrl) {
+      if (fg) { 
+        try { 
+          fg.pause();
+          fg.muted = true;
+          fg.currentTime = 0;
+        } catch {}
+      }
+      if (bg) { 
+        try { 
+          bg.pause();
+          bg.muted = true;
+          bg.currentTime = 0;
+        } catch {}
+      }
+      return;
+    }
+    
     if (showVideo && videoSrc) {
       // Foreground video is active
       if (bg) { 
@@ -122,7 +141,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       }
       if (bg) { bg.muted = false; }
     }
-  }, [showVideo, videoSrc]);
+  }, [showVideo, videoSrc, webUrl]);
 
   useEffect(() => {
     const video = videoRef.current;

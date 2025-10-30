@@ -233,15 +233,9 @@ export function SpacesBar({
       
       // First pass: collect items needing signed URLs
       for (const item of spaceItems) {
-        if (item.is_space) {
-          if (item.thumbnail_path) {
-            urls[item.id] = item.thumbnail_path;
-          }
-        } else {
-          const pathToUse = item.thumbnail_path || item.storage_path;
-          if (pathToUse) {
-            filesToSign.push({ id: item.id, path: pathToUse });
-          }
+        const pathToUse = item.thumbnail_path || item.storage_path;
+        if (pathToUse) {
+          filesToSign.push({ id: item.id, path: pathToUse });
         }
       }
       

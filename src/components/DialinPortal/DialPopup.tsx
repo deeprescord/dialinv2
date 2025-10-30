@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
+import { Trash2, Edit3, Download, Copy, Eye } from 'lucide-react';
+import { Input } from '../ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface DialPopupProps {
   isOpen: boolean;
@@ -16,21 +20,32 @@ interface DialPopupProps {
     energy?: string;
   } | null;
   onClose: () => void;
-  onUseAsFilters: () => void;
+  onUseAsFilters?: () => void;
+  onDelete?: (itemId: string) => void;
+  onRename?: (itemId: string, newName: string) => void;
 }
 
 interface ActionOption {
   id: string;
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: any;
+  variant?: 'default' | 'destructive';
 }
 
-export function DialPopup({ isOpen, item, onClose, onUseAsFilters }: DialPopupProps) {
+export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename }: DialPopupProps) {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState('');
+
   // ESC key handling
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
-        onClose();
+        if (isRenaming) {
+          setIsRenaming(false);
+          setNewName('');
+        } else {
+          onClose();
+        }
       }
     };
 
@@ -41,21 +56,122 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters }: DialPopupPr
     return () => {
       document.removeEventListener('keydown', handleEscKey);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isRenaming]);
+
+  // Reset rename state when popup closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsRenaming(false);
+      setNewName('');
+    }
+  }, [isOpen]);
 
   if (!item) return null;
 
   const actionOptions: ActionOption[] = [
+    { id: 'rename', label: 'Rename', icon: Edit3 },
+    { id: 'view', label: 'View Details', icon: Eye },
+    { id: 'download', label: 'Download', icon: Download },
+    { id: 'duplicate', label: 'Duplicate', icon: Copy },
     { id: 'share', label: 'Share', icon: Share },
     { id: 'connect', label: 'Connect', icon: Users },
-    { id: 'emojis', label: 'Emojis', icon: Smile },
-    { id: 'create-dial', label: 'Create new dial', icon: Plus },
+    { id: 'delete', label: 'Delete', icon: Trash2, variant: 'destructive' },
   ];
 
-  const handleActionClick = (actionId: string) => {
+  const handleActionClick = async (actionId: string) => {
     console.log('Action clicked:', actionId, 'for item:', item.id);
-    // TODO: Implement action handlers
-    onClose();
+    
+    switch (actionId) {
+      case 'rename':
+        setIsRenaming(true);
+        setNewName(item.title);
+        break;
+        
+      case 'delete':
+        if (onDelete) {
+          onDelete(item.id);
+          onClose();
+        } else {
+          // Default delete handler
+          try {
+            const { error } = await supabase
+              .from('space_items' as any)
+              .delete()
+              .eq('id', item.id);
+            
+            if (error) throw error;
+            toast.success('Item deleted successfully');
+            onClose();
+          } catch (error) {
+            console.error('Error deleting item:', error);
+            toast.error('Failed to delete item');
+          }
+        }
+        break;
+        
+      case 'download':
+        // Get the file URL and download it
+        try {
+          const { data, error: fetchError } = await supabase
+            .from('space_items' as any)
+            .select('storage_path, url')
+            .eq('id', item.id)
+            .single();
+          
+          if (fetchError) throw fetchError;
+          
+          if (data && ((data as any).url || (data as any).storage_path)) {
+            const downloadUrl = (data as any).url || (data as any).storage_path;
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = item.title;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success('Download started');
+          }
+        } catch (error) {
+          console.error('Error downloading:', error);
+          toast.error('Failed to download item');
+        }
+        onClose();
+        break;
+        
+      default:
+        toast.info(`${actionId} feature coming soon`);
+        onClose();
+    }
+  };
+
+  const handleRenameSubmit = async () => {
+    if (!newName.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+
+    if (onRename) {
+      onRename(item.id, newName.trim());
+      setIsRenaming(false);
+      setNewName('');
+      onClose();
+    } else {
+      // Default rename handler
+      try {
+        const { error } = await supabase
+          .from('space_items' as any)
+          .update({ original_name: newName.trim() })
+          .eq('id', item.id);
+        
+        if (error) throw error;
+        toast.success('Item renamed successfully');
+        setIsRenaming(false);
+        setNewName('');
+        onClose();
+      } catch (error) {
+        console.error('Error renaming item:', error);
+        toast.error('Failed to rename item');
+      }
+    }
   };
 
   return (
@@ -98,22 +214,62 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters }: DialPopupPr
               </div>
 
               <div className="p-4">
-                <h3 className="font-semibold mb-4">{item.title}</h3>
+                {isRenaming ? (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold">Rename Item</h3>
+                    <Input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="Enter new name"
+                      className="bg-background/50 border-white/20 text-foreground"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleRenameSubmit();
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleRenameSubmit}
+                        className="flex-1"
+                        size="sm"
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsRenaming(false);
+                          setNewName('');
+                        }}
+                        variant="outline"
+                        className="flex-1"
+                        size="sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="font-semibold mb-4 break-words whitespace-normal">{item.title}</h3>
 
-                {/* Action Options */}
-                <div className="space-y-2">
-                  {actionOptions.map((option) => (
-                    <Button
-                      key={option.id}
-                      variant="ghost"
-                      className="w-full justify-start gap-3 h-12"
-                      onClick={() => handleActionClick(option.id)}
-                    >
-                      <option.icon size={18} />
-                      <span>{option.label}</span>
-                    </Button>
-                  ))}
-                </div>
+                    {/* Action Options */}
+                    <div className="space-y-1">
+                      {actionOptions.map((option) => (
+                        <Button
+                          key={option.id}
+                          variant={option.variant === 'destructive' ? 'destructive' : 'ghost'}
+                          className="w-full justify-start gap-3 h-10"
+                          onClick={() => handleActionClick(option.id)}
+                        >
+                          <option.icon size={18} />
+                          <span>{option.label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
           </motion.div>

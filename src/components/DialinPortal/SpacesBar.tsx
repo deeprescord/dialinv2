@@ -15,6 +15,7 @@ import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { VideoControls } from './VideoControls';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -144,6 +145,42 @@ export function SpacesBar({
       space,
       position: { x: event.clientX, y: event.clientY }
     });
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from('space_items' as any)
+        .delete()
+        .eq('id', itemId);
+      
+      if (error) throw error;
+      toast.success('Item deleted successfully');
+      setShowDialPopup(false);
+      // Trigger refetch by navigation or state update
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete item');
+    }
+  };
+
+  const handleRenameItem = async (itemId: string, newName: string) => {
+    try {
+      const { error } = await supabase
+        .from('space_items' as any)
+        .update({ original_name: newName })
+        .eq('id', itemId);
+      
+      if (error) throw error;
+      toast.success('Item renamed successfully');
+      setShowDialPopup(false);
+      // Trigger refetch
+      window.location.reload();
+    } catch (error) {
+      console.error('Error renaming item:', error);
+      toast.error('Failed to rename item');
+    }
   };
 
   const handleUseAsFilters = () => {
@@ -618,6 +655,8 @@ export function SpacesBar({
         item={dialPopupItem}
         onClose={() => setShowDialPopup(false)}
         onUseAsFilters={handleUseAsFilters}
+        onDelete={handleDeleteItem}
+        onRename={handleRenameItem}
       />
 
       {/* Add Options Modal */}

@@ -924,11 +924,11 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {/* Scroll Indicator for tall content */}
-      {needsScrolling && (isScrollableVideo || isScrollableBackgroundVideo || isPDF) && (
+      {/* Scroll Indicator for tall videos only (not PDFs) */}
+      {needsScrolling && (isScrollableVideo || isScrollableBackgroundVideo) && !isPDF && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none">
           <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium">
-            {isScrollableVideo ? 'Scrollable Video' : 'Scroll to view document'}
+            Scrollable Video
             {videoDimensions && isScrollableVideo && (
               <span className="ml-2 text-white/60">
                 {videoDimensions.width}×{videoDimensions.height}

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
+import { PdfViewer } from './PdfViewer';
 
 interface HeroHeaderVideoProps {
   videoSrc?: string;
@@ -565,19 +566,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {/* PDF Viewer - highest priority for PDF content */}
       {webUrl && isPDF && (
         <div className={`w-full z-20 bg-background ${needsScrolling ? 'relative min-h-screen' : 'absolute inset-0 h-full'}`} style={{ pointerEvents: 'auto' }}>
-          <iframe
-            src={`${webUrl}#view=FitH`}
-            className="border-0 w-full transition-transform duration-200"
-            title="PDF Document"
-            style={{ 
-              width: `${100 * pdfZoom}%`,
-              height: needsScrolling ? `${400 * pdfZoom}vh` : `${100 * pdfZoom}vh`,
-              minHeight: '100vh',
-              pointerEvents: 'auto',
-              display: 'block'
-            }}
-            onLoad={() => setIframeLoaded(true)}
-          />
+          <div className="w-full">
+            <PdfViewer url={webUrl} zoom={pdfZoom} className="w-full" onLoadSuccess={() => setIframeLoaded(true)} onError={(e) => console.error('PDF load error', e)} />
+          </div>
           
           {/* PDF Zoom Controls */}
           <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 min-w-[280px]">

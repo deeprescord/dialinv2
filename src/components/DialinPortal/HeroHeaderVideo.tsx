@@ -721,6 +721,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
             loop
             preload="auto"
             muted
+            onLoadedMetadata={(e) => {
+              const video = e.currentTarget;
+              if (video.videoWidth && video.videoHeight) {
+                setVideoDimensions({ width: video.videoWidth, height: video.videoHeight });
+              }
+            }}
             className={`transition-opacity duration-500 ${
               videoLoaded ? 'opacity-100' : 'opacity-0'
             } ${

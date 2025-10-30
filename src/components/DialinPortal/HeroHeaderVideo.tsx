@@ -908,16 +908,16 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
       {/* Content - Only show for non-lobby spaces */}
       {title && subtitle && (
-        <div className={`${needsScrolling ? 'relative mt-8 px-8' : 'absolute bottom-32 left-8'} ${show360 ? 'z-30' : ''}`}>
+        <div className={`${needsScrolling ? 'relative mt-8 px-8' : 'absolute bottom-32 left-8 right-8'} ${show360 ? 'z-30' : ''}`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2">
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-2 break-words whitespace-normal">
               {title}
             </h1>
-            <p className="text-lg lg:text-xl text-white/80">
+            <p className="text-lg lg:text-xl text-white/80 break-words whitespace-normal">
               {subtitle}
             </p>
           </motion.div>

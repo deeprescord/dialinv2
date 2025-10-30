@@ -360,9 +360,22 @@ export function SpacesBar({
                       <div 
                         className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
                         onClick={() => handleSpaceClick(space)}
-                        onMouseDown={(e) => !isCurrentSpace && handleMouseDown(space, e)}
+                        onMouseDown={(e) => handleMouseDown(space, e)}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
+                        onTouchStart={(e) => {
+                          const touch = e.touches[0];
+                          setWasLongPress(false);
+                          const timer = setTimeout(() => {
+                            setWasLongPress(true);
+                            setContextMenu({
+                              space,
+                              position: { x: touch.clientX, y: touch.clientY }
+                            });
+                          }, 500);
+                          setPressTimer(timer);
+                        }}
+                        onTouchEnd={handleMouseUp}
                         onContextMenu={(e) => handleContextMenu(space, e)}
                       >
                         {/* Triangle arrow for current/selected space */}

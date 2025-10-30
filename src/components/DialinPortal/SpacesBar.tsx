@@ -283,9 +283,9 @@ export function SpacesBar({
   return (
     <>
       <div className="relative">
-        {/* Spaces Bar - Floating with gradient background */}
+        {/* Spaces Bar - Floating with subtle gradient background */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent rounded-2xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/3 to-transparent rounded-2xl backdrop-blur-sm"></div>
           <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin pt-4" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
           {/* Show spaces with breadcrumb flow when a space is selected */}
           <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>

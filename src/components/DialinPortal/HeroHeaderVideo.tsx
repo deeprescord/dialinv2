@@ -108,6 +108,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           fg.pause();
           fg.muted = true;
           fg.currentTime = 0;
+          fg.src = ''; // Release video resource
         } catch {}
       }
       if (bg) { 
@@ -115,6 +116,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           bg.pause();
           bg.muted = true;
           bg.currentTime = 0;
+          bg.src = ''; // Release video resource
         } catch {}
       }
       return;
@@ -126,7 +128,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         try { 
           bg.pause();
           bg.muted = true;
-          bg.currentTime = 0; // Reset to prevent memory leaks
+          bg.currentTime = 0;
+          bg.src = ''; // Release video resource to free memory
         } catch {}
       }
       if (fg) { fg.muted = false; }
@@ -136,7 +139,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         try { 
           fg.pause();
           fg.muted = true;
-          fg.currentTime = 0; // Reset to prevent memory leaks
+          fg.currentTime = 0;
+          fg.src = ''; // Release video resource to free memory
         } catch {}
       }
       if (bg) { bg.muted = false; }
@@ -145,7 +149,11 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !videoSrc) return;
+    if (!video || !videoSrc) {
+      // Clear video dimensions when no video is present
+      setVideoDimensions(null);
+      return;
+    }
 
     // Pause video when switching spaces
     video.pause();
@@ -233,6 +241,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     return () => {
       clearTimeout(fallbackTimeout);
       video.pause();
+      video.currentTime = 0;
+      video.src = ''; // Release video resource on cleanup
+      video.load(); // Force release
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('error', handleError);
       video.removeEventListener('timeupdate', handleTimeUpdate);
@@ -386,19 +397,19 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   // Determine if content needs scrolling
   const needsScrolling = allowDynamicHeight && (isScrollableVideo || isScrollableBackgroundVideo || isPDF || webUrl);
 
-  // Debug: log sizing decisions
-  useEffect(() => {
-    console.log('[HeroHeaderVideo] debug', {
-      showVideo,
-      videoSrc,
-      videoDimensions,
-      bgVideoDimensions,
-      isScrollableVideo,
-      isScrollableBackgroundVideo,
-      needsScrolling,
-      allowDynamicHeight,
-    });
-  }, [showVideo, videoSrc, videoDimensions, bgVideoDimensions, isScrollableVideo, isScrollableBackgroundVideo, needsScrolling, allowDynamicHeight]);
+  // Remove debug logging to reduce memory overhead
+  // useEffect(() => {
+  //   console.log('[HeroHeaderVideo] debug', {
+  //     showVideo,
+  //     videoSrc,
+  //     videoDimensions,
+  //     bgVideoDimensions,
+  //     isScrollableVideo,
+  //     isScrollableBackgroundVideo,
+  //     needsScrolling,
+  //     allowDynamicHeight,
+  //   });
+  // }, [showVideo, videoSrc, videoDimensions, bgVideoDimensions, isScrollableVideo, isScrollableBackgroundVideo, needsScrolling, allowDynamicHeight]);
 
   // Setup event listeners for background video
   useEffect(() => {
@@ -771,11 +782,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
             ref={videoRef}
             playsInline
             loop
-            preload="auto"
+            preload="metadata"
             muted
             onLoadedMetadata={(e) => {
               const video = e.currentTarget;
-              console.log('[HeroHeaderVideo] foreground loadedmetadata', video.videoWidth, video.videoHeight);
               if (video.videoWidth && video.videoHeight) {
                 setVideoDimensions({ width: video.videoWidth, height: video.videoHeight });
               }
@@ -784,7 +794,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               setVideoLoaded(true);
               const v = e.currentTarget;
               setDuration(v.duration || 0);
-              console.log('[HeroHeaderVideo] foreground canplay duration', v.duration);
             }}
             onTimeUpdate={(e) => {
               if (showVideo) setCurrentTime(e.currentTarget.currentTime);
@@ -882,7 +891,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                 ref={bgVideoRef}
                 playsInline
                 loop
-                preload="auto"
+                preload="metadata"
                 muted
                 className={`transition-opacity duration-500 opacity-100 ${
                   isScrollableBackgroundVideo 

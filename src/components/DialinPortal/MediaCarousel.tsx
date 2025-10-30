@@ -42,12 +42,14 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
                 className="w-full h-full object-cover"
                 muted
                 playsInline
+                preload="none"
               />
             ) : (
               <img
                 src={url}
                 alt={`Media ${index + 1}`}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             )}
             {mediaTypes[index] === 'video' && (

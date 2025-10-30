@@ -62,7 +62,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   flipHorizontal,
   flipVertical,
   webUrl,
-  allowDynamicHeight = false,
+  allowDynamicHeight = true,
   onOpenAddPanel,
   onVideoStateChange
 }: HeroHeaderVideoProps, ref) => {
@@ -565,10 +565,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
   const containerContent = (
     <div 
-      className={`relative w-full rounded-2xl hero-protected-content ${
+      className={`relative w-full hero-protected-content ${
         needsScrolling 
-          ? 'h-auto overflow-y-auto' 
-          : 'h-[85vh] lg:h-[90vh] overflow-hidden'
+          ? 'h-screen overflow-y-auto rounded-none overscroll-contain' 
+          : 'h-[85vh] lg:h-[90vh] overflow-hidden rounded-2xl'
       }`}
       style={{ 
         userSelect: webUrl ? 'auto' : 'none',
@@ -717,7 +717,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               videoLoaded ? 'opacity-100' : 'opacity-0'
             } ${
               isScrollableVideo 
-                ? 'w-full h-auto' 
+                ? 'w-full h-auto object-contain block'
                 : 'absolute inset-0 w-full h-full object-cover'
             }`}
             style={{ 

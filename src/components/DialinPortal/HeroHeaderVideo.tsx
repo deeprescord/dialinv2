@@ -99,23 +99,37 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   useEffect(() => {
     const fg = videoRef.current;
     const bg = bgVideoRef.current;
-    if (showVideo) {
-      if (bg) { try { bg.pause(); bg.muted = true; } catch {}
+    
+    if (showVideo && videoSrc) {
+      // Foreground video is active
+      if (bg) { 
+        try { 
+          bg.pause();
+          bg.muted = true;
+          bg.currentTime = 0; // Reset to prevent memory leaks
+        } catch {}
       }
       if (fg) { fg.muted = false; }
     } else {
-      if (fg) { try { fg.pause(); fg.muted = true; } catch {}
+      // Background video is active (or no video at all)
+      if (fg) { 
+        try { 
+          fg.pause();
+          fg.muted = true;
+          fg.currentTime = 0; // Reset to prevent memory leaks
+        } catch {}
       }
       if (bg) { bg.muted = false; }
     }
-  }, [showVideo]);
+  }, [showVideo, videoSrc]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !videoSrc) return;
 
     // Pause video when switching spaces
     video.pause();
+    video.currentTime = 0;
     
     // Reset state when source/display changes
     setVideoLoaded(false);
@@ -127,10 +141,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     const handleCanPlay = () => {
       setVideoLoaded(true);
       // Only autoplay if this is the active video (showVideo is true AND no 360 or web content)
-      if (showVideo && !show360 && !webUrl) {
-        // Ensure background video is paused
+      if (showVideo && !show360 && !webUrl && videoSrc) {
+        // Ensure background video is completely stopped
         if (bgVideoRef.current) {
-          try { bgVideoRef.current.pause(); } catch {}
+          try { 
+            bgVideoRef.current.pause();
+            bgVideoRef.current.muted = true;
+            bgVideoRef.current.currentTime = 0;
+          } catch {}
         }
         // Set volume and unmute before playing
         video.volume = 0.7;
@@ -147,8 +165,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         });
       } else {
         // Not active: ensure paused and muted
-        try { video.pause(); } catch {}
-        video.muted = true;
+        try { 
+          video.pause();
+          video.muted = true;
+        } catch {}
       }
     };
 
@@ -684,8 +704,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {/* Video - dynamic sizing for tall videos */}
-      {!webUrl && showVideo && videoSrc && !videoError && (
+      {/* Video - dynamic sizing for tall videos - ONLY render when this is the active video */}
+      {!webUrl && !show360 && showVideo && videoSrc && !videoError && (
         <div className={isScrollableVideo ? 'w-full' : 'absolute inset-0'}>
           <video
             ref={videoRef}
@@ -706,7 +726,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
             }}
             poster={posterSrc}
           >
-            {showVideo && <source src={videoSrc} type="video/mp4" />}
+            <source src={videoSrc} type="video/mp4" />
           </video>
         </div>
       )}
@@ -772,7 +792,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {!webUrl && !show360 && !showVideo && (
+      {/* Background video/image - ONLY render when foreground video is NOT active */}
+      {!webUrl && !show360 && (!showVideo || !videoSrc) && (
         <>
           {isBackgroundVideo ? (
             <video
@@ -781,6 +802,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               loop
               preload="auto"
               muted
+              autoPlay
               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100"
               style={{ transform: 'scaleY(1)' }}
             >

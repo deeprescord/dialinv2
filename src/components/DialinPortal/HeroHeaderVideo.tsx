@@ -108,7 +108,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           fg.pause();
           fg.muted = true;
           fg.currentTime = 0;
-          fg.src = ''; // Release video resource
         } catch {}
       }
       if (bg) { 
@@ -116,7 +115,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           bg.pause();
           bg.muted = true;
           bg.currentTime = 0;
-          bg.src = ''; // Release video resource
         } catch {}
       }
       return;
@@ -129,7 +127,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           bg.pause();
           bg.muted = true;
           bg.currentTime = 0;
-          bg.src = ''; // Release video resource to free memory
         } catch {}
       }
       if (fg) { fg.muted = false; }
@@ -140,7 +137,6 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           fg.pause();
           fg.muted = true;
           fg.currentTime = 0;
-          fg.src = ''; // Release video resource to free memory
         } catch {}
       }
       if (bg) { bg.muted = false; }

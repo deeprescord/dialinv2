@@ -924,24 +924,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         </div>
       )}
 
-      {/* Scroll Indicator for tall videos only (not PDFs) */}
-      {needsScrolling && (isScrollableVideo || isScrollableBackgroundVideo) && !isPDF && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none">
-          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium">
-            Scrollable Video
-            {videoDimensions && isScrollableVideo && (
-              <span className="ml-2 text-white/60">
-                {videoDimensions.width}×{videoDimensions.height}
-              </span>
-            )}
-          </div>
-          <div className="animate-bounce">
-            <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-        </div>
-      )}
+      {/* Scroll Indicator - disabled */}
     </div>
   );
 

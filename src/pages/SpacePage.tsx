@@ -84,15 +84,17 @@ export default function SpacePage() {
   // Sync UI spaces with database spaces (plus Lobby)
   useEffect(() => {
     const updateSpaces = () => {
-      // Get lobby thumbnail and background from localStorage
-      const lobbyThumbnail = localStorage.getItem('lobby-thumbnail') || '/media/lobby-poster.png';
-      const lobbyBackground = localStorage.getItem('lobby-background') || '/lovable-uploads/cropped-header-bg.png';
+      // Determine Home (lobby) visuals from backend Home space first, then localStorage, then fallback
+      const homeDb = dbSpaces.find(s => (s as any).is_home || (s as any).isHome);
+      const lobbyThumbnail = homeDb?.thumbnail_url || localStorage.getItem('lobby-thumbnail') || '/media/lobby-poster.png';
+      const lobbyBackground = homeDb?.cover_url || localStorage.getItem('lobby-background') || '/lovable-uploads/cropped-header-bg.png';
       
       const lobby: Space = { 
         id: 'lobby', 
         name: 'Home', 
         thumb: lobbyThumbnail,
-        backgroundImage: lobbyBackground
+        backgroundImage: lobbyBackground,
+        isHome: true
       };
       const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
         id: dbSpace.id,
@@ -110,6 +112,7 @@ export default function SpacePage() {
         rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
         flipHorizontal: dbSpace.flip_horizontal || false,
         flipVertical: dbSpace.flip_vertical || false,
+        isHome: (dbSpace as any).is_home || (dbSpace as any).isHome || false,
       }));
 
       setSpaces([lobby, ...convertedDbSpaces]);

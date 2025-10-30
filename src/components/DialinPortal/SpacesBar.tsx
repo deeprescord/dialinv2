@@ -311,8 +311,10 @@ export function SpacesBar({
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
-                              const homeSpace = allSpaces.find(s => (s as any).is_home || (s as any).isHome);
-                              const isHomeCrumb = (space as any).is_home || (space as any).isHome || breadcrumb.name?.toLowerCase() === 'home' || breadcrumb.id === 'home' || breadcrumb.id === 'lobby';
+                              const lobbySpace = allSpaces.find(s => s.id === 'lobby');
+                              const dbHomeSpace = allSpaces.find(s => (s as any).is_home || (s as any).isHome);
+                              const homeSpace = lobbySpace || dbHomeSpace;
+                              const isHomeCrumb = breadcrumb.id === 'lobby' || breadcrumb.name?.toLowerCase() === 'home' || (space as any).is_home || (space as any).isHome;
                               const pickBest = (obj: any) => {
                                 const ordered = [obj?.thumb, obj?.thumbnail_url, obj?.cover_url].filter(Boolean) as string[];
                                 const imageFirst = ordered.find(u => !isVideoUrl(u));

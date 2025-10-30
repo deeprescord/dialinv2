@@ -285,8 +285,8 @@ export function SpacesBar({
       <div className="relative">
         {/* Spaces Bar - Floating with subtle gradient background */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/3 to-transparent rounded-2xl backdrop-blur-sm"></div>
-          <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin pt-4" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-white/5 via-white/3 to-transparent rounded-2xl backdrop-blur-sm"></div>
+          <div className="relative z-10 flex items-center justify-between overflow-x-auto scrollbar-thin pt-4" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
           {/* Show spaces with breadcrumb flow when a space is selected */}
           <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
 ...
@@ -296,8 +296,8 @@ export function SpacesBar({
 
         {/* Action Buttons (moved below spaces) - with border */}
         <div className="relative mt-2">
-          <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
-          <div className="relative flex items-center justify-between gap-2 px-3 py-1.5">
+          <div className="absolute inset-0 z-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
+          <div className="relative z-10 flex items-center justify-between gap-2 px-3 py-1.5">
 ...
           </div>
         </div>

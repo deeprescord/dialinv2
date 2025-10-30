@@ -571,7 +571,8 @@ export function SpacesBar({
                       className="flex-shrink-0"
                     >
                       <div 
-                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
+                        className="flex flex-col items-center gap-2 cursor-pointer group select-none relative"
+                        style={{ width: `${thumbWidth}px` }}
                         onClick={(e) => {
                           if (wasLongPress) return;
                           handleSpaceClick(space);
@@ -603,8 +604,8 @@ export function SpacesBar({
                           </div>
                         )}
                         <div 
-                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
-                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0"
+                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px`, minWidth: `${thumbWidth}px`, minHeight: `${thumbHeight}px` }}
                         >
                           <ImageFallback 
                             src={space.thumb} 
@@ -614,7 +615,7 @@ export function SpacesBar({
                         </div>
                         <span className={`${fontSize} font-medium text-center ${
                           isCurrentSpace ? 'text-primary' : ''
-                        }`}>{space.name}</span>
+                        }`} style={{ maxWidth: `${thumbWidth}px` }}>{space.name}</span>
                       </div>
                     </motion.div>
                   );

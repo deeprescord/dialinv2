@@ -42,7 +42,11 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
                 className="w-full h-full object-cover"
                 muted
                 playsInline
-                preload="none"
+                preload="metadata"
+                onLoadedData={(e) => {
+                  // Ensure thumbnails don't play; just show first frame
+                  try { e.currentTarget.pause(); } catch {}
+                }}
               />
             ) : (
               <img

@@ -86,6 +86,7 @@ export function SpaceContextMenu({
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingBackground, setUploadingBackground] = useState(false);
   const [showAIControls, setShowAIControls] = useState(false);
+  const [syncThumbnailBackground, setSyncThumbnailBackground] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -492,11 +493,25 @@ export function SpaceContextMenu({
 
               {/* Main Content */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                {/* Sync Toggle */}
+                <div className="flex items-center justify-between bg-black/20 border border-white/10 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={14} className="text-primary" />
+                    <span className="text-xs font-medium text-white">Sync Thumbnail & Background</span>
+                  </div>
+                  <Switch
+                    checked={syncThumbnailBackground}
+                    onCheckedChange={setSyncThumbnailBackground}
+                  />
+                </div>
+
+                {/* Thumbnail and Background Side by Side */}
+                <div className="grid grid-cols-2 gap-3">
                 {/* Space Thumbnail Section */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-1">
                     <Image size={14} className="text-primary" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Space Thumbnail</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Thumbnail</span>
                   </div>
                   <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
                     <button
@@ -507,16 +522,16 @@ export function SpaceContextMenu({
                       {uploadingThumbnail ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span className="text-sm font-medium text-white">Uploading...</span>
+                          <span className="text-xs font-medium text-white">Uploading...</span>
                         </>
                       ) : (
                         <>
                           <Upload size={16} className="text-white" />
-                          <span className="text-sm font-medium text-white">Upload Thumbnail</span>
+                          <span className="text-xs font-medium text-white">Upload</span>
                         </>
                       )}
                     </button>
-                    <p className="text-xs text-white/50 text-center">Thumbnail shown in space navigation</p>
+                    
                     
                     <input
                       ref={thumbnailInputRef}
@@ -541,27 +556,27 @@ export function SpaceContextMenu({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-1">
                     <ImageIcon size={14} className="text-primary" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Space Background</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Background</span>
                   </div>
                   <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
                     <button
                       className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
                       onClick={() => backgroundInputRef.current?.click()}
-                      disabled={uploadingBackground}
+                      disabled={uploadingBackground || syncThumbnailBackground}
                     >
                       {uploadingBackground ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span className="text-sm font-medium text-white">Uploading...</span>
+                          <span className="text-xs font-medium text-white">Uploading...</span>
                         </>
                       ) : (
                         <>
                           <Upload size={16} className="text-white" />
-                          <span className="text-sm font-medium text-white">Upload Background</span>
+                          <span className="text-xs font-medium text-white">Upload</span>
                         </>
                       )}
                     </button>
-                    <p className="text-xs text-white/50 text-center">Background shown when entering space</p>
+                    
                     
                     <input
                       ref={backgroundInputRef}
@@ -580,6 +595,7 @@ export function SpaceContextMenu({
                           : 'bg-black/40 hover:bg-black/50 border-white/10 hover:border-white/20 text-white'
                       }`}
                       onClick={() => setShowAIControls(!showAIControls)}
+                      disabled={syncThumbnailBackground}
                     >
                       <Sparkles size={14} />
                       <span className="text-xs font-medium">AI Generate</span>
@@ -587,7 +603,7 @@ export function SpaceContextMenu({
 
                     {/* AI Controls - Collapsible */}
                     <AnimatePresence>
-                      {showAIControls && (
+                      {showAIControls && !syncThumbnailBackground && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -639,6 +655,7 @@ export function SpaceContextMenu({
                     />
                   </div>
                 </div>
+              </div>
 
                 {/* Divider */}
                 <div className="h-px bg-white/10 my-3" />

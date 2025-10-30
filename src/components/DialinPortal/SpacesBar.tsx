@@ -98,7 +98,7 @@ export function SpacesBar({
   onTogglePeopleBar
 }: SpacesBarProps) {
   const navigate = useNavigate();
-  const scale = 87; // Fixed scale percentage (reduced by 1/3 from 130)
+  const scale = 65; // Reduced from 87 to make more compact
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
     position: { x: number; y: number };
@@ -121,10 +121,10 @@ export function SpacesBar({
   const thumbHeight = getScaled(68);
   const buttonSize = getScaled(108);
   const iconSize = getScaled(34);
-  const actionButtonIconSize = getScaled(17); // Half size for action buttons
-  const spacing = getScaled(12); // Increased from 7 to 12
-  const padding = getScaled(8);
-  const fontSize = 'text-base';
+  const actionButtonIconSize = getScaled(17);
+  const spacing = getScaled(8); // Reduced spacing
+  const padding = getScaled(6); // Reduced padding
+  const fontSize = 'text-sm'; // Smaller font
 
   const handleMouseDown = (space: Space, event: React.MouseEvent) => {
     setWasLongPress(false);
@@ -283,10 +283,10 @@ export function SpacesBar({
   return (
     <div className="relative">
 
-      <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-3xl border border-white/20 shadow-lg"></div>
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
       <div className="relative">
         {/* Top Action Buttons */}
-        <div className="flex items-center justify-between gap-2 px-3 pt-2 pb-1">
+        <div className="flex items-center justify-between gap-2 px-3 py-1.5">
           <div className="flex items-center gap-2">
             {/* Video Controls - Always show (disabled when no video) */}
             {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
@@ -313,9 +313,9 @@ export function SpacesBar({
               variant="ghost"
               size="sm"
               onClick={onToggleAddModal || onCreateSpace}
-              className="h-7 px-2 text-xs hover:bg-white/10"
+              className="h-6 px-2 text-xs hover:bg-white/10"
             >
-              <PlusCircle size={14} className="mr-1" />
+              <PlusCircle size={12} className="mr-1" />
               Add
             </Button>
           )}
@@ -326,9 +326,9 @@ export function SpacesBar({
                onMouseDown={(e) => e.stopPropagation()}
                onTouchStart={(e) => e.stopPropagation()}
                onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
-               className="h-7 px-2 text-xs hover:bg-white/10"
+               className="h-6 px-2 text-xs hover:bg-white/10"
             >
-              <Package size={14} className="mr-1" />
+              <Package size={12} className="mr-1" />
               Items
             </Button>
           )}
@@ -339,9 +339,9 @@ export function SpacesBar({
                onMouseDown={(e) => e.stopPropagation()}
                onTouchStart={(e) => e.stopPropagation()}
                onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
-               className="h-7 px-2 text-xs hover:bg-white/10"
+               className="h-6 px-2 text-xs hover:bg-white/10"
             >
-              <Users size={14} className="mr-1" />
+              <Users size={12} className="mr-1" />
               People
             </Button>
           )}
@@ -350,9 +350,9 @@ export function SpacesBar({
               variant="ghost"
               size="sm"
               onClick={() => onToggleAIChat?.()}
-              className="h-7 px-2 text-xs hover:bg-white/10"
+              className="h-6 px-2 text-xs hover:bg-white/10"
             >
-              <Bot size={14} className="mr-1" />
+              <Bot size={12} className="mr-1" />
               AI
             </Button>
           )}
@@ -361,9 +361,9 @@ export function SpacesBar({
               variant="ghost"
               size="sm"
               onClick={() => onToggleChatWindow?.()}
-              className="h-7 px-2 text-xs hover:bg-white/10"
+              className="h-6 px-2 text-xs hover:bg-white/10"
             >
-              <MessageSquare size={14} className="mr-1" />
+              <MessageSquare size={12} className="mr-1" />
               Chat
             </Button>
           )}

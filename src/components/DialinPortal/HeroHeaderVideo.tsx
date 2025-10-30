@@ -564,21 +564,20 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     >
       {/* PDF Viewer - highest priority for PDF content */}
       {webUrl && isPDF && (
-        <div className={`w-full z-20 bg-background ${needsScrolling ? 'relative' : 'absolute inset-0 h-full'}`} style={{ pointerEvents: 'auto' }}>
-          <div className="w-full" style={{ minHeight: needsScrolling ? '85vh' : '100%' }}>
-            <iframe
-              src={`${webUrl}#view=FitH`}
-              className="border-0 w-full transition-transform duration-200"
-              title="PDF Document"
-              style={{ 
-                width: `${100 * pdfZoom}%`,
-                height: needsScrolling ? 'auto' : `${100 * pdfZoom}vh`,
-                minHeight: needsScrolling ? `${200 * pdfZoom}vh` : '100vh',
-                pointerEvents: 'auto'
-              }}
-              onLoad={() => setIframeLoaded(true)}
-            />
-          </div>
+        <div className={`w-full z-20 bg-background ${needsScrolling ? 'relative min-h-screen' : 'absolute inset-0 h-full'}`} style={{ pointerEvents: 'auto' }}>
+          <iframe
+            src={`${webUrl}#view=FitH`}
+            className="border-0 w-full transition-transform duration-200"
+            title="PDF Document"
+            style={{ 
+              width: `${100 * pdfZoom}%`,
+              height: needsScrolling ? `${400 * pdfZoom}vh` : `${100 * pdfZoom}vh`,
+              minHeight: '100vh',
+              pointerEvents: 'auto',
+              display: 'block'
+            }}
+            onLoad={() => setIframeLoaded(true)}
+          />
           
           {/* PDF Zoom Controls */}
           <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 min-w-[280px]">

@@ -310,7 +310,7 @@ export function SpacesBar({
                             </div>
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
-                            <ImageFallback src={space.thumb} alt={space.name} className="w-full h-full object-cover" />
+                            <ImageFallback src={(space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '/media/lobby-poster.png'} alt={space.name} className="w-full h-full object-cover" />
                           </div>
                           <span className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{space.name}</span>
                         </div>
@@ -403,7 +403,7 @@ export function SpacesBar({
                             </div>
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
-                            <ImageFallback src={space.thumb} alt={space.name} className="w-full h-full object-cover" />
+                            <ImageFallback src={(space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '/media/lobby-poster.png'} alt={space.name} className="w-full h-full object-cover" />
                           </div>
                           <span className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{space.name}</span>
                         </div>

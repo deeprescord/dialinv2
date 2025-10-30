@@ -571,8 +571,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           </div>
           
           {/* PDF Zoom Controls */}
-          <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-black/60 backdrop-blur-sm rounded-lg p-4 min-w-[280px]">
-            <ZoomOut className="w-4 h-4 text-white flex-shrink-0" />
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-lg p-2 min-w-[200px]">
+            <ZoomOut className="w-3 h-3 text-white flex-shrink-0" />
             <Slider
               value={[pdfZoom]}
               onValueChange={(values) => setPdfZoom(values[0])}
@@ -581,10 +581,10 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
               step={0.1}
               className="flex-1"
             />
-            <ZoomIn className="w-4 h-4 text-white flex-shrink-0" />
+            <ZoomIn className="w-3 h-3 text-white flex-shrink-0" />
             <button
               onClick={() => setPdfZoom(1)}
-              className="px-3 py-1 text-white text-sm hover:bg-white/20 rounded transition-colors flex-shrink-0"
+              className="px-2 py-0.5 text-white text-xs hover:bg-white/20 rounded transition-colors flex-shrink-0"
             >
               {Math.round(pdfZoom * 100)}%
             </button>

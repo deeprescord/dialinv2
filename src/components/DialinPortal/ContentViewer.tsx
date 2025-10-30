@@ -43,6 +43,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [videoDimensions, setVideoDimensions] = useState<{ width: number; height: number } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -53,6 +54,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const isImage = content.file_type === 'image' || content.mime_type?.startsWith('image/');
   const isPDF = content.mime_type === 'application/pdf';
   const is360 = content.metadata?.is_360 || content.original_name.toLowerCase().includes('360');
+  const isScrollableVideo = isVideo && videoDimensions ? videoDimensions.height > window.innerHeight * 1.1 : false;
 
   // Get the public URL for the content
   const getPublicUrl = async (path: string): Promise<string> => {
@@ -254,7 +256,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   return (
     <div 
       ref={containerRef}
-      className="relative h-[85vh] lg:h-[90vh] w-full overflow-hidden rounded-2xl mt-24 lg:mt-20"
+      className={`relative w-full ${isVideo && isScrollableVideo ? 'h-screen overflow-y-auto rounded-none' : 'h-[85vh] lg:h-[90vh] overflow-hidden rounded-2xl'} mt-24 lg:mt-20`}
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}
       onMouseLeave={handlePressEnd}
@@ -340,13 +342,19 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
       {/* Regular Video Content */}
       {!is360 && isVideo && contentUrl && (
-        <div className="absolute inset-0">
+        <div className={isScrollableVideo ? 'w-full h-screen overflow-y-auto' : 'absolute inset-0'}>
           <video
             ref={videoRef}
             src={contentUrl}
-            className="w-full h-full object-contain bg-black"
+            className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
             playsInline
+            onLoadedMetadata={(e) => {
+              const v = e.currentTarget;
+              if (v.videoWidth && v.videoHeight) {
+                setVideoDimensions({ width: v.videoWidth, height: v.videoHeight });
+              }
+            }}
             onClick={togglePlay}
           />
         </div>

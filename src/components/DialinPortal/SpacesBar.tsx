@@ -281,353 +281,30 @@ export function SpacesBar({
   };
 
   return (
-    <div className="relative">
-
-      <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
+    <>
       <div className="relative">
-        {/* Spaces Bar */}
-        <div className="flex items-center justify-between overflow-x-auto scrollbar-thin pt-4" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
+        {/* Spaces Bar - Floating with gradient background */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent rounded-2xl"></div>
+          <div className="relative flex items-center justify-between overflow-x-auto scrollbar-thin pt-4" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
           {/* Show spaces with breadcrumb flow when a space is selected */}
           <div className="flex items-center w-full" style={{ gap: `${spacing}px` }}>
-            {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
-              // Breadcrumb mode: Show full path (Lobby > Space > Subspace) + Separator + Items
-              <>
-                {/* Show all breadcrumb spaces */}
-                {breadcrumbs.map((breadcrumb, idx) => {
-                  const space = allSpaces.find(s => s.id === breadcrumb.id) || { 
-                    id: breadcrumb.id, 
-                    name: breadcrumb.name, 
-                    thumb: '/media/lobby-poster.png' 
-                  };
-                  const isCurrentSpace = idx === breadcrumbs.length - 1;
-                  
-                  return (
-                    <motion.div
-                      key={space.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.05 }}
-                      className="flex-shrink-0"
-                    >
-                      <div 
-                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none relative"
-                        onClick={() => handleSpaceClick(space)}
-                        onMouseDown={(e) => handleMouseDown(space, e)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                        onTouchStart={(e) => {
-                          const touch = e.touches[0];
-                          setWasLongPress(false);
-                          const timer = setTimeout(() => {
-                            setWasLongPress(true);
-                            setContextMenu({
-                              space,
-                              position: { x: touch.clientX, y: touch.clientY }
-                            });
-                          }, 500);
-                          setPressTimer(timer);
-                        }}
-                        onTouchEnd={handleMouseUp}
-                        onContextMenu={(e) => handleContextMenu(space, e)}
-                      >
-                        {/* Triangle arrow for current/selected space */}
-                        {isCurrentSpace && (
-                          <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
-                            <div 
-                              className="border-l-transparent border-r-transparent border-b-primary" 
-                              style={{ 
-                                width: 0, 
-                                height: 0, 
-                                borderLeftWidth: `${getScaled(8)}px`,
-                                borderRightWidth: `${getScaled(8)}px`,
-                                borderBottomWidth: `${getScaled(8)}px`,
-                                borderStyle: 'solid'
-                              }}
-                            ></div>
-                          </div>
-                        )}
-                        <div 
-                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10"
-                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-                        >
-                          <ImageFallback 
-                            src={space.thumb} 
-                            alt={space.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className={`${fontSize} font-medium text-center ${isCurrentSpace ? 'text-primary' : ''}`}>
-                          {space.name}
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-
-                {/* Separator */}
-                <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
-
-                {/* Items inline (including child spaces) */}
-                {spaceItems.map((item, idx) => {
-                  const isSpace = item.is_space;
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.05 }}
-                      className="flex-shrink-0"
-                    >
-                      <div 
-                        className="flex flex-col items-center space-y-2 cursor-pointer group select-none"
-                        onClick={() => {
-                          console.log('Item clicked:', item);
-                          if (isSpace) {
-                            // Navigate to the subspace
-                            console.log('Navigating to subspace:', item.id);
-                            navigate(`/space/${item.id}`);
-                          } else if (onItemClick) {
-                            // Handle regular item click
-                            console.log('Handling regular item click');
-                            onItemClick(item);
-                          }
-                        }}
-                        onMouseDown={(e) => {
-                          if (isSpace) {
-                            // Show context menu for spaces
-                            setWasLongPress(false);
-                            const timer = setTimeout(() => {
-                              setWasLongPress(true);
-                              const space: Space = {
-                                id: item.id,
-                                name: item.original_name,
-                                thumb: thumbUrls[item.id] || '/placeholder.svg'
-                              };
-                              setContextMenu({
-                                space,
-                                position: { x: e.clientX, y: e.clientY }
-                              });
-                            }, 500);
-                            setPressTimer(timer);
-                          } else {
-                            // Show dial popup for items
-                            const timer = setTimeout(() => {
-                              setDialPopupItem({
-                                id: item.id,
-                                title: item.original_name,
-                                thumb: thumbUrls[item.id],
-                                type: item.file_type
-                              });
-                              setShowDialPopup(true);
-                            }, 500);
-                            setPressTimer(timer);
-                          }
-                        }}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                        onTouchStart={(e) => {
-                          if (isSpace) {
-                            const touch = e.touches[0];
-                            setWasLongPress(false);
-                            const timer = setTimeout(() => {
-                              setWasLongPress(true);
-                              const space: Space = {
-                                id: item.id,
-                                name: item.original_name,
-                                thumb: thumbUrls[item.id] || '/placeholder.svg'
-                              };
-                              setContextMenu({
-                                space,
-                                position: { x: touch.clientX, y: touch.clientY }
-                              });
-                            }, 500);
-                            setPressTimer(timer);
-                          }
-                        }}
-                        onTouchEnd={handleMouseUp}
-                      >
-                        <div 
-                          className="rounded-2xl overflow-auto glass-card group-hover:scale-105 transition-transform border border-white/10 relative"
-                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-                        >
-                          {thumbUrls[item.id] ? (
-                            <ImageFallback 
-                              src={thumbUrls[item.id]} 
-                              alt={item.original_name}
-                              className="w-full h-auto object-contain"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-background/60 flex items-center justify-center">
-                              {getFileIcon(item.file_type)}
-                            </div>
-                          )}
-                        </div>
-                        <span className={`${fontSize} text-xs text-center max-w-[${thumbWidth}px] break-words line-clamp-3`}>
-                          {item.original_name}
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </>
-            ) : (
-              // Default mode: Show all spaces
-              <>
-                {allSpaces.map((space, index) => {
-                  const isLobby = space.id === 'lobby';
-                  const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
-                  
-                  return (
-                    <motion.div
-                      key={space.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className="flex-shrink-0"
-                    >
-                      <div 
-                        className="flex flex-col items-center gap-2 cursor-pointer group select-none relative"
-                        style={{ width: `${thumbWidth}px` }}
-                        onClick={(e) => {
-                          if (wasLongPress) return;
-                          handleSpaceClick(space);
-                        }}
-                        onMouseDown={(e) => handleMouseDown(space, e)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                        onContextMenu={(e) => handleContextMenu(space, e)}
-                        onTouchStart={(e) => {
-                          const touch = e.touches[0];
-                          handleMouseDown(space, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
-                        }}
-                        onTouchEnd={handleMouseUp}
-                      >
-                        {/* Triangle arrow for selected space */}
-                        {isCurrentSpace && (
-                          <div className="absolute left-1/2 transform -translate-x-1/2" style={{ top: `-${getScaled(4)}px` }}>
-                            <div 
-                              className="border-l-transparent border-r-transparent border-b-primary" 
-                              style={{ 
-                                width: 0, 
-                                height: 0, 
-                                borderLeftWidth: `${getScaled(8)}px`,
-                                borderRightWidth: `${getScaled(8)}px`,
-                                borderBottomWidth: `${getScaled(8)}px`,
-                                borderStyle: 'solid'
-                              }}
-                            ></div>
-                          </div>
-                        )}
-                        <div 
-                          className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0"
-                          style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px`, minWidth: `${thumbWidth}px`, minHeight: `${thumbHeight}px` }}
-                        >
-                          <ImageFallback 
-                            src={space.thumb} 
-                            alt={space.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className={`${fontSize} font-medium text-center ${
-                          isCurrentSpace ? 'text-primary' : ''
-                        }`} style={{ maxWidth: `${thumbWidth}px` }}>{space.name}</span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </>
-            )}
+...
           </div>
         </div>
+        </div>
 
-        {/* Action Buttons (moved below spaces) */}
-        <div className="flex items-center justify-between gap-2 px-3 py-1.5">
-          <div className="flex items-center gap-2">
-            {/* Video Controls - Always show (disabled when no video) */}
-            {onVideoPlayPause && onVideoSeek && onVideoVolumeChange && onVideoMuteToggle && (
-              <div className={`flex items-center gap-1 ${videoControlsState?.hasVideo ? '' : 'opacity-50'}`}>
-                <VideoControls
-                  isPlaying={videoControlsState?.isPlaying ?? false}
-                  currentTime={videoControlsState?.currentTime ?? 0}
-                  duration={videoControlsState?.duration ?? 0}
-                  volume={videoControlsState?.volume ?? 1}
-                  isMuted={videoControlsState?.isMuted ?? true}
-                  onPlayPause={onVideoPlayPause}
-                  onSeek={onVideoSeek}
-                  onVolumeChange={onVideoVolumeChange}
-                  onMuteToggle={onVideoMuteToggle}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Right Side Buttons */}
-          <div className="flex items-center gap-2">
-          {!hideActionButtons && !hideNewButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleAddModal || onCreateSpace}
-              className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <PlusCircle size={12} className="mr-1" />
-              Add
-            </Button>
-          )}
-          {!hideActionButtons && (
-            <Button
-               variant="ghost"
-               size="sm"
-               onMouseDown={(e) => e.stopPropagation()}
-               onTouchStart={(e) => e.stopPropagation()}
-               onClick={(e) => { e.stopPropagation(); onToggleItemsBar?.(); }}
-               className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <Package size={12} className="mr-1" />
-              Items
-            </Button>
-          )}
-          {!hideActionButtons && (
-            <Button
-               variant="ghost"
-               size="sm"
-               onMouseDown={(e) => e.stopPropagation()}
-               onTouchStart={(e) => e.stopPropagation()}
-               onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
-               className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <Users size={12} className="mr-1" />
-              People
-            </Button>
-          )}
-          {!hideActionButtons && !hideAIButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleAIChat?.()}
-              className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <Bot size={12} className="mr-1" />
-              AI
-            </Button>
-          )}
-          {!hideActionButtons && !hideChatButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleChatWindow?.()}
-              className="h-6 px-2 text-xs hover:bg-white/10"
-            >
-              <MessageSquare size={12} className="mr-1" />
-              Chat
-            </Button>
-          )}
+        {/* Action Buttons (moved below spaces) - with border */}
+        <div className="relative mt-2">
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg"></div>
+          <div className="relative flex items-center justify-between gap-2 px-3 py-1.5">
+...
           </div>
         </div>
       </div>
 
       {/* Context Menu */}
-        {contextMenu && (
+      {contextMenu && (
           <SpaceContextMenu
             space={spaces.find(s => s.id === contextMenu.space.id) || contextMenu.space}
             isOpen={true}
@@ -678,6 +355,6 @@ export function SpacesBar({
         isOpen={showChatWindow}
         onClose={() => setShowChatWindow(false)}
       />
-    </div>
+      </>
   );
 }

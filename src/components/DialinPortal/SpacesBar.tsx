@@ -314,10 +314,9 @@ export function SpacesBar({
                               const homeSpace = allSpaces.find(s => (s as any).is_home || (s as any).isHome);
                               const isHomeCrumb = (space as any).is_home || (space as any).isHome || breadcrumb.name?.toLowerCase() === 'home' || breadcrumb.id === 'home' || breadcrumb.id === 'lobby';
                               const pickBest = (obj: any) => {
-                                const candidates = [obj?.thumbnail_url, obj?.cover_url, obj?.thumb].filter(Boolean) as string[];
-                                // Prefer non-video image first
-                                const imageFirst = candidates.find(u => !isVideoUrl(u));
-                                return imageFirst || candidates[0] || '/media/lobby-poster.png';
+                                const ordered = [obj?.thumb, obj?.thumbnail_url, obj?.cover_url].filter(Boolean) as string[];
+                                const imageFirst = ordered.find(u => !isVideoUrl(u));
+                                return imageFirst || ordered[0] || '/media/lobby-poster.png';
                               };
                               const chosen = isHomeCrumb && homeSpace ? pickBest(homeSpace as any) : pickBest(space as any);
                               return isVideoUrl(chosen) ? (

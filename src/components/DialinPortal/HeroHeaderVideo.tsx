@@ -686,27 +686,29 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
       {/* Video - dynamic sizing for tall videos */}
       {!webUrl && showVideo && videoSrc && !videoError && (
-        <video
-          ref={videoRef}
-          playsInline
-          loop
-          preload="auto"
-          muted
-          className={`transition-opacity duration-500 ${
-            videoLoaded ? 'opacity-100' : 'opacity-0'
-          } ${
-            isScrollableVideo 
-              ? 'relative w-full h-auto' 
-              : 'absolute inset-0 w-full h-full object-cover'
-          }`}
-          style={{ 
-            transform: 'scaleY(1)',
-            objectFit: isScrollableVideo ? 'contain' : 'cover'
-          }}
-          poster={posterSrc}
-        >
-          {showVideo && <source src={videoSrc} type="video/mp4" />}
-        </video>
+        <div className={isScrollableVideo ? 'w-full overflow-y-auto h-full' : 'absolute inset-0'}>
+          <video
+            ref={videoRef}
+            playsInline
+            loop
+            preload="auto"
+            muted
+            className={`transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-100' : 'opacity-0'
+            } ${
+              isScrollableVideo 
+                ? 'w-full h-auto object-contain' 
+                : 'absolute inset-0 w-full h-full object-cover'
+            }`}
+            style={{ 
+              transform: 'scaleY(1)',
+              objectFit: isScrollableVideo ? 'contain' : 'cover'
+            }}
+            poster={posterSrc}
+          >
+            {showVideo && <source src={videoSrc} type="video/mp4" />}
+          </video>
+        </div>
       )}
 
       {/* 360° Skybox View - for special floors */}

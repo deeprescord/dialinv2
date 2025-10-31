@@ -16,11 +16,11 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SpacesProvider>
-        <MediaQueueProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <MediaQueueProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/space/:spaceId" element={<SpacePage />} />
@@ -28,9 +28,9 @@ const App = () => {
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </MediaQueueProvider>
+            </MediaQueueProvider>
+          </BrowserRouter>
+        </TooltipProvider>
       </SpacesProvider>
     </QueryClientProvider>
   );

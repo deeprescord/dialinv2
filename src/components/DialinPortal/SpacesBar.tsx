@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -98,7 +98,13 @@ export function SpacesBar({
   onTogglePeopleBar
 }: SpacesBarProps) {
   const navigate = useNavigate();
-  const scale = 65; // Reduced from 87 to make more compact
+  const [scale, setScale] = useState<number>(() => {
+    const saved = localStorage.getItem('spaces-bar-scale');
+    return saved ? parseInt(saved) : 65;
+  });
+  const [isDraggingResize, setIsDraggingResize] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartScale, setDragStartScale] = useState(65);
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
     position: { x: number; y: number };
@@ -111,6 +117,42 @@ export function SpacesBar({
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+
+  // Persist scale to localStorage
+  useEffect(() => {
+    localStorage.setItem('spaces-bar-scale', scale.toString());
+  }, [scale]);
+
+  // Handle resize bar drag
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingResize(true);
+    setDragStartY(e.clientY);
+    setDragStartScale(scale);
+  };
+
+  useEffect(() => {
+    if (!isDraggingResize) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaY = dragStartY - e.clientY; // Inverted: drag up = bigger
+      const scaleChange = Math.round(deltaY / 2); // 2px movement = 1% scale change
+      const newScale = Math.max(50, Math.min(200, dragStartScale + scaleChange));
+      setScale(newScale);
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingResize(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingResize, dragStartY, dragStartScale]);
 
   // Fetch items for selected space
   const { items: spaceItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
@@ -442,6 +484,17 @@ export function SpacesBar({
               )}
             </div>
           </div>
+        </div>
+
+        {/* Resize Bar */}
+        <div className="flex justify-center py-2">
+          <div
+            onMouseDown={handleResizeMouseDown}
+            className={`w-16 h-1 rounded-full bg-border/50 hover:bg-border transition-colors cursor-ns-resize ${
+              isDraggingResize ? 'bg-primary' : ''
+            }`}
+            title="Drag to resize spaces"
+          />
         </div>
 
         {/* Action Buttons (moved below spaces) - with border */}

@@ -28,6 +28,7 @@ import { UploadLoader } from '@/components/DialinPortal/UploadLoader';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpacesContext } from '@/contexts/SpacesContext';
+import { useMediaQueue } from '@/contexts/MediaQueueContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
@@ -78,6 +79,7 @@ export default function SpacePage() {
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
+  const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying } = useMediaQueue();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
   
@@ -237,6 +239,13 @@ export default function SpacePage() {
       navigate('/');
     }
   }, [spaceExists, spaceId, spacesLoading, navigate]);
+
+  // Sync current space with media queue
+  useEffect(() => {
+    if (spaceId) {
+      setCurrentSpace(spaceId === 'lobby' ? spaces.find(s => s.isHome)?.id || 'lobby' : spaceId);
+    }
+  }, [spaceId, setCurrentSpace, spaces]);
 
   // Keep breadcrumb in sync with route (on direct loads/refresh)
   useEffect(() => {
@@ -824,14 +833,28 @@ export default function SpacePage() {
   // Handle floating player actions
   const handlePlayerPlay = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: true }));
+    setQueuePlaying(true);
   };
 
   const handlePlayerPause = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: false }));
+    setQueuePlaying(false);
   };
 
   const handlePlayerClose = () => {
     setFloatingPlayer(prev => ({ ...prev, isVisible: false }));
+  };
+  
+  const handlePlayerSkipForward = () => {
+    skipToNext();
+  };
+  
+  const handlePlayerSkipBack = () => {
+    skipToPrevious();
+  };
+  
+  const handleMediaEnd = () => {
+    skipToNext();
   };
 
   const handleToggle360 = async (spaceId: string, enabled: boolean) => {
@@ -1079,6 +1102,7 @@ export default function SpacePage() {
                 selectedItem={selectedItemData}
                 onVideoStateChange={handleVideoStateChange}
                 heroRef={heroRef}
+                onMediaEnd={handleMediaEnd}
                 spaceId={spaceId}
                 onItemClick={handleMediaClick}
                 showItemsBar={showItemsBar}

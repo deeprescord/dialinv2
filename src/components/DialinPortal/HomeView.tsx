@@ -50,6 +50,7 @@ interface HomeViewProps {
     isMuted: boolean;
     hasVideo: boolean;
   }) => void;
+  onMediaEnd?: () => void;
   heroRef?: React.Ref<HeroHeaderVideoHandle>;
   spaceId?: string;
   onItemClick?: (item: any) => void;
@@ -97,6 +98,7 @@ export function HomeView({
   onOpenAddPanel,
   selectedItem,
   onVideoStateChange,
+  onMediaEnd,
   heroRef,
   spaceId,
   onItemClick,
@@ -289,6 +291,7 @@ export function HomeView({
            allowDynamicHeight={true}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
+           onMediaEnd={onMediaEnd}
          />
       )}
 

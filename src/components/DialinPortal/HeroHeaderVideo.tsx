@@ -35,6 +35,7 @@ interface HeroHeaderVideoProps {
     isMuted: boolean;
     hasVideo: boolean;
   }) => void;
+  onMediaEnd?: () => void;
 }
 
 export type HeroHeaderVideoHandle = {
@@ -64,7 +65,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   webUrl,
   allowDynamicHeight = true,
   onOpenAddPanel,
-  onVideoStateChange
+  onVideoStateChange,
+  onMediaEnd
 }: HeroHeaderVideoProps, ref) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
@@ -220,6 +222,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       setIsPlaying(false);
     };
 
+    const handleEnded = () => {
+      setIsPlaying(false);
+      // Trigger auto-advance to next space
+      if (onMediaEnd) {
+        onMediaEnd();
+      }
+    };
+
     // Set a timeout to fall back to poster if video doesn't load
     const fallbackTimeout = setTimeout(() => {
       if (!videoLoaded) {
@@ -233,6 +243,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('ended', handleEnded);
 
     return () => {
       clearTimeout(fallbackTimeout);
@@ -246,8 +257,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('ended', handleEnded);
     };
-  }, [videoSrc, showVideo]);
+  }, [videoSrc, showVideo, onMediaEnd]);
 
   const handleMouseDown = () => {
     if (!onOpenAddPanel || show360) return;

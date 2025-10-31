@@ -27,6 +27,7 @@ import { DragDropZone } from './DragDropZone';
 import { SpaceSelectionModal } from './SpaceSelectionModal';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useSpacesContext } from '@/contexts/SpacesContext';
+import { useMediaQueue } from '@/contexts/MediaQueueContext';
 import { useFileUpload } from '@/hooks/useFileUpload';
 
 import { 
@@ -70,6 +71,9 @@ export function DialinPortal() {
   
   // File upload integration
   const { uploadMultipleFiles, uploading, analyzeWithAI, saveMetadata } = useFileUpload();
+  
+  // Media queue integration
+  const { skipToNext, skipToPrevious, setIsPlaying: setQueuePlaying, setProgress: setQueueProgress } = useMediaQueue();
   
   // Auth session persistence
   useEffect(() => {
@@ -416,14 +420,24 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   // Handle floating player actions
   const handlePlayerPlay = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: true }));
+    setQueuePlaying(true);
   };
 
   const handlePlayerPause = () => {
     setFloatingPlayer(prev => ({ ...prev, isPlaying: false }));
+    setQueuePlaying(false);
   };
 
   const handlePlayerClose = () => {
     setFloatingPlayer(prev => ({ ...prev, isVisible: false }));
+  };
+  
+  const handlePlayerSkipForward = () => {
+    skipToNext();
+  };
+  
+  const handlePlayerSkipBack = () => {
+    skipToPrevious();
   };
 
   const handleToggle360 = (spaceId: string, enabled: boolean) => {

@@ -437,10 +437,11 @@ export function SpacesBar({
                                   <video
                                     src={url}
                                     className="w-full h-full object-cover"
+                                    autoPlay
                                     muted
                                     playsInline
                                     loop
-                                    preload="metadata"
+                                    preload="auto"
                                   />
                                 ) : (
                                   <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />

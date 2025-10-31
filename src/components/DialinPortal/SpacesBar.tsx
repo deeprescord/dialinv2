@@ -490,7 +490,7 @@ export function SpacesBar({
         <div className="flex justify-center py-2">
           <div
             onMouseDown={handleResizeMouseDown}
-            className={`w-16 h-1 rounded-full bg-border/50 hover:bg-border transition-colors cursor-ns-resize ${
+            className={`w-16 h-1 rounded-full bg-border hover:bg-primary/80 transition-colors cursor-ns-resize ${
               isDraggingResize ? 'bg-primary' : ''
             }`}
             title="Drag to resize spaces"

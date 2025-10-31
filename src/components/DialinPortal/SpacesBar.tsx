@@ -155,7 +155,7 @@ export function SpacesBar({
   }, [isDraggingResize, dragStartY, dragStartScale]);
 
   // Fetch items for selected space
-  const { items: spaceItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
+  const { items: spaceItems, refetch: refetchItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -200,8 +200,7 @@ export function SpacesBar({
       if (error) throw error;
       toast.success('Removed from space');
       setShowDialPopup(false);
-      // Trigger refetch by navigation or state update
-      window.location.reload();
+      refetchItems();
     } catch (error) {
       console.error('Error deleting item:', error);
       toast.error('Failed to remove');
@@ -220,8 +219,7 @@ export function SpacesBar({
       if (error) throw error;
       toast.success('Item renamed');
       setShowDialPopup(false);
-      // Trigger refetch
-      window.location.reload();
+      refetchItems();
     } catch (error) {
       console.error('Error renaming item:', error);
       toast.error('Failed to rename');

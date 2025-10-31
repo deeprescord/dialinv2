@@ -137,7 +137,7 @@ export function SpacesBar({
     const handleMouseMove = (e: MouseEvent) => {
       const deltaY = dragStartY - e.clientY; // Inverted: drag up = bigger
       const scaleChange = Math.round(deltaY / 2); // 2px movement = 1% scale change
-      const newScale = Math.max(50, Math.min(200, dragStartScale + scaleChange));
+      const newScale = Math.max(25, Math.min(200, dragStartScale + scaleChange));
       setScale(newScale);
     };
 

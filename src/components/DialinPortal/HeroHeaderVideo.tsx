@@ -506,7 +506,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     };
   }, [isBackgroundVideo, backgroundImage, showVideo, show360, webUrl]);
 
-  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos
+  // Ensure only one medium plays at a time - if 360 is active, pause HTML5 videos and autoplay 360
   useEffect(() => {
     if (show360) {
       try { videoRef.current?.pause(); } catch {}
@@ -514,10 +514,12 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       // Also ensure both are muted when 360 is active
       if (videoRef.current) videoRef.current.muted = true;
       if (bgVideoRef.current) bgVideoRef.current.muted = true;
-      setIsVideoMuted(true);
-      setIsPlaying(false);
+      // Autoplay 360 video when enabled
+      setIsPlaying(true);
+      setIsVideoMuted(false);
+      setVideoVolume(isMuted ? 0 : (volume ?? 0.7));
     }
-  }, [show360]);
+  }, [show360, isMuted, volume]);
 
   // If a web page is displayed, pause and mute all internal videos to avoid dual audio (run before paint)
   useLayoutEffect(() => {

@@ -208,7 +208,12 @@ export function useFileUpload() {
         return null;
       }
 
-      toast.success(`File "${file.name}" uploaded successfully`);
+      // Show prominent success notification
+      toast.success(`✓ ${file.name} added to space!`, {
+        duration: 3000,
+        position: 'bottom-center',
+      });
+      
       return fileRecord;
 
     } catch (error) {

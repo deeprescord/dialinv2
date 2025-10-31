@@ -114,14 +114,21 @@ export function useSpaceItems(spaceId?: string) {
     fetchItems();
   }, [spaceId]);
 
-  // Optimized realtime: debounce refetch and listen to both spaces and files
+  // Optimized realtime: immediate refetch on changes with visual feedback
   useEffect(() => {
     if (!spaceId) return;
 
     let refetchTimeout: NodeJS.Timeout;
-    const debouncedRefetch = () => {
+    const handleChange = (payload: any) => {
+      console.log('Real-time update detected:', payload.eventType, payload.table);
       clearTimeout(refetchTimeout);
-      refetchTimeout = setTimeout(() => fetchItems(), 300);
+      // Immediate refetch for INSERT events (new uploads)
+      if (payload.eventType === 'INSERT') {
+        fetchItems();
+      } else {
+        // Slight delay for other events
+        refetchTimeout = setTimeout(() => fetchItems(), 150);
+      }
     };
 
     const channel = supabase
@@ -129,12 +136,17 @@ export function useSpaceItems(spaceId?: string) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'space_files', filter: `space_id=eq.${spaceId}` },
-        debouncedRefetch
+        handleChange
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'spaces', filter: `parent_id=eq.${spaceId}` },
-        debouncedRefetch
+        handleChange
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'files' },
+        handleChange
       )
       .subscribe();
 

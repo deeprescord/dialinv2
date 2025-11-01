@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { SkyboxViewer } from './SkyboxViewer';
+import audioVisualizer from '@/assets/audio-visualizer.gif';
 
 interface ContentViewerProps {
   content: {
@@ -391,7 +392,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       {isAudio && contentUrl && (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center">
           <audio ref={audioRef} src={contentUrl} />
-          {/* Show thumbnail if available, or fallback visual */}
+          {/* Show thumbnail if available, or fallback to audio visualizer GIF */}
           {thumbnailUrl ? (
             <div className="w-full h-full relative">
               <img
@@ -405,17 +406,12 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
               />
             </div>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/20 via-background to-secondary/20 flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <motion.div
-                  animate={{ scale: isPlaying ? [1, 1.05, 1] : 1 }}
-                  transition={{ duration: 1, repeat: isPlaying ? Infinity : 0 }}
-                  className="w-48 h-48 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center"
-                >
-                  <Volume2 className="w-24 h-24 text-white" />
-                </motion.div>
-                <h2 className="text-2xl font-bold text-foreground">{content.original_name}</h2>
-              </div>
+            <div className="w-full h-full bg-black flex items-center justify-center">
+              <img
+                src={audioVisualizer}
+                alt="Audio visualizer"
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
         </div>

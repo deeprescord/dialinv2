@@ -22,7 +22,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   const [isMuted, setIsMuted] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const crossfadeDuration = 1000; // 1 second crossfade
+  const crossfadeDuration = 3000; // 3 second crossfade
 
   // Paginate items for performance
   const displayedItems = items.slice(0, currentPage * itemsPerPage);

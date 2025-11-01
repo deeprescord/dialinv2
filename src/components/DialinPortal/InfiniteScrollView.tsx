@@ -101,13 +101,20 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const previousIndex = playingIndex;
     setPlayingIndex(index);
     
-    // Handle video playback - just ensure it's playing (already started in preload)
+    // Handle video playback
     videoRefs.current.forEach((video, idx) => {
       if (idx === index) {
+        // Ensure current video is playing
         video.play().catch(e => console.log('Autoplay prevented:', e));
-      } else if (idx !== index + 1) {
-        // Don't pause the next item if it's preloading
+      } else if (idx === index + 1) {
+        // Keep next item playing for preload
+        if (video.paused) {
+          video.play().catch(e => console.log('Preload autoplay prevented:', e));
+        }
+      } else {
+        // Stop all other videos including previous
         video.pause();
+        video.currentTime = 0;
       }
     });
 

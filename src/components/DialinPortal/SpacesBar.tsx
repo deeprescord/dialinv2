@@ -127,6 +127,7 @@ export function SpacesBar({
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Persist scale to localStorage
   useEffect(() => {
@@ -383,6 +384,16 @@ export function SpacesBar({
     const clean = url.split('?')[0].split('#')[0];
     return /(\.mp4|\.webm|\.ogg|\.mov)$/i.test(clean);
   };
+
+  // Calculate dock magnification scale for an item
+  const getMagnificationScale = (index: number) => {
+    if (hoveredIndex === null) return 1;
+    const distance = Math.abs(index - hoveredIndex);
+    if (distance === 0) return 1.5; // Hovered item
+    if (distance === 1) return 1.25; // Adjacent items
+    if (distance === 2) return 1.1; // Two items away
+    return 1; // No magnification
+  };
   return (
     <>
       <div className="relative">
@@ -397,15 +408,35 @@ export function SpacesBar({
                   {breadcrumbs.map((breadcrumb, idx) => {
                     const space = allSpaces.find(s => s.id === breadcrumb.id) || { id: breadcrumb.id, name: breadcrumb.name, thumb: '/media/lobby-poster.png' } as any;
                     const isCurrentSpace = idx === breadcrumbs.length - 1;
+                    const magnificationScale = getMagnificationScale(idx);
                     return (
-                      <motion.div key={space.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
-                        <div className="flex flex-col items-center cursor-pointer group select-none relative" style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} onClick={() => handleSpaceClick(space)} onMouseDown={(e) => handleMouseDown(space, e)} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onContextMenu={(e) => handleContextMenu(space, e)}>
+                      <motion.div 
+                        key={space.id} 
+                        initial={{ opacity: 0, x: -10 }} 
+                        animate={{ 
+                          opacity: 1, 
+                          x: 0,
+                          scale: magnificationScale,
+                          y: hoveredIndex !== null ? (idx === hoveredIndex ? -20 : idx === hoveredIndex - 1 || idx === hoveredIndex + 1 ? -10 : 0) : 0
+                        }} 
+                        transition={{ 
+                          duration: 0.2, 
+                          delay: idx * 0.05,
+                          scale: { duration: 0.3, ease: "easeOut" },
+                          y: { duration: 0.3, ease: "easeOut" }
+                        }} 
+                        className="flex-shrink-0" 
+                        style={{ width: `${thumbWidth}px` }}
+                        onMouseEnter={() => setHoveredIndex(idx)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                      >
+                        <div className="flex flex-col items-center cursor-pointer group select-none relative" style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} onClick={() => handleSpaceClick(space)} onMouseDown={(e) => handleMouseDown(space, e)} onMouseUp={handleMouseUp} onContextMenu={(e) => handleContextMenu(space, e)}>
                           {isCurrentSpace && (
                             <div className="absolute left-1/2 -translate-x-1/2 -top-2">
                               <div className="border-l-transparent border-r-transparent border-b-primary" style={{ width: 0, height: 0, borderLeftWidth: `${getScaled(8)}px`, borderRightWidth: `${getScaled(8)}px`, borderBottomWidth: `${getScaled(8)}px`, borderStyle: 'solid' }}></div>
                             </div>
                           )}
-                          <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
+                          <div className="rounded-2xl overflow-hidden glass-card border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
                               const lobbySpace = allSpaces.find(s => s.id === 'lobby');
                               const dbHomeSpace = allSpaces.find(s => (s as any).is_home || (s as any).isHome);
@@ -446,11 +477,32 @@ export function SpacesBar({
 
                   {!showPeopleBar && spaceItems.map((item, idx) => {
                     const isSpace = item.is_space;
+                    const itemIndex = breadcrumbs.length + idx;
+                    const magnificationScale = getMagnificationScale(itemIndex);
                     return (
-                      <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
+                      <motion.div 
+                        key={item.id} 
+                        initial={{ opacity: 0, x: 10 }} 
+                        animate={{ 
+                          opacity: 1, 
+                          x: 0,
+                          scale: magnificationScale,
+                          y: hoveredIndex !== null ? (itemIndex === hoveredIndex ? -20 : itemIndex === hoveredIndex - 1 || itemIndex === hoveredIndex + 1 ? -10 : 0) : 0
+                        }} 
+                        transition={{ 
+                          duration: 0.2, 
+                          delay: idx * 0.05,
+                          scale: { duration: 0.3, ease: "easeOut" },
+                          y: { duration: 0.3, ease: "easeOut" }
+                        }} 
+                        className="flex-shrink-0" 
+                        style={{ width: `${thumbWidth}px` }}
+                        onMouseEnter={() => setHoveredIndex(itemIndex)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                      >
                         <div 
                           className="flex flex-col items-center cursor-pointer group select-none" 
-                          style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
+                          style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
                           onClick={() => {
                             if (wasLongPress) return;
                             if (isSpace) {

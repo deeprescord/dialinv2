@@ -1005,9 +1005,9 @@ export default function SpacePage() {
   };
 
   // Video control handlers
-  const handleVideoStateChange = (state: typeof videoState) => {
+  const handleVideoStateChange = React.useCallback((state: typeof videoState) => {
     setVideoState(state);
-  };
+  }, []);
 
   const handleVideoPlayPause = () => {
     heroRef.current?.playPause();

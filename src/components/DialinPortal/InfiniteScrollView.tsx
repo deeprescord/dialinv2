@@ -125,23 +125,23 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
         transition={{ duration: 0.3 }}
-        className="min-h-[90vh] snap-start snap-always flex items-center justify-center relative bg-gradient-to-br from-background/80 to-muted/20"
+        className="w-full snap-start relative bg-background mb-4"
       >
         {/* Content */}
-        <div className="w-full h-full flex items-center justify-center p-4">
+        <div className="w-full">
           {isVideo && url ? (
             <video
               ref={(el) => el && videoRefs.current.set(index, el)}
               src={url}
-              className="max-w-full max-h-[80vh] rounded-lg shadow-2xl"
+              className="w-full h-auto"
               loop
               playsInline
               muted={isMuted}
               preload="auto"
             />
           ) : isAudio && url ? (
-            <div className="flex flex-col items-center gap-6 p-8 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50">
-              <div className="w-64 h-64 rounded-xl overflow-hidden bg-muted/30">
+            <div className="w-full flex flex-col items-center gap-6 p-8">
+              <div className="w-full max-w-md aspect-square rounded-xl overflow-hidden bg-muted/30">
                 {item.thumbnail_path ? (
                   <ImageFallback
                     src={url}
@@ -161,36 +161,36 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
                 muted={isMuted}
                 preload="auto"
               />
-              <h2 className="text-2xl font-bold text-foreground">{item.original_name}</h2>
+              <h2 className="text-2xl font-bold text-foreground text-center px-4">{item.original_name}</h2>
             </div>
           ) : isImage && url ? (
             <ImageFallback
               src={url}
               alt={item.original_name}
-              className="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain"
+              className="w-full h-auto object-contain"
             />
           ) : isWeb ? (
             <iframe
               src={item.storage_path}
-              className="w-full h-[80vh] rounded-lg shadow-2xl border border-border"
+              className="w-full min-h-[80vh] border-0"
               title={item.original_name}
             />
           ) : isPdf && url ? (
             <iframe
               src={url}
-              className="w-full h-[80vh] rounded-lg shadow-2xl border border-border"
+              className="w-full min-h-[80vh] border-0"
               title={item.original_name}
             />
           ) : (
-            <div className="text-center p-8">
+            <div className="w-full text-center p-8">
               <p className="text-muted-foreground">Unsupported file type</p>
             </div>
           )}
         </div>
 
         {/* Title overlay */}
-        <div className="absolute bottom-8 left-8 right-8 bg-gradient-to-t from-background/90 to-transparent p-6 rounded-lg">
-          <h2 className="text-2xl font-bold text-foreground truncate">
+        <div className="w-full bg-gradient-to-t from-background via-background/80 to-transparent p-6">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground truncate">
             {item.original_name}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -206,7 +206,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto snap-y snap-mandatory">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
       {/* Close button */}
       <Button
         onClick={onClose}
@@ -252,14 +252,14 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
 
       {/* Load more trigger */}
       {hasMore && (
-        <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
-          <LoadingState type="infinite" count={1} />
+        <div ref={loadMoreRef} className="w-full py-8 flex items-center justify-center">
+          <div className="text-sm text-muted-foreground">Loading more...</div>
         </div>
       )}
 
       {/* End of content */}
       {!hasMore && items.length > 0 && (
-        <div className="h-20 flex items-center justify-center text-muted-foreground">
+        <div className="w-full py-8 flex items-center justify-center text-muted-foreground">
           <p>No more items</p>
         </div>
       )}

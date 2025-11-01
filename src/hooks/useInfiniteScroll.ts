@@ -40,12 +40,16 @@ export function useInfiniteScroll({
 
 interface UseItemVisibilityOptions {
   onVisible?: (index: number) => void;
+  onApproaching?: (index: number) => void;
   threshold?: number;
+  approachThreshold?: number;
 }
 
 export function useItemVisibility({
   onVisible,
+  onApproaching,
   threshold = 0.5,
+  approachThreshold = 0.1,
 }: UseItemVisibilityOptions) {
   const [visibleIndex, setVisibleIndex] = useState<number>(-1);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -62,7 +66,8 @@ export function useItemVisibility({
     const elements = Array.from(itemRefs.current.entries());
     if (elements.length === 0) return;
 
-    const observer = new IntersectionObserver(
+    // Main visibility observer for current item
+    const visibilityObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -77,12 +82,34 @@ export function useItemVisibility({
       { threshold }
     );
 
+    // Approaching observer for next item preloading
+    const approachingObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = elements.find(([_, el]) => el === entry.target)?.[0];
+            if (index !== undefined) {
+              onApproaching?.(index);
+            }
+          }
+        });
+      },
+      { 
+        threshold: approachThreshold,
+        rootMargin: '100px 0px 0px 0px' // Start when item is 100px away from viewport
+      }
+    );
+
     elements.forEach(([_, element]) => {
-      observer.observe(element);
+      visibilityObserver.observe(element);
+      approachingObserver.observe(element);
     });
 
-    return () => observer.disconnect();
-  }, [onVisible, threshold]);
+    return () => {
+      visibilityObserver.disconnect();
+      approachingObserver.disconnect();
+    };
+  }, [onVisible, onApproaching, threshold, approachThreshold]);
 
   return { setItemRef, visibleIndex };
 }

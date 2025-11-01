@@ -42,7 +42,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     onVisible: (index) => {
       handleItemVisible(index);
     },
+    onApproaching: (index) => {
+      // Preload the next item when it's approaching
+      preloadNextItem(index);
+    },
     threshold: 0.5,
+    approachThreshold: 0.1,
   });
 
   // Fetch signed URLs for items
@@ -74,16 +79,34 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     fetchSignedUrls();
   }, [displayedItems.length]);
 
+  // Preload next item for seamless transition
+  const preloadNextItem = (index: number) => {
+    const video = videoRefs.current.get(index);
+    const audio = audioRefs.current.get(index);
+    
+    if (video) {
+      // Start playing the video when it's just off screen
+      video.play().catch(e => console.log('Preload autoplay prevented:', e));
+    }
+    
+    if (audio) {
+      // Prepare audio for smooth transition (but keep volume at 0)
+      audio.volume = 0;
+      audio.play().catch(e => console.log('Preload autoplay prevented:', e));
+    }
+  };
+
   // Handle item visibility - autoplay videos and crossfade audio
   const handleItemVisible = (index: number) => {
     const previousIndex = playingIndex;
     setPlayingIndex(index);
     
-    // Handle video playback
+    // Handle video playback - just ensure it's playing (already started in preload)
     videoRefs.current.forEach((video, idx) => {
       if (idx === index) {
         video.play().catch(e => console.log('Autoplay prevented:', e));
-      } else {
+      } else if (idx !== index + 1) {
+        // Don't pause the next item if it's preloading
         video.pause();
       }
     });
@@ -93,9 +116,11 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const previousAudio = audioRefs.current.get(previousIndex);
 
     if (currentAudio) {
-      // Start new audio at volume 0
-      currentAudio.volume = 0;
-      currentAudio.play().catch(e => console.log('Autoplay prevented:', e));
+      // If already playing from preload, just fade in, otherwise start it
+      if (currentAudio.paused) {
+        currentAudio.volume = 0;
+        currentAudio.play().catch(e => console.log('Autoplay prevented:', e));
+      }
 
       // Fade in new audio
       const fadeInInterval = setInterval(() => {

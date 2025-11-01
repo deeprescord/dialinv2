@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
-import { Package, Users, FileText, Music, Video, Image as ImageIcon } from 'lucide-react';
+import { Package, Users, FileText, Music, Video, Image as ImageIcon, Folder } from 'lucide-react';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
@@ -448,7 +448,9 @@ export function SpacesBar({
                                 );
                               }
                               return (
-                                <div className="w-full h-full bg-background/60 flex items-center justify-center">{getFileIcon(item.file_type)}</div>
+                                <div className="w-full h-full bg-background/60 flex items-center justify-center">
+                                  {isSpace ? <Folder className="w-1/2 h-1/2 text-muted-foreground" /> : getFileIcon(item.file_type)}
+                                </div>
                               );
                             })()}
                           </div>

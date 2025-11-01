@@ -291,6 +291,7 @@ export function HomeView({
             // Also clear the parent's selected item if the handler is available
             onMediaClick?.(null);
           }}
+          onVideoStateChange={onVideoStateChange}
         />
       ) : (
          <HeroHeaderVideo

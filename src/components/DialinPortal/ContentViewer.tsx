@@ -26,6 +26,14 @@ interface ContentViewerProps {
   onEditMetadata?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
+  onVideoStateChange?: (state: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    volume: number;
+    isMuted: boolean;
+    hasVideo: boolean;
+  }) => void;
 }
 
 export type ContentViewerHandle = {
@@ -35,7 +43,7 @@ export type ContentViewerHandle = {
   toggleMute: () => void;
 };
 
-export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete }, ref) => {
+export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete, onVideoStateChange }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState(0.7);
@@ -148,6 +156,18 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       mediaRef.removeEventListener('pause', handlePause);
     };
   }, [isVideo, isAudio, contentUrl]);
+
+  // Propagate state to parent controls
+  useEffect(() => {
+    onVideoStateChange?.({
+      isPlaying,
+      currentTime,
+      duration,
+      volume,
+      isMuted,
+      hasVideo: isVideo || isAudio,
+    });
+  }, [isPlaying, currentTime, duration, volume, isMuted, isVideo, isAudio, onVideoStateChange]);
 
   const togglePlay = () => {
     const mediaRef = isVideo ? videoRef.current : audioRef.current;

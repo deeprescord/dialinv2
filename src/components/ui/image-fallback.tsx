@@ -41,7 +41,7 @@ export function ImageFallback({
     // Music content fallbacks  
     if (altLower.includes('music') || altLower.includes('album') || altLower.includes('artist') || 
         altLower.includes('song') || altLower.includes('track') || altLower.includes('sound') ||
-        altLower.includes('audio') || altLower.includes('mp3')) {
+        altLower.includes('audio') || altLower.includes('mp3') || altLower.includes('wav')) {
       return audioVisualizer;
     }
     

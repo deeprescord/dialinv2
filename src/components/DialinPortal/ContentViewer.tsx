@@ -377,6 +377,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
             playsInline
+            autoPlay
+            muted
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {

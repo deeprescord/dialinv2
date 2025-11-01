@@ -13,7 +13,7 @@ import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 import { VideoControls } from './VideoControls';
 import { PinnedContactsRow } from './PinnedContactsRow';
-import audioVisualizer from '@/assets/audio-visualizer-hd.png';
+import audioVisualizer from '@/assets/audio-visualizer-animated.gif';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';

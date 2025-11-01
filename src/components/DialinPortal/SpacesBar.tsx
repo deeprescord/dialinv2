@@ -13,6 +13,7 @@ import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 import { VideoControls } from './VideoControls';
 import { PinnedContactsRow } from './PinnedContactsRow';
+import audioVisualizer from '@/assets/audio-visualizer.gif';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -372,7 +373,7 @@ export function SpacesBar({
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image')) return <ImageIcon size={iconSize * 0.4} />;
     if (fileType.startsWith('video')) return <Video size={iconSize * 0.4} />;
-    if (fileType.startsWith('audio')) return <Music size={iconSize * 0.4} />;
+    if (fileType.startsWith('audio')) return <img src={audioVisualizer} alt="Playing" className="w-full h-full object-contain" />;
     if (fileType === 'space') return <ImageIcon size={iconSize * 0.4} />;
     return <FileText size={iconSize * 0.4} />;
   };

@@ -17,10 +17,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   const { items, loading } = useSpaceItems(spaceId);
   const [signedUrls, setSignedUrls] = useState<Map<string, string>>(new Map());
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const audioRefs = useRef<Map<number, HTMLAudioElement>>(new Map());
   const [playingIndex, setPlayingIndex] = useState<number>(0);
   const [isMuted, setIsMuted] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const crossfadeDuration = 1000; // 1 second crossfade
 
   // Paginate items for performance
   const displayedItems = items.slice(0, currentPage * itemsPerPage);
@@ -72,11 +74,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     fetchSignedUrls();
   }, [displayedItems.length]);
 
-  // Handle item visibility - autoplay videos
+  // Handle item visibility - autoplay videos and crossfade audio
   const handleItemVisible = (index: number) => {
+    const previousIndex = playingIndex;
     setPlayingIndex(index);
     
-    // Pause all videos except the visible one
+    // Handle video playback
     videoRefs.current.forEach((video, idx) => {
       if (idx === index) {
         video.play().catch(e => console.log('Autoplay prevented:', e));
@@ -84,17 +87,52 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
         video.pause();
       }
     });
+
+    // Handle audio crossfade
+    const currentAudio = audioRefs.current.get(index);
+    const previousAudio = audioRefs.current.get(previousIndex);
+
+    if (currentAudio) {
+      // Start new audio at volume 0
+      currentAudio.volume = 0;
+      currentAudio.play().catch(e => console.log('Autoplay prevented:', e));
+
+      // Fade in new audio
+      const fadeInInterval = setInterval(() => {
+        if (currentAudio.volume < 0.95) {
+          currentAudio.volume = Math.min(1, currentAudio.volume + 0.05);
+        } else {
+          currentAudio.volume = 1;
+          clearInterval(fadeInInterval);
+        }
+      }, crossfadeDuration / 20);
+    }
+
+    if (previousAudio && previousIndex !== index) {
+      // Fade out previous audio
+      const fadeOutInterval = setInterval(() => {
+        if (previousAudio.volume > 0.05) {
+          previousAudio.volume = Math.max(0, previousAudio.volume - 0.05);
+        } else {
+          previousAudio.volume = 0;
+          previousAudio.pause();
+          clearInterval(fadeOutInterval);
+        }
+      }, crossfadeDuration / 20);
+    }
   };
 
   // Toggle play/pause for current item
   const togglePlayPause = () => {
     const video = videoRefs.current.get(playingIndex);
-    if (!video) return;
+    const audio = audioRefs.current.get(playingIndex);
+    const media = video || audio;
+    if (!media) return;
 
-    if (video.paused) {
-      video.play();
+    if (media.paused) {
+      media.play();
     } else {
-      video.pause();
+      media.pause();
     }
   };
 
@@ -155,7 +193,11 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
                 )}
               </div>
               <audio
-                ref={(el) => el && videoRefs.current.set(index, el as any)}
+                ref={(el) => {
+                  if (el) {
+                    audioRefs.current.set(index, el);
+                  }
+                }}
                 src={url}
                 loop
                 muted={isMuted}

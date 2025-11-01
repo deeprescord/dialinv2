@@ -7,6 +7,7 @@ import { Trash2, Edit3, Download, Copy, Eye } from 'lucide-react';
 import { Input } from '../ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { MetadataDetailsPanel } from './MetadataDetailsPanel';
 
 interface DialPopupProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ interface ActionOption {
 export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename }: DialPopupProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
+  const [showingDetails, setShowingDetails] = useState(false);
 
   // ESC key handling
   useEffect(() => {
@@ -63,6 +65,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     if (!isOpen) {
       setIsRenaming(false);
       setNewName('');
+      setShowingDetails(false);
     }
   }, [isOpen]);
 
@@ -70,7 +73,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
 
   const actionOptions: ActionOption[] = [
     { id: 'rename', label: 'Rename', icon: Edit3 },
-    { id: 'view', label: 'View Details', icon: Eye },
+    { id: 'details', label: 'Show Details', icon: Eye },
     { id: 'download', label: 'Download', icon: Download },
     { id: 'duplicate', label: 'Duplicate', icon: Copy },
     { id: 'share', label: 'Share', icon: Share },
@@ -85,6 +88,10 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
       case 'rename':
         setIsRenaming(true);
         setNewName(item.title);
+        break;
+
+      case 'details':
+        setShowingDetails(true);
         break;
         
       case 'delete':
@@ -259,6 +266,20 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                         Cancel
                       </Button>
                     </div>
+                  </div>
+                ) : showingDetails ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold">Item Details</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowingDetails(false)}
+                      >
+                        Back
+                      </Button>
+                    </div>
+                    <MetadataDetailsPanel fileId={item.id} />
                   </div>
                 ) : (
                   <>

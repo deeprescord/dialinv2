@@ -124,6 +124,7 @@ export type Database = {
           storage_path: string
           thumbnail_path: string | null
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           created_at?: string
@@ -137,6 +138,7 @@ export type Database = {
           storage_path: string
           thumbnail_path?: string | null
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           created_at?: string
@@ -150,6 +152,7 @@ export type Database = {
           storage_path?: string
           thumbnail_path?: string | null
           updated_at?: string
+          view_count?: number | null
         }
         Relationships: []
       }

@@ -102,20 +102,47 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
     const handleLoadedMetadata = () => {
       setDuration(mediaRef.duration);
+      // Try to autoplay with sound
+      if (mediaRef instanceof HTMLVideoElement || mediaRef instanceof HTMLAudioElement) {
+        mediaRef.volume = 0.7;
+        mediaRef.muted = false;
+        setIsMuted(false);
+        setVolume(0.7);
+        mediaRef.play().then(() => {
+          setIsPlaying(true);
+        }).catch(() => {
+          // If autoplay with sound fails, try muted
+          mediaRef.muted = true;
+          setIsMuted(true);
+          mediaRef.play().catch(e => console.log('Autoplay prevented:', e));
+        });
+      }
     };
 
     const handleEnded = () => {
       setIsPlaying(false);
     };
 
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
     mediaRef.addEventListener('timeupdate', handleTimeUpdate);
     mediaRef.addEventListener('loadedmetadata', handleLoadedMetadata);
     mediaRef.addEventListener('ended', handleEnded);
+    mediaRef.addEventListener('play', handlePlay);
+    mediaRef.addEventListener('pause', handlePause);
 
     return () => {
       mediaRef.removeEventListener('timeupdate', handleTimeUpdate);
       mediaRef.removeEventListener('loadedmetadata', handleLoadedMetadata);
       mediaRef.removeEventListener('ended', handleEnded);
+      mediaRef.removeEventListener('play', handlePlay);
+      mediaRef.removeEventListener('pause', handlePause);
     };
   }, [isVideo, isAudio]);
 
@@ -349,8 +376,6 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
             playsInline
-            autoPlay
-            muted
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {

@@ -7,9 +7,9 @@ import { Close } from '../icons';
 import { Space } from '@/data/catalogs';
 import { ImageFallback } from '../ui/image-fallback';
 import { SpaceContextMenu } from './SpaceContextMenu';
-import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { SpacesBar } from './SpacesBar';
 import { FloatingActionButtons } from './FloatingActionButtons';
+import { Friend } from '@/data/catalogs';
 
 interface CombinedBottomBarProps {
   spaces: Space[];
@@ -53,6 +53,10 @@ interface CombinedBottomBarProps {
   onVideoMuteToggle?: () => void;
   onToggleItemsBar?: () => void;
   onTogglePeopleBar?: () => void;
+  pinnedContacts?: Friend[];
+  onContactClick?: (contact: Friend) => void;
+  showPeopleBar?: boolean;
+  isHome?: boolean;
 }
 
 export function CombinedBottomBar({
@@ -89,7 +93,11 @@ export function CombinedBottomBar({
   onVideoVolumeChange,
   onVideoMuteToggle,
   onToggleItemsBar,
-  onTogglePeopleBar
+  onTogglePeopleBar,
+  pinnedContacts = [],
+  onContactClick,
+  showPeopleBar = false,
+  isHome = false
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -174,6 +182,10 @@ export function CombinedBottomBar({
           onVideoMuteToggle={onVideoMuteToggle}
           onToggleItemsBar={onToggleItemsBar}
           onTogglePeopleBar={onTogglePeopleBar}
+          pinnedContacts={pinnedContacts}
+          onContactClick={onContactClick}
+          showPeopleBar={showPeopleBar}
+          isHome={isHome}
         />
       </div>
     </>

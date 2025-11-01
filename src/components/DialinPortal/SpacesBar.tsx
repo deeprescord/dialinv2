@@ -11,11 +11,12 @@ import { DialPopup } from './DialPopup';
 import { AddOptionsModal } from './AddOptionsModal';
 import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
-import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { VideoControls } from './VideoControls';
+import { PinnedContactsRow } from './PinnedContactsRow';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Friend } from '@/data/catalogs';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -59,6 +60,10 @@ interface SpacesBarProps {
   onVideoMuteToggle?: () => void;
   onToggleItemsBar?: () => void;
   onTogglePeopleBar?: () => void;
+  pinnedContacts?: Friend[];
+  onContactClick?: (contact: Friend) => void;
+  showPeopleBar?: boolean;
+  isHome?: boolean;
 }
 
 export function SpacesBar({
@@ -95,7 +100,11 @@ export function SpacesBar({
   onVideoVolumeChange,
   onVideoMuteToggle,
   onToggleItemsBar,
-  onTogglePeopleBar
+  onTogglePeopleBar,
+  pinnedContacts = [],
+  onContactClick,
+  showPeopleBar = false,
+  isHome = false
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const [scale, setScale] = useState<number>(() => {
@@ -156,6 +165,52 @@ export function SpacesBar({
 
   // Fetch items for selected space
   const { items: spaceItems, refetch: refetchItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
+  
+  // Fetch shared users for the current space
+  const [sharedUsers, setSharedUsers] = React.useState<Friend[]>([]);
+  
+  React.useEffect(() => {
+    const fetchSharedUsers = async () => {
+      if (!currentSpaceId || currentSpaceId === 'lobby' || isHome) {
+        setSharedUsers([]);
+        return;
+      }
+      
+      try {
+        const { data: shares, error } = await supabase
+          .from('file_shares')
+          .select(`
+            shared_with,
+            profiles:shared_with (
+              full_name,
+              profile_media_url,
+              user_id
+            )
+          `)
+          .eq('file_id', currentSpaceId);
+          
+        if (error) throw error;
+        
+        const users: Friend[] = (shares || [])
+          .filter(s => s.profiles)
+          .map(s => ({
+            id: s.shared_with,
+            name: (s.profiles as any).full_name || 'Unknown',
+            avatar: (s.profiles as any).profile_media_url || '/placeholder.svg',
+            status: 'offline' as const
+          }));
+          
+        setSharedUsers(users);
+      } catch (error) {
+        console.error('Error fetching shared users:', error);
+        setSharedUsers([]);
+      }
+    };
+    
+    if (showPeopleBar) {
+      fetchSharedUsers();
+    }
+  }, [currentSpaceId, isHome, showPeopleBar]);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -388,7 +443,7 @@ export function SpacesBar({
 
                   <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
 
-                  {spaceItems.map((item, idx) => {
+                  {!showPeopleBar && spaceItems.map((item, idx) => {
                     const isSpace = item.is_space;
                     return (
                       <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
@@ -459,6 +514,40 @@ export function SpacesBar({
                       </motion.div>
                     );
                   })}
+                  
+                  {/* People Bar - Show pinned contacts on home, shared users in other spaces */}
+                  {showPeopleBar && (
+                    <>
+                      <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
+                      {(isHome ? pinnedContacts : sharedUsers).map((contact, idx) => (
+                        <motion.div 
+                          key={contact.id} 
+                          initial={{ opacity: 0, x: 10 }} 
+                          animate={{ opacity: 1, x: 0 }} 
+                          transition={{ duration: 0.2, delay: idx * 0.05 }} 
+                          className="flex-shrink-0" 
+                          style={{ width: `${thumbWidth}px` }}
+                        >
+                          <div 
+                            className="flex flex-col items-center cursor-pointer group select-none" 
+                            style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
+                            onClick={() => onContactClick?.(contact)}
+                          >
+                            <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
+                              <ImageFallback 
+                                src={contact.avatar} 
+                                alt={contact.name} 
+                                className="w-full h-full object-cover" 
+                              />
+                            </div>
+                            <span className={`${fontSize} text-center overflow-hidden text-ellipsis`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              {contact.name}
+                            </span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </>
+                  )}
                 </>
               ) : (
                 <>

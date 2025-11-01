@@ -137,6 +137,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [showPeopleBar, setShowPeopleBar] = useState(false);
 
   // Close other panels when one opens
   const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
@@ -723,6 +724,11 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             showCreateSpaceModal={showCreateSpaceModal}
             showAIChat={showAIChat}
             onToggleAIChat={() => showAIChat ? setShowAIChat(false) : openPanel('ai')}
+            onTogglePeopleBar={() => setShowPeopleBar(!showPeopleBar)}
+            pinnedContacts={pinnedContacts}
+            onContactClick={handleContactClick}
+            showPeopleBar={showPeopleBar}
+            isHome={currentTab === 'home'}
           />
         </div>
       ) : null}

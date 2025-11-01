@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { LayoutGrid, ListVideo } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { ContentViewer } from './ContentViewer';
 import { PinnedContactsRow } from './PinnedContactsRow';
@@ -9,6 +11,7 @@ import { AddOptionsModal } from './AddOptionsModal';
 import { DialControlPanel } from './DialControlPanel';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { ItemsPeopleBar } from './ItemsPeopleBar';
+import { InfiniteScrollView } from './InfiniteScrollView';
 import { supabase } from '@/integrations/supabase/client';
 import { videoCatalog, musicCatalog, friendsPosts, friends } from '@/data/catalogs';
 import { Friend, Space } from '@/data/catalogs';
@@ -121,6 +124,8 @@ export function HomeView({
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid');
+  const [showInfiniteScroll, setShowInfiniteScroll] = useState(false);
   // PDF URL for hero header (signed if needed)
   const [pdfUrlForHero, setPdfUrlForHero] = useState<string | undefined>(undefined);
 
@@ -226,6 +231,17 @@ export function HomeView({
     backgroundImage.startsWith('data:') ||
     backgroundImage.includes('/object/public/space-covers/')
   );
+
+  // Show infinite scroll mode
+  if (showInfiniteScroll) {
+    return (
+      <InfiniteScrollView
+        spaceId={spaceId}
+        onClose={() => setShowInfiniteScroll(false)}
+      />
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -233,6 +249,20 @@ export function HomeView({
       transition={{ duration: 0.3 }}
       className="pb-32"
     >
+      {/* View mode toggle - only show when not in lobby and has items */}
+      {!isLobby && spaceId && (
+        <div className="fixed top-20 right-4 z-40">
+          <Button
+            onClick={() => setShowInfiniteScroll(true)}
+            variant="ghost"
+            size="icon"
+            className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          >
+            <ListVideo className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
+
       {/* Items Bar - Fixed above space bar, floating over hero */}
       {!isLobby && showItemsBar && (
         <ItemsPeopleBar

@@ -1,0 +1,268 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
+import { useSpaceItems } from '@/hooks/useSpaceItems';
+import { useInfiniteScroll, useItemVisibility } from '@/hooks/useInfiniteScroll';
+import { LoadingState } from './LoadingState';
+import { ImageFallback } from '@/components/ui/image-fallback';
+import { Play, Pause, Volume2, VolumeX, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface InfiniteScrollViewProps {
+  spaceId?: string;
+  onClose?: () => void;
+}
+
+export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps) {
+  const { items, loading } = useSpaceItems(spaceId);
+  const [signedUrls, setSignedUrls] = useState<Map<string, string>>(new Map());
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const [playingIndex, setPlayingIndex] = useState<number>(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Paginate items for performance
+  const displayedItems = items.slice(0, currentPage * itemsPerPage);
+  const hasMore = displayedItems.length < items.length;
+
+  const { loadMoreRef } = useInfiniteScroll({
+    onLoadMore: () => {
+      if (!loading && hasMore) {
+        setCurrentPage(prev => prev + 1);
+      }
+    },
+    hasMore,
+    isLoading: loading,
+  });
+
+  const { setItemRef, visibleIndex } = useItemVisibility({
+    onVisible: (index) => {
+      handleItemVisible(index);
+    },
+    threshold: 0.5,
+  });
+
+  // Fetch signed URLs for items
+  useEffect(() => {
+    const fetchSignedUrls = async () => {
+      const newUrls = new Map(signedUrls);
+      
+      for (const item of displayedItems) {
+        if (!item.storage_path || item.is_space || item.file_type === 'web' || newUrls.has(item.id)) {
+          continue;
+        }
+
+        try {
+          const { data } = await supabase.storage
+            .from('user-files')
+            .createSignedUrl(item.storage_path, 3600);
+          
+          if (data?.signedUrl) {
+            newUrls.set(item.id, data.signedUrl);
+          }
+        } catch (error) {
+          console.error('Error fetching signed URL:', error);
+        }
+      }
+      
+      setSignedUrls(newUrls);
+    };
+
+    fetchSignedUrls();
+  }, [displayedItems.length]);
+
+  // Handle item visibility - autoplay videos
+  const handleItemVisible = (index: number) => {
+    setPlayingIndex(index);
+    
+    // Pause all videos except the visible one
+    videoRefs.current.forEach((video, idx) => {
+      if (idx === index) {
+        video.play().catch(e => console.log('Autoplay prevented:', e));
+      } else {
+        video.pause();
+      }
+    });
+  };
+
+  // Toggle play/pause for current item
+  const togglePlayPause = () => {
+    const video = videoRefs.current.get(playingIndex);
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  };
+
+  // Toggle mute
+  const toggleMute = () => {
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      videoRefs.current.forEach(video => {
+        video.muted = newMuted;
+      });
+      return newMuted;
+    });
+  };
+
+  const renderItem = (item: any, index: number) => {
+    const url = signedUrls.get(item.id);
+    const isVideo = item.file_type === 'video';
+    const isAudio = item.file_type === 'audio';
+    const isImage = item.file_type === 'image';
+    const isWeb = item.file_type === 'web';
+    const isPdf = item.file_type === 'document' || item.mime_type === 'application/pdf';
+
+    return (
+      <motion.div
+        key={item.id}
+        ref={(el) => el && setItemRef(index, el)}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -50 }}
+        transition={{ duration: 0.3 }}
+        className="min-h-[90vh] snap-start snap-always flex items-center justify-center relative bg-gradient-to-br from-background/80 to-muted/20"
+      >
+        {/* Content */}
+        <div className="w-full h-full flex items-center justify-center p-4">
+          {isVideo && url ? (
+            <video
+              ref={(el) => el && videoRefs.current.set(index, el)}
+              src={url}
+              className="max-w-full max-h-[80vh] rounded-lg shadow-2xl"
+              loop
+              playsInline
+              muted={isMuted}
+              preload="auto"
+            />
+          ) : isAudio && url ? (
+            <div className="flex flex-col items-center gap-6 p-8 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50">
+              <div className="w-64 h-64 rounded-xl overflow-hidden bg-muted/30">
+                {item.thumbnail_path ? (
+                  <ImageFallback
+                    src={url}
+                    alt={item.original_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Volume2 className="w-24 h-24 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <audio
+                ref={(el) => el && videoRefs.current.set(index, el as any)}
+                src={url}
+                loop
+                muted={isMuted}
+                preload="auto"
+              />
+              <h2 className="text-2xl font-bold text-foreground">{item.original_name}</h2>
+            </div>
+          ) : isImage && url ? (
+            <ImageFallback
+              src={url}
+              alt={item.original_name}
+              className="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain"
+            />
+          ) : isWeb ? (
+            <iframe
+              src={item.storage_path}
+              className="w-full h-[80vh] rounded-lg shadow-2xl border border-border"
+              title={item.original_name}
+            />
+          ) : isPdf && url ? (
+            <iframe
+              src={url}
+              className="w-full h-[80vh] rounded-lg shadow-2xl border border-border"
+              title={item.original_name}
+            />
+          ) : (
+            <div className="text-center p-8">
+              <p className="text-muted-foreground">Unsupported file type</p>
+            </div>
+          )}
+        </div>
+
+        {/* Title overlay */}
+        <div className="absolute bottom-8 left-8 right-8 bg-gradient-to-t from-background/90 to-transparent p-6 rounded-lg">
+          <h2 className="text-2xl font-bold text-foreground truncate">
+            {item.original_name}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {index + 1} / {items.length}
+          </p>
+        </div>
+      </motion.div>
+    );
+  };
+
+  if (loading && items.length === 0) {
+    return <LoadingState type="infinite" count={3} />;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto snap-y snap-mandatory">
+      {/* Close button */}
+      <Button
+        onClick={onClose}
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+      >
+        <X className="h-5 w-5" />
+      </Button>
+
+      {/* Controls */}
+      <div className="fixed top-4 left-4 z-50 flex gap-2">
+        <Button
+          onClick={togglePlayPause}
+          variant="ghost"
+          size="icon"
+          className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        >
+          {playingIndex >= 0 && videoRefs.current.get(playingIndex)?.paused ? (
+            <Play className="h-5 w-5" />
+          ) : (
+            <Pause className="h-5 w-5" />
+          )}
+        </Button>
+        <Button
+          onClick={toggleMute}
+          variant="ghost"
+          size="icon"
+          className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        >
+          {isMuted ? (
+            <VolumeX className="h-5 w-5" />
+          ) : (
+            <Volume2 className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+
+      {/* Items */}
+      <AnimatePresence mode="wait">
+        {displayedItems.map((item, index) => renderItem(item, index))}
+      </AnimatePresence>
+
+      {/* Load more trigger */}
+      {hasMore && (
+        <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+          <LoadingState type="infinite" count={1} />
+        </div>
+      )}
+
+      {/* End of content */}
+      {!hasMore && items.length > 0 && (
+        <div className="h-20 flex items-center justify-center text-muted-foreground">
+          <p>No more items</p>
+        </div>
+      )}
+    </div>
+  );
+}

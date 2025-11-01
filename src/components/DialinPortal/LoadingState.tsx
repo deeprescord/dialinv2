@@ -4,7 +4,7 @@ import { Skeleton } from '../ui/skeleton';
 import { ImageGridFallback } from './ImageGridFallback';
 
 interface LoadingStateProps {
-  type: 'media' | 'contacts' | 'grid';
+  type: 'media' | 'contacts' | 'grid' | 'infinite';
   count?: number;
 }
 
@@ -28,6 +28,27 @@ export function LoadingState({ type, count = 8 }: LoadingStateProps) {
             <Skeleton className="h-3 w-16" />
           </motion.div>
         ))}
+      </div>
+    );
+  }
+
+  if (type === 'infinite') {
+    return (
+      <div className="min-h-[90vh] snap-start flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
+          className="w-full max-w-2xl"
+        >
+          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl overflow-hidden shadow-2xl">
+            <Skeleton className="aspect-video w-full" />
+            <div className="p-6">
+              <Skeleton className="h-6 w-3/4 mb-3" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }

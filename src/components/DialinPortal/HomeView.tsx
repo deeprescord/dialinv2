@@ -10,7 +10,6 @@ import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
 import { DialControlPanel } from './DialControlPanel';
 import { CelebrationAnimation } from './CelebrationAnimation';
-import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { InfiniteScrollView } from './InfiniteScrollView';
 import { supabase } from '@/integrations/supabase/client';
 import { videoCatalog, musicCatalog, friendsPosts, friends } from '@/data/catalogs';
@@ -263,15 +262,6 @@ export function HomeView({
         </div>
       )}
 
-      {/* Items Bar - Fixed above space bar, floating over hero */}
-      {!isLobby && showItemsBar && (
-        <ItemsPeopleBar
-          view={itemsPeopleView}
-          spaceId={spaceId}
-          onItemClick={handleItemClickFromBar}
-          onClose={onCloseItemsBar}
-        />
-      )}
 
       {/* Hero Header - Show ContentViewer for video/audio files with storage_path */}
       {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) ? (
@@ -342,28 +332,6 @@ export function HomeView({
       />
 
       <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
-
-      {/* Items/People Bar */}
-      {showItemsBar && (
-        <ItemsPeopleBar
-          view={itemsPeopleView}
-          spaceId={spaceId}
-          onItemClick={onItemClick}
-          onClose={onCloseItemsBar}
-          onDeleteSpace={onDeleteSpace}
-          onRenameSpace={onRenameSpace}
-          onUpdateSpaceDescription={onUpdateSpaceDescription}
-          onUpdateSpaceThumbnail={onUpdateSpaceThumbnail}
-          onReorderSpace={onReorderSpace}
-          onToggle360={onToggle360}
-          on360AxisChange={on360AxisChange}
-          on360VolumeChange={on360VolumeChange}
-          on360MuteToggle={on360MuteToggle}
-          on360RotationToggle={on360RotationToggle}
-          on360RotationSpeedChange={on360RotationSpeedChange}
-          on360RotationAxisChange={on360RotationAxisChange}
-        />
-      )}
     </motion.div>
   );
 }

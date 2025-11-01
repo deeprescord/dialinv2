@@ -273,16 +273,16 @@ export function HomeView({
         />
       )}
 
-      {/* Hero Header - Show ContentViewer for files (excluding web links and PDFs), otherwise HeroHeaderVideo */}
-      {selectedItem?.storage_path && (selectedItem?.type !== 'web' && selectedItem?.file_type !== 'web' && selectedItem?.type !== 'document' && selectedItem?.file_type !== 'document' && selectedItem?.mime_type !== 'application/pdf') ? (
+      {/* Hero Header - Show ContentViewer for video/audio files with storage_path */}
+      {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
             id: selectedItem.id || selectedItem.thumb,
             storage_path: selectedItem.storage_path,
-            file_type: selectedItem.file_type || (selectedItem.artist ? 'audio' : 'video'),
+            file_type: selectedItem.file_type,
             mime_type: selectedItem.mime_type,
-            original_name: selectedItem.title || selectedItem.name || 'Untitled',
+            original_name: selectedItem.title || selectedItem.original_name || selectedItem.name || 'Untitled',
             thumbnail_path: selectedItem.thumbnail_path || selectedItem.thumb,
             duration: selectedItem.duration
           }}

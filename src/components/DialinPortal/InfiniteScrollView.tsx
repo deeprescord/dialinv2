@@ -46,6 +46,10 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       // Preload the next item when it's approaching
       preloadNextItem(index);
     },
+    onLeaving: (index) => {
+      // Stop the item when it leaves the viewport
+      handleItemLeaving(index);
+    },
     threshold: 0.5,
     approachThreshold: 0.1,
   });
@@ -93,6 +97,22 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       // Prepare audio for smooth transition (but keep volume at 0)
       audio.volume = 0;
       audio.play().catch(e => console.log('Preload autoplay prevented:', e));
+    }
+  };
+
+  // Handle item leaving viewport - stop playback
+  const handleItemLeaving = (index: number) => {
+    const video = videoRefs.current.get(index);
+    const audio = audioRefs.current.get(index);
+    
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+    
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
     }
   };
 

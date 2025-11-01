@@ -41,6 +41,7 @@ export function useInfiniteScroll({
 interface UseItemVisibilityOptions {
   onVisible?: (index: number) => void;
   onApproaching?: (index: number) => void;
+  onLeaving?: (index: number) => void;
   threshold?: number;
   approachThreshold?: number;
 }
@@ -48,6 +49,7 @@ interface UseItemVisibilityOptions {
 export function useItemVisibility({
   onVisible,
   onApproaching,
+  onLeaving,
   threshold = 0.5,
   approachThreshold = 0.1,
 }: UseItemVisibilityOptions) {
@@ -70,12 +72,15 @@ export function useItemVisibility({
     const visibilityObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          const index = elements.find(([_, el]) => el === entry.target)?.[0];
+          if (index === undefined) return;
+
           if (entry.isIntersecting) {
-            const index = elements.find(([_, el]) => el === entry.target)?.[0];
-            if (index !== undefined) {
-              setVisibleIndex(index);
-              onVisible?.(index);
-            }
+            setVisibleIndex(index);
+            onVisible?.(index);
+          } else {
+            // Item is leaving the viewport
+            onLeaving?.(index);
           }
         });
       },
@@ -96,7 +101,7 @@ export function useItemVisibility({
       },
       { 
         threshold: approachThreshold,
-        rootMargin: '100px 0px 0px 0px' // Start when item is 100px away from viewport
+        rootMargin: '20px 0px 0px 0px' // Start when item is just 20px away from viewport
       }
     );
 
@@ -109,7 +114,7 @@ export function useItemVisibility({
       visibilityObserver.disconnect();
       approachingObserver.disconnect();
     };
-  }, [onVisible, onApproaching, threshold, approachThreshold]);
+  }, [onVisible, onApproaching, onLeaving, threshold, approachThreshold]);
 
   return { setItemRef, visibleIndex };
 }

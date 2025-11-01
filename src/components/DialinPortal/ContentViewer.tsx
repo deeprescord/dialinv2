@@ -37,7 +37,7 @@ export type ContentViewerHandle = {
 
 export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState(0.7);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -115,7 +115,9 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           // If autoplay with sound fails, try muted
           mediaRef.muted = true;
           setIsMuted(true);
-          mediaRef.play().catch(e => console.log('Autoplay prevented:', e));
+          mediaRef.play().then(() => {
+            setIsPlaying(true);
+          }).catch(e => console.log('Autoplay prevented:', e));
         });
       }
     };
@@ -145,7 +147,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       mediaRef.removeEventListener('play', handlePlay);
       mediaRef.removeEventListener('pause', handlePause);
     };
-  }, [isVideo, isAudio]);
+  }, [isVideo, isAudio, contentUrl]);
 
   const togglePlay = () => {
     const mediaRef = isVideo ? videoRef.current : audioRef.current;
@@ -153,10 +155,12 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
     if (isPlaying) {
       mediaRef.pause();
+      setIsPlaying(false);
     } else {
-      mediaRef.play();
+      mediaRef.play().then(() => {
+        setIsPlaying(true);
+      }).catch(e => console.log('Play prevented:', e));
     }
-    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = () => {
@@ -173,6 +177,10 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     const mediaRef = isVideo ? videoRef.current : audioRef.current;
     if (mediaRef) {
       mediaRef.volume = newVolume;
+      if (newVolume > 0 && isMuted) {
+        mediaRef.muted = false;
+        setIsMuted(false);
+      }
     }
   };
 
@@ -377,8 +385,6 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
             playsInline
-            autoPlay
-            muted
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {

@@ -1115,7 +1115,7 @@ export default function SpacePage() {
                 flipHorizontal={currentSpace?.flipHorizontal}
                 flipVertical={currentSpace?.flipVertical}
                 spaces={spaces}
-                onFilesDrop={handleFilesDropped}
+                
                 onCreateSpace={handleCreateSpaceFromDrop}
                 isAddModalOpen={isAddModalOpen}
                 onCloseAddModal={() => setIsAddModalOpen(false)}

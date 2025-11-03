@@ -639,12 +639,12 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             flipHorizontal={homeSpace?.flipHorizontal}
             flipVertical={homeSpace?.flipVertical}
             spaces={spaces}
-            onFilesDrop={handleFilesDropped}
             onCreateSpace={handleCreateSpaceFromDrop}
             isAddModalOpen={isAddModalOpen}
             onCloseAddModal={() => setIsAddModalOpen(false)}
             onAddOptionSelect={handleAddOptionSelect}
             onOpenAddPanel={() => openPanel('add')}
+            onUploadClick={handleFilesDropped}
           />
         )}
 

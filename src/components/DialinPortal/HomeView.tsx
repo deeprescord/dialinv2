@@ -37,12 +37,12 @@ interface HomeViewProps {
   flipHorizontal?: boolean;
   flipVertical?: boolean;
   spaces?: Space[];
-  onFilesDrop?: (files: File[], spaceId: string) => void;
   onCreateSpace?: (name: string) => void;
   isAddModalOpen?: boolean;
   onCloseAddModal?: () => void;
   onAddOptionSelect?: (optionId: string) => void;
   onOpenAddPanel?: () => void;
+  onUploadClick?: (files: File[]) => void;
   selectedItem?: any;
   onVideoStateChange?: (state: {
     isPlaying: boolean;
@@ -92,12 +92,12 @@ export function HomeView({
   flipHorizontal,
   flipVertical,
   spaces = [],
-  onFilesDrop,
   onCreateSpace,
   isAddModalOpen = false,
   onCloseAddModal,
   onAddOptionSelect,
   onOpenAddPanel,
+  onUploadClick,
   selectedItem,
   onVideoStateChange,
   onMediaEnd,
@@ -321,6 +321,7 @@ export function HomeView({
         isOpen={isAddModalOpen}
         onClose={onCloseAddModal || (() => {})}
         onOptionSelect={handleAddOptionSelect}
+        onUploadClick={onUploadClick}
       />
 
       <DialControlPanel

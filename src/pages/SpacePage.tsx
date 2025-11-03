@@ -574,12 +574,34 @@ export default function SpacePage() {
     }
   };
 
-  // Drag and drop handlers - show space selection modal
+  // Drag and drop handlers
   const handleFilesDropped = async (files: File[]) => {
     if (files.length === 0) return;
     
-    setDroppedFiles(files);
-    setShowSpaceSelectionModal(true);
+    // If we're in a specific space (not lobby), upload directly
+    if (spaceId && spaceId !== 'lobby') {
+      try {
+        toast.info(`Uploading ${files.length} file(s)...`);
+        
+        const uploadResults = [];
+        for (const file of files) {
+          const result = await uploadFile(file, spaceId);
+          if (result) {
+            uploadResults.push({ file, result });
+          }
+        }
+        
+        toast.success(`Added ${uploadResults.length} item(s) to space!`);
+        refetch();
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast.error('Failed to upload files');
+      }
+    } else {
+      // In lobby, show space selection modal
+      setDroppedFiles(files);
+      setShowSpaceSelectionModal(true);
+    }
   };
 
   // Handle space selection for dropped files

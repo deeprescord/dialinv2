@@ -574,12 +574,19 @@ export default function SpacePage() {
     }
   };
 
-  // Drag and drop handlers - show space selection modal
+  // Drag and drop handlers - upload directly if in a space, otherwise show modal
   const handleFilesDropped = async (files: File[]) => {
     if (files.length === 0) return;
     
     setDroppedFiles(files);
-    setShowSpaceSelectionModal(true);
+    
+    // If already in a space (not lobby), upload directly without modal
+    if (spaceId && spaceId !== 'lobby') {
+      await handleSpaceSelect(spaceId);
+    } else {
+      // In lobby, show space selection modal
+      setShowSpaceSelectionModal(true);
+    }
   };
 
   // Handle space selection for dropped files

@@ -497,7 +497,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     setShow360Settings(true);
   };
 
-  // Handle files dropped anywhere on the site
+  // Handle files dropped anywhere on the site - always show modal in lobby
   const handleFilesDropped = (files: File[]) => {
     if (!user) {
       toast.error('Please sign in to upload files');

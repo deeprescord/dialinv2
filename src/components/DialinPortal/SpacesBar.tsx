@@ -172,51 +172,46 @@ export function SpacesBar({
   // Fetch items for selected space
   const { items: spaceItems, refetch: refetchItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
   
-  // Fetch shared users for the current space
   const [sharedUsers, setSharedUsers] = React.useState<Friend[]>([]);
+  const [allContacts, setAllContacts] = React.useState<Friend[]>([]);
   
+  // Fetch all users/contacts from profiles table
   React.useEffect(() => {
-    const fetchSharedUsers = async () => {
-      if (!currentSpaceId || currentSpaceId === 'lobby' || isHome) {
-        setSharedUsers([]);
+    const fetchAllContacts = async () => {
+      if (!showPeopleBar) {
+        setAllContacts([]);
         return;
       }
       
       try {
-        const { data: shares, error } = await supabase
-          .from('file_shares')
-          .select(`
-            shared_with,
-            profiles:shared_with (
-              full_name,
-              profile_media_url,
-              user_id
-            )
-          `)
-          .eq('file_id', currentSpaceId);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, profile_media_url')
+          .neq('user_id', user.id); // Exclude current user
           
         if (error) throw error;
         
-        const users: Friend[] = (shares || [])
-          .filter(s => s.profiles)
-          .map(s => ({
-            id: s.shared_with,
-            name: (s.profiles as any).full_name || 'Unknown',
-            avatar: (s.profiles as any).profile_media_url || '/placeholder.svg',
-            status: 'offline' as const
-          }));
+        const contacts: Friend[] = (profiles || []).map(p => ({
+          id: p.user_id,
+          name: p.full_name || 'Unknown',
+          avatar: p.profile_media_url || '/placeholder.svg',
+          status: 'offline' as const
+        }));
           
-        setSharedUsers(users);
+        setAllContacts(contacts);
       } catch (error) {
-        console.error('Error fetching shared users:', error);
-        setSharedUsers([]);
+        console.error('Error fetching contacts:', error);
+        setAllContacts([]);
       }
     };
     
     if (showPeopleBar) {
-      fetchSharedUsers();
+      fetchAllContacts();
     }
-  }, [currentSpaceId, isHome, showPeopleBar]);
+  }, [showPeopleBar]);
 
   // Calculate scaled sizes
   const getScaled = (base: number) => Math.round(base * (scale / 100));
@@ -392,6 +387,50 @@ export function SpacesBar({
     <>
       <div className="relative overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
         <div className="inline-flex items-start w-max bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 50}px`, padding: `${padding}px` }}>
+          {showPeopleBar ? (
+            // Show people/contacts instead of spaces
+            allContacts.map((contact, idx) => (
+              <motion.div 
+                key={contact.id} 
+                initial={{ opacity: 0, x: -10 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                transition={{ duration: 0.2, delay: idx * 0.05 }} 
+                className="flex-shrink-0" 
+                style={{ width: `${thumbWidth}px` }}
+              >
+                <div 
+                  className="flex flex-col items-center cursor-pointer group select-none relative" 
+                  style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
+                  onClick={() => onContactClick?.(contact)}
+                >
+                  <div 
+                    className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" 
+                    style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                  >
+                    <ImageFallback 
+                      src={contact.avatar} 
+                      alt={contact.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <span 
+                    className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis text-white`} 
+                    style={{ 
+                      width: `${thumbWidth}px`, 
+                      height: '2.5rem', 
+                      display: '-webkit-box', 
+                      WebkitLineClamp: 2, 
+                      WebkitBoxOrient: 'vertical' 
+                    }}
+                  >
+                    {contact.name}
+                  </span>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            // Show spaces as before
+            <>
               {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
                 <>
                   {breadcrumbs.map((breadcrumb, idx) => {
@@ -573,8 +612,10 @@ export function SpacesBar({
                   })}
                 </>
               )}
-            </div>
-          </div>
+            </>
+          )}
+        </div>
+      </div>
 
         {/* Resize Bar */}
         <div className="flex justify-center py-2">

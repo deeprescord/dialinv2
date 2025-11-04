@@ -76,6 +76,7 @@ interface HomeViewProps {
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
   movieMode?: boolean;
+  onMovieModeToggle?: () => void;
 }
 
 export function HomeView({ 
@@ -126,7 +127,8 @@ export function HomeView({
   on360RotationAxisChange,
   sortOrder = 'custom',
   onSortChange,
-  movieMode = false
+  movieMode = false,
+  onMovieModeToggle
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -246,7 +248,7 @@ export function HomeView({
     return (
       <InfiniteScrollView
         spaceId={spaceId}
-        onClose={() => {}} // Movie mode is controlled by parent toggle
+        onClose={onMovieModeToggle || (() => {})}
       />
     );
   }

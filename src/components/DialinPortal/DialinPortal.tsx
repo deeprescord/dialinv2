@@ -652,6 +652,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             onOpenAddPanel={() => openPanel('add')}
             onUploadClick={handleFilesDropped}
             movieMode={movieMode}
+            onMovieModeToggle={() => setMovieMode(!movieMode)}
           />
         )}
 

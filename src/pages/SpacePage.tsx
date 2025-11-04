@@ -1238,6 +1238,7 @@ export default function SpacePage() {
                 sortOrder={sortOrder}
                 onSortChange={setSortOrder}
                 movieMode={movieMode}
+                onMovieModeToggle={() => setMovieMode(!movieMode)}
              />
           )}
 

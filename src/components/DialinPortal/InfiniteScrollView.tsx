@@ -54,12 +54,30 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     approachThreshold: 0.1,
   });
 
-  // Auto-start first item on mount
+  // Auto-start first item reliably once refs and URLs are ready
+  const hasAutoplayedFirst = useRef(false);
   useEffect(() => {
-    if (displayedItems.length > 0) {
-      handleItemVisible(0);
-    }
-  }, [displayedItems.length > 0]);
+    if (hasAutoplayedFirst.current) return;
+    if (displayedItems.length === 0) return;
+
+    const attempt = () => {
+      if (hasAutoplayedFirst.current) return;
+      const v = videoRefs.current.get(0);
+      const a = audioRefs.current.get(0);
+      const firstItem = displayedItems[0];
+      const needsUrl = firstItem && ['video', 'audio', 'image'].includes(firstItem.file_type);
+      const urlReady = !needsUrl || !!signedUrls.get(firstItem.id);
+
+      if ((v || a) && urlReady) {
+        handleItemVisible(0);
+        hasAutoplayedFirst.current = true;
+      } else {
+        setTimeout(attempt, 150);
+      }
+    };
+
+    attempt();
+  }, [displayedItems, signedUrls]);
 
   // Fetch signed URLs for items
   useEffect(() => {
@@ -237,7 +255,10 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     setIsMuted(prev => {
       const newMuted = !prev;
       videoRefs.current.forEach(video => {
-        video.muted = newMuted;
+        try { video.muted = newMuted; } catch {}
+      });
+      audioRefs.current.forEach(audio => {
+        try { audio.muted = newMuted; } catch {}
       });
       return newMuted;
     });

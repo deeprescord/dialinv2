@@ -405,6 +405,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
             playsInline
+            loop
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {
@@ -419,7 +420,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       {/* Audio Content */}
       {isAudio && contentUrl && (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-          <audio ref={audioRef} src={contentUrl} />
+          <audio ref={audioRef} src={contentUrl} loop />
           {/* Show thumbnail if available, or fallback to audio visualizer GIF */}
           {thumbnailUrl ? (
             <div className="w-full h-full relative">

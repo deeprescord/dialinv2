@@ -287,7 +287,29 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
               playsInline
               autoPlay
               muted={isMuted}
+              
               preload="auto"
+              onLoadedMetadata={(e) => {
+                if (index === 0 && !hasAutoplayedFirst.current) {
+                  try {
+                    e.currentTarget.muted = true;
+                    e.currentTarget.play().catch(err => console.log('onLoadedMetadata autoplay prevented:', err));
+                    hasAutoplayedFirst.current = true;
+                    setPlayingIndex(0);
+                  } catch (err) {
+                    console.log('onLoadedMetadata autoplay prevented:', err);
+                  }
+                }
+              }}
+              onCanPlay={(e) => {
+                if (index === 0 && e.currentTarget.paused) {
+                  try {
+                    e.currentTarget.play().catch(err => console.log('onCanPlay autoplay prevented:', err));
+                  } catch (err) {
+                    console.log('onCanPlay autoplay prevented:', err);
+                  }
+                }
+              }}
             />
           ) : isAudio && url ? (
             <div className="w-full flex flex-col items-center gap-6 p-8">

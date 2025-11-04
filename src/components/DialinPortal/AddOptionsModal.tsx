@@ -83,7 +83,7 @@ export function AddOptionsModal({ isOpen, onClose, onOptionSelect, onUploadClick
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full"
+            className="relative z-10 w-[85vw] max-w-4xl max-h-[500px]"
           >
             <div className="w-full h-full glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
               {/* Header */}

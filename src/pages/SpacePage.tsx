@@ -996,12 +996,28 @@ export default function SpacePage() {
   };
 
   const handleFlipHorizontalToggle = async (spaceId: string, flipped: boolean) => {
+    // Update local state immediately for responsive UI
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, flipHorizontal: flipped }
+        : space
+    ));
+    
+    // Persist to database
     if (spaceId !== 'lobby') {
       await updateSpace(spaceId, { flip_horizontal: flipped });
     }
   };
 
   const handleFlipVerticalToggle = async (spaceId: string, flipped: boolean) => {
+    // Update local state immediately for responsive UI
+    setSpaces(spaces.map(space => 
+      space.id === spaceId 
+        ? { ...space, flipVertical: flipped }
+        : space
+    ));
+    
+    // Persist to database
     if (spaceId !== 'lobby') {
       await updateSpace(spaceId, { flip_vertical: flipped });
     }
@@ -1467,6 +1483,14 @@ export default function SpacePage() {
           isMuted={currentSpace?.isMuted}
           onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
+          rotationEnabled={currentSpace?.rotationEnabled}
+          onRotationToggle={() => handle360RotationToggle(spaceId || 'lobby', !currentSpace?.rotationEnabled)}
+          rotationSpeed={currentSpace?.rotationSpeed}
+          onRotationSpeedChange={(speed) => handle360RotationSpeedChange(spaceId || 'lobby', speed)}
+          flipHorizontal={currentSpace?.flipHorizontal}
+          flipVertical={currentSpace?.flipVertical}
+          onFlipHorizontalToggle={() => handleFlipHorizontalToggle(spaceId || 'lobby', !currentSpace?.flipHorizontal)}
+          onFlipVerticalToggle={() => handleFlipVerticalToggle(spaceId || 'lobby', !currentSpace?.flipVertical)}
         />
 
         <SpacePickerModal

@@ -439,7 +439,7 @@ export function SpacesBar({
                     );
                   })}
 
-                  <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2"></div>
+                  <div className="h-16 w-px bg-white/20 flex-shrink-0 mx-2 self-center"></div>
 
                   {!showPeopleBar && spaceItems.map((item, idx) => {
                     const isSpace = item.is_space;

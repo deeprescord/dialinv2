@@ -387,13 +387,8 @@ export function SpacesBar({
   };
   return (
     <>
-      <div className="relative">
-        {/* Spaces Bar - Floating with subtle gradient background */}
-        <div className="relative">
-          <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm"></div>
-          {/* Spaces list */}
-          <div className="relative z-10 overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
-            <div className="flex items-start" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 50}px` }}>
+      <div className="relative overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
+        <div className="flex items-start bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 50}px`, padding: `${padding}px` }}>
               {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
                 <>
                   {breadcrumbs.map((breadcrumb, idx) => {
@@ -577,7 +572,6 @@ export function SpacesBar({
               )}
             </div>
           </div>
-        </div>
 
         {/* Resize Bar */}
         <div className="flex justify-center py-2">
@@ -678,7 +672,6 @@ export function SpacesBar({
             </div>
           </div>
         </div>
-      </div>
 
       {/* Context Menu */}
       {contextMenu && (

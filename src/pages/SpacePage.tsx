@@ -29,6 +29,7 @@ import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpacesContext } from '@/contexts/SpacesContext';
 import { useMediaQueue } from '@/contexts/MediaQueueContext';
+import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
@@ -44,6 +45,8 @@ import {
 } from '@/data/catalogs';
 import { VIDEO_GROUPS, MUSIC_GROUPS, LOCATION_GROUPS } from '@/data/constants';
 import { applyDials } from '@/lib/filters';
+import { SpacePickerModal } from '@/components/DialinPortal/SpacePickerModal';
+import type { SortOrder } from '@/types/organization';
 import { toast } from 'sonner';
 
 export default function SpacePage() {
@@ -181,6 +184,16 @@ export default function SpacePage() {
   const [showItemsBar, setShowItemsBar] = useState(false);
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
   const [showSpaceSelectionModal, setShowSpaceSelectionModal] = useState(false);
+  
+  // Organization states
+  const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
+  const [showSpacePickerModal, setShowSpacePickerModal] = useState(false);
+  const [spacePickerAction, setSpacePickerAction] = useState<'add' | 'move' | 'connect'>('add');
+  const [selectedOrgItemId, setSelectedOrgItemId] = useState<string | null>(null);
+  const [selectedOrgIsSpace, setSelectedOrgIsSpace] = useState(false);
+  
+  // Organization hook
+  const { addToSpace, moveToSpace, connectSpaces } = useSpaceOrganization();
 
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [pendingFile, setPendingFile] = useState<{
@@ -1058,6 +1071,74 @@ export default function SpacePage() {
     setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
   };
 
+  // Organization handlers
+  const handleOrgAdd = (itemId: string, isSpace: boolean) => {
+    setSelectedOrgItemId(itemId);
+    setSelectedOrgIsSpace(isSpace);
+    setSpacePickerAction('add');
+    setShowSpacePickerModal(true);
+  };
+
+  const handleOrgMove = (itemId: string, isSpace: boolean) => {
+    setSelectedOrgItemId(itemId);
+    setSelectedOrgIsSpace(isSpace);
+    setSpacePickerAction('move');
+    setShowSpacePickerModal(true);
+  };
+
+  const handleOrgConnect = (itemId: string) => {
+    setSelectedOrgItemId(itemId);
+    setSelectedOrgIsSpace(true);
+    setSpacePickerAction('connect');
+    setShowSpacePickerModal(true);
+  };
+
+  const handleOrgDelete = async (itemId: string, isSpace: boolean) => {
+    if (!currentSpaceId) return;
+    
+    try {
+      if (isSpace) {
+        await handleDeleteSpace(itemId);
+      } else {
+        const { error } = await supabase
+          .from('space_files')
+          .delete()
+          .match({ space_id: currentSpaceId, file_id: itemId });
+        
+        if (error) throw error;
+        toast.success('Item removed from space');
+        refetch();
+      }
+    } catch (error) {
+      console.error('Error deleting:', error);
+      toast.error('Failed to delete');
+    }
+  };
+
+  const handleSpacePickerSelect = async (targetSpaceId: string) => {
+    if (!selectedOrgItemId || !currentSpaceId) return;
+
+    try {
+      if (spacePickerAction === 'add') {
+        await addToSpace(selectedOrgItemId, targetSpaceId, selectedOrgIsSpace);
+        toast.success('Added to space');
+      } else if (spacePickerAction === 'move') {
+        await moveToSpace(selectedOrgItemId, currentSpaceId, targetSpaceId, selectedOrgIsSpace);
+        toast.success('Moved to space');
+      } else if (spacePickerAction === 'connect') {
+        await connectSpaces(selectedOrgItemId, targetSpaceId);
+        toast.success('Spaces connected');
+      }
+      
+      setShowSpacePickerModal(false);
+      setSelectedOrgItemId(null);
+      refetch();
+    } catch (error) {
+      console.error('Organization action failed:', error);
+      toast.error('Action failed');
+    }
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -1149,6 +1230,8 @@ export default function SpacePage() {
                 on360RotationToggle={handle360RotationToggle}
                 on360RotationSpeedChange={handle360RotationSpeedChange}
                 on360RotationAxisChange={handle360RotationAxisChange}
+                sortOrder={sortOrder}
+                onSortChange={setSortOrder}
              />
           )}
 
@@ -1375,6 +1458,23 @@ export default function SpacePage() {
           isMuted={currentSpace?.isMuted}
           onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
+        />
+
+        <SpacePickerModal
+          open={showSpacePickerModal}
+          onClose={() => setShowSpacePickerModal(false)}
+          onSelect={handleSpacePickerSelect}
+          currentSpaceId={currentSpaceId}
+          title={
+            spacePickerAction === 'add' ? 'Add to Space' :
+            spacePickerAction === 'move' ? 'Move to Space' :
+            'Connect Spaces'
+          }
+          description={
+            spacePickerAction === 'add' ? 'Select a space to add this item to (keeps it in current space too)' :
+            spacePickerAction === 'move' ? 'Select a space to move this item to (removes from current space)' :
+            'Select a space to connect with'
+          }
         />
 
         {/* Metadata Adjustment Panel */}

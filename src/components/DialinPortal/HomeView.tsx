@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { LayoutGrid, ListVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SortDropdown } from './SortDropdown';
+import type { SortOrder } from '@/types/organization';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { ContentViewer } from './ContentViewer';
 import { PinnedContactsRow } from './PinnedContactsRow';
@@ -71,6 +73,8 @@ interface HomeViewProps {
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
+  sortOrder?: SortOrder;
+  onSortChange?: (sort: SortOrder) => void;
 }
 
 export function HomeView({ 
@@ -118,7 +122,9 @@ export function HomeView({
   on360MuteToggle,
   on360RotationToggle,
   on360RotationSpeedChange,
-  on360RotationAxisChange
+  on360RotationAxisChange,
+  sortOrder = 'custom',
+  onSortChange
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -248,9 +254,12 @@ export function HomeView({
       transition={{ duration: 0.3 }}
       className="pb-32"
     >
-      {/* View mode toggle - only show when not in lobby and has items */}
+      {/* View mode toggle and sort - only show when not in lobby and has items */}
       {!isLobby && spaceId && (
-        <div className="fixed top-20 right-4 z-40">
+        <div className="fixed top-20 right-4 z-40 flex gap-2">
+          {onSortChange && (
+            <SortDropdown currentSort={sortOrder} onSortChange={onSortChange} />
+          )}
           <Button
             onClick={() => setShowInfiniteScroll(true)}
             variant="ghost"

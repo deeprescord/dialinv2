@@ -96,14 +96,24 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const audio = audioRefs.current.get(index);
     
     if (video) {
-      // Start playing the video when it's just off screen
-      video.play().catch(e => console.log('Preload autoplay prevented:', e));
+      // Start playing the video muted just off screen for policy compliance
+      try {
+        video.muted = true;
+        video.play().catch(e => console.log('Preload autoplay prevented:', e));
+      } catch (e) {
+        console.log('Preload autoplay prevented:', e);
+      }
     }
     
     if (audio) {
-      // Prepare audio for smooth transition (but keep volume at 0)
-      audio.volume = 0;
-      audio.play().catch(e => console.log('Preload autoplay prevented:', e));
+      // Prepare audio for smooth transition (keep volume at 0 and muted)
+      try {
+        audio.volume = 0;
+        audio.muted = true;
+        audio.play().catch(e => console.log('Preload autoplay prevented:', e));
+      } catch (e) {
+        console.log('Preload autoplay prevented:', e);
+      }
     }
   };
 
@@ -131,17 +141,35 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     // Handle video playback
     videoRefs.current.forEach((video, idx) => {
       if (idx === index) {
-        // Ensure current video is playing
-        video.play().catch(e => console.log('Autoplay prevented:', e));
+        // Ensure current video is playing; start muted to satisfy autoplay, then unmute if allowed
+        try {
+          video.muted = true;
+          video.play().catch(e => console.log('Autoplay prevented:', e));
+          if (!isMuted) {
+            // Unmute shortly after starting
+            setTimeout(() => {
+              try { video.muted = false; } catch {}
+            }, 100);
+          }
+        } catch (e) {
+          console.log('Autoplay prevented:', e);
+        }
       } else if (idx === index + 1) {
-        // Keep next item playing for preload
+        // Keep next item playing for preload (muted)
         if (video.paused) {
-          video.play().catch(e => console.log('Preload autoplay prevented:', e));
+          try {
+            video.muted = true;
+            video.play().catch(e => console.log('Preload autoplay prevented:', e));
+          } catch (e) {
+            console.log('Preload autoplay prevented:', e);
+          }
         }
       } else {
         // Stop all other videos including previous
-        video.pause();
-        video.currentTime = 0;
+        try {
+          video.pause();
+          video.currentTime = 0;
+        } catch {}
       }
     });
 
@@ -153,18 +181,27 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       // If already playing from preload, just fade in, otherwise start it
       if (currentAudio.paused) {
         currentAudio.volume = 0;
-        currentAudio.play().catch(e => console.log('Autoplay prevented:', e));
+        try {
+          currentAudio.muted = isMuted; // respect mute state
+          currentAudio.play().catch(e => console.log('Autoplay prevented:', e));
+        } catch (e) {
+          console.log('Autoplay prevented:', e);
+        }
       }
 
-      // Fade in new audio
-      const fadeInInterval = setInterval(() => {
-        if (currentAudio.volume < 0.95) {
-          currentAudio.volume = Math.min(1, currentAudio.volume + 0.05);
-        } else {
-          currentAudio.volume = 1;
-          clearInterval(fadeInInterval);
-        }
-      }, crossfadeDuration / 20);
+      // Ensure mute state respected before fade
+      currentAudio.muted = isMuted;
+      if (!isMuted) {
+        // Fade in new audio
+        const fadeInInterval = setInterval(() => {
+          if (currentAudio.volume < 0.95) {
+            currentAudio.volume = Math.min(1, currentAudio.volume + 0.05);
+          } else {
+            currentAudio.volume = 1;
+            clearInterval(fadeInInterval);
+          }
+        }, crossfadeDuration / 20);
+      }
     }
 
     if (previousAudio && previousIndex !== index) {
@@ -336,7 +373,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       </div>
 
       {/* Items */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {displayedItems.map((item, index) => renderItem(item, index))}
       </AnimatePresence>
 

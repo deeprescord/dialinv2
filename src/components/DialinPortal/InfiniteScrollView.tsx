@@ -19,7 +19,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const audioRefs = useRef<Map<number, HTMLAudioElement>>(new Map());
   const [playingIndex, setPlayingIndex] = useState<number>(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const crossfadeDuration = 3000; // 3 second crossfade
@@ -163,12 +163,6 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
         try {
           video.muted = true;
           video.play().catch(e => console.log('Autoplay prevented:', e));
-          if (!isMuted) {
-            // Unmute shortly after starting
-            setTimeout(() => {
-              try { video.muted = false; } catch {}
-            }, 100);
-          }
         } catch (e) {
           console.log('Autoplay prevented:', e);
         }
@@ -291,6 +285,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
               className="w-full h-auto"
               loop
               playsInline
+              autoPlay
               muted={isMuted}
               preload="auto"
             />
@@ -317,6 +312,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
                 }}
                 src={url}
                 loop
+                autoPlay
                 muted={isMuted}
                 preload="auto"
               />

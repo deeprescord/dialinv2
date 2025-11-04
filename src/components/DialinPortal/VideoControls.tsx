@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Repeat } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface VideoControlsProps {
@@ -8,10 +8,12 @@ interface VideoControlsProps {
   duration: number;
   volume: number;
   isMuted: boolean;
+  isLooping?: boolean;
   onPlayPause: () => void;
   onSeek: (value: number) => void;
   onVolumeChange: (value: number) => void;
   onMuteToggle: () => void;
+  onLoopToggle?: () => void;
 }
 
 export function VideoControls({
@@ -20,10 +22,12 @@ export function VideoControls({
   duration,
   volume,
   isMuted,
+  isLooping = true,
   onPlayPause,
   onSeek,
   onVolumeChange,
-  onMuteToggle
+  onMuteToggle,
+  onLoopToggle
 }: VideoControlsProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -42,6 +46,18 @@ export function VideoControls({
       >
         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
       </Button>
+
+      {onLoopToggle && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onLoopToggle}
+          className={`h-7 px-2 text-xs hover:bg-white/10 ${isLooping ? 'text-primary' : 'text-foreground/50'}`}
+          title={isLooping ? 'Loop On' : 'Loop Off'}
+        >
+          <Repeat size={14} />
+        </Button>
+      )}
 
       <div className="flex items-center gap-1 px-2">
         <span className="text-xs text-foreground/80 font-medium min-w-[35px]">{formatTime(currentTime)}</span>

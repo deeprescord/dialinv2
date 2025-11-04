@@ -55,11 +55,13 @@ interface SpacesBarProps {
     volume: number;
     isMuted: boolean;
     hasVideo: boolean;
+    isLooping?: boolean;
   };
   onVideoPlayPause?: () => void;
   onVideoSeek?: (value: number) => void;
   onVideoVolumeChange?: (value: number) => void;
   onVideoMuteToggle?: () => void;
+  onVideoLoopToggle?: () => void;
   onToggleItemsBar?: () => void;
   onTogglePeopleBar?: () => void;
   pinnedContacts?: Friend[];
@@ -101,6 +103,7 @@ export function SpacesBar({
   onVideoSeek,
   onVideoVolumeChange,
   onVideoMuteToggle,
+  onVideoLoopToggle,
   onToggleItemsBar,
   onTogglePeopleBar,
   pinnedContacts = [],
@@ -598,10 +601,12 @@ export function SpacesBar({
                     duration={videoControlsState?.duration ?? 0}
                     volume={videoControlsState?.volume ?? 1}
                     isMuted={videoControlsState?.isMuted ?? true}
+                    isLooping={videoControlsState?.isLooping ?? true}
                     onPlayPause={onVideoPlayPause}
                     onSeek={onVideoSeek}
                     onVolumeChange={onVideoVolumeChange}
                     onMuteToggle={onVideoMuteToggle}
+                    onLoopToggle={onVideoLoopToggle}
                   />
                 </div>
               )}

@@ -66,13 +66,15 @@ export default function SpacePage() {
     volume: number;
     isMuted: boolean;
     hasVideo: boolean;
+    isLooping: boolean;
   }>({
     isPlaying: false,
     currentTime: 0,
     duration: 0,
     volume: 1,
     isMuted: true,
-    hasVideo: false
+    hasVideo: false,
+    isLooping: true
   });
   const heroRef = React.useRef<HeroHeaderVideoHandle>(null);
   
@@ -1051,6 +1053,11 @@ export default function SpacePage() {
     setVideoState(prev => ({ ...prev, isMuted: !prev.isMuted }));
   };
 
+  const handleVideoLoopToggle = () => {
+    heroRef.current?.toggleLoop();
+    setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
+  };
+
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
@@ -1235,6 +1242,7 @@ export default function SpacePage() {
             onVideoSeek={handleVideoSeek}
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
+            onVideoLoopToggle={handleVideoLoopToggle}
             onToggleItemsBar={() => {
               if (showItemsBar && itemsPeopleView === 'items') {
                 // Currently showing items - close it

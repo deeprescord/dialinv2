@@ -43,6 +43,7 @@ export type HeroHeaderVideoHandle = {
   seek: (value: number) => void;
   setVolume: (value: number) => void;
   toggleMute: () => void;
+  toggleLoop: () => void;
 };
 
 export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeaderVideoProps>(({ 
@@ -368,7 +369,13 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     playPause: togglePlayPause,
     seek: (value: number) => handleSeek([value]),
     setVolume: (value: number) => handleVolumeChange([value]),
-    toggleMute: toggleMute
+    toggleMute: toggleMute,
+    toggleLoop: () => {
+      const activeVideo = getActiveVideo();
+      if (activeVideo) {
+        activeVideo.loop = !activeVideo.loop;
+      }
+    }
   }));
 
   const formatTime = (seconds: number) => {

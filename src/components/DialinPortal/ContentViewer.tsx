@@ -33,6 +33,7 @@ interface ContentViewerProps {
     volume: number;
     isMuted: boolean;
     hasVideo: boolean;
+    isLooping: boolean;
   }) => void;
 }
 
@@ -41,11 +42,13 @@ export type ContentViewerHandle = {
   seek: (value: number) => void;
   setVolume: (value: number) => void;
   toggleMute: () => void;
+  toggleLoop: () => void;
 };
 
 export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete, onVideoStateChange }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [isLooping, setIsLooping] = useState(true);
   const [volume, setVolume] = useState(0.7);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -166,8 +169,9 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       volume,
       isMuted,
       hasVideo: isVideo || isAudio,
+      isLooping,
     });
-  }, [isPlaying, currentTime, duration, volume, isMuted, isVideo, isAudio, onVideoStateChange]);
+  }, [isPlaying, currentTime, duration, volume, isMuted, isVideo, isAudio, isLooping, onVideoStateChange]);
 
   const togglePlay = () => {
     const mediaRef = isVideo ? videoRef.current : audioRef.current;
@@ -189,6 +193,15 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
     mediaRef.muted = !isMuted;
     setIsMuted(!isMuted);
+  };
+
+  const toggleLoop = () => {
+    const mediaRef = isVideo ? videoRef.current : audioRef.current;
+    if (!mediaRef) return;
+
+    const newLooping = !isLooping;
+    mediaRef.loop = newLooping;
+    setIsLooping(newLooping);
   };
 
   const handleVolumeChange = (values: number[]) => {
@@ -218,7 +231,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     playPause: togglePlay,
     seek: (value: number) => handleSeek([value]),
     setVolume: (value: number) => handleVolumeChange([value]),
-    toggleMute: toggleMute
+    toggleMute: toggleMute,
+    toggleLoop: toggleLoop
   }));
 
   const handleFullscreen = () => {

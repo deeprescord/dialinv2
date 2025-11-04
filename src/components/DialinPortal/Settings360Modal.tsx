@@ -21,6 +21,10 @@ interface Settings360ModalProps {
   onRotationToggle?: () => void;
   rotationSpeed?: number;
   onRotationSpeedChange?: (speed: number) => void;
+  flipHorizontal?: boolean;
+  flipVertical?: boolean;
+  onFlipHorizontalToggle?: () => void;
+  onFlipVerticalToggle?: () => void;
 }
 
 export function Settings360Modal({
@@ -39,6 +43,10 @@ export function Settings360Modal({
   onRotationToggle,
   rotationSpeed = 1,
   onRotationSpeedChange,
+  flipHorizontal = false,
+  flipVertical = false,
+  onFlipHorizontalToggle,
+  onFlipVerticalToggle,
 }: Settings360ModalProps) {
   // ESC key handling
   useEffect(() => {
@@ -206,6 +214,24 @@ export function Settings360Modal({
                       </div>
                     </div>
                   )}
+
+                  {/* Flip Controls */}
+                  <div className="space-y-3 pt-2 border-t border-border">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Flip Horizontal</label>
+                      <Switch
+                        checked={flipHorizontal}
+                        onCheckedChange={onFlipHorizontalToggle}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Flip Vertical</label>
+                      <Switch
+                        checked={flipVertical}
+                        onCheckedChange={onFlipVerticalToggle}
+                      />
+                    </div>
+                  </div>
 
                   {/* Reset Button */}
                   <Button

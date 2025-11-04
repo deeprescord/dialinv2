@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ImageFallback } from '../ui/image-fallback';
 import { Settings, HardDrive, Database, Wallet, ChevronDown } from '../icons';
-import { LogIn, LogOut, ArrowUpDown, Film, ScanEye } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthModal } from './AuthModal';
@@ -93,20 +93,7 @@ export function UserDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 bg-background border-white/10">
-        <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
-          <ArrowUpDown size={16} />
-          <span>Custom Order</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
-          <Film size={16} />
-          <span>Movie Mode</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
-          <ScanEye size={16} />
-          <span>360</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className="flex items-center space-x-2 cursor-pointer"
           onClick={() => setShowSettings(true)}
         >

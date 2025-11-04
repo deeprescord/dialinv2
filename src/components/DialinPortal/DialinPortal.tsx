@@ -138,6 +138,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [showPeopleBar, setShowPeopleBar] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'custom' | 'date-newest' | 'date-oldest' | 'name-az' | 'name-za' | 'size-largest' | 'size-smallest' | 'type'>('custom');
+  const [movieMode, setMovieMode] = useState(false);
 
   // Close other panels when one opens
   const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
@@ -609,6 +611,10 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         onOpen360Settings={handleOpen360Settings}
         userPoints={userPoints}
         onOpenAddPanel={() => openPanel('add')}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
+        movieMode={movieMode}
+        onMovieModeToggle={() => setMovieMode(!movieMode)}
       />
 
       <MobileTabBar

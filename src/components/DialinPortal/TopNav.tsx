@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon, Settings } from '../icons';
-import { ArrowUpDown, Film } from 'lucide-react';
+import { ArrowUpDown, Film, ScanEye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
+import { SortDropdown } from './SortDropdown';
 import { formatDialCount } from '@/lib/filters';
 import logoFallback from '@/assets/logo-fallback.jpg';
+import type { SortOrder } from '@/types/organization';
 
 interface TopNavProps {
   currentTab: string;
@@ -17,6 +19,10 @@ interface TopNavProps {
   onOpen360Settings?: () => void;
   userPoints?: number;
   onOpenAddPanel?: () => void;
+  sortOrder?: SortOrder;
+  onSortChange?: (sort: SortOrder) => void;
+  movieMode?: boolean;
+  onMovieModeToggle?: () => void;
 }
 
 const tabs = [
@@ -29,7 +35,7 @@ const tabs = [
 
 const filterTabs = ['videos', 'music', 'locations'];
 
-export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel }: TopNavProps) {
+export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel, sortOrder = 'custom', onSortChange, movieMode = false, onMovieModeToggle }: TopNavProps) {
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -113,15 +119,34 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
 
           {/* Right Side */}
           <div className="flex items-center space-x-2 sm:space-x-4 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1">
-            {/* Custom Order Icon */}
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ArrowUpDown size={18} className="text-white" />
-            </Button>
+            {/* Sort Dropdown */}
+            {onSortChange && (
+              <SortDropdown currentSort={sortOrder} onSortChange={onSortChange} />
+            )}
             
-            {/* Movie Mode Icon */}
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Film size={18} className="text-white" />
-            </Button>
+            {/* Movie Mode Toggle */}
+            {onMovieModeToggle && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={onMovieModeToggle}
+              >
+                <Film size={18} className={movieMode ? "text-primary" : "text-white"} />
+              </Button>
+            )}
+            
+            {/* 360 Settings */}
+            {show360 && onOpen360Settings && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={onOpen360Settings}
+              >
+                <ScanEye size={18} className="text-white" />
+              </Button>
+            )}
             
             {/* Profile Dropdown */}
             <UserDropdown />

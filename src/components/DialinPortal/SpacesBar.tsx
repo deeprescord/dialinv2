@@ -13,6 +13,7 @@ import { AIChat } from './AIChat';
 import { ChatWindow } from './ChatWindow';
 import { VideoControls } from './VideoControls';
 import { PinnedContactsRow } from './PinnedContactsRow';
+import { ContactsPanel } from './ContactsPanel';
 import audioVisualizer from '@/assets/audio-visualizer-animated.gif';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
@@ -126,6 +127,7 @@ export function SpacesBar({
   const [showDialPopup, setShowDialPopup] = useState(false);
   const [dialPopupItem, setDialPopupItem] = useState<any>(null);
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
+  const [showContactsPanel, setShowContactsPanel] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
 
   // Persist scale to localStorage
@@ -641,7 +643,10 @@ export function SpacesBar({
                   size="sm"
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  onClick={(e) => { e.stopPropagation(); onTogglePeopleBar?.(); }}
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setShowContactsPanel(true);
+                  }}
                   className="h-6 px-2 text-xs hover:bg-white/10"
                 >
                   <Users size={12} className="mr-1" />
@@ -726,6 +731,13 @@ export function SpacesBar({
       <ChatWindow
         isOpen={showChatWindow}
         onClose={() => setShowChatWindow(false)}
+      />
+
+      {/* Contacts Panel */}
+      <ContactsPanel
+        isOpen={showContactsPanel}
+        onClose={() => setShowContactsPanel(false)}
+        onContactClick={onContactClick}
       />
       </>
   );

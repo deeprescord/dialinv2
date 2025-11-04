@@ -25,17 +25,6 @@ import { Friend } from '@/data/catalogs';
 import { sortItems } from '@/lib/sortItems';
 import type { SortOrder } from '@/types/organization';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
-import { ChatWindow } from './ChatWindow';
-import { VideoControls } from './VideoControls';
-import { PinnedContactsRow } from './PinnedContactsRow';
-import { ContactsPanel } from './ContactsPanel';
-import audioVisualizer from '@/assets/audio-visualizer-animated.gif';
-import { useSpaceItems } from '@/hooks/useSpaceItems';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Friend } from '@/data/catalogs';
-import { sortItems } from '@/lib/sortItems';
-import type { SortOrder } from '@/types/organization';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -133,6 +122,8 @@ export function SpacesBar({
   onSortChange: propOnSortChange
 }: SpacesBarProps) {
   const navigate = useNavigate();
+  const { reorderItems } = useSpaceOrganization();
+  
   const [scale, setScale] = useState<number>(() => {
     const saved = localStorage.getItem('spaces-bar-scale');
     return saved ? parseInt(saved) : 65;
@@ -158,6 +149,37 @@ export function SpacesBar({
   // Use prop sortOrder if provided, otherwise use internal state
   const sortOrder = propSortOrder ?? internalSortOrder;
   const setSortOrder = propOnSortChange ?? setInternalSortOrder;
+
+  // Set up drag sensors for drag-and-drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  // Handle drag end event for reordering items
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id || !currentSpaceId || sortOrder !== 'custom') return;
+    
+    const oldIndex = spaceItems.findIndex(item => item.id === active.id);
+    const newIndex = spaceItems.findIndex(item => item.id === over.id);
+    
+    if (oldIndex === -1 || newIndex === -1) return;
+    
+    const newItems = [...spaceItems];
+    const [movedItem] = newItems.splice(oldIndex, 1);
+    newItems.splice(newIndex, 0, movedItem);
+    
+    const itemIds = newItems.map(item => item.id);
+    const isSpaces = newItems.map(item => item.is_space);
+    
+    await reorderItems(currentSpaceId, itemIds, isSpaces);
+    refetchItems();
+  };
 
   // Persist scale to localStorage
   useEffect(() => {
@@ -517,84 +539,100 @@ export function SpacesBar({
 
                   <div className="w-px bg-white/20 flex-shrink-0 mx-2 self-center" style={{ height: `${thumbHeight}px` }}></div>
 
-                  {!showPeopleBar && spaceItems.map((item, idx) => {
-                    const isSpace = item.is_space;
-                    return (
-                      <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
-                        <div 
-                          className="flex flex-col items-center cursor-pointer group select-none" 
-                          style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
-                          onClick={() => {
-                            if (wasLongPress) return;
-                            if (isSpace) {
-                              handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
-                            } else {
-                              onItemClick?.(item);
-                            }
-                          }}
-                          onMouseDown={(e) => {
-                            if (!isSpace) {
-                              setWasLongPress(false);
-                              const timer = setTimeout(() => {
-                                setWasLongPress(true);
-                                setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
-                                setShowDialPopup(true);
-                              }, 500);
-                              setPressTimer(timer);
-                            }
-                          }}
-                          onMouseUp={handleMouseUp}
-                          onMouseLeave={handleMouseLeave}
-                          onTouchStart={(e) => {
-                            if (!isSpace) {
-                              setWasLongPress(false);
-                              const timer = setTimeout(() => {
-                                setWasLongPress(true);
-                                setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
-                                setShowDialPopup(true);
-                              }, 500);
-                              setPressTimer(timer);
-                            }
-                          }}
-                          onTouchEnd={handleMouseUp}
-                        >
-                          <div className="relative rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
-                            {sortOrder === 'custom' && (
-                              <div className="absolute left-2 top-2 z-10 opacity-60 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
-                                <div className="bg-dialin-purple/90 backdrop-blur-sm border-2 border-dialin-gold/60 rounded-lg p-1.5 shadow-lg">
-                                  <GripVertical className="h-5 w-5 text-dialin-gold drop-shadow-sm" />
-                                </div>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext items={spaceItems.map(i => i.id)} strategy={rectSortingStrategy}>
+                      {!showPeopleBar && spaceItems.map((item, idx) => {
+                        const isSpace = item.is_space;
+                        const itemContent = (
+                          <motion.div key={item.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
+                            <div 
+                              className="flex flex-col items-center cursor-pointer group select-none" 
+                              style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
+                              onClick={() => {
+                                if (wasLongPress) return;
+                                if (isSpace) {
+                                  handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
+                                } else {
+                                  onItemClick?.(item);
+                                }
+                              }}
+                              onMouseDown={(e) => {
+                                if (!isSpace) {
+                                  setWasLongPress(false);
+                                  const timer = setTimeout(() => {
+                                    setWasLongPress(true);
+                                    setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
+                                    setShowDialPopup(true);
+                                  }, 500);
+                                  setPressTimer(timer);
+                                }
+                              }}
+                              onMouseUp={handleMouseUp}
+                              onMouseLeave={handleMouseLeave}
+                              onTouchStart={(e) => {
+                                if (!isSpace) {
+                                  setWasLongPress(false);
+                                  const timer = setTimeout(() => {
+                                    setWasLongPress(true);
+                                    setDialPopupItem({ id: item.id, title: item.original_name, thumb: thumbUrls[item.id], type: item.file_type });
+                                    setShowDialPopup(true);
+                                  }, 500);
+                                  setPressTimer(timer);
+                                }
+                              }}
+                              onTouchEnd={handleMouseUp}
+                            >
+                              <div className="relative rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
+                                {sortOrder === 'custom' && (
+                                  <div className="absolute left-2 top-2 z-10 opacity-60 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+                                    <div className="bg-dialin-purple/90 backdrop-blur-sm border-2 border-dialin-gold/60 rounded-lg p-1.5 shadow-lg">
+                                      <GripVertical className="h-5 w-5 text-dialin-gold drop-shadow-sm" />
+                                    </div>
+                                  </div>
+                                )}
+                                {(() => {
+                                  const url = thumbUrls[item.id];
+                                  if (url) {
+                                    return isVideoUrl(url) ? (
+                                      <video
+                                        src={url}
+                                        className="w-full h-full object-cover"
+                                        autoPlay
+                                        muted
+                                        playsInline
+                                        loop
+                                        preload="auto"
+                                      />
+                                    ) : (
+                                      <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />
+                                    );
+                                  }
+                                  return (
+                                    <div className="w-full h-full bg-background/60 flex items-center justify-center">
+                                      {isSpace ? <Folder className="w-1/2 h-1/2 text-muted-foreground" /> : getFileIcon(item.file_type)}
+                                    </div>
+                                  );
+                                })()}
                               </div>
-                            )}
-                            {(() => {
-                              const url = thumbUrls[item.id];
-                              if (url) {
-                                return isVideoUrl(url) ? (
-                                  <video
-                                    src={url}
-                                    className="w-full h-full object-cover"
-                                    autoPlay
-                                    muted
-                                    playsInline
-                                    loop
-                                    preload="auto"
-                                  />
-                                ) : (
-                                  <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />
-                                );
-                              }
-                              return (
-                                <div className="w-full h-full bg-background/60 flex items-center justify-center">
-                                  {isSpace ? <Folder className="w-1/2 h-1/2 text-muted-foreground" /> : getFileIcon(item.file_type)}
-                                </div>
-                              );
-                            })()}
-                          </div>
-                          <span className={`${fontSize} text-center overflow-hidden text-ellipsis`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.original_name}</span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                              <span className={`${fontSize} text-center overflow-hidden text-ellipsis`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.original_name}</span>
+                            </div>
+                          </motion.div>
+                        );
+
+                        return sortOrder === 'custom' ? (
+                          <DraggableItem key={item.id} id={item.id}>
+                            {itemContent}
+                          </DraggableItem>
+                        ) : (
+                          <React.Fragment key={item.id}>{itemContent}</React.Fragment>
+                        );
+                      })}
+                    </SortableContext>
+                  </DndContext>
                   
                   {/* People Bar - Show pinned contacts on home, shared users in other spaces */}
                   {showPeopleBar && (

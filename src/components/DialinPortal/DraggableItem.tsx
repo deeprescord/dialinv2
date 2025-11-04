@@ -39,10 +39,17 @@ export function DraggableItem({ id, children, disabled = false, className }: Dra
         <div
           {...attributes}
           {...listeners}
-          className="absolute left-2 top-2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-grab active:cursor-grabbing"
+          className="absolute left-3 top-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing"
         >
-          <div className="bg-background/60 backdrop-blur-xl border border-border/40 rounded-xl p-2 shadow-2xl hover:shadow-primary/20 hover:border-primary/60 hover:bg-background/80 transition-all duration-200 hover:scale-110">
-            <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
+          <div className="bg-gradient-to-br from-background/95 to-background/80 backdrop-blur-2xl border border-foreground/10 rounded-2xl p-2.5 shadow-xl hover:shadow-2xl hover:border-foreground/20 transition-all duration-200 hover:scale-105 active:scale-95">
+            <div className="flex gap-0.5">
+              <div className="w-1 h-1 rounded-full bg-foreground/40"></div>
+              <div className="w-1 h-1 rounded-full bg-foreground/40"></div>
+            </div>
+            <div className="flex gap-0.5 mt-0.5">
+              <div className="w-1 h-1 rounded-full bg-foreground/40"></div>
+              <div className="w-1 h-1 rounded-full bg-foreground/40"></div>
+            </div>
           </div>
         </div>
       )}

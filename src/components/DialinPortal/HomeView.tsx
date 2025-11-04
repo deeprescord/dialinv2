@@ -75,6 +75,7 @@ interface HomeViewProps {
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
+  movieMode?: boolean;
 }
 
 export function HomeView({ 
@@ -124,15 +125,18 @@ export function HomeView({
   on360RotationSpeedChange,
   on360RotationAxisChange,
   sortOrder = 'custom',
-  onSortChange
+  onSortChange,
+  movieMode = false
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid');
-  const [showInfiniteScroll, setShowInfiniteScroll] = useState(false);
   // PDF URL for hero header (signed if needed)
   const [pdfUrlForHero, setPdfUrlForHero] = useState<string | undefined>(undefined);
+
+  // Movie mode triggers infinite scroll
+  const showInfiniteScroll = movieMode;
 
   useEffect(() => {
     const loadPdfUrl = async () => {
@@ -237,12 +241,12 @@ export function HomeView({
     backgroundImage.includes('/object/public/space-covers/')
   );
 
-  // Show infinite scroll mode
+  // Show infinite scroll mode when movie mode is active
   if (showInfiniteScroll) {
     return (
       <InfiniteScrollView
         spaceId={spaceId}
-        onClose={() => setShowInfiniteScroll(false)}
+        onClose={() => {}} // Movie mode is controlled by parent toggle
       />
     );
   }

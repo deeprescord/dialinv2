@@ -1237,6 +1237,7 @@ export default function SpacePage() {
                 on360RotationAxisChange={handle360RotationAxisChange}
                 sortOrder={sortOrder}
                 onSortChange={setSortOrder}
+                movieMode={movieMode}
              />
           )}
 

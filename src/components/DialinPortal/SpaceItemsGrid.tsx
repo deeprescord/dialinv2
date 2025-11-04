@@ -35,7 +35,12 @@ export function SpaceItemsGrid({
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
 
   // Sort items
-  const sortedItems = sortItems(items, sortOrder);
+  const sortedItems = React.useMemo(() => {
+    console.log('Sorting items with order:', sortOrder, 'Item count:', items.length);
+    const sorted = sortItems(items, sortOrder);
+    console.log('First 3 items after sort:', sorted.slice(0, 3).map(i => ({ name: i.original_name, created: i.created_at })));
+    return sorted;
+  }, [items, sortOrder]);
 
   // Generate signed URLs for thumbnails
   useEffect(() => {

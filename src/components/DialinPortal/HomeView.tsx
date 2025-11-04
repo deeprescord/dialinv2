@@ -254,22 +254,6 @@ export function HomeView({
       transition={{ duration: 0.3 }}
       className="pb-32"
     >
-      {/* View mode toggle and sort - only show when not in lobby and has items */}
-      {!isLobby && spaceId && (
-        <div className="fixed top-20 right-4 z-40 flex gap-2">
-          {onSortChange && (
-            <SortDropdown currentSort={sortOrder} onSortChange={onSortChange} />
-          )}
-          <Button
-            onClick={() => setShowInfiniteScroll(true)}
-            variant="ghost"
-            className="bg-background/80 backdrop-blur-sm hover:bg-background/90 gap-2"
-          >
-            <ListVideo className="h-4 w-4" />
-            <span className="text-sm">Movie Mode</span>
-          </Button>
-        </div>
-      )}
 
 
       {/* Hero Header - Show ContentViewer for video/audio files with storage_path */}

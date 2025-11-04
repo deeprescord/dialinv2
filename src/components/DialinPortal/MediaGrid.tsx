@@ -102,7 +102,9 @@ export function MediaGrid({
         const isSpace = !!(item as any).is_space;
         const cardContent = (
           <Card 
-            className={`glass-card hover:bg-white/10 cursor-pointer transition-all duration-200 overflow-hidden group hover-lift ${
+            className={`glass-card hover:bg-white/10 cursor-pointer transition-all duration-200 ${
+              enableDragDrop ? 'overflow-visible' : 'overflow-hidden'
+            } group hover-lift ${
               isPressed === item.id ? 'scale-95' : ''
             }`}
             onMouseDown={() => handleMouseDown(item)}
@@ -110,11 +112,11 @@ export function MediaGrid({
             onMouseLeave={handleMouseUp}
             onClick={() => handleClick(item)}
           >
-            <div className="relative">
+            <div className={`relative ${enableDragDrop ? '' : 'overflow-hidden'}`}>
               <ImageFallback 
                 src={item.thumb} 
                 alt={item.title}
-                className="w-full h-32 sm:h-40 object-cover"
+                className={`w-full h-32 sm:h-40 object-cover ${enableDragDrop ? 'rounded-t-lg' : ''}`}
               />
               {item.duration && (
                 <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">

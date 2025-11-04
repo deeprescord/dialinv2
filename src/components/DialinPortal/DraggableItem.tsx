@@ -39,10 +39,10 @@ export function DraggableItem({ id, children, disabled = false, className }: Dra
         <div
           {...attributes}
           {...listeners}
-          className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className="absolute left-2 top-2 z-10 opacity-30 group-hover:opacity-100 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-110"
         >
-          <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded p-1">
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <div className="bg-dialin-purple/80 backdrop-blur-sm border-2 border-dialin-gold/50 rounded-lg p-1.5 shadow-lg">
+            <GripVertical className="h-5 w-5 text-dialin-gold" />
           </div>
         </div>
       )}

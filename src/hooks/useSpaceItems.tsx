@@ -15,6 +15,8 @@ export interface SpaceItem {
   dial_values?: Record<string, any>;
   is_space?: boolean; // New flag to identify spaces
   space_name?: string; // For display when it's a space
+  position?: number; // For custom ordering
+  file_size?: number; // For size sorting
 }
 
 export function useSpaceItems(spaceId?: string) {
@@ -40,9 +42,9 @@ export function useSpaceItems(spaceId?: string) {
         // Get child spaces with minimal fields
         supabase
           .from('spaces')
-          .select('id, name, created_at, thumbnail_url, cover_url')
+          .select('id, name, created_at, thumbnail_url, cover_url, position')
           .eq('parent_id', spaceId)
-          .order('created_at', { ascending: false })
+          .order('position', { ascending: true })
           .limit(50), // Limit initial load
         
         // Get files with metadata in a single query using joins
@@ -50,6 +52,7 @@ export function useSpaceItems(spaceId?: string) {
           .from('space_files')
           .select(`
             file_id,
+            position,
             files!inner(
               id,
               original_name,
@@ -58,10 +61,12 @@ export function useSpaceItems(spaceId?: string) {
               storage_path,
               thumbnail_path,
               duration,
-              created_at
+              created_at,
+              file_size
             )
           `)
           .eq('space_id', spaceId)
+          .order('position', { ascending: true })
           .limit(50) // Limit initial load
       ]);
 
@@ -77,6 +82,7 @@ export function useSpaceItems(spaceId?: string) {
           is_space: true,
           space_name: space.name,
           thumbnail_path: space.thumbnail_url || space.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+          position: space.position || 0,
         }));
         allItems.push(...spaceItems);
       }
@@ -96,6 +102,8 @@ export function useSpaceItems(spaceId?: string) {
             duration: file.duration || undefined,
             created_at: file.created_at,
             is_space: false,
+            position: sf.position || 0,
+            file_size: file.file_size || 0,
           };
         });
         allItems.push(...fileItems);

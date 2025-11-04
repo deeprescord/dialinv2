@@ -296,12 +296,52 @@ export type Database = {
         }
         Relationships: []
       }
+      space_connections: {
+        Row: {
+          created_at: string
+          created_by: string
+          from_space_id: string
+          id: string
+          to_space_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          from_space_id: string
+          id?: string
+          to_space_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          from_space_id?: string
+          id?: string
+          to_space_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "space_connections_from_space_id_fkey"
+            columns: ["from_space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "space_connections_to_space_id_fkey"
+            columns: ["to_space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       space_files: {
         Row: {
           added_at: string
           added_by: string
           file_id: string
           id: string
+          position: number | null
           space_id: string
         }
         Insert: {
@@ -309,6 +349,7 @@ export type Database = {
           added_by: string
           file_id: string
           id?: string
+          position?: number | null
           space_id: string
         }
         Update: {
@@ -316,6 +357,7 @@ export type Database = {
           added_by?: string
           file_id?: string
           id?: string
+          position?: number | null
           space_id?: string
         }
         Relationships: [
@@ -348,6 +390,7 @@ export type Database = {
           is_muted: boolean | null
           name: string
           parent_id: string | null
+          position: number | null
           rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
@@ -372,6 +415,7 @@ export type Database = {
           is_muted?: boolean | null
           name: string
           parent_id?: string | null
+          position?: number | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
@@ -396,6 +440,7 @@ export type Database = {
           is_muted?: boolean | null
           name?: string
           parent_id?: string | null
+          position?: number | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null

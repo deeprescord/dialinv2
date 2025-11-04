@@ -33,12 +33,11 @@ export function SortDropdown({ currentSort, onSortChange }: SortDropdownProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="outline" 
-          size="sm"
-          className="gap-2 bg-background/50 backdrop-blur-sm border-border/50"
+          variant="ghost" 
+          size="icon"
+          className="h-8 w-8"
         >
-          <ArrowUpDown className="h-4 w-4" />
-          <span className="hidden sm:inline">{currentOption?.label}</span>
+          <ArrowUpDown className="h-4 w-4 text-white" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-sm border-border/50">

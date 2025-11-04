@@ -187,6 +187,7 @@ export default function SpacePage() {
   
   // Organization states
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
+  const [movieMode, setMovieMode] = useState(false);
   const [showSpacePickerModal, setShowSpacePickerModal] = useState(false);
   const [spacePickerAction, setSpacePickerAction] = useState<'add' | 'move' | 'connect'>('add');
   const [selectedOrgItemId, setSelectedOrgItemId] = useState<string | null>(null);
@@ -1173,6 +1174,10 @@ export default function SpacePage() {
           show360={show360}
           onOpen360Settings={handleOpen360Settings}
           onOpenAddPanel={() => openPanel('add')}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+          movieMode={movieMode}
+          onMovieModeToggle={() => setMovieMode(!movieMode)}
         />
 
         <MobileTabBar

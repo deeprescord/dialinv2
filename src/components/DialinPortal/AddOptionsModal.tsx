@@ -23,8 +23,6 @@ const addOptions: AddOption[] = [
   { id: 'post', title: 'POST', icon: Plus },
   { id: 'group', title: 'GROUP', icon: MessageSquare },
   { id: 'contact', title: 'CONTACT', icon: Users },
-  { id: 'invite', title: 'INVITE', icon: UserPlus },
-  { id: 'contact-wizard', title: 'CONTACT WIZARD', icon: Zap },
   { id: 'web', title: 'WEB', icon: Globe },
 ];
 

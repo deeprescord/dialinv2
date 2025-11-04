@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AuthModal } from './AuthModal';
 import { UserSettings } from './UserSettings';
 import { useToast } from '@/hooks/use-toast';
+import defaultUserIcon from '@/assets/default-user-icon.png';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +23,7 @@ import {
 
 export function UserDropdown() {
   const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { profile, refetch } = useProfile();
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -38,10 +39,14 @@ export function UserDropdown() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
+      // Refetch profile when auth state changes
+      if (session) {
+        setTimeout(() => refetch(), 0);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refetch]);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -71,7 +76,7 @@ export function UserDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center space-x-2 p-2">
           <Avatar className="h-8 w-8">
-            {profile?.profile_media_url ? (
+            {isAuthenticated && profile?.profile_media_url ? (
               profile.profile_media_type === 'video' ? (
                 <video
                   src={profile.profile_media_url}
@@ -85,9 +90,9 @@ export function UserDropdown() {
                 <AvatarImage src={profile.profile_media_url} alt="User avatar" />
               )
             ) : (
-              <ImageFallback src="https://i.pravatar.cc/150?img=1" alt="User avatar" />
+              <AvatarImage src={defaultUserIcon} alt="Default user icon" />
             )}
-            <AvatarFallback>{profile?.full_name?.[0] || 'ME'}</AvatarFallback>
+            <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
           </Avatar>
           <ChevronDown size={16} className="text-muted-foreground" />
         </Button>

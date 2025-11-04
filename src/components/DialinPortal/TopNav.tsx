@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon, Settings } from '../icons';
+import { ArrowUpDown, Film } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
@@ -112,6 +113,16 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
 
           {/* Right Side */}
           <div className="flex items-center space-x-2 sm:space-x-4 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1">
+            {/* Custom Order Icon */}
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ArrowUpDown size={18} className="text-white" />
+            </Button>
+            
+            {/* Movie Mode Icon */}
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Film size={18} className="text-white" />
+            </Button>
+            
             {/* Profile Dropdown */}
             <UserDropdown />
           </div>

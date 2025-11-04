@@ -587,13 +587,6 @@ export function SpacesBar({
                               onTouchEnd={handleMouseUp}
                             >
                               <div className="relative rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
-                                {sortOrder === 'custom' && (
-                                  <div className="absolute left-2 top-2 z-10 opacity-60 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
-                                    <div className="bg-dialin-purple/90 backdrop-blur-sm border-2 border-dialin-gold/60 rounded-lg p-1.5 shadow-lg">
-                                      <GripVertical className="h-5 w-5 text-dialin-gold drop-shadow-sm" />
-                                    </div>
-                                  </div>
-                                )}
                                 {(() => {
                                   const url = thumbUrls[item.id];
                                   if (url) {

@@ -575,7 +575,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     const newSpace: Space = {
       id: Date.now().toString(),
       name,
-      thumb: '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png' // Default thumbnail
+      thumb: '' // No default thumbnail
     };
     setSpaces(prev => [...prev, newSpace]);
   };

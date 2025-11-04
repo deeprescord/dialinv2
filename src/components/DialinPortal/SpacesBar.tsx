@@ -395,7 +395,7 @@ export function SpacesBar({
               {currentSpaceId && currentSpaceId !== 'lobby' && breadcrumbs && breadcrumbs.length > 0 ? (
                 <>
                   {breadcrumbs.map((breadcrumb, idx) => {
-                    const space = allSpaces.find(s => s.id === breadcrumb.id) || { id: breadcrumb.id, name: breadcrumb.name, thumb: '/media/lobby-poster.png' } as any;
+                    const space = allSpaces.find(s => s.id === breadcrumb.id) || { id: breadcrumb.id, name: breadcrumb.name, thumb: '' } as any;
                     const isCurrentSpace = idx === breadcrumbs.length - 1;
                     return (
                       <motion.div key={space.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }} className="flex-shrink-0" style={{ width: `${thumbWidth}px` }}>
@@ -412,9 +412,9 @@ export function SpacesBar({
                               const homeSpace = lobbySpace || dbHomeSpace;
                               const isHomeCrumb = breadcrumb.id === 'lobby' || breadcrumb.name?.toLowerCase() === 'home' || (space as any).is_home || (space as any).isHome;
                               const pickBest = (obj: any) => {
-                                const ordered = [obj?.thumb, obj?.thumbnail_url, obj?.cover_url].filter(Boolean) as string[];
-                                const imageFirst = ordered.find(u => !isVideoUrl(u));
-                                return imageFirst || ordered[0] || '/media/lobby-poster.png';
+                              const ordered = [obj?.thumb, obj?.thumbnail_url, obj?.cover_url].filter(Boolean) as string[];
+                              const imageFirst = ordered.find(u => !isVideoUrl(u));
+                              return imageFirst || ordered[0] || '';
                               };
                               const chosen = isHomeCrumb && homeSpace ? pickBest(homeSpace as any) : pickBest(space as any);
                               return isVideoUrl(chosen) ? (
@@ -564,7 +564,7 @@ export function SpacesBar({
                             </div>
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
-                            <ImageFallback src={(space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '/media/lobby-poster.png'} alt={space.name} className="w-full h-full object-cover" />
+                            <ImageFallback src={(space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || ''} alt={space.name} className="w-full h-full object-cover" />
                           </div>
                           <span className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{space.name}</span>
                         </div>

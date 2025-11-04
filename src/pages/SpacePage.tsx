@@ -55,7 +55,7 @@ export default function SpacePage() {
   const [pinnedContacts, setPinnedContacts] = useState<Friend[]>(friends.slice(0, 4));
   const [selectedContact, setSelectedContact] = useState<Friend | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([
-    { id: 'lobby', name: 'Home', thumb: '/media/lobby-poster.png' },
+    { id: 'lobby', name: 'Home', thumb: '' },
   ]);
   
   // Video controls state
@@ -88,8 +88,8 @@ export default function SpacePage() {
     const updateSpaces = () => {
       // Determine Home (lobby) visuals from backend Home space first, then localStorage, then fallback
       const homeDb = dbSpaces.find(s => (s as any).is_home || (s as any).isHome);
-      const lobbyThumbnail = homeDb?.thumbnail_url || localStorage.getItem('lobby-thumbnail') || '/media/lobby-poster.png';
-      const lobbyBackground = homeDb?.cover_url || localStorage.getItem('lobby-background') || '/lovable-uploads/cropped-header-bg.png';
+      const lobbyThumbnail = homeDb?.thumbnail_url || localStorage.getItem('lobby-thumbnail') || '';
+      const lobbyBackground = homeDb?.cover_url || localStorage.getItem('lobby-background') || '';
       
       const lobby: Space = { 
         id: 'lobby', 
@@ -1056,7 +1056,7 @@ export default function SpacePage() {
   const showSpacesBar = ['home', 'friends', 'videos', 'music', 'locations'].includes(currentTab) && !isViewingContact;
 
   // Get background image
-  const backgroundImage = currentSpace?.backgroundImage || currentSpace?.thumb || '/media/lobby-poster.png';
+  const backgroundImage = currentSpace?.backgroundImage || currentSpace?.thumb || '';
   
   // Check if this space should show 360 view
   const show360 = currentSpace?.show360 || false;

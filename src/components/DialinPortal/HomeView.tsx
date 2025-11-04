@@ -254,10 +254,10 @@ export function HomeView({
           <Button
             onClick={() => setShowInfiniteScroll(true)}
             variant="ghost"
-            size="icon"
-            className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+            className="bg-background/80 backdrop-blur-sm hover:bg-background/90 gap-2"
           >
-            <ListVideo className="h-5 w-5" />
+            <ListVideo className="h-4 w-4" />
+            <span className="text-sm">Movie Mode</span>
           </Button>
         </div>
       )}

@@ -17,6 +17,10 @@ interface Settings360ModalProps {
   isMuted?: boolean;
   onVolumeChange: (volume: number) => void;
   onMuteToggle: () => void;
+  rotationEnabled?: boolean;
+  onRotationToggle?: () => void;
+  rotationSpeed?: number;
+  onRotationSpeedChange?: (speed: number) => void;
 }
 
 export function Settings360Modal({
@@ -31,6 +35,10 @@ export function Settings360Modal({
   isMuted = false,
   onVolumeChange,
   onMuteToggle,
+  rotationEnabled = false,
+  onRotationToggle,
+  rotationSpeed = 1,
+  onRotationSpeedChange,
 }: Settings360ModalProps) {
   // ESC key handling
   useEffect(() => {
@@ -169,6 +177,35 @@ export function Settings360Modal({
                       {isMuted ? 'Muted' : `${Math.round(volume * 100)}%`}
                     </div>
                   </div>
+
+                  {/* Auto-Rotation Toggle */}
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Auto-Rotation</label>
+                    <Switch
+                      checked={rotationEnabled}
+                      onCheckedChange={onRotationToggle}
+                    />
+                  </div>
+
+                  {/* Rotation Speed Control */}
+                  {rotationEnabled && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Rotation Speed</label>
+                      <div className="px-3">
+                        <Slider
+                          value={[rotationSpeed]}
+                          onValueChange={([value]) => onRotationSpeedChange?.(value)}
+                          min={0.1}
+                          max={5}
+                          step={0.1}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="text-xs text-muted-foreground text-center">
+                        {rotationSpeed.toFixed(1)}x
+                      </div>
+                    </div>
+                  )}
 
                   {/* Reset Button */}
                   <Button

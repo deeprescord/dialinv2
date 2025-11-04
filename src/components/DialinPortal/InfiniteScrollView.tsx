@@ -54,6 +54,13 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     approachThreshold: 0.1,
   });
 
+  // Auto-start first item on mount
+  useEffect(() => {
+    if (displayedItems.length > 0) {
+      handleItemVisible(0);
+    }
+  }, [displayedItems.length > 0]);
+
   // Fetch signed URLs for items
   useEffect(() => {
     const fetchSignedUrls = async () => {
@@ -215,7 +222,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
         transition={{ duration: 0.3 }}
-        className="w-full snap-start relative bg-background mb-4"
+        className="w-full snap-start relative bg-background"
       >
         {/* Content */}
         <div className="w-full">
@@ -255,7 +262,6 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
                 muted={isMuted}
                 preload="auto"
               />
-              <h2 className="text-2xl font-bold text-foreground text-center px-4">{item.original_name}</h2>
             </div>
           ) : isImage && url ? (
             <ImageFallback
@@ -280,16 +286,6 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
               <p className="text-muted-foreground">Unsupported file type</p>
             </div>
           )}
-        </div>
-
-        {/* Title overlay */}
-        <div className="w-full bg-gradient-to-t from-background via-background/80 to-transparent p-6">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground truncate">
-            {item.original_name}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {index + 1} / {items.length}
-          </p>
         </div>
       </motion.div>
     );

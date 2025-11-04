@@ -1346,6 +1346,8 @@ export default function SpacePage() {
                 setShowItemsBar(true);
               }
             }}
+            sortOrder={sortOrder}
+            onSortChange={setSortOrder}
           />
         </div>
       ) : null}

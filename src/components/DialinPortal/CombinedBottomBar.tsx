@@ -10,6 +10,7 @@ import { SpaceContextMenu } from './SpaceContextMenu';
 import { SpacesBar } from './SpacesBar';
 import { FloatingActionButtons } from './FloatingActionButtons';
 import { Friend } from '@/data/catalogs';
+import type { SortOrder } from '@/types/organization';
 
 interface CombinedBottomBarProps {
   spaces: Space[];
@@ -59,6 +60,8 @@ interface CombinedBottomBarProps {
   onContactClick?: (contact: Friend) => void;
   showPeopleBar?: boolean;
   isHome?: boolean;
+  sortOrder?: SortOrder;
+  onSortChange?: (sort: SortOrder) => void;
 }
 
 export function CombinedBottomBar({
@@ -100,7 +103,9 @@ export function CombinedBottomBar({
   pinnedContacts = [],
   onContactClick,
   showPeopleBar = false,
-  isHome = false
+  isHome = false,
+  sortOrder,
+  onSortChange
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -190,6 +195,8 @@ export function CombinedBottomBar({
           onContactClick={onContactClick}
           showPeopleBar={showPeopleBar}
           isHome={isHome}
+          sortOrder={sortOrder}
+          onSortChange={onSortChange}
         />
       </div>
     </>

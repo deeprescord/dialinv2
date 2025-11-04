@@ -19,6 +19,8 @@ import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Friend } from '@/data/catalogs';
+import { sortItems } from '@/lib/sortItems';
+import type { SortOrder } from '@/types/organization';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -68,6 +70,8 @@ interface SpacesBarProps {
   onContactClick?: (contact: Friend) => void;
   showPeopleBar?: boolean;
   isHome?: boolean;
+  sortOrder?: SortOrder;
+  onSortChange?: (sort: SortOrder) => void;
 }
 
 export function SpacesBar({
@@ -109,7 +113,9 @@ export function SpacesBar({
   pinnedContacts = [],
   onContactClick,
   showPeopleBar = false,
-  isHome = false
+  isHome = false,
+  sortOrder: propSortOrder,
+  onSortChange: propOnSortChange
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const [scale, setScale] = useState<number>(() => {
@@ -132,6 +138,11 @@ export function SpacesBar({
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
   const [showContactsPanel, setShowContactsPanel] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+  const [internalSortOrder, setInternalSortOrder] = useState<SortOrder>('custom');
+  
+  // Use prop sortOrder if provided, otherwise use internal state
+  const sortOrder = propSortOrder ?? internalSortOrder;
+  const setSortOrder = propOnSortChange ?? setInternalSortOrder;
 
   // Persist scale to localStorage
   useEffect(() => {
@@ -170,7 +181,15 @@ export function SpacesBar({
   }, [isDraggingResize, dragStartY, dragStartScale]);
 
   // Fetch items for selected space
-  const { items: spaceItems, refetch: refetchItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
+  const { items: rawSpaceItems, refetch: refetchItems } = useSpaceItems(currentSpaceId && currentSpaceId !== 'lobby' ? currentSpaceId : undefined);
+  
+  // Sort items based on selected sort order
+  const spaceItems = React.useMemo(() => {
+    console.log('SpacesBar sorting items with order:', sortOrder, 'Item count:', rawSpaceItems.length);
+    const sorted = sortItems(rawSpaceItems, sortOrder);
+    console.log('SpacesBar first 3 items after sort:', sorted.slice(0, 3).map(i => ({ name: i.original_name, created: i.created_at })));
+    return sorted;
+  }, [rawSpaceItems, sortOrder]);
   
   const [sharedUsers, setSharedUsers] = React.useState<Friend[]>([]);
   const [allContacts, setAllContacts] = React.useState<Friend[]>([]);

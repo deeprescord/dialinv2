@@ -852,6 +852,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                 playsInline
                 preload="auto"
                 poster={posterSrc}
+                style={{ transform: flipVertical ? 'scaleY(-1)' : 'scaleY(1)' }}
               />
             ) : (
               <div 

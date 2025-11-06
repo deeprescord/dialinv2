@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeView } from "@/components/DialinPortal/HomeView";
 import { AuthModal } from "@/components/DialinPortal/AuthModal";
+import { Settings360Modal } from "@/components/DialinPortal/Settings360Modal";
+import { TopNav } from "@/components/DialinPortal/TopNav";
 import { useSpaceItems } from "@/hooks/useSpaceItems";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -35,6 +37,7 @@ const PublicSpacePage = () => {
   const [publicSpace, setPublicSpace] = useState<PublicSpace | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [show360Settings, setShow360Settings] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
   const [showItemsBar, setShowItemsBar] = useState(false);
@@ -157,6 +160,139 @@ const PublicSpacePage = () => {
     setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
   };
 
+  const handleOpen360Settings = () => {
+    setShow360Settings(true);
+  };
+
+  const handleToggle360 = async (enabled: boolean) => {
+    if (!isAuthenticated) {
+      handleGatedAction();
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ show_360: enabled })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, show_360: enabled } : null);
+      toast.success(`360° mode ${enabled ? 'enabled' : 'disabled'}`);
+    } catch (err) {
+      console.error('Error toggling 360:', err);
+      toast.error('Failed to update 360 mode');
+    }
+  };
+
+  const handle360AxisChange = async (axis: 'x' | 'y', value: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const field = axis === 'x' ? 'x_axis_offset' : 'y_axis_offset';
+      const { error } = await supabase
+        .from('spaces')
+        .update({ [field]: value })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { 
+        ...prev, 
+        [axis === 'x' ? 'x_axis_offset' : 'y_axis_offset']: value 
+      } : null);
+    } catch (err) {
+      console.error('Error updating axis:', err);
+    }
+  };
+
+  const handle360VolumeChange = async (volume: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ volume })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, volume } : null);
+    } catch (err) {
+      console.error('Error updating volume:', err);
+    }
+  };
+
+  const handle360MuteToggle = async (muted: boolean) => {
+    if (!isAuthenticated) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ is_muted: muted })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, is_muted: muted } : null);
+    } catch (err) {
+      console.error('Error toggling mute:', err);
+    }
+  };
+
+  const handle360RotationToggle = async (enabled: boolean) => {
+    if (!isAuthenticated) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ rotation_enabled: enabled })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, rotation_enabled: enabled } : null);
+    } catch (err) {
+      console.error('Error toggling rotation:', err);
+    }
+  };
+
+  const handle360RotationSpeedChange = async (speed: number) => {
+    if (!isAuthenticated) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ rotation_speed: speed })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, rotation_speed: speed } : null);
+    } catch (err) {
+      console.error('Error updating rotation speed:', err);
+    }
+  };
+
+  const handleFlipHorizontalToggle = async (flipped: boolean) => {
+    if (!isAuthenticated) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ flip_horizontal: flipped })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, flip_horizontal: flipped } : null);
+    } catch (err) {
+      console.error('Error toggling flip horizontal:', err);
+    }
+  };
+
+  const handleFlipVerticalToggle = async (flipped: boolean) => {
+    if (!isAuthenticated) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ flip_vertical: flipped })
+        .eq('id', publicSpace.id);
+      
+      if (error) throw error;
+      setPublicSpace(prev => prev ? { ...prev, flip_vertical: flipped } : null);
+    } catch (err) {
+      console.error('Error toggling flip vertical:', err);
+    }
+  };
+
   const handleMediaClick = (item: any) => {
     if (!item) {
       setSelectedItemData(null);
@@ -235,6 +371,17 @@ const PublicSpacePage = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        <TopNav
+          currentTab="home"
+          onTabChange={() => {}}
+          selectedChipsCount={0}
+          dialCount={0}
+          show360={publicSpace.show_360}
+          onOpen360Settings={handleOpen360Settings}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+
         <HomeView
           pinnedContacts={[]}
           onContactClick={() => {}}
@@ -293,6 +440,28 @@ const PublicSpacePage = () => {
             onSortChange={setSortOrder}
           />
         </div>
+
+        <Settings360Modal
+          isOpen={show360Settings}
+          onClose={() => setShow360Settings(false)}
+          show360={publicSpace.show_360}
+          onToggle360={() => handleToggle360(!publicSpace.show_360)}
+          xAxisOffset={publicSpace.x_axis_offset}
+          yAxisOffset={publicSpace.y_axis_offset}
+          onAxisChange={handle360AxisChange}
+          volume={publicSpace.volume / 100}
+          isMuted={publicSpace.is_muted}
+          onVolumeChange={(vol) => handle360VolumeChange(vol * 100)}
+          onMuteToggle={() => handle360MuteToggle(!publicSpace.is_muted)}
+          rotationEnabled={publicSpace.rotation_enabled}
+          onRotationToggle={() => handle360RotationToggle(!publicSpace.rotation_enabled)}
+          rotationSpeed={publicSpace.rotation_speed}
+          onRotationSpeedChange={handle360RotationSpeedChange}
+          flipHorizontal={publicSpace.flip_horizontal}
+          flipVertical={publicSpace.flip_vertical}
+          onFlipHorizontalToggle={() => handleFlipHorizontalToggle(!publicSpace.flip_horizontal)}
+          onFlipVerticalToggle={() => handleFlipVerticalToggle(!publicSpace.flip_vertical)}
+        />
       </div>
 
       {showAuthModal && (

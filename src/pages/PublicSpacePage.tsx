@@ -37,7 +37,7 @@ const PublicSpacePage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
-  const [showItemsBar, setShowItemsBar] = useState(true);
+  const [showItemsBar, setShowItemsBar] = useState(false);
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
   const [selectedItemData, setSelectedItemData] = useState<any>(null);
   
@@ -266,7 +266,7 @@ const PublicSpacePage = () => {
           onSortChange={setSortOrder}
         />
 
-        {/* Bottom SpacesBar */}
+        {/* Bottom SpacesBar - Pass spaceId to show items directly */}
         <div className="fixed bottom-0 left-0 right-0 z-40">
           <SpacesBar
             spaces={displaySpaces}
@@ -289,22 +289,6 @@ const PublicSpacePage = () => {
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
             onVideoLoopToggle={handleVideoLoopToggle}
-            onToggleItemsBar={() => {
-              if (showItemsBar && itemsPeopleView === 'items') {
-                setShowItemsBar(false);
-              } else {
-                setItemsPeopleView('items');
-                setShowItemsBar(true);
-              }
-            }}
-            onTogglePeopleBar={() => {
-              if (showItemsBar && itemsPeopleView === 'people') {
-                setShowItemsBar(false);
-              } else {
-                setItemsPeopleView('people');
-                setShowItemsBar(true);
-              }
-            }}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
           />

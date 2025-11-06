@@ -92,7 +92,7 @@ const DefaultHomePage = () => {
     name: 'Home',
     thumb: '/media/default-home-bg.mp4',
     backgroundImage: '/media/default-home-bg.mp4',
-    show360: true,
+    show360: false,
     flipVertical: true,
     isHome: true
   };

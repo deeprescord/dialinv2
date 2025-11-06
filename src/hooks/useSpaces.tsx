@@ -65,7 +65,7 @@ export function useSpaces() {
             rotation_speed: 1,
             rotation_axis: 'x',
             flip_horizontal: false,
-            flip_vertical: false,
+            flip_vertical: true,
           })
           .select()
           .single();

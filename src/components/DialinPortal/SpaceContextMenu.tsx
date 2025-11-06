@@ -5,12 +5,13 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings } from 'lucide-react';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { GradientLoader } from './GradientLoader';
 import { Space } from '@/data/catalogs';
+import { Settings360Modal } from './Settings360Modal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,6 +88,7 @@ export function SpaceContextMenu({
   const [uploadingBackground, setUploadingBackground] = useState(false);
   const [showAIControls, setShowAIControls] = useState(false);
   const [syncThumbnailBackground, setSyncThumbnailBackground] = useState(false);
+  const [show360Settings, setShow360Settings] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -725,19 +727,19 @@ export function SpaceContextMenu({
                           onToggle360(space.id, checked);
                         }}
                       />
-                      {space.show360 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShow360Advanced(!show360Advanced);
-                          }}
-                          className="p-1 hover:bg-white/10 rounded"
-                        >
-                          {show360Advanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                        </button>
-                      )}
                     </div>
                   </div>
+
+                  {/* 360° Settings Button */}
+                  {space.show360 && (
+                    <button
+                      onClick={() => setShow360Settings(true)}
+                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                    >
+                      <Settings size={14} className="text-white" />
+                      <span className="text-xs text-white">360° Settings</span>
+                    </button>
+                  )}
 
                   {/* Advanced 360° Controls */}
                   {space.show360 && show360Advanced && (
@@ -952,6 +954,48 @@ export function SpaceContextMenu({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* 360 Settings Modal */}
+          <Settings360Modal
+            isOpen={show360Settings}
+            onClose={() => setShow360Settings(false)}
+            show360={space.show360 || false}
+            onToggle360={() => onToggle360(space.id, !(space.show360 || false))}
+            xAxisOffset={xAxis}
+            yAxisOffset={yAxis}
+            onAxisChange={(axis, value) => {
+              if (axis === 'x') setXAxis(value);
+              else setYAxis(value);
+              on360AxisChange?.(space.id, axis, value);
+            }}
+            volume={volume / 100}
+            isMuted={isMuted}
+            onVolumeChange={(vol) => {
+              const volumePercent = Math.round(vol * 100);
+              setVolume(volumePercent);
+              on360VolumeChange?.(space.id, volumePercent);
+            }}
+            onMuteToggle={() => {
+              const newMuted = !isMuted;
+              setIsMuted(newMuted);
+              on360MuteToggle?.(space.id, newMuted);
+            }}
+            rotationEnabled={rotationEnabled}
+            onRotationToggle={() => {
+              const newRotation = !rotationEnabled;
+              setRotationEnabled(newRotation);
+              on360RotationToggle?.(space.id, newRotation);
+            }}
+            rotationSpeed={rotationSpeed}
+            onRotationSpeedChange={(speed) => {
+              setRotationSpeed(speed);
+              on360RotationSpeedChange?.(space.id, speed);
+            }}
+            flipHorizontal={space.flipHorizontal || false}
+            flipVertical={space.flipVertical || false}
+            onFlipHorizontalToggle={() => onFlipHorizontalToggle?.(space.id, !(space.flipHorizontal || false))}
+            onFlipVerticalToggle={() => onFlipVerticalToggle?.(space.id, !(space.flipVertical || false))}
+          />
         </div>
       )}
     </AnimatePresence>

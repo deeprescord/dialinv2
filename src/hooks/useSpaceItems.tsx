@@ -31,11 +31,8 @@ export function useSpaceItems(spaceId?: string) {
 
     setLoading(true);
     try {
+      // Check if user is authenticated (optional for public spaces)
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setItems([]);
-        return;
-      }
 
       // Optimized: Use Promise.all to fetch spaces and files in parallel
       const [spacesResult, filesResult] = await Promise.all([

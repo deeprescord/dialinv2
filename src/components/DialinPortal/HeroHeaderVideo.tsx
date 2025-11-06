@@ -827,7 +827,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                 : 'absolute inset-0 w-full h-full object-cover'
             }`}
             style={{ 
-              transform: 'scaleY(1)',
+              transform: flipVertical ? 'scaleY(-1)' : 'scaleY(1)',
               objectFit: isScrollableVideo ? 'contain' : 'cover'
             }}
             poster={posterSrc}
@@ -908,7 +908,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                     ? 'w-full h-auto object-contain block' 
                     : 'absolute inset-0 w-full h-full object-cover'
                 }`}
-                style={{ transform: 'scaleY(1)' }}
+                style={{ transform: flipVertical ? 'scaleY(-1)' : 'scaleY(1)' }}
                 onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.1; } catch {} }}
               >
                 <source src={backgroundImage} />

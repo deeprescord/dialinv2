@@ -166,7 +166,8 @@ const PublicSpacePage = () => {
 
   const handleToggle360 = async (enabled: boolean) => {
     if (!isAuthenticated) {
-      handleGatedAction();
+      setPublicSpace(prev => prev ? { ...prev, show_360: enabled } : null);
+      toast.info(`360° ${enabled ? 'preview on' : 'preview off'} (not saved)`);
       return;
     }
     try {
@@ -185,25 +186,23 @@ const PublicSpacePage = () => {
   };
 
   const handle360AxisChange = async (axis: 'x' | 'y', value: number) => {
+    const field = axis === 'x' ? 'x_axis_offset' : 'y_axis_offset';
+    setPublicSpace(prev => prev ? { ...prev, [field]: value } : null);
     if (!isAuthenticated) return;
     try {
-      const field = axis === 'x' ? 'x_axis_offset' : 'y_axis_offset';
       const { error } = await supabase
         .from('spaces')
         .update({ [field]: value })
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { 
-        ...prev, 
-        [axis === 'x' ? 'x_axis_offset' : 'y_axis_offset']: value 
-      } : null);
     } catch (err) {
       console.error('Error updating axis:', err);
     }
   };
 
   const handle360VolumeChange = async (volume: number) => {
+    setPublicSpace(prev => prev ? { ...prev, volume } : null);
     if (!isAuthenticated) return;
     try {
       const { error } = await supabase
@@ -212,13 +211,13 @@ const PublicSpacePage = () => {
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { ...prev, volume } : null);
     } catch (err) {
       console.error('Error updating volume:', err);
     }
   };
 
   const handle360MuteToggle = async (muted: boolean) => {
+    setPublicSpace(prev => prev ? { ...prev, is_muted: muted } : null);
     if (!isAuthenticated) return;
     try {
       const { error } = await supabase
@@ -227,13 +226,13 @@ const PublicSpacePage = () => {
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { ...prev, is_muted: muted } : null);
     } catch (err) {
       console.error('Error toggling mute:', err);
     }
   };
 
   const handle360RotationToggle = async (enabled: boolean) => {
+    setPublicSpace(prev => prev ? { ...prev, rotation_enabled: enabled } : null);
     if (!isAuthenticated) return;
     try {
       const { error } = await supabase
@@ -242,13 +241,13 @@ const PublicSpacePage = () => {
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { ...prev, rotation_enabled: enabled } : null);
     } catch (err) {
       console.error('Error toggling rotation:', err);
     }
   };
 
   const handle360RotationSpeedChange = async (speed: number) => {
+    setPublicSpace(prev => prev ? { ...prev, rotation_speed: speed } : null);
     if (!isAuthenticated) return;
     try {
       const { error } = await supabase
@@ -257,13 +256,13 @@ const PublicSpacePage = () => {
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { ...prev, rotation_speed: speed } : null);
     } catch (err) {
       console.error('Error updating rotation speed:', err);
     }
   };
 
   const handleFlipHorizontalToggle = async (flipped: boolean) => {
+    setPublicSpace(prev => prev ? { ...prev, flip_horizontal: flipped } : null);
     if (!isAuthenticated) return;
     try {
       const { error } = await supabase
@@ -272,13 +271,13 @@ const PublicSpacePage = () => {
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { ...prev, flip_horizontal: flipped } : null);
     } catch (err) {
       console.error('Error toggling flip horizontal:', err);
     }
   };
 
   const handleFlipVerticalToggle = async (flipped: boolean) => {
+    setPublicSpace(prev => prev ? { ...prev, flip_vertical: flipped } : null);
     if (!isAuthenticated) return;
     try {
       const { error } = await supabase
@@ -287,7 +286,6 @@ const PublicSpacePage = () => {
         .eq('id', publicSpace.id);
       
       if (error) throw error;
-      setPublicSpace(prev => prev ? { ...prev, flip_vertical: flipped } : null);
     } catch (err) {
       console.error('Error toggling flip vertical:', err);
     }
@@ -376,7 +374,7 @@ const PublicSpacePage = () => {
           onTabChange={() => {}}
           selectedChipsCount={0}
           dialCount={0}
-          show360={publicSpace.show_360}
+          show360={true}
           onOpen360Settings={handleOpen360Settings}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}

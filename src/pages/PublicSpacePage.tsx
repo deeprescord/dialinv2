@@ -9,6 +9,7 @@ import { Helmet } from "react-helmet-async";
 import { SpacesBar } from "@/components/DialinPortal/SpacesBar";
 import type { HeroHeaderVideoHandle } from "@/components/DialinPortal/HeroHeaderVideo";
 import type { Space as UISpace } from "@/data/catalogs";
+import type { SortOrder } from "@/types/organization";
 
 interface PublicSpace {
   id: string;
@@ -35,6 +36,22 @@ const PublicSpacePage = () => {
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
+  const [showItemsBar, setShowItemsBar] = useState(true);
+  const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
+  const [selectedItemData, setSelectedItemData] = useState<any>(null);
+  
+  // Video controls state
+  const [videoState, setVideoState] = useState({
+    isPlaying: false,
+    currentTime: 0,
+    duration: 0,
+    volume: 1,
+    isMuted: true,
+    hasVideo: false,
+    isLooping: true
+  });
+  const heroRef = useRef<HeroHeaderVideoHandle>(null);
   
   // Fetch space items using the hook
   const { items: spaceItems, loading: itemsLoading } = useSpaceItems(publicSpace?.id);
@@ -110,6 +127,44 @@ const PublicSpacePage = () => {
     toast.success("Welcome! You can now create and upload content.");
   };
 
+  // Video control handlers
+  const handleVideoStateChange = (state: typeof videoState) => {
+    setVideoState(state);
+  };
+
+  const handleVideoPlayPause = () => {
+    heroRef.current?.playPause();
+    setVideoState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+  };
+
+  const handleVideoSeek = (value: number) => {
+    heroRef.current?.seek(value);
+    setVideoState(prev => ({ ...prev, currentTime: value }));
+  };
+
+  const handleVideoVolumeChange = (value: number) => {
+    heroRef.current?.setVolume(value);
+    setVideoState(prev => ({ ...prev, volume: value, isMuted: value === 0 }));
+  };
+
+  const handleVideoMuteToggle = () => {
+    heroRef.current?.toggleMute();
+    setVideoState(prev => ({ ...prev, isMuted: !prev.isMuted }));
+  };
+
+  const handleVideoLoopToggle = () => {
+    heroRef.current?.toggleLoop();
+    setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
+  };
+
+  const handleMediaClick = (item: any) => {
+    if (!item) {
+      setSelectedItemData(null);
+      return;
+    }
+    setSelectedItemData(item);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -152,28 +207,82 @@ const PublicSpacePage = () => {
         {shareImage && <meta name="twitter:image" content={shareImage} />}
       </Helmet>
 
-      <HomeView
-        pinnedContacts={[]}
-        onContactClick={() => {}}
-        onMediaClick={() => {}}
-        onMediaLongPress={handleGatedAction}
-        backgroundImage={publicSpace.cover_url || undefined}
-        spaceName={publicSpace.name}
-        spaceDescription={publicSpace.description || undefined}
-        show360={publicSpace.show_360}
-        xAxisOffset={publicSpace.x_axis_offset}
-        yAxisOffset={publicSpace.y_axis_offset}
-        volume={publicSpace.volume}
-        isMuted={publicSpace.is_muted}
-        rotationEnabled={publicSpace.rotation_enabled}
-        rotationSpeed={publicSpace.rotation_speed}
-        flipHorizontal={publicSpace.flip_horizontal}
-        flipVertical={publicSpace.flip_vertical}
-        onAddOptionSelect={handleGatedAction}
-        movieMode={false}
-        spaceId={publicSpace.id}
-        showItemsBar={true}
-      />
+      <div className="min-h-screen bg-background">
+        <HomeView
+          pinnedContacts={[]}
+          onContactClick={() => {}}
+          onMediaClick={handleMediaClick}
+          onMediaLongPress={handleGatedAction}
+          backgroundImage={publicSpace.cover_url || undefined}
+          spaceName={publicSpace.name}
+          spaceDescription={publicSpace.description || undefined}
+          show360={publicSpace.show_360}
+          xAxisOffset={publicSpace.x_axis_offset}
+          yAxisOffset={publicSpace.y_axis_offset}
+          volume={publicSpace.volume}
+          isMuted={publicSpace.is_muted}
+          rotationEnabled={publicSpace.rotation_enabled}
+          rotationSpeed={publicSpace.rotation_speed}
+          flipHorizontal={publicSpace.flip_horizontal}
+          flipVertical={publicSpace.flip_vertical}
+          onAddOptionSelect={handleGatedAction}
+          movieMode={false}
+          spaceId={publicSpace.id}
+          showItemsBar={showItemsBar}
+          onCloseItemsBar={() => setShowItemsBar(false)}
+          itemsPeopleView={itemsPeopleView}
+          selectedItem={selectedItemData}
+          onVideoStateChange={handleVideoStateChange}
+          heroRef={heroRef}
+          onItemClick={handleMediaClick}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
+
+        {/* Bottom SpacesBar */}
+        <div className="fixed bottom-0 left-0 right-0 z-40">
+          <SpacesBar
+            spaces={[]}
+            currentSpaceId={publicSpace.id}
+            onCreateSpace={() => handleGatedAction()}
+            onDeleteSpace={() => handleGatedAction()}
+            onRenameSpace={() => handleGatedAction()}
+            onUpdateSpaceDescription={() => handleGatedAction()}
+            onReorderSpace={() => handleGatedAction()}
+            onToggle360={() => handleGatedAction()}
+            onSpaceClick={() => {}}
+            onItemClick={handleMediaClick}
+            hideActionButtons={false}
+            hideNewButton={true}
+            hideAIButton={true}
+            hideChatButton={true}
+            videoControlsState={videoState}
+            onVideoPlayPause={handleVideoPlayPause}
+            onVideoSeek={handleVideoSeek}
+            onVideoVolumeChange={handleVideoVolumeChange}
+            onVideoMuteToggle={handleVideoMuteToggle}
+            onVideoLoopToggle={handleVideoLoopToggle}
+            onToggleItemsBar={() => {
+              if (showItemsBar && itemsPeopleView === 'items') {
+                setShowItemsBar(false);
+              } else {
+                setItemsPeopleView('items');
+                setShowItemsBar(true);
+              }
+            }}
+            onTogglePeopleBar={() => {
+              if (showItemsBar && itemsPeopleView === 'people') {
+                setShowItemsBar(false);
+              } else {
+                setItemsPeopleView('people');
+                setShowItemsBar(true);
+              }
+            }}
+            sortOrder={sortOrder}
+            onSortChange={setSortOrder}
+          />
+        </div>
+      </div>
 
       {showAuthModal && (
         <AuthModal

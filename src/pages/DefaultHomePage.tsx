@@ -92,7 +92,8 @@ const DefaultHomePage = () => {
     name: 'Home',
     thumb: '/media/default-home-bg.mp4',
     backgroundImage: '/media/default-home-bg.mp4',
-    show360: false,
+    show360: true,
+    flipVertical: true,
     isHome: true
   };
 
@@ -125,6 +126,8 @@ const DefaultHomePage = () => {
           backgroundImage="/media/default-home-bg.mp4"
           spaceName="Home"
           spaceDescription="Welcome to Dialin"
+          show360={true}
+          flipVertical={true}
           onVideoStateChange={handleVideoStateChange}
           heroRef={heroRef}
           sortOrder={sortOrder}

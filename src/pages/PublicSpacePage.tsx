@@ -186,6 +186,25 @@ const PublicSpacePage = () => {
   const shareTitle = `${publicSpace.name} | Dialin Space`;
   const shareDescription = publicSpace.description || `Check out this space on Dialin: ${publicSpace.name}`;
 
+  // Create spaces array for SpacesBar
+  const homeSpace: UISpace = {
+    id: 'home',
+    name: 'Home',
+    thumb: '',
+    isHome: true
+  };
+
+  const currentSpace: UISpace = {
+    id: publicSpace.id,
+    name: publicSpace.name,
+    thumb: publicSpace.thumbnail_url || '',
+    backgroundImage: publicSpace.cover_url || undefined,
+    show360: publicSpace.show_360,
+    isPublic: true
+  };
+
+  const displaySpaces = [homeSpace, currentSpace];
+
   return (
     <>
       <Helmet>
@@ -242,7 +261,7 @@ const PublicSpacePage = () => {
         {/* Bottom SpacesBar */}
         <div className="fixed bottom-0 left-0 right-0 z-40">
           <SpacesBar
-            spaces={[]}
+            spaces={displaySpaces}
             currentSpaceId={publicSpace.id}
             onCreateSpace={() => handleGatedAction()}
             onDeleteSpace={() => handleGatedAction()}

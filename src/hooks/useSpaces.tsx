@@ -47,13 +47,25 @@ export function useSpaces() {
         .maybeSingle();
 
       if (!existingHome) {
-        // Create home space
+        // Create home space with town square background and 360 enabled
         const { data: newHome, error } = await supabase
           .from('spaces')
           .insert({
             user_id: user.id,
             name: 'Home',
             is_home: true,
+            cover_url: '/media/default-home-bg.mp4',
+            thumbnail_url: '/media/default-home-bg.mp4',
+            show_360: true,
+            x_axis_offset: 0,
+            y_axis_offset: 0,
+            volume: 50,
+            is_muted: true,
+            rotation_enabled: false,
+            rotation_speed: 1,
+            rotation_axis: 'x',
+            flip_horizontal: false,
+            flip_vertical: false,
           })
           .select()
           .single();
@@ -63,7 +75,7 @@ export function useSpaces() {
           return;
         }
 
-        // Migrate localStorage lobby settings if they exist
+        // Migrate localStorage lobby settings if they exist (but keep default if not)
         const lobbyThumbnail = localStorage.getItem('lobby-thumbnail');
         const lobbyBackground = localStorage.getItem('lobby-background');
         

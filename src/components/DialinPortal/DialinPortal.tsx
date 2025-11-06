@@ -827,10 +827,18 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         xAxisOffset={homeSpace?.xAxis || 0}
         yAxisOffset={homeSpace?.yAxis || 0}
         onAxisChange={(axis, value) => homeSpace && handle360AxisChange(homeSpace.id, axis, value)}
-        volume={homeSpace?.volume || 0.5}
-        isMuted={homeSpace?.isMuted || false}
-        onVolumeChange={(volume) => homeSpace && handle360VolumeChange(homeSpace.id, volume)}
+        volume={(homeSpace?.volume || 50) / 100}
+        isMuted={homeSpace?.isMuted ?? true}
+        onVolumeChange={(volume) => homeSpace && handle360VolumeChange(homeSpace.id, volume * 100)}
         onMuteToggle={() => homeSpace && handle360MuteToggle(homeSpace.id, !homeSpace?.isMuted)}
+        rotationEnabled={homeSpace?.rotationEnabled ?? false}
+        onRotationToggle={() => homeSpace && handle360RotationToggle(homeSpace.id, !homeSpace?.rotationEnabled)}
+        rotationSpeed={homeSpace?.rotationSpeed ?? 1}
+        onRotationSpeedChange={(speed) => homeSpace && handle360RotationSpeedChange(homeSpace.id, speed)}
+        flipHorizontal={homeSpace?.flipHorizontal ?? false}
+        flipVertical={homeSpace?.flipVertical ?? false}
+        onFlipHorizontalToggle={() => homeSpace && handleFlipHorizontalToggle(homeSpace.id, !homeSpace?.flipHorizontal)}
+        onFlipVerticalToggle={() => homeSpace && handleFlipVerticalToggle(homeSpace.id, !homeSpace?.flipVertical)}
       />
 
       <AuthModal

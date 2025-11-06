@@ -1484,9 +1484,9 @@ export default function SpacePage() {
           xAxisOffset={currentSpace?.xAxis}
           yAxisOffset={currentSpace?.yAxis}
           onAxisChange={(axis, value) => handle360AxisChange(spaceId || 'lobby', axis, value)}
-          volume={currentSpace?.volume}
-          isMuted={currentSpace?.isMuted}
-          onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume)}
+          volume={(currentSpace?.volume ?? 50) / 100}
+          isMuted={currentSpace?.isMuted ?? true}
+          onVolumeChange={(volume) => handle360VolumeChange(spaceId || 'lobby', volume * 100)}
           onMuteToggle={() => handle360MuteToggle(spaceId || 'lobby', !currentSpace?.isMuted)}
           rotationEnabled={currentSpace?.rotationEnabled}
           onRotationToggle={() => handle360RotationToggle(spaceId || 'lobby', !currentSpace?.rotationEnabled)}

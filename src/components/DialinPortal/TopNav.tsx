@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
 import { SortDropdown } from './SortDropdown';
+import { ShareSpaceButton } from './ShareSpaceButton';
 import { formatDialCount } from '@/lib/filters';
 import logoFallback from '@/assets/logo-fallback.jpg';
 import type { SortOrder } from '@/types/organization';
@@ -23,6 +24,9 @@ interface TopNavProps {
   onSortChange?: (sort: SortOrder) => void;
   movieMode?: boolean;
   onMovieModeToggle?: () => void;
+  spaceId?: string;
+  isPublic?: boolean;
+  shareSlug?: string | null;
 }
 
 const tabs = [
@@ -35,7 +39,7 @@ const tabs = [
 
 const filterTabs = ['videos', 'music', 'locations'];
 
-export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel, sortOrder = 'custom', onSortChange, movieMode = false, onMovieModeToggle }: TopNavProps) {
+export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel, sortOrder = 'custom', onSortChange, movieMode = false, onMovieModeToggle, spaceId, isPublic, shareSlug }: TopNavProps) {
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -146,6 +150,15 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
               >
                 <ScanEye size={18} className="text-white" />
               </Button>
+            )}
+            
+            {/* Share Button */}
+            {spaceId && spaceId !== 'lobby' && (
+              <ShareSpaceButton 
+                spaceId={spaceId} 
+                isPublic={isPublic} 
+                shareSlug={shareSlug}
+              />
             )}
             
             {/* Profile Dropdown */}

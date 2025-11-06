@@ -120,6 +120,8 @@ export default function SpacePage() {
         flipHorizontal: dbSpace.flip_horizontal || false,
         flipVertical: dbSpace.flip_vertical || false,
         isHome: (dbSpace as any).is_home || (dbSpace as any).isHome || false,
+        isPublic: dbSpace.is_public || false,
+        shareSlug: dbSpace.share_slug || null,
       }));
 
       setSpaces([lobby, ...convertedDbSpaces]);
@@ -1194,6 +1196,9 @@ export default function SpacePage() {
           onSortChange={setSortOrder}
           movieMode={movieMode}
           onMovieModeToggle={() => setMovieMode(!movieMode)}
+          spaceId={spaceId}
+          isPublic={spaces.find(s => s.id === spaceId)?.isPublic}
+          shareSlug={spaces.find(s => s.id === spaceId)?.shareSlug}
         />
 
         <MobileTabBar

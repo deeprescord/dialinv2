@@ -59,10 +59,13 @@ export interface Space {
   isMuted?: boolean;
   rotationEnabled?: boolean;
   rotationSpeed?: number;
+  rotationAxis?: 'x' | 'y';
   flipHorizontal?: boolean;
   flipVertical?: boolean;
   parentId?: string; // For nested spaces
   isHome?: boolean; // Marks the permanent Home space
+  isPublic?: boolean; // Public sharing enabled
+  shareSlug?: string | null; // URL slug for public sharing
 }
 
 export interface Post {

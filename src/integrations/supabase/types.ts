@@ -388,12 +388,14 @@ export type Database = {
           id: string
           is_home: boolean
           is_muted: boolean | null
+          is_public: boolean | null
           name: string
           parent_id: string | null
           position: number | null
           rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
+          share_slug: string | null
           show_360: boolean | null
           thumbnail_url: string | null
           updated_at: string
@@ -413,12 +415,14 @@ export type Database = {
           id?: string
           is_home?: boolean
           is_muted?: boolean | null
+          is_public?: boolean | null
           name: string
           parent_id?: string | null
           position?: number | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
+          share_slug?: string | null
           show_360?: boolean | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -438,12 +442,14 @@ export type Database = {
           id?: string
           is_home?: boolean
           is_muted?: boolean | null
+          is_public?: boolean | null
           name?: string
           parent_id?: string | null
           position?: number | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
+          share_slug?: string | null
           show_360?: boolean | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -472,6 +478,7 @@ export type Database = {
         Args: { _file_id: string; _user_id: string }
         Returns: boolean
       }
+      generate_share_slug: { Args: { space_name: string }; Returns: string }
       user_owns_file: {
         Args: { _file_id: string; _user_id: string }
         Returns: boolean

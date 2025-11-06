@@ -136,7 +136,7 @@ const DefaultHomePage = () => {
 
         {/* Auth CTA Overlay - Only show for unauthenticated users */}
         {!user && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 pb-32">
             <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl mx-4 text-center pointer-events-auto">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
                 Welcome to Dialin
@@ -168,7 +168,7 @@ const DefaultHomePage = () => {
         )}
 
         {/* Bottom SpacesBar */}
-        <div className="fixed bottom-0 left-0 right-0 z-40">
+        <div className="fixed bottom-0 left-0 right-0 z-50">
           <SpacesBar
             spaces={displaySpaces}
             currentSpaceId="default-home"

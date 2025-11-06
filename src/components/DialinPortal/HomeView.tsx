@@ -336,7 +336,7 @@ export function HomeView({
 
       {showItemsBar && spaceId && (
         <ItemsPeopleBar
-          view="items"
+          view={itemsPeopleView}
           spaceId={spaceId}
           onItemClick={handleItemClickFromBar}
           onClose={onCloseItemsBar}

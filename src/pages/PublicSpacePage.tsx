@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeView } from "@/components/DialinPortal/HomeView";
@@ -6,6 +6,9 @@ import { AuthModal } from "@/components/DialinPortal/AuthModal";
 import { useSpaceItems } from "@/hooks/useSpaceItems";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
+import { SpacesBar } from "@/components/DialinPortal/SpacesBar";
+import type { HeroHeaderVideoHandle } from "@/components/DialinPortal/HeroHeaderVideo";
+import type { Space as UISpace } from "@/data/catalogs";
 
 interface PublicSpace {
   id: string;

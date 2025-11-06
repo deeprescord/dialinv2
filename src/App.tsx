@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import SpacePage from "./pages/SpacePage";
 import SettingsPage from "./pages/SettingsPage";
 import PublicSpacePage from "./pages/PublicSpacePage";
+import DefaultHomePage from "./pages/DefaultHomePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => {
               <MediaQueueProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/home" element={<DefaultHomePage />} />
                   <Route path="/space/:spaceId" element={<SpacePage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/s/:shareSlug" element={<PublicSpacePage />} />

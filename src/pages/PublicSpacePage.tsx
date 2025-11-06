@@ -188,9 +188,11 @@ const PublicSpacePage = () => {
 
   // Create spaces array for SpacesBar
   const homeSpace: UISpace = {
-    id: 'home',
+    id: 'default-home',
     name: 'Home',
-    thumb: '',
+    thumb: '/media/default-home-bg.mp4',
+    backgroundImage: '/media/default-home-bg.mp4',
+    show360: false,
     isHome: true
   };
 
@@ -204,6 +206,12 @@ const PublicSpacePage = () => {
   };
 
   const displaySpaces = [homeSpace, currentSpace];
+
+  const handleSpaceClick = (space: UISpace) => {
+    if (space.id === 'default-home') {
+      navigate('/home');
+    }
+  };
 
   return (
     <>
@@ -269,7 +277,7 @@ const PublicSpacePage = () => {
             onUpdateSpaceDescription={() => handleGatedAction()}
             onReorderSpace={() => handleGatedAction()}
             onToggle360={() => handleGatedAction()}
-            onSpaceClick={() => {}}
+            onSpaceClick={handleSpaceClick}
             onItemClick={handleMediaClick}
             hideActionButtons={false}
             hideNewButton={true}

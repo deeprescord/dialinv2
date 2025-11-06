@@ -597,7 +597,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   
   // Get home space for 360 settings
   const homeSpace = spaces.find(space => space.isHome);
-  const show360 = homeSpace?.show360 || false;
+  const show360 = homeSpace?.show360 ?? true; // Default to true for town square 360
 
   return (
     <div className="min-h-screen bg-background">
@@ -631,19 +631,19 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             onContactClick={handleContactClick}
             onMediaClick={handleMediaClick}
             onMediaLongPress={handleMediaLongPress}
-            backgroundImage={homeSpace?.backgroundImage || homeSpace?.thumb}
+            backgroundImage={homeSpace?.backgroundImage || homeSpace?.thumb || '/media/default-home-bg.mp4'}
             spaceName={homeSpace?.name}
             spaceDescription={homeSpace?.description}
             isLobby={true}
             show360={show360}
-            xAxisOffset={homeSpace?.xAxis}
-            yAxisOffset={homeSpace?.yAxis}
-            volume={homeSpace?.volume}
-            isMuted={homeSpace?.isMuted}
-            rotationEnabled={homeSpace?.rotationEnabled}
-            rotationSpeed={homeSpace?.rotationSpeed}
-            flipHorizontal={homeSpace?.flipHorizontal}
-            flipVertical={homeSpace?.flipVertical}
+            xAxisOffset={homeSpace?.xAxis ?? 0}
+            yAxisOffset={homeSpace?.yAxis ?? 0}
+            volume={homeSpace?.volume ?? 50}
+            isMuted={homeSpace?.isMuted ?? true}
+            rotationEnabled={homeSpace?.rotationEnabled ?? false}
+            rotationSpeed={homeSpace?.rotationSpeed ?? 1}
+            flipHorizontal={homeSpace?.flipHorizontal ?? false}
+            flipVertical={homeSpace?.flipVertical ?? false}
             spaces={spaces}
             onCreateSpace={handleCreateSpaceFromDrop}
             isAddModalOpen={isAddModalOpen}

@@ -90,10 +90,10 @@ const DefaultHomePage = () => {
   const homeSpace: UISpace = {
     id: 'default-home',
     name: 'Home',
-    thumb: '/media/default-home-bg.mp4',
+    thumb: '/media/grand-theater-thumb.jpg',
     backgroundImage: '/media/default-home-bg.mp4',
     show360: false,
-    flipVertical: true,
+    flipVertical: false,
     isHome: true
   };
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeView } from "@/components/DialinPortal/HomeView";
 import { AuthModal } from "@/components/DialinPortal/AuthModal";
+import { useSpaceItems } from "@/hooks/useSpaceItems";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 
@@ -31,6 +32,9 @@ const PublicSpacePage = () => {
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Fetch space items using the hook
+  const { items: spaceItems, loading: itemsLoading } = useSpaceItems(publicSpace?.id);
 
   useEffect(() => {
     checkAuthAndFetchSpace();
@@ -149,7 +153,7 @@ const PublicSpacePage = () => {
         pinnedContacts={[]}
         onContactClick={() => {}}
         onMediaClick={() => {}}
-        onMediaLongPress={() => {}}
+        onMediaLongPress={handleGatedAction}
         backgroundImage={publicSpace.cover_url || undefined}
         spaceName={publicSpace.name}
         spaceDescription={publicSpace.description || undefined}
@@ -164,6 +168,8 @@ const PublicSpacePage = () => {
         flipVertical={publicSpace.flip_vertical}
         onAddOptionSelect={handleGatedAction}
         movieMode={false}
+        spaceId={publicSpace.id}
+        showItemsBar={true}
       />
 
       {showAuthModal && (

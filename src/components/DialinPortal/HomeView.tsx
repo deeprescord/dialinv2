@@ -8,6 +8,7 @@ import type { SortOrder } from '@/types/organization';
 import { HeroHeaderVideo } from './HeroHeaderVideo';
 import { ContentViewer } from './ContentViewer';
 import { PinnedContactsRow } from './PinnedContactsRow';
+import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { MediaRow } from './MediaRow';
 import { AddOptionsModal } from './AddOptionsModal';
 import { DialControlPanel } from './DialControlPanel';
@@ -332,6 +333,15 @@ export function HomeView({
       />
 
       <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
+
+      {showItemsBar && spaceId && (
+        <ItemsPeopleBar
+          view="items"
+          spaceId={spaceId}
+          onItemClick={handleItemClickFromBar}
+          onClose={onCloseItemsBar}
+        />
+      )}
     </motion.div>
   );
 }

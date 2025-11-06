@@ -396,7 +396,7 @@ const PublicSpacePage = () => {
           rotationEnabled={publicSpace.rotation_enabled}
           rotationSpeed={publicSpace.rotation_speed}
           flipHorizontal={publicSpace.flip_horizontal}
-          flipVertical={publicSpace.flip_vertical}
+          flipVertical={true}
           onAddOptionSelect={handleGatedAction}
           movieMode={false}
           spaceId={publicSpace.id}

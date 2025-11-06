@@ -93,7 +93,7 @@ const DefaultHomePage = () => {
     thumb: '/media/grand-theater-thumb.jpg',
     backgroundImage: '/media/default-home-bg.mp4',
     show360: false,
-    flipVertical: false,
+    flipVertical: true,
     isHome: true
   };
 

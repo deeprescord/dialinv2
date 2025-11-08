@@ -5,6 +5,8 @@ import { Close, Share, Users } from '../icons';
 import { Card } from '../ui/card';
 import { Trash2, Edit3, Download, Copy, Eye, ScanEye } from 'lucide-react';
 import { Input } from '../ui/input';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MetadataDetailsPanel } from './MetadataDetailsPanel';
@@ -25,6 +27,7 @@ interface DialPopupProps {
   onDelete?: (itemId: string) => void;
   onRename?: (itemId: string, newName: string) => void;
   onView360?: (itemId: string) => void;
+  spaceId?: string;
 }
 
 interface ActionOption {
@@ -34,10 +37,11 @@ interface ActionOption {
   variant?: 'default' | 'destructive';
 }
 
-export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, onView360 }: DialPopupProps) {
+export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, onView360, spaceId }: DialPopupProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
+  const [show360, setShow360] = useState(false);
 
   // ESC key handling
   useEffect(() => {
@@ -60,6 +64,24 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
       document.removeEventListener('keydown', handleEscKey);
     };
   }, [isOpen, onClose, isRenaming]);
+
+  // Fetch 360 state when popup opens
+  useEffect(() => {
+    if (isOpen && spaceId) {
+      const fetch360State = async () => {
+        const { data } = await supabase
+          .from('spaces')
+          .select('show_360')
+          .eq('id', spaceId)
+          .single();
+        
+        if (data) {
+          setShow360(data.show_360 || false);
+        }
+      };
+      fetch360State();
+    }
+  }, [isOpen, spaceId]);
 
   // Reset rename state when popup closes
   useEffect(() => {
@@ -163,6 +185,24 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     }
   };
 
+  const handle360Toggle = async (checked: boolean) => {
+    if (!spaceId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ show_360: checked })
+        .eq('id', spaceId);
+      
+      if (error) throw error;
+      setShow360(checked);
+      toast.success(`360 view ${checked ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Error toggling 360:', error);
+      toast.error('Failed to toggle 360 view');
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -256,6 +296,21 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                 ) : (
                   <>
                     <h3 className="font-semibold mb-4 break-words whitespace-normal">{item.title}</h3>
+
+                    {/* 360 Toggle */}
+                    {spaceId && (
+                      <div className="flex items-center justify-between p-3 mb-3 bg-background/50 rounded-md border border-white/10">
+                        <Label htmlFor="360-toggle" className="cursor-pointer flex items-center gap-2">
+                          <ScanEye size={18} />
+                          <span>360° View</span>
+                        </Label>
+                        <Switch
+                          id="360-toggle"
+                          checked={show360}
+                          onCheckedChange={handle360Toggle}
+                        />
+                      </div>
+                    )}
 
                     {/* Action Options */}
                     <div className="space-y-1">

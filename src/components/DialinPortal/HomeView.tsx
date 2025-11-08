@@ -350,7 +350,7 @@ export function HomeView({
            title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
            subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
            backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-           skyboxSrc={(show360 || selectedItem?.show360) ? (item360UrlForHero || selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)) : undefined}
+           skyboxSrc={(show360 || selectedItem?.show360) ? (selectedItem?.show360 ? (item360UrlForHero || selectedItem?.url) : (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))) : undefined}
            showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360 && !selectedItem?.show360)}
            show360={show360 || selectedItem?.show360}
            xAxisOffset={selectedItem?.show360 ? selectedItem?.xAxisOffset : xAxisOffset}

@@ -39,7 +39,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [isAutoplay, setIsAutoplay] = useState(false);
+  const [isAutoplay, setIsAutoplay] = useState(true);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
 
   // When autoplay is enabled, disable repeat one

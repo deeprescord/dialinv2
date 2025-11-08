@@ -297,23 +297,23 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                   <>
                     <h3 className="font-semibold mb-4 break-words whitespace-normal">{item.title}</h3>
 
-                    {/* 360 Toggle */}
-                    {spaceId && (
-                      <div className="flex items-center justify-between p-3 mb-3 bg-background/50 rounded-md border border-white/10">
-                        <Label htmlFor="360-toggle" className="cursor-pointer flex items-center gap-2">
-                          <ScanEye size={18} />
-                          <span>360° View</span>
-                        </Label>
-                        <Switch
-                          id="360-toggle"
-                          checked={show360}
-                          onCheckedChange={handle360Toggle}
-                        />
-                      </div>
-                    )}
-
                     {/* Action Options */}
                     <div className="space-y-1">
+                      {/* 360 Toggle */}
+                      {spaceId && (
+                        <div className="flex items-center justify-between px-3 h-10 hover:bg-accent rounded-md transition-colors">
+                          <Label htmlFor="360-toggle" className="cursor-pointer flex items-center gap-3">
+                            <ScanEye size={18} />
+                            <span>360° View</span>
+                          </Label>
+                          <Switch
+                            id="360-toggle"
+                            checked={show360}
+                            onCheckedChange={handle360Toggle}
+                          />
+                        </div>
+                      )}
+                      
                       {actionOptions.map((option) => (
                         <Button
                           key={option.id}

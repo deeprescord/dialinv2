@@ -416,6 +416,7 @@ const PublicSpacePage = () => {
           <SpacesBar
             spaces={displaySpaces}
             currentSpaceId={publicSpace.id}
+            breadcrumbs={[{ id: publicSpace.id, name: publicSpace.name }]}
             onCreateSpace={() => handleGatedAction()}
             onDeleteSpace={() => handleGatedAction()}
             onRenameSpace={() => handleGatedAction()}

@@ -122,7 +122,7 @@ export function SpacesBar({
   sortOrder: propSortOrder,
   onSortChange: propOnSortChange
 }: SpacesBarProps) {
-  const { isAutoplay, setIsAutoplay } = useMediaQueue();
+  const { isAutoplay, setIsAutoplay, isLooping, setIsLooping } = useMediaQueue();
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
   
@@ -759,13 +759,13 @@ export function SpacesBar({
                     duration={videoControlsState?.duration ?? 0}
                     volume={videoControlsState?.volume ?? 1}
                     isMuted={videoControlsState?.isMuted ?? true}
-                    isLooping={videoControlsState?.isLooping ?? true}
+                    isLooping={isLooping}
                     isAutoplay={isAutoplay}
                     onPlayPause={onVideoPlayPause}
                     onSeek={onVideoSeek}
                     onVolumeChange={onVideoVolumeChange}
                     onMuteToggle={onVideoMuteToggle}
-                    onLoopToggle={onVideoLoopToggle}
+                    onLoopToggle={() => setIsLooping(!isLooping)}
                     onAutoplayToggle={() => setIsAutoplay(!isAutoplay)}
                   />
                 </div>

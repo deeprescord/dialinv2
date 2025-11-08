@@ -134,7 +134,7 @@ export function HomeView({
   onMovieModeToggle,
   onItem360Toggle
 }: HomeViewProps) {
-  const { isAutoplay, skipToNext } = useMediaQueue();
+  const { isAutoplay, skipToNext, isLooping } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -353,7 +353,9 @@ export function HomeView({
           }}
           onVideoStateChange={onVideoStateChange}
           onMediaEnded={() => {
+            console.log('HomeView: Media ended, isAutoplay:', isAutoplay);
             if (isAutoplay) {
+              console.log('HomeView: Calling skipToNext');
               skipToNext();
             }
           }}

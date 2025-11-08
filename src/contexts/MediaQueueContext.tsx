@@ -17,11 +17,13 @@ interface MediaQueueContextType {
   isPlaying: boolean;
   progress: number;
   isAutoplay: boolean;
+  isLooping: boolean;
   skipToNext: () => void;
   skipToPrevious: () => void;
   setIsPlaying: (playing: boolean) => void;
   setProgress: (progress: number) => void;
   setIsAutoplay: (autoplay: boolean) => void;
+  setIsLooping: (looping: boolean) => void;
   updateQueue: (spaces: any[]) => void;
   setCurrentSpace: (spaceId: string) => void;
 }
@@ -36,6 +38,22 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isAutoplay, setIsAutoplay] = useState(false);
+  const [isLooping, setIsLooping] = useState(true);
+
+  // When autoplay is enabled, disable loop and vice versa
+  const handleSetAutoplay = useCallback((autoplay: boolean) => {
+    setIsAutoplay(autoplay);
+    if (autoplay) {
+      setIsLooping(false);
+    }
+  }, []);
+
+  const handleSetLooping = useCallback((looping: boolean) => {
+    setIsLooping(looping);
+    if (looping) {
+      setIsAutoplay(false);
+    }
+  }, []);
 
   // Update queue when spaces change
   const updateQueue = useCallback((spacesData: any[]) => {
@@ -97,11 +115,13 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       isPlaying,
       progress,
       isAutoplay,
+      isLooping,
       skipToNext,
       skipToPrevious,
       setIsPlaying,
       setProgress,
-      setIsAutoplay,
+      setIsAutoplay: handleSetAutoplay,
+      setIsLooping: handleSetLooping,
       updateQueue,
       setCurrentSpace
     }}>

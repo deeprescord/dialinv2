@@ -73,7 +73,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   if (!item) return null;
 
   const actionOptions: ActionOption[] = [
-    { id: '360', label: 'View as 360', icon: ScanEye },
+    ...(onView360 ? [{ id: '360', label: 'View as 360', icon: ScanEye }] : []),
     { id: 'rename', label: 'Rename', icon: Edit3 },
     { id: 'details', label: 'Show Details', icon: Eye },
     { id: 'download', label: 'Download', icon: Download },
@@ -88,12 +88,8 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     
     switch (actionId) {
       case '360':
-        if (onView360) {
-          onView360(item.id);
-          onClose();
-        } else {
-          toast.info('360 view not available in this context');
-        }
+        onView360?.(item.id);
+        onClose();
         break;
 
       case 'rename':

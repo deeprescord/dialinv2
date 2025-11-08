@@ -462,12 +462,6 @@ export function SpacesBar({
               >
                 <ImageFallback src="/media/grand-theater-thumb.jpg" alt="Home" className="w-full h-full object-cover" />
               </div>
-              <span 
-                className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis text-primary`} 
-                style={{ width: `${thumbWidth}px` }}
-              >
-                Home
-              </span>
             </div>
           </div>
         ) : (
@@ -947,7 +941,6 @@ export function SpacesBar({
       <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
         <DialogContent className="sm:max-w-md glass-card border-white/20">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Welcome to Dialin</DialogTitle>
             <DialogDescription className="text-base pt-4 space-y-3">
               <p>Dialin is your personal media universe - organize, share, and experience your content like never before.</p>
               <ul className="list-disc list-inside space-y-2 text-sm">

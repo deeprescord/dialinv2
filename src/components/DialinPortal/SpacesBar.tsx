@@ -378,8 +378,8 @@ export function SpacesBar({
     if (onSpaceClick) {
       onSpaceClick(space);
     } else {
-      if (space.isHome) {
-        navigate('/');
+      if (space.isHome || space.id === 'lobby') {
+        navigate('/space/lobby');
       } else {
         navigate(`/space/${space.id}`);
       }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image, Sparkles, ScanEye } from 'lucide-react';
 import { aiService } from '@/lib/ai-service';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DialControlPanelProps {
   isOpen: boolean;
@@ -30,6 +33,7 @@ interface DialControlPanelProps {
   onSettings?: () => void;
   onDialSaved?: () => void;
   onView360?: (itemId: string) => void;
+  spaceId?: string;
 }
 
 const dialEmojis = [
@@ -74,7 +78,8 @@ export function DialControlPanel({
   onPost, 
   onSettings,
   onDialSaved,
-  onView360
+  onView360,
+  spaceId
 }: DialControlPanelProps) {
   const { toast } = useToast();
   const [selectedDials, setSelectedDials] = useState<string[]>([]);
@@ -118,6 +123,37 @@ export function DialControlPanel({
       {userId: '4', intensity: 85}
     ]},
   ]);
+  const [show360, setShow360] = useState(false);
+
+  useEffect(() => {
+    const fetch360 = async () => {
+      if (isOpen && spaceId) {
+        const { data } = await supabase
+          .from('spaces')
+          .select('show_360')
+          .eq('id', spaceId)
+          .single();
+        if (data) setShow360(!!data.show_360);
+      }
+    };
+    fetch360();
+  }, [isOpen, spaceId]);
+
+  const handleToggle360 = async (checked: boolean) => {
+    if (!spaceId) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ show_360: checked })
+        .eq('id', spaceId);
+      if (error) throw error;
+      setShow360(checked);
+      toast({ description: `360 view ${checked ? 'enabled' : 'disabled'}` });
+    } catch (e) {
+      console.error(e);
+      toast({ description: 'Failed to toggle 360 view', variant: 'destructive' });
+    }
+  };
 
   if (!item) return null;
 
@@ -784,6 +820,17 @@ export function DialControlPanel({
 
             {/* Bottom Action Buttons */}
             <div className="grid grid-cols-4 gap-2 p-4 bg-black/50 border-t border-white/10">
+              {/* 360 Toggle Row */}
+              {spaceId && (
+                <div className="col-span-4 flex items-center justify-between px-3 h-12 bg-white/5 rounded-lg border border-white/10 mb-2">
+                  <Label htmlFor="control-360-toggle" className="cursor-pointer flex items-center gap-2 text-white">
+                    <ScanEye size={18} />
+                    <span className="text-sm font-medium">360° View</span>
+                  </Label>
+                  <Switch id="control-360-toggle" checked={show360} onCheckedChange={handleToggle360} />
+                </div>
+              )}
+
               <div className="col-span-4 grid grid-cols-8 gap-2">
                 <button
                   onClick={() => {

@@ -1433,6 +1433,7 @@ export default function SpacePage() {
             console.log('Dial saved for item:', dialPopupItem?.id);
           }}
           onView360={handleView360FromPopup}
+          spaceId={spaceId}
         />
 
         <CreateSpaceModal

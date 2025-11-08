@@ -126,7 +126,7 @@ const DefaultHomePage = () => {
           onMediaLongPress={() => {}}
           backgroundImage="/media/default-home-bg.mp4"
           spaceName="Home"
-          spaceDescription="Welcome to Dialin"
+          spaceDescription=""
           show360={false}
           flipVertical={false}
           onVideoStateChange={handleVideoStateChange}

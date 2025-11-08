@@ -939,34 +939,68 @@ export function SpacesBar({
 
       {/* Welcome Dialog */}
       <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
-        <DialogContent className="sm:max-w-md glass-card border-white/20">
+        <DialogContent className="sm:max-w-3xl bg-gradient-to-br from-dialin-purple/20 via-background to-dialin-purple/10 border-2 border-dialin-purple/40 backdrop-blur-xl">
           <DialogHeader>
-            <DialogDescription className="text-base pt-4 space-y-3">
-              <p>Dialin is your personal media universe - organize, share, and experience your content like never before.</p>
-              <ul className="list-disc list-inside space-y-2 text-sm">
-                <li>Create immersive 360° spaces for your videos, music, and media</li>
-                <li>Share curated collections with friends and collaborators</li>
-                <li>Experience your content in stunning virtual environments</li>
-                <li>Connect with others through shared spaces and real-time chat</li>
-              </ul>
+            <div className="relative w-full h-64 -mx-6 -mt-6 mb-6 overflow-hidden rounded-t-lg">
+              <ImageFallback 
+                src="/media/grand-theater-thumb.jpg" 
+                alt="Dialin Experience" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+              <div className="absolute bottom-4 left-6 right-6">
+                <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                  Welcome to Dialin
+                </h2>
+                <p className="text-lg text-white/90 drop-shadow-md">
+                  Your personal media universe awaits
+                </p>
+              </div>
+            </div>
+            <DialogDescription className="text-base space-y-4 px-2">
+              <p className="text-foreground/90 text-lg">
+                Experience your content in stunning immersive environments.
+              </p>
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
+                  <div className="text-4xl mb-2">🌐</div>
+                  <h3 className="font-semibold text-white mb-1">360° Spaces</h3>
+                  <p className="text-sm text-muted-foreground">Create immersive environments</p>
+                </div>
+                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
+                  <div className="text-4xl mb-2">🎬</div>
+                  <h3 className="font-semibold text-white mb-1">Rich Media</h3>
+                  <p className="text-sm text-muted-foreground">Videos, music & more</p>
+                </div>
+                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
+                  <div className="text-4xl mb-2">👥</div>
+                  <h3 className="font-semibold text-white mb-1">Social Sharing</h3>
+                  <p className="text-sm text-muted-foreground">Connect & collaborate</p>
+                </div>
+                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
+                  <div className="text-4xl mb-2">✨</div>
+                  <h3 className="font-semibold text-white mb-1">AI Powered</h3>
+                  <p className="text-sm text-muted-foreground">Smart organization</p>
+                </div>
+              </div>
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-3 pt-4">
+          <div className="flex flex-col gap-3 pt-2">
             <Button 
               onClick={() => {
                 setShowWelcomeDialog(false);
                 setShowAuthModal(true);
               }} 
-              className="w-full bg-dialin-purple hover:bg-dialin-purple/90"
+              className="w-full bg-gradient-to-r from-dialin-purple to-dialin-purple/80 hover:from-dialin-purple/90 hover:to-dialin-purple/70 text-white shadow-lg shadow-dialin-purple/30 text-lg py-6 font-semibold"
             >
-              Get Started
+              Get Started ✨
             </Button>
             <Button 
               variant="outline" 
               onClick={() => setShowWelcomeDialog(false)}
-              className="w-full border-white/20 hover:bg-white/10"
+              className="w-full border-dialin-purple/40 hover:bg-dialin-purple/10 text-white/90"
             >
-              Learn More
+              Explore First
             </Button>
           </div>
         </DialogContent>

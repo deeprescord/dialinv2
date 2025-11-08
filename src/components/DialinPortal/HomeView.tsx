@@ -139,6 +139,8 @@ export function HomeView({
   const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid');
   // PDF URL for hero header (signed if needed)
   const [pdfUrlForHero, setPdfUrlForHero] = useState<string | undefined>(undefined);
+  // Signed media URL for item 360 playback in hero
+  const [item360UrlForHero, setItem360UrlForHero] = useState<string | undefined>(undefined);
 
   // Movie mode triggers infinite scroll
   const showInfiniteScroll = movieMode;
@@ -176,6 +178,36 @@ export function HomeView({
     loadPdfUrl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedItem?.id, selectedItem?.url, selectedItem?.storage_path, selectedItem?.mime_type, selectedItem?.file_type, selectedItem?.type]);
+
+  // Load signed media URL for 360 item in hero header
+  useEffect(() => {
+    const loadItem360Url = async () => {
+      const si = selectedItem;
+      if (!si || !si.show360) {
+        setItem360UrlForHero(undefined);
+        return;
+      }
+      // If the item already has a direct URL (e.g., from ItemsPeopleBar), use it
+      if (si.url) {
+        setItem360UrlForHero(si.url);
+        return;
+      }
+      // Otherwise, sign the storage path
+      if (si.storage_path) {
+        try {
+          const { data } = await supabase.storage.from('user-files').createSignedUrl(si.storage_path, 3600);
+          setItem360UrlForHero(data?.signedUrl);
+        } catch (e) {
+          console.warn('Failed to sign 360 media URL', e);
+          setItem360UrlForHero(undefined);
+        }
+      } else {
+        setItem360UrlForHero(undefined);
+      }
+    };
+    loadItem360Url();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItem?.id, selectedItem?.show360, selectedItem?.url, selectedItem?.storage_path]);
   const handleAddOptionSelect = (optionId: string) => {
     if (onAddOptionSelect) {
       onAddOptionSelect(optionId);
@@ -290,8 +322,8 @@ export function HomeView({
     >
 
 
-      {/* Hero Header - Show ContentViewer for video/audio files with storage_path */}
-      {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) ? (
+      {/* Hero Header - Prefer 360 hero for items with show360 enabled; otherwise use player for video/audio */}
+      {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) && !selectedItem?.show360 ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
@@ -318,7 +350,7 @@ export function HomeView({
            title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
            subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
            backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-           skyboxSrc={(show360 || selectedItem?.show360) ? (selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)) : undefined}
+           skyboxSrc={(show360 || selectedItem?.show360) ? (item360UrlForHero || selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)) : undefined}
            showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360 && !selectedItem?.show360)}
            show360={show360 || selectedItem?.show360}
            xAxisOffset={selectedItem?.show360 ? selectedItem?.xAxisOffset : xAxisOffset}

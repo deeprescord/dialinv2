@@ -235,7 +235,44 @@ export function HomeView({
   const handleItemClickFromBar = async (item: any) => {
     if (!item) return;
 
-    // Fetch full file data including 360 settings from database
+    // Fast-path for public viewers: use provided data when possible without DB reads
+    try {
+      // Web links: never sign, just use URL directly
+      if (item.file_type === 'web' || item.type === 'web') {
+        const transformedItem = {
+          id: item.id,
+          title: item.original_name || item.title,
+          type: 'web',
+          url: item.storage_path || item.url,
+          thumb: item.thumbnail_path || item.thumb,
+          file_type: 'web',
+        };
+        onItemClick?.(transformedItem);
+        return;
+      }
+
+      // If already has a direct URL (e.g., pre-signed by the caller), use it
+      if (item.url && typeof item.url === 'string') {
+        const transformedItem = {
+          id: item.id,
+          title: item.original_name || item.title,
+          type: item.file_type || item.type,
+          url: item.url,
+          thumb: item.thumbnail_path || item.thumb,
+          duration: item.duration,
+          mime_type: item.mime_type,
+          storage_path: item.storage_path,
+          file_type: item.file_type || item.type,
+          original_name: item.original_name || item.title,
+        };
+        onItemClick?.(transformedItem);
+        return;
+      }
+    } catch {
+      // ignore and try next strategy
+    }
+
+    // Preferred (when permitted): fetch full file data to include 360 settings
     try {
       const { data: fileData, error } = await supabase
         .from('files')
@@ -277,7 +314,7 @@ export function HomeView({
           title: fileData.original_name,
           type: fileData.file_type,
           url: url,
-          thumb: url,
+          thumb: fileData.thumbnail_path || url,
           duration: fileData.duration,
           mime_type: fileData.mime_type,
           storage_path: fileData.storage_path,
@@ -293,9 +330,37 @@ export function HomeView({
         };
         
         onItemClick?.(transformedItem);
+        return;
       }
     } catch (error) {
       console.error('Error fetching file data:', error);
+    }
+
+    // Public-safe fallback: sign the provided storage_path and forward
+    try {
+      let url: string | undefined = item.url;
+      if (!url && item.storage_path) {
+        const { data: signed } = await supabase.storage
+          .from('user-files')
+          .createSignedUrl(item.storage_path, 3600);
+        url = signed?.signedUrl || '';
+      }
+
+      const fallbackItem = {
+        id: item.id,
+        title: item.original_name || item.title,
+        type: item.file_type || item.type,
+        url,
+        thumb: item.thumbnail_path ? url : item.thumb,
+        duration: item.duration,
+        mime_type: item.mime_type,
+        storage_path: item.storage_path,
+        file_type: item.file_type || item.type,
+        original_name: item.original_name || item.title,
+      };
+      onItemClick?.(fallbackItem);
+    } catch (e) {
+      console.error('Fallback signing failed:', e);
     }
   };
   // Determine if lobby has a custom uploaded background (disable default video when true)

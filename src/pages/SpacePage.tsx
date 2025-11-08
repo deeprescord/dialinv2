@@ -85,7 +85,7 @@ export default function SpacePage() {
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
-  const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying } = useMediaQueue();
+  const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying, isAutoplay } = useMediaQueue();
   const { items: spaceItems } = useSpaceItems(spaceId && spaceId !== 'lobby' ? spaceId : undefined);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
@@ -941,7 +941,10 @@ export default function SpacePage() {
   };
   
   const handleMediaEnd = () => {
-    skipToNext();
+    // When autoplay is enabled, advance to the next item within the current space
+    if (isAutoplay) {
+      handleNextItem();
+    }
   };
 
   const handleToggle360 = async (spaceId: string, enabled: boolean) => {

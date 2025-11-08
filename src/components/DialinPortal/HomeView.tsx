@@ -353,6 +353,10 @@ export function HomeView({
           }}
           onVideoStateChange={onVideoStateChange}
           onMediaEnded={() => {
+            if (onMediaEnd) {
+              onMediaEnd();
+              return;
+            }
             console.log('HomeView: Media ended, isAutoplay:', isAutoplay);
             if (isAutoplay) {
               console.log('HomeView: Calling skipToNext');

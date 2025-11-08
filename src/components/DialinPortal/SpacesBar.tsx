@@ -763,14 +763,23 @@ export function SpacesBar({
                     duration={videoControlsState?.duration ?? 0}
                     volume={videoControlsState?.volume ?? 1}
                     isMuted={videoControlsState?.isMuted ?? true}
-                    isLooping={isLooping}
+                    isLooping={videoControlsState?.isLooping ?? false}
                     isAutoplay={isAutoplay}
                     onPlayPause={onVideoPlayPause}
                     onSeek={onVideoSeek}
                     onVolumeChange={onVideoVolumeChange}
                     onMuteToggle={onVideoMuteToggle}
-                    onLoopToggle={() => setIsLooping(!isLooping)}
-                    onAutoplayToggle={() => setIsAutoplay(!isAutoplay)}
+                    onLoopToggle={() => {
+                      onVideoLoopToggle?.();
+                    }}
+                    onAutoplayToggle={() => {
+                      const newVal = !isAutoplay;
+                      setIsAutoplay(newVal);
+                      // If enabling autoplay and the player is looping, turn looping off on the player
+                      if (newVal && (videoControlsState?.isLooping ?? false)) {
+                        onVideoLoopToggle?.();
+                      }
+                    }}
                     onSkipBackward10={() => onVideoSeek(Math.max(0, (videoControlsState?.currentTime ?? 0) - 10))}
                     onSkipForward10={() => onVideoSeek(Math.min((videoControlsState?.duration ?? 0), (videoControlsState?.currentTime ?? 0) + 10))}
                     onPreviousItem={onPreviousItem}

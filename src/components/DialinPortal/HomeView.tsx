@@ -147,6 +147,15 @@ export function HomeView({
   // Movie mode triggers infinite scroll
   const showInfiniteScroll = movieMode;
 
+  // DEBUG: Log selectedItem changes
+  useEffect(() => {
+    console.log('🎬 HomeView - selectedItem changed:', selectedItem);
+    console.log('🎬 HomeView - selectedItem.storage_path:', selectedItem?.storage_path);
+    console.log('🎬 HomeView - selectedItem.url:', selectedItem?.url);
+    console.log('🎬 HomeView - selectedItem.file_type:', selectedItem?.file_type);
+    console.log('🎬 HomeView - selectedItem.mime_type:', selectedItem?.mime_type);
+  }, [selectedItem]);
+
   useEffect(() => {
     const loadPdfUrl = async () => {
       const si = selectedItem;
@@ -403,6 +412,14 @@ export function HomeView({
      isImageSelected ||
      isPdfSelected
    );
+
+   // DEBUG: Log render conditions
+   console.log('🎯 HomeView - Render conditions:', {
+     hasStoragePathOrUrl: !!(selectedItem?.storage_path || selectedItem?.url),
+     isViewerPlayable,
+     itemSkyboxReady,
+     willRenderContentViewer: !!(selectedItem?.storage_path || selectedItem?.url) && isViewerPlayable && !itemSkyboxReady
+   });
  
    return (
     <motion.div

@@ -316,6 +316,8 @@ const PublicSpacePage = () => {
   };
 
   const handleMediaClick = async (item: any) => {
+    console.log('🔍 PublicSpacePage handleMediaClick - Incoming item:', item);
+    
     if (!item) {
       setSelectedItemData(null);
       return;
@@ -330,6 +332,7 @@ const PublicSpacePage = () => {
           url: item.storage_path,
           thumb: item.thumbnail_path || undefined,
         };
+        console.log('🌐 PublicSpacePage - Web link transformed:', transformedItem);
         setSelectedItemData(transformedItem);
         return;
       }
@@ -337,10 +340,17 @@ const PublicSpacePage = () => {
       // Resolve signed URL for file content
       let signedUrl: string | undefined;
       if (item.storage_path) {
-        const { data: signedData } = await supabase.storage
+        console.log('📁 PublicSpacePage - Signing storage_path:', item.storage_path);
+        const { data: signedData, error: signError } = await supabase.storage
           .from('user-files')
           .createSignedUrl(item.storage_path, 3600);
+        
+        if (signError) {
+          console.error('❌ PublicSpacePage - Error signing URL:', signError);
+        }
+        
         signedUrl = signedData?.signedUrl || item.url;
+        console.log('✅ PublicSpacePage - Signed URL:', signedUrl);
       }
 
       // Resolve thumbnail (prefer thumbnail_path when available)
@@ -355,6 +365,7 @@ const PublicSpacePage = () => {
             .createSignedUrl(item.thumbnail_path, 3600);
           signedThumb = thumbSigned?.signedUrl;
         }
+        console.log('🖼️ PublicSpacePage - Signed thumbnail:', signedThumb);
       }
 
       const transformedItem = {
@@ -363,9 +374,11 @@ const PublicSpacePage = () => {
         thumb: signedThumb || signedUrl || item.thumb,
         type: item.file_type,
       };
+      
+      console.log('✨ PublicSpacePage - Final transformed item:', transformedItem);
       setSelectedItemData(transformedItem);
     } catch (error) {
-      console.error('Error preparing media item:', error);
+      console.error('❌ PublicSpacePage - Error preparing media item:', error);
       setSelectedItemData(item);
     }
   };

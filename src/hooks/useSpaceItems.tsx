@@ -23,6 +23,27 @@ export function useSpaceItems(spaceId?: string) {
   const [items, setItems] = useState<SpaceItem[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const generateThumbnailIfNeeded = async (item: SpaceItem) => {
+    try {
+      // Skip if already has thumbnail or is a space
+      if (item.thumbnail_path || item.is_space || !item.file_id) return;
+
+      console.log('Generating thumbnail for:', item.original_name);
+
+      await supabase.functions.invoke('generate-thumbnail', {
+        body: {
+          fileId: item.file_id,
+          storagePath: item.storage_path,
+          mimeType: item.mime_type,
+          fileName: item.original_name,
+          fileType: item.file_type
+        }
+      });
+    } catch (error) {
+      console.error('Thumbnail generation failed:', error);
+    }
+  };
+
   const fetchItems = async () => {
     if (!spaceId) {
       setItems([]);
@@ -106,6 +127,13 @@ export function useSpaceItems(spaceId?: string) {
           };
         });
         allItems.push(...fileItems);
+
+        // Generate thumbnails for items without them (async, don't wait)
+        fileItems.forEach((item) => {
+          if (!item.thumbnail_path && item.file_id) {
+            generateThumbnailIfNeeded(item);
+          }
+        });
       }
 
       setItems(allItems);

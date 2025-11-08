@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image, Sparkles } from 'lucide-react';
+import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image, Sparkles, ScanEye } from 'lucide-react';
 import { aiService } from '@/lib/ai-service';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,6 +29,7 @@ interface DialControlPanelProps {
   onPost?: () => void;
   onSettings?: () => void;
   onDialSaved?: () => void;
+  onView360?: (itemId: string) => void;
 }
 
 const dialEmojis = [
@@ -72,7 +73,8 @@ export function DialControlPanel({
   onShare, 
   onPost, 
   onSettings,
-  onDialSaved 
+  onDialSaved,
+  onView360
 }: DialControlPanelProps) {
   const { toast } = useToast();
   const [selectedDials, setSelectedDials] = useState<string[]>([]);
@@ -782,7 +784,19 @@ export function DialControlPanel({
 
             {/* Bottom Action Buttons */}
             <div className="grid grid-cols-4 gap-2 p-4 bg-black/50 border-t border-white/10">
-              <div className="col-span-4 grid grid-cols-7 gap-2">
+              <div className="col-span-4 grid grid-cols-8 gap-2">
+                <button
+                  onClick={() => {
+                    if (item?.id && onView360) {
+                      onView360(item.id);
+                    }
+                  }}
+                  className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <ScanEye size={20} className="text-white" />
+                  <span className="text-xs text-white font-medium">360</span>
+                </button>
+
                 <button
                   onClick={onDelete}
                   className="flex flex-col items-center space-y-1 p-3 hover:bg-white/10 rounded-lg transition-colors"

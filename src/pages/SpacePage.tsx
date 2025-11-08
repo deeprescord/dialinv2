@@ -481,6 +481,14 @@ export default function SpacePage() {
     setShowDialPopup(true);
   };
 
+  const handleView360FromPopup = (itemId: string) => {
+    // Find the current space and toggle 360 view
+    if (spaceId) {
+      handleToggle360(spaceId, true);
+      setShow360Settings(true);
+    }
+  };
+
   // Handle dial popup
   const handleUseAsFilters = () => {
     if (dialPopupItem) {
@@ -1424,6 +1432,7 @@ export default function SpacePage() {
           onDialSaved={() => {
             console.log('Dial saved for item:', dialPopupItem?.id);
           }}
+          onView360={handleView360FromPopup}
         />
 
         <CreateSpaceModal

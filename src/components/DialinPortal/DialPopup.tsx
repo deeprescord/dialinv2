@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Close, Share, Users, Smile, Plus } from '../icons';
+import { Close, Share, Users } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye, ScanEye } from 'lucide-react';
 import { Input } from '../ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,6 +24,7 @@ interface DialPopupProps {
   onUseAsFilters?: () => void;
   onDelete?: (itemId: string) => void;
   onRename?: (itemId: string, newName: string) => void;
+  onView360?: (itemId: string) => void;
 }
 
 interface ActionOption {
@@ -33,7 +34,7 @@ interface ActionOption {
   variant?: 'default' | 'destructive';
 }
 
-export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename }: DialPopupProps) {
+export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, onView360 }: DialPopupProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
@@ -72,6 +73,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   if (!item) return null;
 
   const actionOptions: ActionOption[] = [
+    { id: '360', label: 'View as 360', icon: ScanEye },
     { id: 'rename', label: 'Rename', icon: Edit3 },
     { id: 'details', label: 'Show Details', icon: Eye },
     { id: 'download', label: 'Download', icon: Download },
@@ -85,6 +87,15 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     console.log('Action clicked:', actionId, 'for item:', item.id);
     
     switch (actionId) {
+      case '360':
+        if (onView360) {
+          onView360(item.id);
+          onClose();
+        } else {
+          toast.info('360 view not available in this context');
+        }
+        break;
+
       case 'rename':
         setIsRenaming(true);
         setNewName(item.title);

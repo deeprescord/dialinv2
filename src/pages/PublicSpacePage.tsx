@@ -291,12 +291,32 @@ const PublicSpacePage = () => {
     }
   };
 
-  const handleMediaClick = (item: any) => {
+  const handleMediaClick = async (item: any) => {
     if (!item) {
       setSelectedItemData(null);
       return;
     }
-    setSelectedItemData(item);
+
+    // Fetch signed URLs for the item if it has a storage_path
+    if (item.storage_path) {
+      try {
+        const { data: signedData } = await supabase.storage
+          .from('user-files')
+          .createSignedUrl(item.storage_path, 3600);
+
+        const transformedItem = {
+          ...item,
+          url: signedData?.signedUrl || item.url,
+          type: item.file_type,
+        };
+        setSelectedItemData(transformedItem);
+      } catch (error) {
+        console.error('Error fetching signed URL:', error);
+        setSelectedItemData(item);
+      }
+    } else {
+      setSelectedItemData(item);
+    }
   };
 
   if (loading) {

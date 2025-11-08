@@ -76,7 +76,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     ...(onView360 ? [{ id: '360', label: 'View as 360', icon: ScanEye }] : []),
     { id: 'rename', label: 'Rename', icon: Edit3 },
     { id: 'details', label: 'Show Details', icon: Eye },
-    { id: 'download', label: 'Download', icon: Download },
     { id: 'duplicate', label: 'Duplicate', icon: Copy },
     { id: 'share', label: 'Share', icon: Share },
     { id: 'connect', label: 'Connect', icon: Users },
@@ -123,40 +122,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
             toast.error('Failed to delete item');
           }
         }
-        break;
-        
-      case 'download':
-        // Get the file URL and download it
-        try {
-          const { data, error: fetchError } = await supabase
-            .from('files')
-            .select('storage_path, original_name')
-            .eq('id', item.id)
-            .single();
-          
-          if (fetchError) throw fetchError;
-          
-          if (data && data.storage_path) {
-            // Get signed URL
-            const { data: signedData } = await supabase.storage
-              .from('user-files')
-              .createSignedUrl(data.storage_path, 3600);
-            
-            if (signedData?.signedUrl) {
-              const link = document.createElement('a');
-              link.href = signedData.signedUrl;
-              link.download = data.original_name || item.title;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              toast.success('Download started');
-            }
-          }
-        } catch (error) {
-          console.error('Error downloading:', error);
-          toast.error('Failed to download item');
-        }
-        onClose();
         break;
         
       default:

@@ -552,12 +552,37 @@ export function SpacesBar({
                             <div 
                               className="flex flex-col items-center cursor-pointer group select-none" 
                               style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
-                              onClick={() => {
+                              onClick={async () => {
                                 if (wasLongPress) return;
                                 if (isSpace) {
                                   handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
                                 } else {
-                                  onItemClick?.(item);
+                                  // Fetch full file data including 360 settings
+                                  try {
+                                    const { data: fileData, error } = await supabase
+                                      .from('files')
+                                      .select('*')
+                                      .eq('id', item.id)
+                                      .maybeSingle();
+                                    
+                                    if (fileData && !error) {
+                                      // Pass the full file data with 360 settings
+                                      onItemClick?.({
+                                        ...item,
+                                        show360: fileData.show_360,
+                                        xAxisOffset: fileData.x_axis_offset,
+                                        yAxisOffset: fileData.y_axis_offset,
+                                        rotationEnabled: fileData.rotation_enabled,
+                                        rotationSpeed: fileData.rotation_speed,
+                                        rotationAxis: fileData.rotation_axis,
+                                      });
+                                    } else {
+                                      onItemClick?.(item);
+                                    }
+                                  } catch (error) {
+                                    console.error('Error fetching file 360 settings:', error);
+                                    onItemClick?.(item);
+                                  }
                                 }
                               }}
                               onMouseDown={(e) => {

@@ -51,9 +51,17 @@ export function SpaceItemsGrid({
         const pathToUse = item.thumbnail_path || item.storage_path;
         if (!pathToUse) continue;
         
+        // Bypass absolute URLs
         if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
           urls[item.id] = pathToUse;
+        } else if (pathToUse.startsWith('space-covers/')) {
+          // Public bucket - use getPublicUrl
+          const { data } = supabase.storage
+            .from('space-covers')
+            .getPublicUrl(pathToUse);
+          urls[item.id] = data.publicUrl;
         } else {
+          // Private bucket - use createSignedUrl
           try {
             const { data } = await supabase.storage
               .from('user-files')

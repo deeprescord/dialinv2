@@ -174,6 +174,20 @@ export function ItemsPeopleBar({
         const path = item.thumbnail_path || item.storage_path;
         if (!path) return [item.id, null] as const;
         
+        // Check if absolute URL
+        if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
+          return [item.id, path] as const;
+        }
+        
+        // Check if public bucket
+        if (path.startsWith('space-covers/')) {
+          const { data } = supabase.storage
+            .from('space-covers')
+            .getPublicUrl(path);
+          return [item.id, data.publicUrl] as const;
+        }
+        
+        // Private bucket - sign URL
         try {
           const { data, error } = await supabase.storage
             .from('user-files')

@@ -89,10 +89,28 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
           continue;
         }
 
+        const path = item.storage_path;
+        
+        // Check if absolute URL
+        if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
+          newUrls.set(item.id, path);
+          continue;
+        }
+        
+        // Check if public bucket
+        if (path.startsWith('space-covers/')) {
+          const { data } = supabase.storage
+            .from('space-covers')
+            .getPublicUrl(path);
+          newUrls.set(item.id, data.publicUrl);
+          continue;
+        }
+
+        // Private bucket - sign URL
         try {
           const { data } = await supabase.storage
             .from('user-files')
-            .createSignedUrl(item.storage_path, 3600);
+            .createSignedUrl(path, 3600);
           
           if (data?.signedUrl) {
             newUrls.set(item.id, data.signedUrl);

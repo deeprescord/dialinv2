@@ -91,8 +91,8 @@ const DefaultHomePage = () => {
     id: 'default-home',
     name: 'Home',
     thumb: '/media/grand-theater-thumb.jpg',
-    backgroundImage: '/media/default-home-bg.mp4',
-    show360: false,
+    backgroundImage: 'https://dialin.io/s/TownSquare2-1.mp4',
+    show360: true,
     flipVertical: true,
     isHome: true
   };
@@ -123,7 +123,7 @@ const DefaultHomePage = () => {
           onContactClick={() => {}}
           onMediaClick={() => {}}
           onMediaLongPress={() => {}}
-          backgroundImage="/media/default-home-bg.mp4"
+          backgroundImage="https://dialin.io/s/TownSquare2-1.mp4"
           spaceName="Home"
           spaceDescription="Welcome to Dialin"
           show360={true}

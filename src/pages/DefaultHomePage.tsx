@@ -21,7 +21,7 @@ const DefaultHomePage = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [sortOrder, setSortOrder] = useState<SortOrder>('date-newest');
   const [videoState, setVideoState] = useState({
-    isPlaying: false,
+    isPlaying: true,
     currentTime: 0,
     duration: 0,
     volume: 50,

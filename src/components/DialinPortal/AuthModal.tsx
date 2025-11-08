@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,11 +24,6 @@ export function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }:
     password: '',
     fullName: '',
   });
-
-  // Sync isLogin state when initialMode prop changes
-  useEffect(() => {
-    setIsLogin(initialMode === 'login');
-  }, [initialMode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -71,7 +71,6 @@ export function UserDropdown() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => setShowAuthModal(false)}
-        initialMode="login"
       />
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

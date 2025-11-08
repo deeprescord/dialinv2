@@ -103,30 +103,26 @@ export default function SpacePage() {
         backgroundImage: lobbyBackground,
         isHome: true
       };
-      
-      // Filter out database spaces marked as home since lobby already represents home
-      const convertedDbSpaces: Space[] = dbSpaces
-        .filter(dbSpace => !(dbSpace as any).is_home && !(dbSpace as any).isHome)
-        .map(dbSpace => ({
-          id: dbSpace.id,
-          name: dbSpace.name,
-          thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-          parentId: dbSpace.parent_id || undefined,
-          backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-          show360: dbSpace.show_360 || false,
-          xAxis: dbSpace.x_axis_offset || 0,
-          yAxis: dbSpace.y_axis_offset || 0,
-          volume: dbSpace.volume || 50,
-          isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
-          rotationEnabled: dbSpace.rotation_enabled || false,
-          rotationSpeed: dbSpace.rotation_speed || 1,
-          rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
-          flipHorizontal: dbSpace.flip_horizontal || false,
-          flipVertical: dbSpace.flip_vertical || false,
-          isHome: false,
-          isPublic: dbSpace.is_public || false,
-          shareSlug: dbSpace.share_slug || null,
-        }));
+      const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
+        id: dbSpace.id,
+        name: dbSpace.name,
+        thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        parentId: dbSpace.parent_id || undefined,
+        backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+        show360: dbSpace.show_360 || false,
+        xAxis: dbSpace.x_axis_offset || 0,
+        yAxis: dbSpace.y_axis_offset || 0,
+        volume: dbSpace.volume || 50,
+        isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
+        rotationEnabled: dbSpace.rotation_enabled || false,
+        rotationSpeed: dbSpace.rotation_speed || 1,
+        rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
+        flipHorizontal: dbSpace.flip_horizontal || false,
+        flipVertical: dbSpace.flip_vertical || false,
+        isHome: (dbSpace as any).is_home || (dbSpace as any).isHome || false,
+        isPublic: dbSpace.is_public || false,
+        shareSlug: dbSpace.share_slug || null,
+      }));
 
       setSpaces([lobby, ...convertedDbSpaces]);
     };
@@ -485,14 +481,6 @@ export default function SpacePage() {
     setShowDialPopup(true);
   };
 
-  const handleView360FromPopup = (itemId: string) => {
-    // Find the current space and toggle 360 view
-    if (spaceId) {
-      handleToggle360(spaceId, true);
-      setShow360Settings(true);
-    }
-  };
-
   // Handle dial popup
   const handleUseAsFilters = () => {
     if (dialPopupItem) {
@@ -800,7 +788,7 @@ export default function SpacePage() {
   // Handle space navigation
   const handleSpaceClick = (space: Space) => {
     if (space.id === 'lobby') {
-      navigate('/space/lobby');
+      navigate('/');
       setNavigationPath(['lobby']);
     } else {
       navigate(`/space/${space.id}`);
@@ -822,7 +810,7 @@ export default function SpacePage() {
   // Handle navigation via breadcrumb
   const handleBreadcrumbNavigate = (spaceId: string) => {
     if (spaceId === 'lobby') {
-      navigate('/space/lobby');
+      navigate('/');
       setNavigationPath(['lobby']);
       setSelectedItemId(undefined);
       setSelectedItemData(null);
@@ -1436,8 +1424,6 @@ export default function SpacePage() {
           onDialSaved={() => {
             console.log('Dial saved for item:', dialPopupItem?.id);
           }}
-          onView360={handleView360FromPopup}
-          spaceId={spaceId}
         />
 
         <CreateSpaceModal

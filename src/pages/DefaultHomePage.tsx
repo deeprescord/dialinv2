@@ -21,7 +21,7 @@ const DefaultHomePage = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [sortOrder, setSortOrder] = useState<SortOrder>('date-newest');
   const [videoState, setVideoState] = useState({
-    isPlaying: true,
+    isPlaying: false,
     currentTime: 0,
     duration: 0,
     volume: 50,
@@ -35,9 +35,9 @@ const DefaultHomePage = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       
-      // If user just logged in, redirect to lobby
+      // If user just logged in, redirect to main app
       if (session?.user) {
-        setTimeout(() => navigate('/space/lobby'), 100);
+        setTimeout(() => navigate('/'), 100);
       }
     });
 
@@ -45,7 +45,7 @@ const DefaultHomePage = () => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       if (user) {
-        navigate('/space/lobby');
+        navigate('/');
       }
     });
 
@@ -74,7 +74,7 @@ const DefaultHomePage = () => {
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
-    navigate('/space/lobby');
+    navigate('/');
   };
 
   const handleSignUpClick = () => {
@@ -93,12 +93,11 @@ const DefaultHomePage = () => {
     thumb: '/media/grand-theater-thumb.jpg',
     backgroundImage: '/media/default-home-bg.mp4',
     show360: false,
-    flipVertical: false,
+    flipVertical: true,
     isHome: true
   };
 
   const displaySpaces = [homeSpace];
-  const isAuthenticated = !!user;
 
   return (
     <>
@@ -126,9 +125,9 @@ const DefaultHomePage = () => {
           onMediaLongPress={() => {}}
           backgroundImage="/media/default-home-bg.mp4"
           spaceName="Home"
-          spaceDescription=""
+          spaceDescription="Welcome to Dialin"
           show360={false}
-          flipVertical={false}
+          flipVertical={true}
           onVideoStateChange={handleVideoStateChange}
           heroRef={heroRef}
           sortOrder={sortOrder}
@@ -190,7 +189,6 @@ const DefaultHomePage = () => {
             onVideoMuteToggle={handleVideoMuteToggle}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
-            isAuthenticated={isAuthenticated}
           />
         </div>
 

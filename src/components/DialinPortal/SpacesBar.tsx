@@ -17,8 +17,6 @@ import { ChatWindow } from './ChatWindow';
 import { VideoControls } from './VideoControls';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { ContactsPanel } from './ContactsPanel';
-import { AuthModal } from './AuthModal';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import audioVisualizer from '@/assets/audio-visualizer-animated.gif';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,7 +76,6 @@ interface SpacesBarProps {
   isHome?: boolean;
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
-  isAuthenticated?: boolean;
 }
 
 export function SpacesBar({
@@ -122,8 +119,7 @@ export function SpacesBar({
   showPeopleBar = false,
   isHome = false,
   sortOrder: propSortOrder,
-  onSortChange: propOnSortChange,
-  isAuthenticated = true
+  onSortChange: propOnSortChange
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
@@ -149,8 +145,6 @@ export function SpacesBar({
   const [showContactsPanel, setShowContactsPanel] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
   const [internalSortOrder, setInternalSortOrder] = useState<SortOrder>('custom');
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   
   // Use prop sortOrder if provided, otherwise use internal state
   const sortOrder = propSortOrder ?? internalSortOrder;
@@ -378,8 +372,8 @@ export function SpacesBar({
     if (onSpaceClick) {
       onSpaceClick(space);
     } else {
-      if (space.isHome || space.id === 'lobby') {
-        navigate('/space/lobby');
+      if (space.isHome) {
+        navigate('/');
       } else {
         navigate(`/space/${space.id}`);
       }
@@ -447,64 +441,7 @@ export function SpacesBar({
   };
   return (
     <>
-      <div className="relative overflow-x-auto scrollbar-thin flex items-start gap-3" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
-        {/* Home thumbnail - dummy for unauthenticated users, real for authenticated */}
-        {!isAuthenticated ? (
-          <div className="flex-shrink-0 ml-4">
-            <div 
-              className="flex flex-col items-center cursor-pointer select-none" 
-              style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
-              onClick={() => setShowWelcomeDialog(true)}
-            >
-              <div 
-                className="rounded-2xl overflow-hidden glass-card border border-white/10" 
-                style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-              >
-                <ImageFallback src="/media/grand-theater-thumb.jpg" alt="Home" className="w-full h-full object-cover" />
-              </div>
-            </div>
-          </div>
-        ) : (
-          (() => {
-            const homeSpace = allSpaces.find(s => s.id === 'lobby' || (s as any).is_home || (s as any).isHome || s.name?.toLowerCase() === 'home');
-            if (!homeSpace) return null;
-            let chosen = (homeSpace as any).thumb || (homeSpace as any).thumbnail_url || (homeSpace as any).cover_url || '/media/grand-theater-thumb.jpg';
-            if (!chosen) chosen = '/placeholder.svg';
-            return (
-              <div className="flex-shrink-0">
-                <div 
-                  className="flex flex-col items-center cursor-pointer select-none" 
-                  style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
-                  onClick={() => handleSpaceClick(homeSpace)}
-                >
-                  <div 
-                    className="rounded-2xl overflow-hidden glass-card border border-white/10" 
-                    style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-                  >
-                    {isVideoUrl(chosen) ? (
-                      <video
-                        src={chosen}
-                        className="w-full h-full object-cover"
-                        muted
-                        playsInline
-                        loop
-                        preload="metadata"
-                      />
-                    ) : (
-                      <ImageFallback src={chosen} alt={homeSpace.name} className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                  <span 
-                    className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis text-primary`} 
-                    style={{ width: `${thumbWidth}px` }}
-                  >
-                    {homeSpace.name || 'Home'}
-                  </span>
-                </div>
-              </div>
-            );
-          })()
-        )}
+      <div className="relative overflow-x-auto scrollbar-thin" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
         <div className="inline-flex items-start w-max bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 50}px`, padding: `${padding}px` }}>
           {showPeopleBar ? (
             // Show people/contacts instead of spaces
@@ -726,7 +663,7 @@ export function SpacesBar({
                 </>
               ) : (
                 <>
-                  {allSpaces.filter(s => !(s.id === 'lobby' || (s as any).is_home || (s as any).isHome || s.name?.toLowerCase() === 'home')).map((space, index) => {
+                  {allSpaces.map((space, index) => {
                     const isLobby = space.id === 'lobby';
                     const isCurrentSpace = currentSpaceId === space.id || (currentSpaceId === undefined && isLobby);
                     return (
@@ -739,12 +676,7 @@ export function SpacesBar({
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
-                              let chosen = (space as any).thumb || (space as any).thumbnail_url || (space as any).cover_url || '';
-                              if (!chosen && ((space as any).isHome || (space as any).is_home)) {
-                                chosen = '/media/grand-theater-thumb.jpg';
-                              }
-                              if (!chosen) chosen = '/placeholder.svg';
-                              console.info('SpacesBar thumb chosen', space.id, chosen);
+                              const chosen = (space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '';
                               return isVideoUrl(chosen) ? (
                                 <video
                                   src={chosen}
@@ -935,86 +867,6 @@ export function SpacesBar({
         isOpen={showContactsPanel}
         onClose={() => setShowContactsPanel(false)}
         onContactClick={onContactClick}
-      />
-
-      {/* Welcome Dialog */}
-      <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
-        <DialogContent className="sm:max-w-3xl bg-gradient-to-br from-dialin-purple/20 via-background to-dialin-purple/10 border-2 border-dialin-purple/40 backdrop-blur-xl">
-          <DialogHeader>
-            <div className="relative w-full h-64 -mx-6 -mt-6 mb-6 overflow-hidden rounded-t-lg">
-              <ImageFallback 
-                src="/media/grand-theater-thumb.jpg" 
-                alt="Dialin Experience" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-              <div className="absolute bottom-4 left-6 right-6">
-                <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-                  Welcome to Dialin
-                </h2>
-                <p className="text-lg text-white/90 drop-shadow-md">
-                  Your personal media universe awaits
-                </p>
-              </div>
-            </div>
-            <DialogDescription className="text-base space-y-4 px-2">
-              <p className="text-foreground/90 text-lg">
-                Experience your content in stunning immersive environments.
-              </p>
-              <div className="grid grid-cols-2 gap-4 py-4">
-                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
-                  <div className="text-4xl mb-2">🌐</div>
-                  <h3 className="font-semibold text-white mb-1">360° Spaces</h3>
-                  <p className="text-sm text-muted-foreground">Create immersive environments</p>
-                </div>
-                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
-                  <div className="text-4xl mb-2">🎬</div>
-                  <h3 className="font-semibold text-white mb-1">Rich Media</h3>
-                  <p className="text-sm text-muted-foreground">Videos, music & more</p>
-                </div>
-                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
-                  <div className="text-4xl mb-2">👥</div>
-                  <h3 className="font-semibold text-white mb-1">Social Sharing</h3>
-                  <p className="text-sm text-muted-foreground">Connect & collaborate</p>
-                </div>
-                <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br from-dialin-purple/20 to-dialin-purple/5 border border-dialin-purple/20">
-                  <div className="text-4xl mb-2">✨</div>
-                  <h3 className="font-semibold text-white mb-1">AI Powered</h3>
-                  <p className="text-sm text-muted-foreground">Smart organization</p>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 pt-2">
-            <Button 
-              onClick={() => {
-                setShowWelcomeDialog(false);
-                setShowAuthModal(true);
-              }} 
-              className="w-full bg-gradient-to-r from-dialin-purple to-dialin-purple/80 hover:from-dialin-purple/90 hover:to-dialin-purple/70 text-white shadow-lg shadow-dialin-purple/30 text-lg py-6 font-semibold"
-            >
-              Get Started ✨
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowWelcomeDialog(false)}
-              className="w-full border-dialin-purple/40 hover:bg-dialin-purple/10 text-white/90"
-            >
-              Explore First
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Auth Modal for dummy home thumbnail */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={() => {
-          setShowAuthModal(false);
-          navigate('/');
-        }}
-        initialMode="signup"
       />
       </>
   );

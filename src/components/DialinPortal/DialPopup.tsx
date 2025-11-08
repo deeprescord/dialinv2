@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Close, Share, Users } from '../icons';
+import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye, ScanEye } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye } from 'lucide-react';
 import { Input } from '../ui/input';
-import { Switch } from '../ui/switch';
-import { Label } from '../ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MetadataDetailsPanel } from './MetadataDetailsPanel';
@@ -26,8 +24,6 @@ interface DialPopupProps {
   onUseAsFilters?: () => void;
   onDelete?: (itemId: string) => void;
   onRename?: (itemId: string, newName: string) => void;
-  onView360?: (itemId: string) => void;
-  spaceId?: string;
 }
 
 interface ActionOption {
@@ -37,11 +33,10 @@ interface ActionOption {
   variant?: 'default' | 'destructive';
 }
 
-export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, onView360, spaceId }: DialPopupProps) {
+export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename }: DialPopupProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
-  const [show360, setShow360] = useState(false);
 
   // ESC key handling
   useEffect(() => {
@@ -65,24 +60,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     };
   }, [isOpen, onClose, isRenaming]);
 
-  // Fetch 360 state when popup opens
-  useEffect(() => {
-    if (isOpen && spaceId) {
-      const fetch360State = async () => {
-        const { data } = await supabase
-          .from('spaces')
-          .select('show_360')
-          .eq('id', spaceId)
-          .single();
-        
-        if (data) {
-          setShow360(data.show_360 || false);
-        }
-      };
-      fetch360State();
-    }
-  }, [isOpen, spaceId]);
-
   // Reset rename state when popup closes
   useEffect(() => {
     if (!isOpen) {
@@ -95,9 +72,9 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   if (!item) return null;
 
   const actionOptions: ActionOption[] = [
-    ...(onView360 ? [{ id: '360', label: 'View as 360', icon: ScanEye }] : []),
     { id: 'rename', label: 'Rename', icon: Edit3 },
     { id: 'details', label: 'Show Details', icon: Eye },
+    { id: 'download', label: 'Download', icon: Download },
     { id: 'duplicate', label: 'Duplicate', icon: Copy },
     { id: 'share', label: 'Share', icon: Share },
     { id: 'connect', label: 'Connect', icon: Users },
@@ -108,11 +85,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     console.log('Action clicked:', actionId, 'for item:', item.id);
     
     switch (actionId) {
-      case '360':
-        onView360?.(item.id);
-        onClose();
-        break;
-
       case 'rename':
         setIsRenaming(true);
         setNewName(item.title);
@@ -144,6 +116,40 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
             toast.error('Failed to delete item');
           }
         }
+        break;
+        
+      case 'download':
+        // Get the file URL and download it
+        try {
+          const { data, error: fetchError } = await supabase
+            .from('files')
+            .select('storage_path, original_name')
+            .eq('id', item.id)
+            .single();
+          
+          if (fetchError) throw fetchError;
+          
+          if (data && data.storage_path) {
+            // Get signed URL
+            const { data: signedData } = await supabase.storage
+              .from('user-files')
+              .createSignedUrl(data.storage_path, 3600);
+            
+            if (signedData?.signedUrl) {
+              const link = document.createElement('a');
+              link.href = signedData.signedUrl;
+              link.download = data.original_name || item.title;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              toast.success('Download started');
+            }
+          }
+        } catch (error) {
+          console.error('Error downloading:', error);
+          toast.error('Failed to download item');
+        }
+        onClose();
         break;
         
       default:
@@ -182,24 +188,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
         console.error('Error renaming item:', error);
         toast.error('Failed to rename item');
       }
-    }
-  };
-
-  const handle360Toggle = async (checked: boolean) => {
-    if (!spaceId) return;
-    
-    try {
-      const { error } = await supabase
-        .from('spaces')
-        .update({ show_360: checked })
-        .eq('id', spaceId);
-      
-      if (error) throw error;
-      setShow360(checked);
-      toast.success(`360 view ${checked ? 'enabled' : 'disabled'}`);
-    } catch (error) {
-      console.error('Error toggling 360:', error);
-      toast.error('Failed to toggle 360 view');
     }
   };
 
@@ -299,21 +287,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
 
                     {/* Action Options */}
                     <div className="space-y-1">
-                      {/* 360 Toggle */}
-                      {spaceId && (
-                        <div className="flex items-center justify-between px-3 h-10 hover:bg-accent rounded-md transition-colors">
-                          <Label htmlFor="360-toggle" className="cursor-pointer flex items-center gap-3">
-                            <ScanEye size={18} />
-                            <span>360° View</span>
-                          </Label>
-                          <Switch
-                            id="360-toggle"
-                            checked={show360}
-                            onCheckedChange={handle360Toggle}
-                          />
-                        </div>
-                      )}
-                      
                       {actionOptions.map((option) => (
                         <Button
                           key={option.id}

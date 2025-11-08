@@ -348,6 +348,7 @@ export function BreadcrumbNavBar({
             setShowDialPopup(false);
             setDialPopupItem(null);
           }}
+          spaceId={navigationPath[navigationPath.length - 1]}
         />
 
         {/* Add Options Modal */}

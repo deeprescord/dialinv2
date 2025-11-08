@@ -591,6 +591,7 @@ export function ItemsPeopleBar({
           setShowDialPopup(false);
           setDialPopupItem(null);
         }}
+        spaceId={spaceId}
       />
     </>
   );

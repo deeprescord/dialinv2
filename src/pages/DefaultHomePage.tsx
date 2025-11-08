@@ -98,6 +98,7 @@ const DefaultHomePage = () => {
   };
 
   const displaySpaces = [homeSpace];
+  const isAuthenticated = !!user;
 
   return (
     <>
@@ -189,6 +190,7 @@ const DefaultHomePage = () => {
             onVideoMuteToggle={handleVideoMuteToggle}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
+            isAuthenticated={isAuthenticated}
           />
         </div>
 

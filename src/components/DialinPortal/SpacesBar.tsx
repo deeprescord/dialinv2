@@ -77,6 +77,7 @@ interface SpacesBarProps {
   isHome?: boolean;
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
+  isAuthenticated?: boolean;
 }
 
 export function SpacesBar({
@@ -120,7 +121,8 @@ export function SpacesBar({
   showPeopleBar = false,
   isHome = false,
   sortOrder: propSortOrder,
-  onSortChange: propOnSortChange
+  onSortChange: propOnSortChange,
+  isAuthenticated = true
 }: SpacesBarProps) {
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
@@ -444,27 +446,69 @@ export function SpacesBar({
   return (
     <>
       <div className="relative overflow-x-auto scrollbar-thin flex items-start gap-3" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
-        {/* Pinned Home thumbnail on the left - dummy for non-authenticated users */}
-        <div className="flex-shrink-0">
-          <div 
-            className="flex flex-col items-center cursor-pointer select-none" 
-            style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
-            onClick={() => setShowAuthModal(true)}
-          >
+        {/* Home thumbnail - dummy for unauthenticated users, real for authenticated */}
+        {!isAuthenticated ? (
+          <div className="flex-shrink-0">
             <div 
-              className="rounded-2xl overflow-hidden glass-card border border-white/10" 
-              style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+              className="flex flex-col items-center cursor-pointer select-none" 
+              style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
+              onClick={() => setShowAuthModal(true)}
             >
-              <ImageFallback src="/media/grand-theater-thumb.jpg" alt="Home" className="w-full h-full object-cover" />
+              <div 
+                className="rounded-2xl overflow-hidden glass-card border border-white/10" 
+                style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+              >
+                <ImageFallback src="/media/grand-theater-thumb.jpg" alt="Home" className="w-full h-full object-cover" />
+              </div>
+              <span 
+                className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis text-primary`} 
+                style={{ width: `${thumbWidth}px` }}
+              >
+                Home
+              </span>
             </div>
-            <span 
-              className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis text-primary`} 
-              style={{ width: `${thumbWidth}px` }}
-            >
-              Home
-            </span>
           </div>
-        </div>
+        ) : (
+          (() => {
+            const homeSpace = allSpaces.find(s => s.id === 'lobby' || (s as any).is_home || (s as any).isHome || s.name?.toLowerCase() === 'home');
+            if (!homeSpace) return null;
+            let chosen = (homeSpace as any).thumb || (homeSpace as any).thumbnail_url || (homeSpace as any).cover_url || '/media/grand-theater-thumb.jpg';
+            if (!chosen) chosen = '/placeholder.svg';
+            return (
+              <div className="flex-shrink-0">
+                <div 
+                  className="flex flex-col items-center cursor-pointer select-none" 
+                  style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
+                  onClick={() => handleSpaceClick(homeSpace)}
+                >
+                  <div 
+                    className="rounded-2xl overflow-hidden glass-card border border-white/10" 
+                    style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+                  >
+                    {isVideoUrl(chosen) ? (
+                      <video
+                        src={chosen}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        loop
+                        preload="metadata"
+                      />
+                    ) : (
+                      <ImageFallback src={chosen} alt={homeSpace.name} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <span 
+                    className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis text-primary`} 
+                    style={{ width: `${thumbWidth}px` }}
+                  >
+                    {homeSpace.name || 'Home'}
+                  </span>
+                </div>
+              </div>
+            );
+          })()
+        )}
         <div className="inline-flex items-start w-max bg-gradient-to-t from-black/20 via-black/10 to-transparent rounded-2xl backdrop-blur-sm" style={{ gap: `${spacing}px`, minHeight: `${thumbHeight + 50}px`, padding: `${padding}px` }}>
           {showPeopleBar ? (
             // Show people/contacts instead of spaces

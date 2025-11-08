@@ -31,6 +31,7 @@ interface ItemsPeopleBarProps {
   on360RotationToggle?: (spaceId: string, enabled: boolean) => void;
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
+  onItem360Toggle?: (itemId: string, enabled: boolean) => void;
 }
 
 type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
@@ -52,7 +53,8 @@ export function ItemsPeopleBar({
   on360MuteToggle,
   on360RotationToggle,
   on360RotationSpeedChange,
-  on360RotationAxisChange
+  on360RotationAxisChange,
+  onItem360Toggle
 }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -591,6 +593,7 @@ export function ItemsPeopleBar({
           setShowDialPopup(false);
           setDialPopupItem(null);
         }}
+        on360Toggle={onItem360Toggle}
       />
     </>
   );

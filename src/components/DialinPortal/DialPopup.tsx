@@ -25,6 +25,7 @@ interface DialPopupProps {
   onUseAsFilters?: () => void;
   onDelete?: (itemId: string) => void;
   onRename?: (itemId: string, newName: string) => void;
+  on360Toggle?: (itemId: string, enabled: boolean) => void;
 }
 
 interface ActionOption {
@@ -34,7 +35,7 @@ interface ActionOption {
   variant?: 'default' | 'destructive';
 }
 
-export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename }: DialPopupProps) {
+export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, on360Toggle }: DialPopupProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
@@ -105,8 +106,12 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
       if (error) throw error;
       setShow360(enabled);
       toast.success(enabled ? '360 view enabled' : '360 view disabled');
-      // Trigger a reload to update the display
-      window.location.reload();
+      
+      // Notify parent to update the selected item
+      if (on360Toggle) {
+        on360Toggle(item.id, enabled);
+      }
+      onClose();
     } catch (error) {
       console.error('Error updating 360 setting:', error);
       toast.error('Failed to update 360 setting');

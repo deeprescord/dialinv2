@@ -822,6 +822,39 @@ export default function SpacePage() {
     }
   };
 
+  
+  // Handle item 360 toggle
+  const handleItem360Toggle = async (itemId: string, enabled: boolean) => {
+    // Re-fetch the item with updated 360 settings
+    try {
+      const { data: file, error } = await supabase
+        .from('files')
+        .select('*')
+        .eq('id', itemId)
+        .maybeSingle();
+      
+      if (file && !error) {
+        setSelectedItemData({
+          id: file.id,
+          title: file.original_name,
+          type: file.file_type,
+          storage_path: file.storage_path,
+          file_type: file.file_type,
+          mime_type: file.mime_type,
+          show360: file.show_360,
+          xAxisOffset: file.x_axis_offset,
+          yAxisOffset: file.y_axis_offset,
+          rotationEnabled: file.rotation_enabled,
+          rotationSpeed: file.rotation_speed,
+          rotationAxis: file.rotation_axis,
+          thumb: file.storage_path, // Use storage_path for media
+        } as any);
+      }
+    } catch (error) {
+      console.error('Error refreshing item:', error);
+    }
+  };
+
   // Handle item selection
   const handleItemSelect = async (itemId: string) => {
     setSelectedItemId(itemId);
@@ -1272,6 +1305,7 @@ export default function SpacePage() {
                 onSortChange={setSortOrder}
                 movieMode={movieMode}
                 onMovieModeToggle={() => setMovieMode(!movieMode)}
+                onItem360Toggle={handleItem360Toggle}
              />
           )}
 

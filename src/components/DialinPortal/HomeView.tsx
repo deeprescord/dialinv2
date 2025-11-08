@@ -78,6 +78,7 @@ interface HomeViewProps {
   onSortChange?: (sort: SortOrder) => void;
   movieMode?: boolean;
   onMovieModeToggle?: () => void;
+  onItem360Toggle?: (itemId: string, enabled: boolean) => void;
 }
 
 export function HomeView({ 
@@ -129,7 +130,8 @@ export function HomeView({
   sortOrder = 'custom',
   onSortChange,
   movieMode = false,
-  onMovieModeToggle
+  onMovieModeToggle,
+  onItem360Toggle
 }: HomeViewProps) {
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
@@ -340,6 +342,7 @@ export function HomeView({
           spaceId={spaceId}
           onItemClick={handleItemClickFromBar}
           onClose={onCloseItemsBar}
+          onItem360Toggle={onItem360Toggle}
         />
       )}
     </motion.div>

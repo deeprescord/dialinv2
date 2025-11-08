@@ -85,7 +85,7 @@ export default function SpacePage() {
   // File upload hook
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
-  const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying, isAutoplay } = useMediaQueue();
+  const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying, isAutoplay, repeatMode } = useMediaQueue();
   const { items: spaceItems } = useSpaceItems(spaceId && spaceId !== 'lobby' ? spaceId : undefined);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
@@ -1146,6 +1146,14 @@ export default function SpacePage() {
     
     const currentIndex = spaceItems.findIndex(item => item.id === selectedItemData.id);
     if (currentIndex === -1) return;
+    
+    // Check if we're at the last item
+    const isLastItem = currentIndex === spaceItems.length - 1;
+    
+    // If at last item and autoplay is on without repeat all, stop
+    if (isLastItem && isAutoplay && repeatMode !== "all") {
+      return;
+    }
     
     const nextIndex = (currentIndex + 1) % spaceItems.length;
     const nextItem = spaceItems[nextIndex];

@@ -1,6 +1,8 @@
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, Repeat, ListVideo, SkipForward, SkipBack, RotateCcw, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Repeat, Repeat1, ListVideo, SkipForward, SkipBack, RotateCcw, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
+
+type RepeatMode = "off" | "one" | "all";
 
 interface VideoControlsProps {
   isPlaying: boolean;
@@ -8,13 +10,13 @@ interface VideoControlsProps {
   duration: number;
   volume: number;
   isMuted: boolean;
-  isLooping?: boolean;
+  repeatMode?: RepeatMode;
   isAutoplay?: boolean;
   onPlayPause: () => void;
   onSeek: (value: number) => void;
   onVolumeChange: (value: number) => void;
   onMuteToggle: () => void;
-  onLoopToggle?: () => void;
+  onRepeatToggle?: () => void;
   onAutoplayToggle?: () => void;
   onSkipForward10?: () => void;
   onSkipBackward10?: () => void;
@@ -28,13 +30,13 @@ export function VideoControls({
   duration,
   volume,
   isMuted,
-  isLooping = true,
+  repeatMode = "off",
   isAutoplay = false,
   onPlayPause,
   onSeek,
   onVolumeChange,
   onMuteToggle,
-  onLoopToggle,
+  onRepeatToggle,
   onAutoplayToggle,
   onSkipForward10,
   onSkipBackward10,
@@ -109,15 +111,21 @@ export function VideoControls({
         </Button>
       )}
 
-      {onLoopToggle && (
+      {onRepeatToggle && (
         <Button
           variant="ghost"
           size="sm"
-          onClick={onLoopToggle}
-          className={`h-7 px-2 text-xs hover:bg-white/10 ${isLooping ? 'text-primary' : 'text-foreground/50'}`}
-          title={isLooping ? 'Loop On' : 'Loop Off'}
+          onClick={onRepeatToggle}
+          className={`h-7 px-2 text-xs hover:bg-white/10 ${repeatMode !== "off" ? 'text-primary' : 'text-foreground/50'}`}
+          title={
+            repeatMode === "off" 
+              ? "Repeat Off" 
+              : repeatMode === "one" 
+              ? "Repeat One" 
+              : "Repeat All"
+          }
         >
-          <Repeat size={14} />
+          {repeatMode === "one" ? <Repeat1 size={14} /> : <Repeat size={14} />}
         </Button>
       )}
 

@@ -134,7 +134,7 @@ export function HomeView({
   onMovieModeToggle,
   onItem360Toggle
 }: HomeViewProps) {
-  const { isAutoplay, skipToNext, isLooping } = useMediaQueue();
+  const { isAutoplay, skipToNext, repeatMode } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);

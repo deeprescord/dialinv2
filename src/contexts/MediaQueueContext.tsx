@@ -11,19 +11,21 @@ interface QueueItem {
   isHome?: boolean;
 }
 
+type RepeatMode = "off" | "one" | "all";
+
 interface MediaQueueContextType {
   currentIndex: number;
   queue: QueueItem[];
   isPlaying: boolean;
   progress: number;
   isAutoplay: boolean;
-  isLooping: boolean;
+  repeatMode: RepeatMode;
   skipToNext: () => void;
   skipToPrevious: () => void;
   setIsPlaying: (playing: boolean) => void;
   setProgress: (progress: number) => void;
   setIsAutoplay: (autoplay: boolean) => void;
-  setIsLooping: (looping: boolean) => void;
+  setRepeatMode: (mode: RepeatMode) => void;
   updateQueue: (spaces: any[]) => void;
   setCurrentSpace: (spaceId: string) => void;
 }
@@ -38,22 +40,22 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isAutoplay, setIsAutoplay] = useState(false);
-  const [isLooping, setIsLooping] = useState(true);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
 
-  // When autoplay is enabled, disable loop and vice versa
+  // When autoplay is enabled, disable repeat one
   const handleSetAutoplay = useCallback((autoplay: boolean) => {
     setIsAutoplay(autoplay);
-    if (autoplay) {
-      setIsLooping(false);
+    if (autoplay && repeatMode === "one") {
+      setRepeatMode("off");
     }
-  }, []);
+  }, [repeatMode]);
 
-  const handleSetLooping = useCallback((looping: boolean) => {
-    setIsLooping(looping);
-    if (looping) {
+  const handleSetRepeatMode = useCallback((mode: RepeatMode) => {
+    setRepeatMode(mode);
+    if (mode === "one" && isAutoplay) {
       setIsAutoplay(false);
     }
-  }, []);
+  }, [isAutoplay]);
 
   // Update queue when spaces change
   const updateQueue = useCallback((spacesData: any[]) => {
@@ -115,13 +117,13 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       isPlaying,
       progress,
       isAutoplay,
-      isLooping,
+      repeatMode,
       skipToNext,
       skipToPrevious,
       setIsPlaying,
       setProgress,
       setIsAutoplay: handleSetAutoplay,
-      setIsLooping: handleSetLooping,
+      setRepeatMode: handleSetRepeatMode,
       updateQueue,
       setCurrentSpace
     }}>

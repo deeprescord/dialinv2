@@ -126,7 +126,7 @@ export function SpacesBar({
   sortOrder: propSortOrder,
   onSortChange: propOnSortChange
 }: SpacesBarProps) {
-  const { isAutoplay, setIsAutoplay, isLooping, setIsLooping } = useMediaQueue();
+  const { isAutoplay, setIsAutoplay, repeatMode, setRepeatMode } = useMediaQueue();
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
   
@@ -763,19 +763,28 @@ export function SpacesBar({
                     duration={videoControlsState?.duration ?? 0}
                     volume={videoControlsState?.volume ?? 1}
                     isMuted={videoControlsState?.isMuted ?? true}
-                    isLooping={videoControlsState?.isLooping ?? false}
+                    repeatMode={repeatMode}
                     isAutoplay={isAutoplay}
                     onPlayPause={onVideoPlayPause}
                     onSeek={onVideoSeek}
                     onVolumeChange={onVideoVolumeChange}
                     onMuteToggle={onVideoMuteToggle}
-                    onLoopToggle={() => {
-                      onVideoLoopToggle?.();
+                    onRepeatToggle={() => {
+                      // Cycle through: off -> one -> all -> off
+                      const nextMode = repeatMode === "off" ? "one" : repeatMode === "one" ? "all" : "off";
+                      setRepeatMode(nextMode);
+                      
+                      // Update video player looping based on repeat mode
+                      const shouldLoop = nextMode === "one";
+                      if ((videoControlsState?.isLooping ?? false) !== shouldLoop) {
+                        onVideoLoopToggle?.();
+                      }
                     }}
                     onAutoplayToggle={() => {
                       const newVal = !isAutoplay;
                       setIsAutoplay(newVal);
-                      // If enabling autoplay and the player is looping, turn looping off on the player
+                      
+                      // If enabling autoplay and player is set to loop (repeat one), turn looping off
                       if (newVal && (videoControlsState?.isLooping ?? false)) {
                         onVideoLoopToggle?.();
                       }

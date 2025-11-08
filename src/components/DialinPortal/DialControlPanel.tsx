@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image, Sparkles, ScanEye } from 'lucide-react';
+import { Trash2, Move, Plus, Send, Users, Settings, X, Check, Upload, Image, Sparkles, ScanEye, RotateCw } from 'lucide-react';
 import { aiService } from '@/lib/ai-service';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '../ui/switch';
@@ -124,16 +124,24 @@ export function DialControlPanel({
     ]},
   ]);
   const [show360, setShow360] = useState(false);
+  const [rotationEnabled, setRotationEnabled] = useState(false);
+  const [rotationSpeed, setRotationSpeed] = useState(1);
+  const [rotationAxis, setRotationAxis] = useState<'x' | 'y'>('x');
 
   useEffect(() => {
     const fetch360 = async () => {
       if (isOpen && spaceId) {
         const { data } = await supabase
           .from('spaces')
-          .select('show_360')
+          .select('show_360, rotation_enabled, rotation_speed, rotation_axis')
           .eq('id', spaceId)
           .single();
-        if (data) setShow360(!!data.show_360);
+        if (data) {
+          setShow360(!!data.show_360);
+          setRotationEnabled(!!data.rotation_enabled);
+          setRotationSpeed(data.rotation_speed || 1);
+          setRotationAxis((data.rotation_axis as 'x' | 'y') || 'x');
+        }
       }
     };
     fetch360();
@@ -152,6 +160,53 @@ export function DialControlPanel({
     } catch (e) {
       console.error(e);
       toast({ description: 'Failed to toggle 360 view', variant: 'destructive' });
+    }
+  };
+
+  const handleRotationToggle = async (checked: boolean) => {
+    if (!spaceId) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ rotation_enabled: checked })
+        .eq('id', spaceId);
+      if (error) throw error;
+      setRotationEnabled(checked);
+      toast({ description: `Auto-rotation ${checked ? 'enabled' : 'disabled'}` });
+    } catch (e) {
+      console.error(e);
+      toast({ description: 'Failed to toggle rotation', variant: 'destructive' });
+    }
+  };
+
+  const handleRotationSpeedChange = async (value: number[]) => {
+    if (!spaceId) return;
+    const speed = value[0];
+    setRotationSpeed(speed);
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ rotation_speed: speed })
+        .eq('id', spaceId);
+      if (error) throw error;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAxisChange = async (axis: 'x' | 'y') => {
+    if (!spaceId) return;
+    try {
+      const { error } = await supabase
+        .from('spaces')
+        .update({ rotation_axis: axis })
+        .eq('id', spaceId);
+      if (error) throw error;
+      setRotationAxis(axis);
+      toast({ description: `Rotation axis set to ${axis.toUpperCase()}` });
+    } catch (e) {
+      console.error(e);
+      toast({ description: 'Failed to update axis', variant: 'destructive' });
     }
   };
 
@@ -822,12 +877,70 @@ export function DialControlPanel({
             <div className="grid grid-cols-4 gap-2 p-4 bg-black/50 border-t border-white/10">
               {/* 360 Toggle Row */}
               {spaceId && (
-                <div className="col-span-4 flex items-center justify-between px-3 h-12 bg-white/5 rounded-lg border border-white/10 mb-2">
-                  <Label htmlFor="control-360-toggle" className="cursor-pointer flex items-center gap-2 text-white">
-                    <ScanEye size={18} />
-                    <span className="text-sm font-medium">360° View</span>
-                  </Label>
-                  <Switch id="control-360-toggle" checked={show360} onCheckedChange={handleToggle360} />
+                <div className="col-span-4 mb-3 space-y-3">
+                  <div className="flex items-center justify-between px-3 h-12 bg-white/5 rounded-lg border border-white/10">
+                    <Label htmlFor="control-360-toggle" className="cursor-pointer flex items-center gap-2 text-white">
+                      <ScanEye size={18} />
+                      <span className="text-sm font-medium">360° View</span>
+                    </Label>
+                    <Switch id="control-360-toggle" checked={show360} onCheckedChange={handleToggle360} />
+                  </div>
+
+                  {/* 360 Quick Controls - Only show when 360 is enabled */}
+                  {show360 && (
+                    <div className="space-y-3 px-2">
+                      {/* Auto-Rotate Toggle */}
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="auto-rotate" className="cursor-pointer flex items-center gap-2 text-white text-xs">
+                          <RotateCw size={14} />
+                          <span>Auto-Rotate</span>
+                        </Label>
+                        <Switch 
+                          id="auto-rotate" 
+                          checked={rotationEnabled} 
+                          onCheckedChange={handleRotationToggle}
+                        />
+                      </div>
+
+                      {/* Rotation Speed - Only show when auto-rotate is on */}
+                      {rotationEnabled && (
+                        <div className="space-y-1">
+                          <Label className="text-white text-xs">Speed: {rotationSpeed.toFixed(1)}x</Label>
+                          <Slider
+                            value={[rotationSpeed]}
+                            onValueChange={handleRotationSpeedChange}
+                            min={0.1}
+                            max={5}
+                            step={0.1}
+                            className="w-full"
+                          />
+                        </div>
+                      )}
+
+                      {/* Rotation Axis */}
+                      <div className="space-y-1">
+                        <Label className="text-white text-xs">Rotation Axis</Label>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant={rotationAxis === 'x' ? 'default' : 'outline'}
+                            onClick={() => handleAxisChange('x')}
+                            className="flex-1 h-8 text-xs"
+                          >
+                            X-Axis
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={rotationAxis === 'y' ? 'default' : 'outline'}
+                            onClick={() => handleAxisChange('y')}
+                            className="flex-1 h-8 text-xs"
+                          >
+                            Y-Axis
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -103,26 +103,30 @@ export default function SpacePage() {
         backgroundImage: lobbyBackground,
         isHome: true
       };
-      const convertedDbSpaces: Space[] = dbSpaces.map(dbSpace => ({
-        id: dbSpace.id,
-        name: dbSpace.name,
-        thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-        parentId: dbSpace.parent_id || undefined,
-        backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
-        show360: dbSpace.show_360 || false,
-        xAxis: dbSpace.x_axis_offset || 0,
-        yAxis: dbSpace.y_axis_offset || 0,
-        volume: dbSpace.volume || 50,
-        isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
-        rotationEnabled: dbSpace.rotation_enabled || false,
-        rotationSpeed: dbSpace.rotation_speed || 1,
-        rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
-        flipHorizontal: dbSpace.flip_horizontal || false,
-        flipVertical: dbSpace.flip_vertical || false,
-        isHome: (dbSpace as any).is_home || (dbSpace as any).isHome || false,
-        isPublic: dbSpace.is_public || false,
-        shareSlug: dbSpace.share_slug || null,
-      }));
+      
+      // Filter out database spaces marked as home since lobby already represents home
+      const convertedDbSpaces: Space[] = dbSpaces
+        .filter(dbSpace => !(dbSpace as any).is_home && !(dbSpace as any).isHome)
+        .map(dbSpace => ({
+          id: dbSpace.id,
+          name: dbSpace.name,
+          thumb: dbSpace.thumbnail_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+          parentId: dbSpace.parent_id || undefined,
+          backgroundImage: dbSpace.cover_url || '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png',
+          show360: dbSpace.show_360 || false,
+          xAxis: dbSpace.x_axis_offset || 0,
+          yAxis: dbSpace.y_axis_offset || 0,
+          volume: dbSpace.volume || 50,
+          isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
+          rotationEnabled: dbSpace.rotation_enabled || false,
+          rotationSpeed: dbSpace.rotation_speed || 1,
+          rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',
+          flipHorizontal: dbSpace.flip_horizontal || false,
+          flipVertical: dbSpace.flip_vertical || false,
+          isHome: false,
+          isPublic: dbSpace.is_public || false,
+          shareSlug: dbSpace.share_slug || null,
+        }));
 
       setSpaces([lobby, ...convertedDbSpaces]);
     };

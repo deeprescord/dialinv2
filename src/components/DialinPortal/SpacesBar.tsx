@@ -18,6 +18,7 @@ import { VideoControls } from './VideoControls';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { ContactsPanel } from './ContactsPanel';
 import { AuthModal } from './AuthModal';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import audioVisualizer from '@/assets/audio-visualizer-animated.gif';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
@@ -149,6 +150,7 @@ export function SpacesBar({
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
   const [internalSortOrder, setInternalSortOrder] = useState<SortOrder>('custom');
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   
   // Use prop sortOrder if provided, otherwise use internal state
   const sortOrder = propSortOrder ?? internalSortOrder;
@@ -448,11 +450,11 @@ export function SpacesBar({
       <div className="relative overflow-x-auto scrollbar-thin flex items-start gap-3" style={{ padding: `${padding}px`, paddingTop: '16px' }}>
         {/* Home thumbnail - dummy for unauthenticated users, real for authenticated */}
         {!isAuthenticated ? (
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 ml-4">
             <div 
               className="flex flex-col items-center cursor-pointer select-none" 
               style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }}
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => setShowWelcomeDialog(true)}
             >
               <div 
                 className="rounded-2xl overflow-hidden glass-card border border-white/10" 
@@ -940,6 +942,42 @@ export function SpacesBar({
         onClose={() => setShowContactsPanel(false)}
         onContactClick={onContactClick}
       />
+
+      {/* Welcome Dialog */}
+      <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
+        <DialogContent className="sm:max-w-md glass-card border-white/20">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Welcome to Dialin</DialogTitle>
+            <DialogDescription className="text-base pt-4 space-y-3">
+              <p>Dialin is your personal media universe - organize, share, and experience your content like never before.</p>
+              <ul className="list-disc list-inside space-y-2 text-sm">
+                <li>Create immersive 360° spaces for your videos, music, and media</li>
+                <li>Share curated collections with friends and collaborators</li>
+                <li>Experience your content in stunning virtual environments</li>
+                <li>Connect with others through shared spaces and real-time chat</li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button 
+              onClick={() => {
+                setShowWelcomeDialog(false);
+                setShowAuthModal(true);
+              }} 
+              className="w-full bg-dialin-purple hover:bg-dialin-purple/90"
+            >
+              Get Started
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowWelcomeDialog(false)}
+              className="w-full border-white/20 hover:bg-white/10"
+            >
+              Learn More
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Auth Modal for dummy home thumbnail */}
       <AuthModal 

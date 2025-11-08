@@ -349,7 +349,7 @@ export function HomeView({
 
 
       {/* Hero Header / Content Viewer */}
-      {selectedItem?.storage_path && isViewerPlayable && !itemSkyboxReady ? (
+      {(selectedItem?.storage_path || selectedItem?.url) && isViewerPlayable && !itemSkyboxReady ? (
         <ContentViewer
           ref={heroRef as any}
           content={{

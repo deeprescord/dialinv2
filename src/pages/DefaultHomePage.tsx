@@ -35,9 +35,9 @@ const DefaultHomePage = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       
-      // If user just logged in, redirect to main app
+      // If user just logged in, redirect to lobby
       if (session?.user) {
-        setTimeout(() => navigate('/'), 100);
+        setTimeout(() => navigate('/space/lobby'), 100);
       }
     });
 
@@ -45,7 +45,7 @@ const DefaultHomePage = () => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       if (user) {
-        navigate('/');
+        navigate('/space/lobby');
       }
     });
 
@@ -74,7 +74,7 @@ const DefaultHomePage = () => {
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
-    navigate('/');
+    navigate('/space/lobby');
   };
 
   const handleSignUpClick = () => {

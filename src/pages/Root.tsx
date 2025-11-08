@@ -32,13 +32,6 @@ const Root = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Redirect to lobby after a successful login
-  useEffect(() => {
-    if (!initializing && user && location.pathname === "/") {
-      navigate("/space/lobby", { replace: true });
-    }
-  }, [initializing, user, location.pathname, navigate]);
-
   if (initializing) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">

@@ -323,6 +323,21 @@ export function HomeView({
          ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))
          : undefined);
    const effectiveShow360 = itemSkyboxReady || (show360 && !selectedItem?.show360);
+
+   // Determine if the selected item should open in the ContentViewer (supports video, audio, image, pdf)
+   const isPdfSelected = !!selectedItem && (
+     selectedItem?.mime_type === 'application/pdf' ||
+     (typeof selectedItem?.storage_path === 'string' && selectedItem.storage_path.toLowerCase().endsWith('.pdf'))
+   );
+   const isImageSelected = !!selectedItem && (
+     selectedItem?.file_type === 'image' || (typeof selectedItem?.mime_type === 'string' && selectedItem.mime_type.startsWith('image/'))
+   );
+   const isViewerPlayable = !!selectedItem && (
+     selectedItem?.file_type === 'video' ||
+     selectedItem?.file_type === 'audio' ||
+     isImageSelected ||
+     isPdfSelected
+   );
  
    return (
     <motion.div
@@ -333,8 +348,8 @@ export function HomeView({
     >
 
 
-      {/* Hero Header - Prefer 360 hero for items with show360 enabled; otherwise use player for video/audio */}
-      {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) && !itemSkyboxReady ? (
+      {/* Hero Header / Content Viewer */}
+      {selectedItem?.storage_path && isViewerPlayable && !itemSkyboxReady ? (
         <ContentViewer
           ref={heroRef as any}
           content={{

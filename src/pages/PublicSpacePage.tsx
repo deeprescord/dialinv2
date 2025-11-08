@@ -323,29 +323,37 @@ const PublicSpacePage = () => {
       return;
     }
 
-    // Web links - use URL directly
-    if (item.file_type === 'web') {
+    const fileType = item.file_type || item.type;
+
+    // Web links - prefer provided URL, fallback to storage_path
+    if (fileType === 'web') {
       const transformedItem = {
         ...item,
         type: 'web',
-        url: item.storage_path,
-        thumb: item.thumbnail_path || undefined,
+        file_type: 'web',
+        url: item.url || item.storage_path,
+        storage_path: item.storage_path, // keep if present for consistency
+        thumb: item.thumbnail_path || item.thumb || undefined,
       };
       console.log('🌐 PublicSpacePage - Web link transformed:', transformedItem);
       setSelectedItemData(transformedItem);
       return;
     }
 
-    // For files, pass storage_path directly - ContentViewer will handle signing
+    // Regular files: keep both storage_path and any pre-signed url if provided
     const transformedItem = {
       ...item,
-      type: item.file_type,
+      type: fileType,
+      file_type: fileType,
       storage_path: item.storage_path,
-      file_type: item.file_type,
+      url: item.url, // if HomeView provided a signed URL, let ContentViewer use it via HomeView
       mime_type: item.mime_type,
+      thumbnail_path: item.thumbnail_path || item.thumb,
+      duration: item.duration,
+      original_name: item.original_name || item.title,
     };
     
-    console.log('✨ PublicSpacePage - Transformed item with storage_path:', transformedItem);
+    console.log('✨ PublicSpacePage - Final transformed item:', transformedItem);
     setSelectedItemData(transformedItem);
   };
 

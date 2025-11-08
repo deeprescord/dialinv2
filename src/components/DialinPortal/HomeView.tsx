@@ -201,43 +201,68 @@ export function HomeView({
   const handleItemClickFromBar = async (item: any) => {
     if (!item) return;
 
-    // Special case: web links should not be signed; use URL directly
-    if (item.file_type === 'web') {
-      const transformedItem = {
-        id: item.id,
-        title: item.original_name,
-        type: 'web',
-        url: item.storage_path,
-        thumb: item.thumbnail_path,
-        file_type: 'web',
-      };
-      onItemClick?.(transformedItem);
-      return;
+    // Fetch full file data including 360 settings from database
+    try {
+      const { data: fileData, error } = await supabase
+        .from('files')
+        .select('*')
+        .eq('id', item.id)
+        .maybeSingle();
+
+      if (fileData && !error) {
+        // Special case: web links should not be signed; use URL directly
+        if (fileData.file_type === 'web') {
+          const transformedItem = {
+            id: fileData.id,
+            title: fileData.original_name,
+            type: 'web',
+            url: fileData.storage_path,
+            thumb: fileData.thumbnail_path,
+            file_type: 'web',
+            show360: fileData.show_360,
+            xAxisOffset: fileData.x_axis_offset,
+            yAxisOffset: fileData.y_axis_offset,
+            rotationEnabled: fileData.rotation_enabled,
+            rotationSpeed: fileData.rotation_speed,
+            rotationAxis: fileData.rotation_axis,
+          };
+          onItemClick?.(transformedItem);
+          return;
+        }
+        
+        // Generate signed URL for regular storage files
+        const { data: signedData } = await supabase.storage
+          .from('user-files')
+          .createSignedUrl(fileData.storage_path, 3600);
+        
+        const url = signedData?.signedUrl || '';
+        
+        // Transform with all 360 settings
+        const transformedItem = {
+          id: fileData.id,
+          title: fileData.original_name,
+          type: fileData.file_type,
+          url: url,
+          thumb: url,
+          duration: fileData.duration,
+          mime_type: fileData.mime_type,
+          storage_path: fileData.storage_path,
+          file_type: fileData.file_type,
+          original_name: fileData.original_name,
+          thumbnail_path: fileData.thumbnail_path,
+          show360: fileData.show_360,
+          xAxisOffset: fileData.x_axis_offset,
+          yAxisOffset: fileData.y_axis_offset,
+          rotationEnabled: fileData.rotation_enabled,
+          rotationSpeed: fileData.rotation_speed,
+          rotationAxis: fileData.rotation_axis,
+        };
+        
+        onItemClick?.(transformedItem);
+      }
+    } catch (error) {
+      console.error('Error fetching file data:', error);
     }
-    
-    // Generate signed URL for regular storage files
-    const { data: signedData } = await supabase.storage
-      .from('user-files')
-      .createSignedUrl(item.storage_path, 3600);
-    
-    const url = signedData?.signedUrl || '';
-    
-    // Transform SpaceItem to the format expected by ContentViewer/HeroHeaderVideo
-    const transformedItem = {
-      id: item.id,
-      title: item.original_name,
-      type: item.file_type,
-      url: url,
-      thumb: item.thumbnail_path ? url : undefined,
-      duration: item.duration,
-      mime_type: item.mime_type,
-      storage_path: item.storage_path,
-      file_type: item.file_type,
-      original_name: item.original_name,
-      thumbnail_path: item.thumbnail_path
-    };
-    
-    onItemClick?.(transformedItem);
   };
   // Determine if lobby has a custom uploaded background (disable default video when true)
   const hasCustomBackground = isLobby && typeof backgroundImage === 'string' && (

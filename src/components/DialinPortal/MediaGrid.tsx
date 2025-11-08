@@ -117,6 +117,7 @@ export function MediaGrid({
                 src={item.thumb} 
                 alt={item.title}
                 className={`w-full h-32 sm:h-40 object-cover ${enableDragDrop ? 'rounded-t-lg' : ''}`}
+                onContextMenu={(e) => e.preventDefault()}
               />
               {item.duration && (
                 <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">

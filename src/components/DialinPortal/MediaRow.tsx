@@ -80,6 +80,7 @@ export function MediaRow({ title, items, onItemClick, onItemLongPress }: MediaRo
                   src={item.thumb} 
                   alt={item.title}
                   className="w-full h-40 object-cover"
+                  onContextMenu={(e) => e.preventDefault()}
                 />
                 {item.duration && (
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">

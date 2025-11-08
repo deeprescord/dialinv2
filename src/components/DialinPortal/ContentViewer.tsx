@@ -436,6 +436,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
               }
             }}
             onClick={togglePlay}
+            onContextMenu={(e) => e.preventDefault()}
           />
         </div>
       )}
@@ -451,6 +452,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
                 src={thumbnailUrl}
                 alt={content.original_name}
                 className="w-full h-full object-cover"
+                onContextMenu={(e) => e.preventDefault()}
                 onError={(e) => {
                   console.error('Thumbnail failed to load:', thumbnailUrl);
                   e.currentTarget.style.display = 'none';
@@ -481,6 +483,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
               alt={content.original_name}
               className="max-w-full max-h-full object-contain transition-transform duration-200"
               style={{ transform: `scale(${zoom})` }}
+              onContextMenu={(e) => e.preventDefault()}
             />
           </div>
           

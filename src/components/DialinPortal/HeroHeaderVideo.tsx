@@ -794,6 +794,18 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {/* Video - dynamic sizing for tall videos - ONLY render when this is the active video */}
       {!webUrl && !show360 && showVideo && videoSrc && !videoError && (
         <div className={isScrollableVideo ? 'w-full h-screen overflow-y-auto' : 'absolute inset-0'}>
+          {/* Loading skeleton */}
+          {!videoLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background/80 to-muted/50 animate-pulse">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center space-y-4">
+                  <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                  <p className="text-muted-foreground text-sm">Loading video...</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <video
             ref={videoRef}
             playsInline
@@ -897,6 +909,18 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
         <>
           {isBackgroundVideo ? (
             <div className={isScrollableBackgroundVideo ? 'w-full' : 'absolute inset-0'}>
+              {/* Loading skeleton for background video */}
+              {!videoLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background/80 to-muted/50 animate-pulse">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                      <p className="text-muted-foreground text-sm">Loading video...</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <video
                 ref={bgVideoRef}
                 playsInline

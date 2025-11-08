@@ -676,7 +676,12 @@ export function SpacesBar({
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
-                              const chosen = (space as any).thumb || (space as any).thumbnail_url || (space as any).cover_url || '/placeholder.svg';
+                              let chosen = (space as any).thumb || (space as any).thumbnail_url || (space as any).cover_url || '';
+                              if (!chosen && ((space as any).isHome || (space as any).is_home)) {
+                                chosen = '/media/grand-theater-thumb.jpg';
+                              }
+                              if (!chosen) chosen = '/placeholder.svg';
+                              console.info('SpacesBar thumb chosen', space.id, chosen);
                               return isVideoUrl(chosen) ? (
                                 <video
                                   src={chosen}

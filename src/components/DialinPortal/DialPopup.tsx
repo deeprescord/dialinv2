@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye, Globe } from 'lucide-react';
 import { Input } from '../ui/input';
+import { Switch } from '../ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MetadataDetailsPanel } from './MetadataDetailsPanel';
@@ -37,6 +38,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
+  const [show360, setShow360] = useState(false);
 
   // ESC key handling
   useEffect(() => {
@@ -69,7 +71,47 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     }
   }, [isOpen]);
 
+  // Fetch 360 settings when popup opens
+  useEffect(() => {
+    if (isOpen && item) {
+      const fetch360Settings = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('files')
+            .select('show_360')
+            .eq('id', item.id)
+            .maybeSingle();
+          
+          if (data && !error) {
+            setShow360(data.show_360 || false);
+          }
+        } catch (error) {
+          console.error('Error fetching 360 settings:', error);
+        }
+      };
+      fetch360Settings();
+    }
+  }, [isOpen, item]);
+
   if (!item) return null;
+
+  const handle360Toggle = async (enabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('files')
+        .update({ show_360: enabled })
+        .eq('id', item.id);
+      
+      if (error) throw error;
+      setShow360(enabled);
+      toast.success(enabled ? '360 view enabled' : '360 view disabled');
+      // Trigger a reload to update the display
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating 360 setting:', error);
+      toast.error('Failed to update 360 setting');
+    }
+  };
 
   const actionOptions: ActionOption[] = [
     { id: 'rename', label: 'Rename', icon: Edit3 },
@@ -284,6 +326,20 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                 ) : (
                   <>
                     <h3 className="font-semibold mb-4 break-words whitespace-normal">{item.title}</h3>
+
+                    {/* 360 View Toggle */}
+                    <div className="mb-4 p-3 bg-background/50 rounded-lg border border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Globe size={18} className="text-primary" />
+                          <span className="text-sm font-medium">Display as 360°</span>
+                        </div>
+                        <Switch
+                          checked={show360}
+                          onCheckedChange={handle360Toggle}
+                        />
+                      </div>
+                    </div>
 
                     {/* Action Options */}
                     <div className="space-y-1">

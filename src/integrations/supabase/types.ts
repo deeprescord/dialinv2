@@ -121,10 +121,16 @@ export type Database = {
           mime_type: string | null
           original_name: string
           owner_id: string
+          rotation_axis: string | null
+          rotation_enabled: boolean | null
+          rotation_speed: number | null
+          show_360: boolean | null
           storage_path: string
           thumbnail_path: string | null
           updated_at: string
           view_count: number | null
+          x_axis_offset: number | null
+          y_axis_offset: number | null
         }
         Insert: {
           created_at?: string
@@ -135,10 +141,16 @@ export type Database = {
           mime_type?: string | null
           original_name: string
           owner_id: string
+          rotation_axis?: string | null
+          rotation_enabled?: boolean | null
+          rotation_speed?: number | null
+          show_360?: boolean | null
           storage_path: string
           thumbnail_path?: string | null
           updated_at?: string
           view_count?: number | null
+          x_axis_offset?: number | null
+          y_axis_offset?: number | null
         }
         Update: {
           created_at?: string
@@ -149,10 +161,16 @@ export type Database = {
           mime_type?: string | null
           original_name?: string
           owner_id?: string
+          rotation_axis?: string | null
+          rotation_enabled?: boolean | null
+          rotation_speed?: number | null
+          show_360?: boolean | null
           storage_path?: string
           thumbnail_path?: string | null
           updated_at?: string
           view_count?: number | null
+          x_axis_offset?: number | null
+          y_axis_offset?: number | null
         }
         Relationships: []
       }

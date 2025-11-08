@@ -843,6 +843,12 @@ export default function SpacePage() {
             title: file.original_name,
             type: 'web',
             url: file.storage_path, // For web links, we store the URL in storage_path
+            show360: file.show_360,
+            xAxisOffset: file.x_axis_offset,
+            yAxisOffset: file.y_axis_offset,
+            rotationEnabled: file.rotation_enabled,
+            rotationSpeed: file.rotation_speed,
+            rotationAxis: file.rotation_axis,
           } as any);
           console.log('Selected web link:', file.storage_path);
         } else {
@@ -854,6 +860,12 @@ export default function SpacePage() {
             storage_path: file.storage_path,
             file_type: file.file_type,
             mime_type: file.mime_type,
+            show360: file.show_360,
+            xAxisOffset: file.x_axis_offset,
+            yAxisOffset: file.y_axis_offset,
+            rotationEnabled: file.rotation_enabled,
+            rotationSpeed: file.rotation_speed,
+            rotationAxis: file.rotation_axis,
           } as any);
         }
         return;

@@ -286,20 +286,20 @@ export function HomeView({
       ) : (
          <HeroHeaderVideo
            ref={heroRef as any}
-           videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby && !hasCustomBackground && !show360 ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
+           videoSrc={selectedItem?.duration && !selectedItem?.artist ? selectedItem?.thumb : (isLobby && !hasCustomBackground && !show360 && !selectedItem?.show360 ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)}
            posterSrc={selectedItem?.thumb || selectedItem?.art || (!backgroundImage ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : (/\.(mp4|webm|ogg|mov)$/i.test((backgroundImage||'').split('?')[0]) ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : backgroundImage))}
            title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
            subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
            backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-           skyboxSrc={show360 ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)) : undefined}
-           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360)}
-           show360={show360}
-           xAxisOffset={xAxisOffset}
-           yAxisOffset={yAxisOffset}
+           skyboxSrc={(show360 || selectedItem?.show360) ? (selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined)) : undefined}
+           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360 && !selectedItem?.show360)}
+           show360={show360 || selectedItem?.show360}
+           xAxisOffset={selectedItem?.show360 ? selectedItem?.xAxisOffset : xAxisOffset}
+           yAxisOffset={selectedItem?.show360 ? selectedItem?.yAxisOffset : yAxisOffset}
            volume={volume}
            isMuted={isMuted}
-           rotationEnabled={rotationEnabled}
-           rotationSpeed={rotationSpeed}
+           rotationEnabled={selectedItem?.show360 ? selectedItem?.rotationEnabled : rotationEnabled}
+           rotationSpeed={selectedItem?.show360 ? selectedItem?.rotationSpeed : rotationSpeed}
            flipHorizontal={flipHorizontal}
            flipVertical={flipVertical}
            webUrl={

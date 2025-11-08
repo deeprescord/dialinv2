@@ -26,6 +26,7 @@ interface ContentViewerProps {
   onEditMetadata?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
+  onMediaEnded?: () => void;
   onVideoStateChange?: (state: {
     isPlaying: boolean;
     currentTime: number;
@@ -45,7 +46,7 @@ export type ContentViewerHandle = {
   toggleLoop: () => void;
 };
 
-export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete, onVideoStateChange }, ref) => {
+export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete, onMediaEnded, onVideoStateChange }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isLooping, setIsLooping] = useState(true);
@@ -135,6 +136,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
     const handleEnded = () => {
       setIsPlaying(false);
+      onMediaEnded?.();
     };
 
     const handlePlay = () => {

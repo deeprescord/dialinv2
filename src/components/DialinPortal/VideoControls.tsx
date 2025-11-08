@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, Repeat } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Repeat, ListVideo } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface VideoControlsProps {
@@ -9,11 +9,13 @@ interface VideoControlsProps {
   volume: number;
   isMuted: boolean;
   isLooping?: boolean;
+  isAutoplay?: boolean;
   onPlayPause: () => void;
   onSeek: (value: number) => void;
   onVolumeChange: (value: number) => void;
   onMuteToggle: () => void;
   onLoopToggle?: () => void;
+  onAutoplayToggle?: () => void;
 }
 
 export function VideoControls({
@@ -23,11 +25,13 @@ export function VideoControls({
   volume,
   isMuted,
   isLooping = true,
+  isAutoplay = false,
   onPlayPause,
   onSeek,
   onVolumeChange,
   onMuteToggle,
-  onLoopToggle
+  onLoopToggle,
+  onAutoplayToggle
 }: VideoControlsProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -56,6 +60,18 @@ export function VideoControls({
           title={isLooping ? 'Loop On' : 'Loop Off'}
         >
           <Repeat size={14} />
+        </Button>
+      )}
+
+      {onAutoplayToggle && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onAutoplayToggle}
+          className={`h-7 px-2 text-xs hover:bg-white/10 ${isAutoplay ? 'text-primary' : 'text-foreground/50'}`}
+          title={isAutoplay ? 'Autoplay On' : 'Autoplay Off'}
+        >
+          <ListVideo size={14} />
         </Button>
       )}
 

@@ -20,6 +20,7 @@ import { Friend, Space } from '@/data/catalogs';
 import lobbyBackground from '@/assets/lobby-background.jpg';
 import appBackground from '@/assets/app-background.jpg';
 import type { HeroHeaderVideoHandle } from './HeroHeaderVideo';
+import { useMediaQueue } from '@/contexts/MediaQueueContext';
 
 interface HomeViewProps {
   pinnedContacts: Friend[];
@@ -133,6 +134,7 @@ export function HomeView({
   onMovieModeToggle,
   onItem360Toggle
 }: HomeViewProps) {
+  const { isAutoplay, skipToNext } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -350,6 +352,11 @@ export function HomeView({
             onMediaClick?.(null);
           }}
           onVideoStateChange={onVideoStateChange}
+          onMediaEnded={() => {
+            if (isAutoplay) {
+              skipToNext();
+            }
+          }}
         />
       ) : (
          <HeroHeaderVideo

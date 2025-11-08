@@ -16,10 +16,12 @@ interface MediaQueueContextType {
   queue: QueueItem[];
   isPlaying: boolean;
   progress: number;
+  isAutoplay: boolean;
   skipToNext: () => void;
   skipToPrevious: () => void;
   setIsPlaying: (playing: boolean) => void;
   setProgress: (progress: number) => void;
+  setIsAutoplay: (autoplay: boolean) => void;
   updateQueue: (spaces: any[]) => void;
   setCurrentSpace: (spaceId: string) => void;
 }
@@ -33,6 +35,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isAutoplay, setIsAutoplay] = useState(false);
 
   // Update queue when spaces change
   const updateQueue = useCallback((spacesData: any[]) => {
@@ -93,10 +96,12 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       queue,
       isPlaying,
       progress,
+      isAutoplay,
       skipToNext,
       skipToPrevious,
       setIsPlaying,
       setProgress,
+      setIsAutoplay,
       updateQueue,
       setCurrentSpace
     }}>

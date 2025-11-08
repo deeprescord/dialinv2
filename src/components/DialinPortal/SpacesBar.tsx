@@ -25,6 +25,7 @@ import { Friend } from '@/data/catalogs';
 import { sortItems } from '@/lib/sortItems';
 import type { SortOrder } from '@/types/organization';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
+import { useMediaQueue } from '@/contexts/MediaQueueContext';
 
 interface SpacesBarProps {
   spaces: Space[];
@@ -121,6 +122,7 @@ export function SpacesBar({
   sortOrder: propSortOrder,
   onSortChange: propOnSortChange
 }: SpacesBarProps) {
+  const { isAutoplay, setIsAutoplay } = useMediaQueue();
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
   
@@ -758,11 +760,13 @@ export function SpacesBar({
                     volume={videoControlsState?.volume ?? 1}
                     isMuted={videoControlsState?.isMuted ?? true}
                     isLooping={videoControlsState?.isLooping ?? true}
+                    isAutoplay={isAutoplay}
                     onPlayPause={onVideoPlayPause}
                     onSeek={onVideoSeek}
                     onVolumeChange={onVideoVolumeChange}
                     onMuteToggle={onVideoMuteToggle}
                     onLoopToggle={onVideoLoopToggle}
+                    onAutoplayToggle={() => setIsAutoplay(!isAutoplay)}
                   />
                 </div>
               )}

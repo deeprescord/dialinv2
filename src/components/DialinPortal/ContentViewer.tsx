@@ -420,7 +420,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             ref={videoRef}
             src={contentUrl}
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
-            poster={content.thumbnail_path ? contentUrl.replace(content.storage_path, content.thumbnail_path) : undefined}
+            poster={thumbnailUrl || undefined}
             playsInline
             loop={isLooping}
             onLoadedMetadata={(e) => {

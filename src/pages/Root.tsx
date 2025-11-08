@@ -4,6 +4,7 @@ import type { User, Session } from "@supabase/supabase-js";
 import { DialinPortal } from "@/components/DialinPortal/DialinPortal";
 import DefaultHomePage from "./DefaultHomePage";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Root route component: shows public DefaultHomePage when not signed in,
 // and the full app (DialinPortal) when authenticated.
@@ -11,6 +12,8 @@ const Root = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Subscribe to auth state changes FIRST
@@ -28,6 +31,13 @@ const Root = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Redirect to lobby after a successful login
+  useEffect(() => {
+    if (!initializing && user && location.pathname === "/") {
+      navigate("/space/lobby", { replace: true });
+    }
+  }, [initializing, user, location.pathname, navigate]);
 
   if (initializing) {
     return (

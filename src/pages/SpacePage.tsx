@@ -30,6 +30,7 @@ import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpacesContext } from '@/contexts/SpacesContext';
 import { useMediaQueue } from '@/contexts/MediaQueueContext';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
+import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   videoCatalog, 
@@ -85,6 +86,7 @@ export default function SpacePage() {
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
   const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying } = useMediaQueue();
+  const { items: spaceItems } = useSpaceItems(spaceId && spaceId !== 'lobby' ? spaceId : undefined);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
   
@@ -1135,6 +1137,43 @@ export default function SpacePage() {
     setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
   };
 
+  // Handle next/previous item within current space
+  const handleNextItem = () => {
+    if (!selectedItemData || spaceItems.length === 0) return;
+    
+    const currentIndex = spaceItems.findIndex(item => item.id === selectedItemData.id);
+    if (currentIndex === -1) return;
+    
+    const nextIndex = (currentIndex + 1) % spaceItems.length;
+    const nextItem = spaceItems[nextIndex];
+    
+    if (nextItem.is_space) {
+      // Navigate to the space
+      handleSpaceClick(spaces.find(s => s.id === nextItem.id) as Space);
+    } else {
+      // Select the file
+      handleItemSelect(nextItem.id);
+    }
+  };
+
+  const handlePreviousItem = () => {
+    if (!selectedItemData || spaceItems.length === 0) return;
+    
+    const currentIndex = spaceItems.findIndex(item => item.id === selectedItemData.id);
+    if (currentIndex === -1) return;
+    
+    const prevIndex = currentIndex === 0 ? spaceItems.length - 1 : currentIndex - 1;
+    const prevItem = spaceItems[prevIndex];
+    
+    if (prevItem.is_space) {
+      // Navigate to the space
+      handleSpaceClick(spaces.find(s => s.id === prevItem.id) as Space);
+    } else {
+      // Select the file
+      handleItemSelect(prevItem.id);
+    }
+  };
+
   // Organization handlers
   const handleOrgAdd = (itemId: string, isSpace: boolean) => {
     setSelectedOrgItemId(itemId);
@@ -1400,6 +1439,8 @@ export default function SpacePage() {
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
             onVideoLoopToggle={handleVideoLoopToggle}
+            onNextItem={handleNextItem}
+            onPreviousItem={handlePreviousItem}
             onToggleItemsBar={() => {
               if (showItemsBar && itemsPeopleView === 'items') {
                 // Currently showing items - close it

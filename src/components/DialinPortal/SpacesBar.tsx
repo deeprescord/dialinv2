@@ -69,6 +69,8 @@ interface SpacesBarProps {
   onVideoVolumeChange?: (value: number) => void;
   onVideoMuteToggle?: () => void;
   onVideoLoopToggle?: () => void;
+  onNextItem?: () => void;
+  onPreviousItem?: () => void;
   onToggleItemsBar?: () => void;
   onTogglePeopleBar?: () => void;
   pinnedContacts?: Friend[];
@@ -113,6 +115,8 @@ export function SpacesBar({
   onVideoVolumeChange,
   onVideoMuteToggle,
   onVideoLoopToggle,
+  onNextItem,
+  onPreviousItem,
   onToggleItemsBar,
   onTogglePeopleBar,
   pinnedContacts = [],
@@ -122,7 +126,7 @@ export function SpacesBar({
   sortOrder: propSortOrder,
   onSortChange: propOnSortChange
 }: SpacesBarProps) {
-  const { isAutoplay, setIsAutoplay, isLooping, setIsLooping, skipToNext, skipToPrevious } = useMediaQueue();
+  const { isAutoplay, setIsAutoplay, isLooping, setIsLooping } = useMediaQueue();
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
   
@@ -769,8 +773,8 @@ export function SpacesBar({
                     onAutoplayToggle={() => setIsAutoplay(!isAutoplay)}
                     onSkipBackward10={() => onVideoSeek(Math.max(0, (videoControlsState?.currentTime ?? 0) - 10))}
                     onSkipForward10={() => onVideoSeek(Math.min((videoControlsState?.duration ?? 0), (videoControlsState?.currentTime ?? 0) + 10))}
-                    onPreviousItem={skipToPrevious}
-                    onNextItem={skipToNext}
+                    onPreviousItem={onPreviousItem}
+                    onNextItem={onNextItem}
                   />
                 </div>
               )}

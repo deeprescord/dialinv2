@@ -54,6 +54,8 @@ interface CombinedBottomBarProps {
   onVideoVolumeChange?: (value: number) => void;
   onVideoMuteToggle?: () => void;
   onVideoLoopToggle?: () => void;
+  onNextItem?: () => void;
+  onPreviousItem?: () => void;
   onToggleItemsBar?: () => void;
   onTogglePeopleBar?: () => void;
   pinnedContacts?: Friend[];
@@ -98,6 +100,8 @@ export function CombinedBottomBar({
   onVideoVolumeChange,
   onVideoMuteToggle,
   onVideoLoopToggle,
+  onNextItem,
+  onPreviousItem,
   onToggleItemsBar,
   onTogglePeopleBar,
   pinnedContacts = [],
@@ -189,6 +193,8 @@ export function CombinedBottomBar({
           onVideoVolumeChange={onVideoVolumeChange}
           onVideoMuteToggle={onVideoMuteToggle}
           onVideoLoopToggle={onVideoLoopToggle}
+          onNextItem={onNextItem}
+          onPreviousItem={onPreviousItem}
           onToggleItemsBar={onToggleItemsBar}
           onTogglePeopleBar={onTogglePeopleBar}
           pinnedContacts={pinnedContacts}

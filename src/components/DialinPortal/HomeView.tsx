@@ -309,11 +309,20 @@ export function HomeView({
       <InfiniteScrollView
         spaceId={spaceId}
         onClose={onMovieModeToggle || (() => {})}
-      />
-    );
-  }
-
-  return (
+       />
+     );
+   }
+ 
+   // Resolve 360 rendering preference and source
+   const itemSkyboxReady = Boolean(selectedItem?.show360 && (item360UrlForHero || selectedItem?.url));
+   const skyboxSrcResolved = itemSkyboxReady
+     ? (item360UrlForHero || selectedItem?.url)
+     : ((show360 && !selectedItem?.show360)
+         ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))
+         : undefined);
+   const effectiveShow360 = itemSkyboxReady || (show360 && !selectedItem?.show360);
+ 
+   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -323,7 +332,7 @@ export function HomeView({
 
 
       {/* Hero Header - Prefer 360 hero for items with show360 enabled; otherwise use player for video/audio */}
-      {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) && !selectedItem?.show360 ? (
+      {selectedItem?.storage_path && selectedItem?.file_type && ['video', 'audio'].includes(selectedItem.file_type) && !itemSkyboxReady ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
@@ -350,9 +359,9 @@ export function HomeView({
            title={isLobby ? "" : (selectedItem?.title || selectedItem?.name || spaceName || "")}
            subtitle={isLobby ? "" : (selectedItem?.artist || selectedItem?.type || spaceDescription || "")}
            backgroundImage={selectedItem?.thumb || selectedItem?.art || backgroundImage || (isLobby ? "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png" : "/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png")}
-           skyboxSrc={(show360 || selectedItem?.show360) ? (selectedItem?.show360 ? (item360UrlForHero || selectedItem?.url) : (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))) : undefined}
-           showVideo={selectedItem?.duration && !selectedItem?.artist ? true : (isLobby && !hasCustomBackground && !show360 && !selectedItem?.show360)}
-           show360={show360 || selectedItem?.show360}
+           skyboxSrc={skyboxSrcResolved}
+           showVideo={(selectedItem?.duration && !selectedItem?.artist && !effectiveShow360) ? true : (isLobby && !hasCustomBackground && !effectiveShow360)}
+           show360={effectiveShow360}
            xAxisOffset={selectedItem?.show360 ? selectedItem?.xAxisOffset : xAxisOffset}
            yAxisOffset={selectedItem?.show360 ? selectedItem?.yAxisOffset : yAxisOffset}
            volume={volume}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, Repeat, ListVideo } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Repeat, ListVideo, SkipForward, SkipBack } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface VideoControlsProps {
@@ -16,6 +16,8 @@ interface VideoControlsProps {
   onMuteToggle: () => void;
   onLoopToggle?: () => void;
   onAutoplayToggle?: () => void;
+  onSkipForward?: () => void;
+  onSkipBackward?: () => void;
 }
 
 export function VideoControls({
@@ -31,7 +33,9 @@ export function VideoControls({
   onVolumeChange,
   onMuteToggle,
   onLoopToggle,
-  onAutoplayToggle
+  onAutoplayToggle,
+  onSkipForward,
+  onSkipBackward
 }: VideoControlsProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -41,6 +45,18 @@ export function VideoControls({
 
   return (
     <>
+      {onSkipBackward && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSkipBackward}
+          className="h-7 px-2 text-xs hover:bg-white/10"
+          title="Skip back 10s"
+        >
+          <SkipBack size={14} />
+        </Button>
+      )}
+
       <Button
         variant="ghost"
         size="sm"
@@ -50,6 +66,18 @@ export function VideoControls({
       >
         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
       </Button>
+
+      {onSkipForward && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSkipForward}
+          className="h-7 px-2 text-xs hover:bg-white/10"
+          title="Skip forward 10s"
+        >
+          <SkipForward size={14} />
+        </Button>
+      )}
 
       {onLoopToggle && (
         <Button

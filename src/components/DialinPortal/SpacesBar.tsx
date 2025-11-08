@@ -767,6 +767,8 @@ export function SpacesBar({
                     onMuteToggle={onVideoMuteToggle}
                     onLoopToggle={() => setIsLooping(!isLooping)}
                     onAutoplayToggle={() => setIsAutoplay(!isAutoplay)}
+                    onSkipBackward={() => onVideoSeek(Math.max(0, (videoControlsState?.currentTime ?? 0) - 10))}
+                    onSkipForward={() => onVideoSeek(Math.min((videoControlsState?.duration ?? 0), (videoControlsState?.currentTime ?? 0) + 10))}
                   />
                 </div>
               )}

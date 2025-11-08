@@ -676,7 +676,7 @@ export function SpacesBar({
                           )}
                           <div className="rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10 flex-shrink-0" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                             {(() => {
-                              const chosen = (space as any).thumbnail_url || (space as any).cover_url || (space as any).thumb || '';
+                              const chosen = (space as any).thumb || (space as any).thumbnail_url || (space as any).cover_url || '/placeholder.svg';
                               return isVideoUrl(chosen) ? (
                                 <video
                                   src={chosen}

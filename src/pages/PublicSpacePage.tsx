@@ -160,6 +160,30 @@ const PublicSpacePage = () => {
     setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
   };
 
+  // Skip 10s helpers
+  const handleSkipForward10 = () => {
+    const next = Math.min(videoState.duration, (videoState.currentTime || 0) + 10);
+    handleVideoSeek(next);
+  };
+  const handleSkipBackward10 = () => {
+    const prev = Math.max(0, (videoState.currentTime || 0) - 10);
+    handleVideoSeek(prev);
+  };
+
+  // Next/Previous within current public space items
+  const playAdjacentItem = (direction: 1 | -1) => {
+    if (!spaceItems || spaceItems.length === 0) return;
+    const playable = spaceItems.filter(i => !i.is_space);
+    if (playable.length === 0) return;
+    const currentId = selectedItemData?.id;
+    const idx = Math.max(0, playable.findIndex(i => i.id === currentId));
+    const nextIdx = (idx + direction + playable.length) % playable.length;
+    const target = playable[nextIdx];
+    handleMediaClick(target);
+  };
+  const handleNextItem = () => playAdjacentItem(1);
+  const handlePreviousItem = () => playAdjacentItem(-1);
+
   const handleOpen360Settings = () => {
     setShow360Settings(true);
   };
@@ -482,6 +506,8 @@ const PublicSpacePage = () => {
             onVideoVolumeChange={handleVideoVolumeChange}
             onVideoMuteToggle={handleVideoMuteToggle}
             onVideoLoopToggle={handleVideoLoopToggle}
+            onNextItem={handleNextItem}
+            onPreviousItem={handlePreviousItem}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
           />

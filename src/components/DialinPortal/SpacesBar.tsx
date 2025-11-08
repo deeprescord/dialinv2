@@ -390,34 +390,43 @@ export function SpacesBar({
   React.useEffect(() => {
     const generateUrls = async () => {
       const urls: Record<string, string> = {};
-      const filesToSign: Array<{ id: string; path: string }> = [];
+      const filesToProcess: Array<{ id: string; path: string; bucket: 'user-files' | 'space-covers' }> = [];
       
-      // First pass: collect items needing signed URLs
+      // First pass: collect items and determine bucket
       for (const item of spaceItems) {
         const pathToUse = item.thumbnail_path || item.storage_path;
         if (!pathToUse) continue;
-        // If it's already a public URL (e.g., from space-covers), use directly
+        
+        // If it's already a full public URL, use directly
         if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
           urls[item.id] = pathToUse;
-        } else {
-          filesToSign.push({ id: item.id, path: pathToUse });
+          continue;
         }
+        
+        const bucket: 'user-files' | 'space-covers' = pathToUse.startsWith('space-covers/') ? 'space-covers' : 'user-files';
+        filesToProcess.push({ id: item.id, path: pathToUse, bucket });
       }
       
-      // Batch sign URLs (Supabase supports this efficiently)
-      if (filesToSign.length > 0) {
+      // Resolve URLs per bucket
+      if (filesToProcess.length > 0) {
         const results = await Promise.allSettled(
-          filesToSign.map(file =>
-            supabase.storage
+          filesToProcess.map((f) => {
+            if (f.bucket === 'space-covers') {
+              // Public bucket: build public URL (no signing)
+              const { data } = supabase.storage.from('space-covers').getPublicUrl(f.path);
+              return Promise.resolve({ id: f.id, url: data.publicUrl });
+            }
+            // Private bucket: sign
+            return supabase.storage
               .from('user-files')
-              .createSignedUrl(file.path, 3600)
-              .then(({ data }) => ({ id: file.id, url: data?.signedUrl }))
-          )
+              .createSignedUrl(f.path, 3600)
+              .then(({ data }) => ({ id: f.id, url: data?.signedUrl }));
+          })
         );
         
-        results.forEach((result) => {
-          if (result.status === 'fulfilled' && result.value.url) {
-            urls[result.value.id] = result.value.url;
+        results.forEach((r) => {
+          if (r.status === 'fulfilled' && r.value.url) {
+            urls[r.value.id] = r.value.url;
           }
         });
       }

@@ -69,22 +69,28 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const is360 = content.metadata?.is_360 || content.original_name.toLowerCase().includes('360');
   const isScrollableVideo = isVideo && videoDimensions ? videoDimensions.height > window.innerHeight * 1.1 : false;
 
-  // Get the public URL for the content
   const getPublicUrl = async (path: string): Promise<string> => {
+    if (!path) return '';
     if (path.startsWith('http')) return path;
-    
-    // For user-files bucket (private), we need to get a signed URL
-    const { data, error } = await supabase.storage
-      .from('user-files')
-      .createSignedUrl(path, 3600); // 1 hour expiry
-    
-    if (error || !data) {
-      console.error('Error getting signed URL:', error);
-      // Fallback to public URL attempt
+    if (path.includes('/object/public/')) return path;
+
+    try {
+      // Public bucket: space-covers
+      if (path.startsWith('space-covers/')) {
+        const { data } = supabase.storage.from('space-covers').getPublicUrl(path);
+        return data.publicUrl;
+      }
+      // Default: private user-files bucket
+      const { data, error } = await supabase.storage
+        .from('user-files')
+        .createSignedUrl(path, 3600); // 1 hour expiry
+      if (error || !data) throw error;
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Error getting URL:', error);
+      // Fallback public URL attempt (may 404 if bucket is private)
       return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/user-files/${path}`;
     }
-    
-    return data.signedUrl;
   };
 
   const [contentUrl, setContentUrl] = useState<string>('');

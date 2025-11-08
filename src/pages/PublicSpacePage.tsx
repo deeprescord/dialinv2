@@ -297,24 +297,51 @@ const PublicSpacePage = () => {
       return;
     }
 
-    // Fetch signed URLs for the item if it has a storage_path
-    if (item.storage_path) {
-      try {
+    try {
+      // Web links should not be signed; use URL directly
+      if (item.file_type === 'web') {
+        const transformedItem = {
+          ...item,
+          type: 'web',
+          url: item.storage_path,
+          thumb: item.thumbnail_path || undefined,
+        };
+        setSelectedItemData(transformedItem);
+        return;
+      }
+
+      // Resolve signed URL for file content
+      let signedUrl: string | undefined;
+      if (item.storage_path) {
         const { data: signedData } = await supabase.storage
           .from('user-files')
           .createSignedUrl(item.storage_path, 3600);
-
-        const transformedItem = {
-          ...item,
-          url: signedData?.signedUrl || item.url,
-          type: item.file_type,
-        };
-        setSelectedItemData(transformedItem);
-      } catch (error) {
-        console.error('Error fetching signed URL:', error);
-        setSelectedItemData(item);
+        signedUrl = signedData?.signedUrl || item.url;
       }
-    } else {
+
+      // Resolve thumbnail (prefer thumbnail_path when available)
+      let signedThumb: string | undefined;
+      if (item.thumbnail_path) {
+        if (item.thumbnail_path.startsWith('space-covers/')) {
+          const { data } = supabase.storage.from('space-covers').getPublicUrl(item.thumbnail_path);
+          signedThumb = data.publicUrl;
+        } else {
+          const { data: thumbSigned } = await supabase.storage
+            .from('user-files')
+            .createSignedUrl(item.thumbnail_path, 3600);
+          signedThumb = thumbSigned?.signedUrl;
+        }
+      }
+
+      const transformedItem = {
+        ...item,
+        url: signedUrl || item.url,
+        thumb: signedThumb || signedUrl || item.thumb,
+        type: item.file_type,
+      };
+      setSelectedItemData(transformedItem);
+    } catch (error) {
+      console.error('Error preparing media item:', error);
       setSelectedItemData(item);
     }
   };

@@ -609,7 +609,7 @@ export function SpacesBar({
                                 if (isSpace) {
                                   handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
                                 } else {
-                                  // Fetch full file data including 360 settings
+                                  // Fetch full file data including 360 settings and pre-sign URLs
                                   try {
                                     const { data: fileData, error } = await supabase
                                       .from('files')
@@ -618,9 +618,40 @@ export function SpacesBar({
                                       .maybeSingle();
                                     
                                     if (fileData && !error) {
-                                      // Pass the full file data with 360 settings
+                                      // Prepare signed URLs for immediate playback (web links use direct URL)
+                                      let mediaUrl: string | undefined = undefined;
+                                      let thumbUrl: string | undefined = undefined;
+                                      
+                                      if (fileData.file_type === 'web') {
+                                        mediaUrl = fileData.storage_path;
+                                      } else if (fileData.storage_path) {
+                                        const { data: signed } = await supabase.storage
+                                          .from('user-files')
+                                          .createSignedUrl(fileData.storage_path, 3600);
+                                        mediaUrl = signed?.signedUrl;
+                                      }
+                                      
+                                      if (fileData.thumbnail_path) {
+                                        if (fileData.thumbnail_path.startsWith('space-covers/')) {
+                                          const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
+                                          thumbUrl = data.publicUrl;
+                                        } else {
+                                          const { data: signedThumb } = await supabase.storage
+                                            .from('user-files')
+                                            .createSignedUrl(fileData.thumbnail_path, 3600);
+                                          thumbUrl = signedThumb?.signedUrl;
+                                        }
+                                      } else {
+                                        thumbUrl = mediaUrl; // fallback
+                                      }
+                                      
                                       onItemClick?.({
                                         ...item,
+                                        url: mediaUrl,
+                                        thumb: thumbUrl,
+                                        storage_path: fileData.storage_path,
+                                        file_type: fileData.file_type,
+                                        mime_type: fileData.mime_type,
                                         show360: fileData.show_360,
                                         xAxisOffset: fileData.x_axis_offset,
                                         yAxisOffset: fileData.y_axis_offset,

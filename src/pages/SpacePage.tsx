@@ -788,7 +788,7 @@ export default function SpacePage() {
   // Handle space navigation
   const handleSpaceClick = (space: Space) => {
     if (space.id === 'lobby') {
-      navigate('/');
+      navigate('/space/lobby');
       setNavigationPath(['lobby']);
     } else {
       navigate(`/space/${space.id}`);
@@ -810,7 +810,7 @@ export default function SpacePage() {
   // Handle navigation via breadcrumb
   const handleBreadcrumbNavigate = (spaceId: string) => {
     if (spaceId === 'lobby') {
-      navigate('/');
+      navigate('/space/lobby');
       setNavigationPath(['lobby']);
       setSelectedItemId(undefined);
       setSelectedItemData(null);

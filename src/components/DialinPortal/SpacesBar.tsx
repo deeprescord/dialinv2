@@ -396,6 +396,13 @@ export function SpacesBar({
       for (const item of spaceItems) {
         const pathToUse = item.thumbnail_path || item.storage_path;
         if (!pathToUse) continue;
+
+        // If this is an audio file without a thumbnail, skip signing.
+        // We'll show the built-in audio visualizer fallback for tiles.
+        const isAudio = (item.file_type?.startsWith?.('audio') || item.mime_type?.startsWith?.('audio/')) ?? false;
+        if (isAudio && !item.thumbnail_path) {
+          continue;
+        }
         
         // If it's already a full public URL, use directly
         if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {

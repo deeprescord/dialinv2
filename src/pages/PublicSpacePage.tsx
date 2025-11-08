@@ -59,51 +59,6 @@ const PublicSpacePage = () => {
   // Fetch space items using the hook
   const { items: spaceItems, loading: itemsLoading } = useSpaceItems(publicSpace?.id);
 
-  // Auto-select the first playable item when entering a public space
-  useEffect(() => {
-    const autoload = async () => {
-      if (selectedItemData || !spaceItems || spaceItems.length === 0) return;
-      const first = spaceItems.find((i) => !i.is_space);
-      if (!first) return;
-      try {
-        let mediaUrl: string | undefined;
-        let thumbUrl: string | undefined;
-        if (first.file_type === 'web') {
-          mediaUrl = first.storage_path;
-        } else if (first.storage_path) {
-          const { data: signed } = await supabase.storage
-            .from('user-files')
-            .createSignedUrl(first.storage_path, 3600);
-          mediaUrl = signed?.signedUrl;
-        }
-        if (first.thumbnail_path) {
-          if (first.thumbnail_path.startsWith('space-covers/')) {
-            const { data } = supabase.storage.from('space-covers').getPublicUrl(first.thumbnail_path);
-            thumbUrl = data.publicUrl;
-          } else {
-            const { data: signedThumb } = await supabase.storage
-              .from('user-files')
-              .createSignedUrl(first.thumbnail_path, 3600);
-            thumbUrl = signedThumb?.signedUrl;
-          }
-        } else {
-          thumbUrl = mediaUrl;
-        }
-        const transformed = {
-          ...first,
-          url: mediaUrl,
-          thumb: thumbUrl,
-          type: first.file_type,
-        };
-        console.log('🚀 PublicSpacePage - Auto-loaded first item:', transformed);
-        setSelectedItemData(transformed);
-      } catch (e) {
-        console.error('❌ PublicSpacePage - Auto-load error:', e);
-      }
-    };
-    autoload();
-  }, [spaceItems, selectedItemData]);
-
   useEffect(() => {
     checkAuthAndFetchSpace();
   }, [shareSlug]);

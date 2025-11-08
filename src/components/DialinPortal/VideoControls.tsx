@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, Volume2, VolumeX, Repeat, ListVideo, SkipForward, SkipBack } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Repeat, ListVideo, SkipForward, SkipBack, RotateCcw, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface VideoControlsProps {
@@ -16,8 +16,10 @@ interface VideoControlsProps {
   onMuteToggle: () => void;
   onLoopToggle?: () => void;
   onAutoplayToggle?: () => void;
-  onSkipForward?: () => void;
-  onSkipBackward?: () => void;
+  onSkipForward10?: () => void;
+  onSkipBackward10?: () => void;
+  onNextItem?: () => void;
+  onPreviousItem?: () => void;
 }
 
 export function VideoControls({
@@ -34,8 +36,10 @@ export function VideoControls({
   onMuteToggle,
   onLoopToggle,
   onAutoplayToggle,
-  onSkipForward,
-  onSkipBackward
+  onSkipForward10,
+  onSkipBackward10,
+  onNextItem,
+  onPreviousItem
 }: VideoControlsProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -45,15 +49,28 @@ export function VideoControls({
 
   return (
     <>
-      {onSkipBackward && (
+      {onPreviousItem && (
         <Button
           variant="ghost"
           size="sm"
-          onClick={onSkipBackward}
+          onClick={onPreviousItem}
           className="h-7 px-2 text-xs hover:bg-white/10"
-          title="Skip back 10s"
+          title="Previous item"
         >
           <SkipBack size={14} />
+        </Button>
+      )}
+
+      {onSkipBackward10 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSkipBackward10}
+          className="h-7 px-1.5 text-xs hover:bg-white/10 relative"
+          title="Skip back 10s"
+        >
+          <RotateCcw size={14} />
+          <span className="absolute text-[8px] font-bold" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>10</span>
         </Button>
       )}
 
@@ -67,13 +84,26 @@ export function VideoControls({
         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
       </Button>
 
-      {onSkipForward && (
+      {onSkipForward10 && (
         <Button
           variant="ghost"
           size="sm"
-          onClick={onSkipForward}
-          className="h-7 px-2 text-xs hover:bg-white/10"
+          onClick={onSkipForward10}
+          className="h-7 px-1.5 text-xs hover:bg-white/10 relative"
           title="Skip forward 10s"
+        >
+          <RotateCw size={14} />
+          <span className="absolute text-[8px] font-bold" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>10</span>
+        </Button>
+      )}
+
+      {onNextItem && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onNextItem}
+          className="h-7 px-2 text-xs hover:bg-white/10"
+          title="Next item"
         >
           <SkipForward size={14} />
         </Button>

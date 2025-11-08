@@ -354,7 +354,7 @@ export function HomeView({
           ref={heroRef as any}
           content={{
             id: selectedItem.id || selectedItem.thumb,
-            storage_path: selectedItem.storage_path,
+            storage_path: (selectedItem.url || selectedItem.storage_path),
             file_type: selectedItem.file_type,
             mime_type: selectedItem.mime_type,
             original_name: selectedItem.title || selectedItem.original_name || selectedItem.name || 'Untitled',

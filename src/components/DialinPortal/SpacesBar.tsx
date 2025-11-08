@@ -386,59 +386,89 @@ export function SpacesBar({
     }
   };
 
-  // Optimized: Batch signed URL generation and use memo
+  // Optimized: Batch signed URL generation with localStorage cache (TTL)
   React.useEffect(() => {
     const generateUrls = async () => {
       const urls: Record<string, string> = {};
-      const filesToProcess: Array<{ id: string; path: string; bucket: 'user-files' | 'space-covers' }> = [];
-      
+      const filesToProcess: Array<{ id: string; path: string; bucket: 'user-files' | 'space-covers' }>= [];
+
+      const now = Date.now();
+      const getCache = (bucket: string, path: string): string | undefined => {
+        try {
+          const raw = localStorage.getItem(`signed-url-cache:${bucket}:${path}`);
+          if (!raw) return undefined;
+          const parsed = JSON.parse(raw) as { url: string; exp: number };
+          if (!parsed?.url || !parsed?.exp || parsed.exp < now) {
+            localStorage.removeItem(`signed-url-cache:${bucket}:${path}`);
+            return undefined;
+          }
+          return parsed.url;
+        } catch { return undefined; }
+      };
+      const setCache = (bucket: string, path: string, url: string) => {
+        try {
+          const ttlMs = 25 * 60 * 1000; // 25 minutes
+          localStorage.setItem(
+            `signed-url-cache:${bucket}:${path}`,
+            JSON.stringify({ url, exp: now + ttlMs })
+          );
+        } catch {}
+      };
+
       // First pass: collect items and determine bucket
       for (const item of spaceItems) {
         const pathToUse = item.thumbnail_path || item.storage_path;
         if (!pathToUse) continue;
 
-        // If this is an audio file without a thumbnail, skip signing.
-        // We'll show the built-in audio visualizer fallback for tiles.
+        // If audio without a thumbnail, show visualizer fallback (no signing)
         const isAudio = (item.file_type?.startsWith?.('audio') || item.mime_type?.startsWith?.('audio/')) ?? false;
-        if (isAudio && !item.thumbnail_path) {
-          continue;
-        }
-        
+        if (isAudio && !item.thumbnail_path) continue;
+
         // If it's already a full public URL, use directly
         if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
           urls[item.id] = pathToUse;
           continue;
         }
-        
+
         const bucket: 'user-files' | 'space-covers' = pathToUse.startsWith('space-covers/') ? 'space-covers' : 'user-files';
+
+        // Try cache first
+        const cached = getCache(bucket, pathToUse);
+        if (cached) {
+          urls[item.id] = cached;
+          continue;
+        }
+
         filesToProcess.push({ id: item.id, path: pathToUse, bucket });
       }
-      
-      // Resolve URLs per bucket
+
+      // Resolve URLs per bucket (batch)
       if (filesToProcess.length > 0) {
         const results = await Promise.allSettled(
-          filesToProcess.map((f) => {
+          filesToProcess.map(async (f) => {
             if (f.bucket === 'space-covers') {
-              // Public bucket: build public URL (no signing)
               const { data } = supabase.storage.from('space-covers').getPublicUrl(f.path);
-              return Promise.resolve({ id: f.id, url: data.publicUrl });
+              const url = data.publicUrl;
+              if (url) setCache(f.bucket, f.path, url);
+              return { id: f.id, url };
             }
-            // Private bucket: sign
-            return supabase.storage
+            const { data } = await supabase.storage
               .from('user-files')
-              .createSignedUrl(f.path, 3600)
-              .then(({ data }) => ({ id: f.id, url: data?.signedUrl }));
+              .createSignedUrl(f.path, 3600);
+            const url = data?.signedUrl;
+            if (url) setCache(f.bucket, f.path, url);
+            return { id: f.id, url };
           })
         );
-        
+
         results.forEach((r) => {
-          if (r.status === 'fulfilled' && r.value.url) {
+          if (r.status === 'fulfilled' && r.value?.url) {
             urls[r.value.id] = r.value.url;
           }
         });
       }
-      
-      setThumbUrls(urls);
+
+      setThumbUrls((prev) => ({ ...prev, ...urls }));
     };
 
     if (spaceItems.length > 0) {

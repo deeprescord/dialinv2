@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import { DialinPortal } from "@/components/DialinPortal/DialinPortal";
 import DefaultHomePage from "./DefaultHomePage";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Root route component: shows public DefaultHomePage when not signed in,
 // and the full app (DialinPortal) when authenticated.
@@ -28,7 +29,20 @@ const Root = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (initializing) return null; // prevent flicker to public page during auth init
+  if (initializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="space-y-4 w-full max-w-md px-4">
+          <Skeleton className="h-12 w-48 mx-auto" />
+          <Skeleton className="h-64 w-full" />
+          <div className="flex gap-2 justify-center">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return user ? <DialinPortal /> : <DefaultHomePage />;
 };

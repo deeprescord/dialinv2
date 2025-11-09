@@ -316,7 +316,7 @@ const PublicSpacePage = () => {
   };
 
   const handleMediaClick = (item: any) => {
-    console.log('🔍 PublicSpacePage handleMediaClick - Incoming item:', item);
+    console.log('🔍 PublicSpacePage handleMediaClick - Incoming item:', JSON.stringify(item, null, 2));
     
     if (!item) {
       setSelectedItemData(null);
@@ -324,6 +324,9 @@ const PublicSpacePage = () => {
     }
 
     const fileType = item.file_type || item.type;
+    console.log('📦 File type detected:', fileType);
+    console.log('📂 Storage path:', item.storage_path);
+    console.log('🔗 URL:', item.url);
 
     // Web links - prefer provided URL, fallback to storage_path
     if (fileType === 'web') {
@@ -353,7 +356,7 @@ const PublicSpacePage = () => {
       original_name: item.original_name || item.title,
     };
     
-    console.log('✨ PublicSpacePage - Final transformed item:', transformedItem);
+    console.log('✨ PublicSpacePage - Final transformed item:', JSON.stringify(transformedItem, null, 2));
     setSelectedItemData(transformedItem);
   };
 

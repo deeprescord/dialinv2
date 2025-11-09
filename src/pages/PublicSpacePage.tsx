@@ -59,13 +59,37 @@ const PublicSpacePage = () => {
   // Fetch space items using the hook
   const { items: spaceItems, loading: itemsLoading } = useSpaceItems(publicSpace?.id);
 
+  // Helper to detect if localStorage is available
+  const isStorageAvailable = () => {
+    try {
+      const test = '__storage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   useEffect(() => {
     checkAuthAndFetchSpace();
+    
+    // Show browser compatibility notice if storage is blocked
+    if (!isStorageAvailable()) {
+      toast.info('For full functionality, please allow storage in your browser settings');
+    }
   }, [shareSlug]);
 
   const checkAuthAndFetchSpace = async () => {
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
+    // Check authentication - handle localStorage blocking gracefully (Brave browser)
+    let session = null;
+    try {
+      const { data } = await supabase.auth.getSession();
+      session = data.session;
+    } catch (error) {
+      console.warn('Auth check failed (likely localStorage blocked):', error);
+      // Continue as anonymous user - public content will still work
+    }
     setIsAuthenticated(!!session);
 
     // Fetch public space

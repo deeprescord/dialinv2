@@ -31,10 +31,16 @@ export function useSpaceItems(spaceId?: string) {
 
     setLoading(true);
     try {
-      // Check if user is authenticated (optional for public spaces)
-      const { data: { user } } = await supabase.auth.getUser();
+      // Public-friendly: don't depend on auth; Brave may block storage
+      let userId: string | null = null;
+      try {
+        const { data } = await supabase.auth.getUser();
+        userId = data.user?.id ?? null;
+      } catch (e) {
+        // Ignore auth errors; proceed anonymously
+      }
       
-      console.log('useSpaceItems: Fetching items for spaceId:', spaceId, 'User:', user?.id || 'anonymous');
+      console.log('useSpaceItems: Fetching items for spaceId:', spaceId, 'User:', userId || 'anonymous');
 
       // Optimized: Use Promise.all to fetch spaces and files in parallel
       const [spacesResult, filesResult] = await Promise.all([

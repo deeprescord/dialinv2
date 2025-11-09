@@ -40,7 +40,8 @@ const PublicSpacePage = () => {
   const [show360Settings, setShow360Settings] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
-  const [showItemsBar, setShowItemsBar] = useState(false);
+  // Auto-open items bar for public pages so users can see and click items
+  const [showItemsBar, setShowItemsBar] = useState(true);
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
   const [selectedItemData, setSelectedItemData] = useState<any>(null);
   
@@ -349,7 +350,10 @@ const PublicSpacePage = () => {
 
     const fileType = item.file_type || item.type;
     console.log('📦 File type detected:', fileType);
-    console.log('📂 Storage path:', item.storage_path);
+    
+    // Normalize storage_path: strip "user-files/" prefix if present
+    const normStoragePath = item.storage_path?.replace(/^user-files\//, '') || item.storage_path;
+    console.log('📂 Normalized storage path:', normStoragePath);
     console.log('🔗 URL:', item.url);
 
     // Web links - prefer provided URL, fallback to storage_path
@@ -359,7 +363,7 @@ const PublicSpacePage = () => {
         type: 'web',
         file_type: 'web',
         url: item.url || item.storage_path,
-        storage_path: item.storage_path, // keep if present for consistency
+        storage_path: normStoragePath,
         thumb: item.thumbnail_path || item.thumb || undefined,
       };
       console.log('🌐 PublicSpacePage - Web link transformed:', transformedItem);
@@ -367,18 +371,24 @@ const PublicSpacePage = () => {
       return;
     }
 
-    // Regular files: keep both storage_path and any pre-signed url if provided
+    // Regular files: normalize storage_path and keep both url and storage_path
     const transformedItem = {
       ...item,
       type: fileType,
       file_type: fileType,
-      storage_path: item.storage_path,
-      url: item.url, // if HomeView provided a signed URL, let ContentViewer use it via HomeView
+      storage_path: normStoragePath,
+      url: item.url, // pre-signed by SpacesBar or HomeView
       mime_type: item.mime_type,
       thumbnail_path: item.thumbnail_path || item.thumb,
       duration: item.duration,
       original_name: item.original_name || item.title,
     };
+    
+    // Warn if missing both url and storage_path
+    if (!transformedItem.url && !transformedItem.storage_path) {
+      console.warn('⚠️ PublicSpacePage: Item missing both url and storage_path!', transformedItem);
+      toast.error('Media not available');
+    }
     
     console.log('✨ PublicSpacePage - Final transformed item:', JSON.stringify(transformedItem, null, 2));
     setSelectedItemData(transformedItem);

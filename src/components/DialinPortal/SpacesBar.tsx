@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Friend } from '@/data/catalogs';
 import { sortItems } from '@/lib/sortItems';
+import { safeLocalStorage } from '@/lib/safeLocalStorage';
 import type { SortOrder } from '@/types/organization';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
 import { useMediaQueue } from '@/contexts/MediaQueueContext';
@@ -131,7 +132,7 @@ export function SpacesBar({
   const { reorderItems } = useSpaceOrganization();
   
   const [scale, setScale] = useState<number>(() => {
-    const saved = localStorage.getItem('spaces-bar-scale');
+    const saved = safeLocalStorage.getItem('spaces-bar-scale');
     return saved ? parseInt(saved) : 65;
   });
   const [isDraggingResize, setIsDraggingResize] = useState(false);
@@ -187,9 +188,9 @@ export function SpacesBar({
     refetchItems();
   };
 
-  // Persist scale to localStorage
+  // Persist scale to safeLocalStorage
   useEffect(() => {
-    localStorage.setItem('spaces-bar-scale', scale.toString());
+    safeLocalStorage.setItem('spaces-bar-scale', scale.toString());
   }, [scale]);
 
   // Handle resize bar drag
@@ -395,11 +396,11 @@ export function SpacesBar({
       const now = Date.now();
       const getCache = (bucket: string, path: string): string | undefined => {
         try {
-          const raw = localStorage.getItem(`signed-url-cache:${bucket}:${path}`);
+          const raw = safeLocalStorage.getItem(`signed-url-cache:${bucket}:${path}`);
           if (!raw) return undefined;
           const parsed = JSON.parse(raw) as { url: string; exp: number };
           if (!parsed?.url || !parsed?.exp || parsed.exp < now) {
-            localStorage.removeItem(`signed-url-cache:${bucket}:${path}`);
+            safeLocalStorage.removeItem(`signed-url-cache:${bucket}:${path}`);
             return undefined;
           }
           return parsed.url;
@@ -408,7 +409,7 @@ export function SpacesBar({
       const setCache = (bucket: string, path: string, url: string) => {
         try {
           const ttlMs = 25 * 60 * 1000; // 25 minutes
-          localStorage.setItem(
+          safeLocalStorage.setItem(
             `signed-url-cache:${bucket}:${path}`,
             JSON.stringify({ url, exp: now + ttlMs })
           );
@@ -618,17 +619,24 @@ export function SpacesBar({
                                       .maybeSingle();
                                     
                                     if (fileData && !error) {
+                                      // Normalize storage_path: strip "user-files/" prefix if present for consistent signing
+                                      const normPath = fileData.storage_path?.replace(/^user-files\//, '') || fileData.storage_path;
+                                      
                                       // Prepare signed URLs for immediate playback (web links use direct URL)
                                       let mediaUrl: string | undefined = undefined;
                                       let thumbUrl: string | undefined = undefined;
                                       
                                       if (fileData.file_type === 'web') {
                                         mediaUrl = fileData.storage_path;
-                                      } else if (fileData.storage_path) {
-                                        const { data: signed } = await supabase.storage
+                                      } else if (normPath) {
+                                        const { data: signed, error: signError } = await supabase.storage
                                           .from('user-files')
-                                          .createSignedUrl(fileData.storage_path, 3600);
+                                          .createSignedUrl(normPath, 3600);
                                         mediaUrl = signed?.signedUrl;
+                                        if (signError) {
+                                          console.warn('SpacesBar: Signing failed for', normPath, signError);
+                                          toast.error('Failed to load media');
+                                        }
                                       }
                                       
                                       if (fileData.thumbnail_path) {
@@ -636,22 +644,26 @@ export function SpacesBar({
                                           const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
                                           thumbUrl = data.publicUrl;
                                         } else {
+                                          const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
                                           const { data: signedThumb } = await supabase.storage
                                             .from('user-files')
-                                            .createSignedUrl(fileData.thumbnail_path, 3600);
+                                            .createSignedUrl(normThumb, 3600);
                                           thumbUrl = signedThumb?.signedUrl;
                                         }
                                       } else {
                                         thumbUrl = mediaUrl; // fallback
                                       }
                                       
+                                      console.log('SpacesBar onClick: Passing item', { id: item.id, file_type: fileData.file_type, storage_path: normPath, url: mediaUrl });
+                                      
                                       onItemClick?.({
                                         ...item,
                                         url: mediaUrl,
                                         thumb: thumbUrl,
-                                        storage_path: fileData.storage_path,
+                                        storage_path: normPath,
                                         file_type: fileData.file_type,
                                         mime_type: fileData.mime_type,
+                                        original_name: fileData.original_name,
                                         show360: fileData.show_360,
                                         xAxisOffset: fileData.x_axis_offset,
                                         yAxisOffset: fileData.y_axis_offset,
@@ -660,11 +672,41 @@ export function SpacesBar({
                                         rotationAxis: fileData.rotation_axis,
                                       });
                                     } else {
-                                      onItemClick?.(item);
+                                      // Fallback: sign item.storage_path directly
+                                      console.warn('SpacesBar: File fetch failed, signing storage_path directly');
+                                      const normPath = item.storage_path?.replace(/^user-files\//, '') || item.storage_path;
+                                      let fallbackUrl: string | undefined;
+                                      if (normPath) {
+                                        const { data: signed } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
+                                        fallbackUrl = signed?.signedUrl;
+                                      }
+                                      onItemClick?.({
+                                        ...item,
+                                        url: fallbackUrl,
+                                        storage_path: normPath,
+                                      });
                                     }
                                   } catch (error) {
-                                    console.error('Error fetching file 360 settings:', error);
-                                    onItemClick?.(item);
+                                    console.error('SpacesBar: Error fetching file data:', error);
+                                    // Final fallback: sign item.storage_path if available
+                                    const normPath = item.storage_path?.replace(/^user-files\//, '') || item.storage_path;
+                                    let fallbackUrl: string | undefined;
+                                    if (normPath) {
+                                      try {
+                                        const { data: signed } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
+                                        fallbackUrl = signed?.signedUrl;
+                                      } catch (e) {
+                                        console.error('SpacesBar: Final fallback signing failed', e);
+                                        toast.error('Could not load media - please refresh');
+                                      }
+                                    } else {
+                                      toast.error('Media path missing');
+                                    }
+                                    onItemClick?.({
+                                      ...item,
+                                      url: fallbackUrl,
+                                      storage_path: normPath,
+                                    });
                                   }
                                 }
                               }}

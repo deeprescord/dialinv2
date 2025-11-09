@@ -9,6 +9,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { safeLocalStorage } from '@/lib/safeLocalStorage';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { SpaceContextMenu } from './SpaceContextMenu';
 import { DialPopup } from './DialPopup';
@@ -58,7 +59,7 @@ export function ItemsPeopleBar({
 }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const saved = localStorage.getItem('itemsViewMode');
+    const saved = safeLocalStorage.getItem('itemsViewMode');
     return (saved as ViewMode) || 'tile';
   });
   const panelRef = useRef<HTMLDivElement>(null);
@@ -72,7 +73,7 @@ export function ItemsPeopleBar({
 
   // Persist view mode preference
   useEffect(() => {
-    localStorage.setItem('itemsViewMode', viewMode);
+    safeLocalStorage.setItem('itemsViewMode', viewMode);
   }, [viewMode]);
 
   // Handle click outside to close

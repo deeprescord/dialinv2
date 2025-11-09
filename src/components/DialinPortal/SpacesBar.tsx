@@ -387,10 +387,14 @@ export function SpacesBar({
     }
   };
 
-  // Optimized: Batch signed URL generation with localStorage cache (TTL)
+  // State to hold pre-signed media URLs (for immediate playback)
+  const [mediaUrls, setMediaUrls] = React.useState<Record<string, { mediaUrl?: string; thumbUrl?: string; fileData?: any }>>({});
+  
+  // Optimized: Batch signed URL generation with localStorage cache (TTL) - now includes media URLs
   React.useEffect(() => {
     const generateUrls = async () => {
-      const urls: Record<string, string> = {};
+      const thumbs: Record<string, string> = {};
+      const medias: Record<string, { mediaUrl?: string; thumbUrl?: string; fileData?: any }> = {};
       const filesToProcess: Array<{ id: string; path: string; bucket: 'user-files' | 'space-covers' }>= [];
 
       const now = Date.now();
@@ -416,66 +420,99 @@ export function SpacesBar({
         } catch {}
       };
 
-      // First pass: collect items and determine bucket
-      for (const item of spaceItems) {
-        const pathToUse = item.thumbnail_path || item.storage_path;
-        if (!pathToUse) continue;
-
-        // If audio without a thumbnail, show visualizer fallback (no signing)
-        const isAudio = (item.file_type?.startsWith?.('audio') || item.mime_type?.startsWith?.('audio/')) ?? false;
-        if (isAudio && !item.thumbnail_path) continue;
-
-        // If it's already a full public URL, use directly
-        if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
-          urls[item.id] = pathToUse;
-          continue;
-        }
-
-        const bucket: 'user-files' | 'space-covers' = pathToUse.startsWith('space-covers/') ? 'space-covers' : 'user-files';
-
-        // Try cache first
-        const cached = getCache(bucket, pathToUse);
-        if (cached) {
-          urls[item.id] = cached;
-          continue;
-        }
-
-        filesToProcess.push({ id: item.id, path: pathToUse, bucket });
-      }
-
-      // Resolve URLs per bucket (batch)
-      if (filesToProcess.length > 0) {
-        const results = await Promise.allSettled(
-          filesToProcess.map(async (f) => {
-            if (f.bucket === 'space-covers') {
-              const { data } = supabase.storage.from('space-covers').getPublicUrl(f.path);
-              const url = data.publicUrl;
-              if (url) setCache(f.bucket, f.path, url);
-              return { id: f.id, url };
+      // Pre-fetch full file data and sign all URLs upfront
+      const fileDataPromises = spaceItems.map(async (item) => {
+        if (item.is_space) return null;
+        
+        try {
+          const { data: fileData, error } = await supabase
+            .from('files')
+            .select('*')
+            .eq('id', item.id)
+            .maybeSingle();
+          
+          if (!fileData || error) return null;
+          
+          // Normalize storage_path
+          const normPath = fileData.storage_path?.replace(/^user-files\//, '') || fileData.storage_path;
+          
+          // Get media URL
+          let mediaUrl: string | undefined;
+          if (fileData.file_type === 'web') {
+            mediaUrl = fileData.storage_path; // Direct URL for web links
+          } else if (normPath) {
+            const cached = getCache('user-files', normPath);
+            if (cached) {
+              mediaUrl = cached;
+            } else {
+              const { data: signed } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
+              mediaUrl = signed?.signedUrl;
+              if (mediaUrl) setCache('user-files', normPath, mediaUrl);
             }
-            const { data } = await supabase.storage
-              .from('user-files')
-              .createSignedUrl(f.path, 3600);
-            const url = data?.signedUrl;
-            if (url) setCache(f.bucket, f.path, url);
-            return { id: f.id, url };
-          })
-        );
-
-        results.forEach((r) => {
-          if (r.status === 'fulfilled' && r.value?.url) {
-            urls[r.value.id] = r.value.url;
           }
-        });
-      }
-
-      setThumbUrls((prev) => ({ ...prev, ...urls }));
+          
+          // Get thumbnail URL
+          let thumbUrl: string | undefined;
+          if (fileData.thumbnail_path) {
+            if (fileData.thumbnail_path.startsWith('space-covers/')) {
+              const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
+              thumbUrl = data.publicUrl;
+            } else {
+              const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
+              const cachedThumb = getCache('user-files', normThumb);
+              if (cachedThumb) {
+                thumbUrl = cachedThumb;
+              } else {
+                const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
+                thumbUrl = signedThumb?.signedUrl;
+                if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
+              }
+            }
+          } else {
+            thumbUrl = mediaUrl; // Fallback to media URL
+          }
+          
+          // Store for carousel thumbnail display
+          const pathToUse = fileData.thumbnail_path || normPath;
+          if (pathToUse) {
+            const isAudio = fileData.file_type?.startsWith('audio') || fileData.mime_type?.startsWith('audio/');
+            if (!isAudio || fileData.thumbnail_path) {
+              if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
+                thumbs[item.id] = pathToUse;
+              } else if (thumbUrl) {
+                thumbs[item.id] = thumbUrl;
+              }
+            }
+          }
+          
+          // Store complete media data
+          medias[item.id] = {
+            mediaUrl,
+            thumbUrl,
+            fileData: {
+              ...fileData,
+              storage_path: normPath,
+            }
+          };
+          
+          return null;
+        } catch (error) {
+          console.error('Error pre-fetching file data for', item.id, error);
+          return null;
+        }
+      });
+      
+      await Promise.allSettled(fileDataPromises);
+      
+      setThumbUrls((prev) => ({ ...prev, ...thumbs }));
+      setMediaUrls((prev) => ({ ...prev, ...medias }));
     };
 
     if (spaceItems.length > 0) {
       generateUrls();
     } else {
       setThumbUrls({});
+      setMediaUrls({});
     }
   }, [spaceItems]);
 
@@ -605,109 +642,37 @@ export function SpacesBar({
                             <div 
                               className="flex flex-col items-center cursor-pointer group select-none" 
                               style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
-                              onClick={async () => {
+                              onClick={() => {
                                 if (wasLongPress) return;
                                 if (isSpace) {
                                   handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
                                 } else {
-                                  // Fetch full file data including 360 settings and pre-sign URLs
-                                  try {
-                                    const { data: fileData, error } = await supabase
-                                      .from('files')
-                                      .select('*')
-                                      .eq('id', item.id)
-                                      .maybeSingle();
-                                    
-                                    if (fileData && !error) {
-                                      // Normalize storage_path: strip "user-files/" prefix if present for consistent signing
-                                      const normPath = fileData.storage_path?.replace(/^user-files\//, '') || fileData.storage_path;
-                                      
-                                      // Prepare signed URLs for immediate playback (web links use direct URL)
-                                      let mediaUrl: string | undefined = undefined;
-                                      let thumbUrl: string | undefined = undefined;
-                                      
-                                      if (fileData.file_type === 'web') {
-                                        mediaUrl = fileData.storage_path;
-                                      } else if (normPath) {
-                                        const { data: signed, error: signError } = await supabase.storage
-                                          .from('user-files')
-                                          .createSignedUrl(normPath, 3600);
-                                        mediaUrl = signed?.signedUrl;
-                                        if (signError) {
-                                          console.warn('SpacesBar: Signing failed for', normPath, signError);
-                                          toast.error('Failed to load media');
-                                        }
-                                      }
-                                      
-                                      if (fileData.thumbnail_path) {
-                                        if (fileData.thumbnail_path.startsWith('space-covers/')) {
-                                          const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
-                                          thumbUrl = data.publicUrl;
-                                        } else {
-                                          const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
-                                          const { data: signedThumb } = await supabase.storage
-                                            .from('user-files')
-                                            .createSignedUrl(normThumb, 3600);
-                                          thumbUrl = signedThumb?.signedUrl;
-                                        }
-                                      } else {
-                                        thumbUrl = mediaUrl; // fallback
-                                      }
-                                      
-                                      console.log('SpacesBar onClick: Passing item', { id: item.id, file_type: fileData.file_type, storage_path: normPath, url: mediaUrl });
-                                      
-                                      onItemClick?.({
-                                        ...item,
-                                        url: mediaUrl,
-                                        thumb: thumbUrl,
-                                        storage_path: normPath,
-                                        file_type: fileData.file_type,
-                                        mime_type: fileData.mime_type,
-                                        original_name: fileData.original_name,
-                                        show360: fileData.show_360,
-                                        xAxisOffset: fileData.x_axis_offset,
-                                        yAxisOffset: fileData.y_axis_offset,
-                                        rotationEnabled: fileData.rotation_enabled,
-                                        rotationSpeed: fileData.rotation_speed,
-                                        rotationAxis: fileData.rotation_axis,
-                                      });
-                                    } else {
-                                      // Fallback: sign item.storage_path directly
-                                      console.warn('SpacesBar: File fetch failed, signing storage_path directly');
-                                      const normPath = item.storage_path?.replace(/^user-files\//, '') || item.storage_path;
-                                      let fallbackUrl: string | undefined;
-                                      if (normPath) {
-                                        const { data: signed } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
-                                        fallbackUrl = signed?.signedUrl;
-                                      }
-                                      onItemClick?.({
-                                        ...item,
-                                        url: fallbackUrl,
-                                        storage_path: normPath,
-                                      });
-                                    }
-                                  } catch (error) {
-                                    console.error('SpacesBar: Error fetching file data:', error);
-                                    // Final fallback: sign item.storage_path if available
-                                    const normPath = item.storage_path?.replace(/^user-files\//, '') || item.storage_path;
-                                    let fallbackUrl: string | undefined;
-                                    if (normPath) {
-                                      try {
-                                        const { data: signed } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
-                                        fallbackUrl = signed?.signedUrl;
-                                      } catch (e) {
-                                        console.error('SpacesBar: Final fallback signing failed', e);
-                                        toast.error('Could not load media - please refresh');
-                                      }
-                                    } else {
-                                      toast.error('Media path missing');
-                                    }
-                                    onItemClick?.({
-                                      ...item,
-                                      url: fallbackUrl,
-                                      storage_path: normPath,
-                                    });
+                                  // Use pre-fetched and pre-signed URLs for instant playback
+                                  const cached = mediaUrls[item.id];
+                                  if (!cached || !cached.mediaUrl) {
+                                    toast.error('Media not ready - please wait');
+                                    console.warn('SpacesBar: Media URL not pre-cached for', item.id);
+                                    return;
                                   }
+                                  
+                                  const fileData = cached.fileData;
+                                  console.log('SpacesBar onClick: Using cached data', { id: item.id, file_type: fileData?.file_type, url: cached.mediaUrl });
+                                  
+                                  onItemClick?.({
+                                    ...item,
+                                    url: cached.mediaUrl,
+                                    thumb: cached.thumbUrl || cached.mediaUrl,
+                                    storage_path: fileData?.storage_path,
+                                    file_type: fileData?.file_type,
+                                    mime_type: fileData?.mime_type,
+                                    original_name: fileData?.original_name,
+                                    show360: fileData?.show_360,
+                                    xAxisOffset: fileData?.x_axis_offset,
+                                    yAxisOffset: fileData?.y_axis_offset,
+                                    rotationEnabled: fileData?.rotation_enabled,
+                                    rotationSpeed: fileData?.rotation_speed,
+                                    rotationAxis: fileData?.rotation_axis,
+                                  });
                                 }
                               }}
                               onMouseDown={(e) => {

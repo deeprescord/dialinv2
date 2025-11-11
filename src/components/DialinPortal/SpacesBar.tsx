@@ -444,20 +444,13 @@ export function SpacesBar({
               thumbUrl = data.publicUrl;
             } else {
               const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
-              
-              // Use public URLs for public spaces, signed URLs for private
-              if (isPublicSpace) {
-                const { data } = supabase.storage.from('user-files').getPublicUrl(normThumb);
-                thumbUrl = data.publicUrl;
+              const cachedThumb = getCache('user-files', normThumb);
+              if (cachedThumb) {
+                thumbUrl = cachedThumb;
               } else {
-                const cachedThumb = getCache('user-files', normThumb);
-                if (cachedThumb) {
-                  thumbUrl = cachedThumb;
-                } else {
-                  const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
-                  thumbUrl = signedThumb?.signedUrl;
-                  if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
-                }
+                const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
+                thumbUrl = signedThumb?.signedUrl;
+                if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
               }
             }
           }
@@ -666,14 +659,9 @@ export function SpacesBar({
                                     
                                     // Sign URL on-demand or use public URL for public spaces
                                     let mediaUrl: string | undefined;
-                                    if (fileData.file_type === 'web') {
-                                      mediaUrl = fileData.storage_path;
-                                    } else if (normPath) {
-                                      // Use public URL for public spaces
-                                      if (fileData.isPublicSpace) {
-                                        const { data } = supabase.storage.from('user-files').getPublicUrl(normPath);
-                                        mediaUrl = data.publicUrl;
-                                      } else {
+                                      if (fileData.file_type === 'web') {
+                                        mediaUrl = fileData.storage_path;
+                                      } else if (normPath) {
                                         const cacheKey = getCached('user-files', normPath);
                                         if (cacheKey) {
                                           mediaUrl = cacheKey;
@@ -688,7 +676,6 @@ export function SpacesBar({
                                           if (mediaUrl) setCached('user-files', normPath, mediaUrl);
                                         }
                                       }
-                                    }
                                     
                                     if (!mediaUrl) {
                                       toast.error('No media URL available');

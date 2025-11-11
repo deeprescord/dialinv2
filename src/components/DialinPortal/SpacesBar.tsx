@@ -420,7 +420,10 @@ export function SpacesBar({
         } catch {}
       };
 
-      // Lightweight: Only fetch thumbnails upfront, sign media URLs on-demand
+      // Check if current space is public
+      const isPublicSpace = allSpaces.find(s => s.id === currentSpaceId)?.isPublic || false;
+      
+      // Lightweight: Only fetch thumbnails upfront, use public URLs for public spaces
       const fileDataPromises = spaceItems.map(async (item) => {
         if (item.is_space) return null;
         
@@ -441,13 +444,20 @@ export function SpacesBar({
               thumbUrl = data.publicUrl;
             } else {
               const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
-              const cachedThumb = getCache('user-files', normThumb);
-              if (cachedThumb) {
-                thumbUrl = cachedThumb;
+              
+              // Use public URLs for public spaces, signed URLs for private
+              if (isPublicSpace) {
+                const { data } = supabase.storage.from('user-files').getPublicUrl(normThumb);
+                thumbUrl = data.publicUrl;
               } else {
-                const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
-                thumbUrl = signedThumb?.signedUrl;
-                if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
+                const cachedThumb = getCache('user-files', normThumb);
+                if (cachedThumb) {
+                  thumbUrl = cachedThumb;
+                } else {
+                  const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
+                  thumbUrl = signedThumb?.signedUrl;
+                  if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
+                }
               }
             }
           }
@@ -463,6 +473,7 @@ export function SpacesBar({
             fileData: {
               ...fileData,
               storage_path: fileData.storage_path?.replace(/^user-files\//, ''),
+              isPublicSpace, // Pass this info for on-demand signing
             }
           };
           
@@ -653,23 +664,29 @@ export function SpacesBar({
                                       } catch {}
                                     };
                                     
-                                    // Sign URL on-demand
+                                    // Sign URL on-demand or use public URL for public spaces
                                     let mediaUrl: string | undefined;
                                     if (fileData.file_type === 'web') {
                                       mediaUrl = fileData.storage_path;
                                     } else if (normPath) {
-                                      const cacheKey = getCached('user-files', normPath);
-                                      if (cacheKey) {
-                                        mediaUrl = cacheKey;
+                                      // Use public URL for public spaces
+                                      if (fileData.isPublicSpace) {
+                                        const { data } = supabase.storage.from('user-files').getPublicUrl(normPath);
+                                        mediaUrl = data.publicUrl;
                                       } else {
-                                        const { data: signed, error } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
-                                        if (error) {
-                                          console.warn('Failed to sign URL:', error);
-                                          toast.error('Failed to load media');
-                                          return;
+                                        const cacheKey = getCached('user-files', normPath);
+                                        if (cacheKey) {
+                                          mediaUrl = cacheKey;
+                                        } else {
+                                          const { data: signed, error } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
+                                          if (error) {
+                                            console.warn('Failed to sign URL:', error);
+                                            toast.error('Failed to load media');
+                                            return;
+                                          }
+                                          mediaUrl = signed?.signedUrl;
+                                          if (mediaUrl) setCached('user-files', normPath, mediaUrl);
                                         }
-                                        mediaUrl = signed?.signedUrl;
-                                        if (mediaUrl) setCached('user-files', normPath, mediaUrl);
                                       }
                                     }
                                     

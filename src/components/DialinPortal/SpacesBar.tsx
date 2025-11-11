@@ -730,7 +730,7 @@ export function SpacesBar({
                                     return isVideoUrl(url) ? (
                                       <video
                                         src={url}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                         autoPlay
                                         muted
                                         playsInline
@@ -738,7 +738,7 @@ export function SpacesBar({
                                         preload="auto"
                                       />
                                     ) : (
-                                      <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />
+                                      <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-contain" />
                                     );
                                   }
                                   return (

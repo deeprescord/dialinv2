@@ -40,8 +40,8 @@ const PublicSpacePage = () => {
   const [show360Settings, setShow360Settings] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
-  // Auto-open items bar for public pages so users can see and click items
-  const [showItemsBar, setShowItemsBar] = useState(true);
+  // Don't auto-open items bar for public pages
+  const [showItemsBar, setShowItemsBar] = useState(false);
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
   const [selectedItemData, setSelectedItemData] = useState<any>(null);
   

@@ -176,7 +176,8 @@ export function HomeView({
       }
       if (si?.storage_path) {
         try {
-          const { data } = await supabase.storage.from('user-files').createSignedUrl(si.storage_path, 3600);
+          const norm = si.storage_path.replace(/^user-files\//, '');
+          const { data } = await supabase.storage.from('user-files').createSignedUrl(norm, 3600);
           setPdfUrlForHero(data?.signedUrl);
         } catch (e) {
           console.warn('Failed to sign PDF URL', e);
@@ -206,7 +207,8 @@ export function HomeView({
       // Otherwise, sign the storage path
       if (si.storage_path) {
         try {
-          const { data } = await supabase.storage.from('user-files').createSignedUrl(si.storage_path, 3600);
+          const norm = si.storage_path.replace(/^user-files\//, '');
+        const { data } = await supabase.storage.from('user-files').createSignedUrl(norm, 3600);
           setItem360UrlForHero(data?.signedUrl);
         } catch (e) {
           console.warn('Failed to sign 360 media URL', e);

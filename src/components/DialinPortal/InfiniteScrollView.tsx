@@ -106,11 +106,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
           continue;
         }
 
-        // Private bucket - sign URL
+        // Private bucket - sign URL (normalize path)
         try {
+          const norm = path.replace(/^user-files\//, '');
           const { data } = await supabase.storage
             .from('user-files')
-            .createSignedUrl(path, 3600);
+            .createSignedUrl(norm, 3600);
           
           if (data?.signedUrl) {
             newUrls.set(item.id, data.signedUrl);

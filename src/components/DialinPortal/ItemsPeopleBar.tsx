@@ -188,11 +188,12 @@ export function ItemsPeopleBar({
           return [item.id, data.publicUrl] as const;
         }
         
-        // Private bucket - sign URL
+        // Private bucket - sign URL (normalize path)
         try {
+          const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
           const { data, error } = await supabase.storage
             .from('user-files')
-            .createSignedUrl(path, 7200); // 2 hour cache
+            .createSignedUrl(norm, 7200); // 2 hour cache
             
           if (error) throw error;
           return [item.id, data.signedUrl] as const;
@@ -271,9 +272,10 @@ export function ItemsPeopleBar({
     }
     
     // Generate signed URL for the item
+    const normPath = (item.storage_path || '').replace(/^user-files\//, '');
     const { data: signedData } = await supabase.storage
       .from('user-files')
-      .createSignedUrl(item.storage_path, 3600);
+      .createSignedUrl(normPath, 3600);
     
     const url = signedData?.signedUrl || '';
     
@@ -286,7 +288,7 @@ export function ItemsPeopleBar({
       thumb: item.thumbnail_path ? url : undefined,
       duration: item.duration,
       mime_type: item.mime_type,
-      storage_path: item.storage_path,
+      storage_path: normPath,
       file_type: item.file_type,
       original_name: item.original_name,
       thumbnail_path: item.thumbnail_path

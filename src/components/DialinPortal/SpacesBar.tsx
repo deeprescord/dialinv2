@@ -420,7 +420,7 @@ export function SpacesBar({
         } catch {}
       };
 
-      // Pre-fetch full file data and sign all URLs upfront
+      // Lightweight: Only fetch thumbnails upfront, sign media URLs on-demand
       const fileDataPromises = spaceItems.map(async (item) => {
         if (item.is_space) return null;
         
@@ -433,25 +433,7 @@ export function SpacesBar({
           
           if (!fileData || error) return null;
           
-          // Normalize storage_path
-          const normPath = fileData.storage_path?.replace(/^user-files\//, '') || fileData.storage_path;
-          
-          // Get media URL
-          let mediaUrl: string | undefined;
-          if (fileData.file_type === 'web') {
-            mediaUrl = fileData.storage_path; // Direct URL for web links
-          } else if (normPath) {
-            const cached = getCache('user-files', normPath);
-            if (cached) {
-              mediaUrl = cached;
-            } else {
-              const { data: signed } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
-              mediaUrl = signed?.signedUrl;
-              if (mediaUrl) setCache('user-files', normPath, mediaUrl);
-            }
-          }
-          
-          // Get thumbnail URL
+          // Get thumbnail URL only (lightweight)
           let thumbUrl: string | undefined;
           if (fileData.thumbnail_path) {
             if (fileData.thumbnail_path.startsWith('space-covers/')) {
@@ -468,30 +450,19 @@ export function SpacesBar({
                 if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
               }
             }
-          } else {
-            thumbUrl = mediaUrl; // Fallback to media URL
           }
           
-          // Store for carousel thumbnail display
-          const pathToUse = fileData.thumbnail_path || normPath;
-          if (pathToUse) {
-            const isAudio = fileData.file_type?.startsWith('audio') || fileData.mime_type?.startsWith('audio/');
-            if (!isAudio || fileData.thumbnail_path) {
-              if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
-                thumbs[item.id] = pathToUse;
-              } else if (thumbUrl) {
-                thumbs[item.id] = thumbUrl;
-              }
-            }
+          // Store thumbnail for carousel display
+          if (thumbUrl) {
+            thumbs[item.id] = thumbUrl;
           }
           
-          // Store complete media data
+          // Store file metadata only (no media URL pre-signing)
           medias[item.id] = {
-            mediaUrl,
             thumbUrl,
             fileData: {
               ...fileData,
-              storage_path: normPath,
+              storage_path: fileData.storage_path?.replace(/^user-files\//, ''),
             }
           };
           
@@ -647,32 +618,84 @@ export function SpacesBar({
                                 if (isSpace) {
                                   handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
                                 } else {
-                                  // Use pre-fetched and pre-signed URLs for instant playback
-                                  const cached = mediaUrls[item.id];
-                                  if (!cached || !cached.mediaUrl) {
-                                    toast.error('Media not ready - please wait');
-                                    console.warn('SpacesBar: Media URL not pre-cached for', item.id);
-                                    return;
-                                  }
-                                  
-                                  const fileData = cached.fileData;
-                                  console.log('SpacesBar onClick: Using cached data', { id: item.id, file_type: fileData?.file_type, url: cached.mediaUrl });
-                                  
-                                  onItemClick?.({
-                                    ...item,
-                                    url: cached.mediaUrl,
-                                    thumb: cached.thumbUrl || cached.mediaUrl,
-                                    storage_path: fileData?.storage_path,
-                                    file_type: fileData?.file_type,
-                                    mime_type: fileData?.mime_type,
-                                    original_name: fileData?.original_name,
-                                    show360: fileData?.show_360,
-                                    xAxisOffset: fileData?.x_axis_offset,
-                                    yAxisOffset: fileData?.y_axis_offset,
-                                    rotationEnabled: fileData?.rotation_enabled,
-                                    rotationSpeed: fileData?.rotation_speed,
-                                    rotationAxis: fileData?.rotation_axis,
-                                  });
+                                  // Sign media URL on-demand when clicked (lightweight)
+                                  (async () => {
+                                    const cached = mediaUrls[item.id];
+                                    if (!cached?.fileData) {
+                                      toast.error('Media data not loaded');
+                                      return;
+                                    }
+                                    
+                                    const fileData = cached.fileData;
+                                    const normPath = fileData.storage_path;
+                                    
+                                    // Check cache with localStorage
+                                    const now = Date.now();
+                                    const getCached = (bucket: string, path: string): string | undefined => {
+                                      try {
+                                        const raw = safeLocalStorage.getItem(`signed-url-cache:${bucket}:${path}`);
+                                        if (!raw) return undefined;
+                                        const parsed = JSON.parse(raw) as { url: string; exp: number };
+                                        if (!parsed?.url || !parsed?.exp || parsed.exp < now) {
+                                          safeLocalStorage.removeItem(`signed-url-cache:${bucket}:${path}`);
+                                          return undefined;
+                                        }
+                                        return parsed.url;
+                                      } catch { return undefined; }
+                                    };
+                                    const setCached = (bucket: string, path: string, url: string) => {
+                                      try {
+                                        const ttlMs = 25 * 60 * 1000;
+                                        safeLocalStorage.setItem(
+                                          `signed-url-cache:${bucket}:${path}`,
+                                          JSON.stringify({ url, exp: now + ttlMs })
+                                        );
+                                      } catch {}
+                                    };
+                                    
+                                    // Sign URL on-demand
+                                    let mediaUrl: string | undefined;
+                                    if (fileData.file_type === 'web') {
+                                      mediaUrl = fileData.storage_path;
+                                    } else if (normPath) {
+                                      const cacheKey = getCached('user-files', normPath);
+                                      if (cacheKey) {
+                                        mediaUrl = cacheKey;
+                                      } else {
+                                        const { data: signed, error } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
+                                        if (error) {
+                                          console.warn('Failed to sign URL:', error);
+                                          toast.error('Failed to load media');
+                                          return;
+                                        }
+                                        mediaUrl = signed?.signedUrl;
+                                        if (mediaUrl) setCached('user-files', normPath, mediaUrl);
+                                      }
+                                    }
+                                    
+                                    if (!mediaUrl) {
+                                      toast.error('No media URL available');
+                                      return;
+                                    }
+                                    
+                                    console.log('SpacesBar onClick: Signed URL on-demand', { id: item.id, file_type: fileData?.file_type, url: mediaUrl });
+                                    
+                                    onItemClick?.({
+                                      ...item,
+                                      url: mediaUrl,
+                                      thumb: cached.thumbUrl || mediaUrl,
+                                      storage_path: normPath,
+                                      file_type: fileData?.file_type,
+                                      mime_type: fileData?.mime_type,
+                                      original_name: fileData?.original_name,
+                                      show360: fileData?.show_360,
+                                      xAxisOffset: fileData?.x_axis_offset,
+                                      yAxisOffset: fileData?.y_axis_offset,
+                                      rotationEnabled: fileData?.rotation_enabled,
+                                      rotationSpeed: fileData?.rotation_speed,
+                                      rotationAxis: fileData?.rotation_axis,
+                                    });
+                                  })();
                                 }
                               }}
                               onMouseDown={(e) => {
@@ -699,7 +722,6 @@ export function SpacesBar({
                                   setPressTimer(timer);
                                 }
                               }}
-                              onTouchEnd={handleMouseUp}
                             >
                               <div className="relative rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                                 {(() => {

@@ -18,6 +18,7 @@ import { VideoControls } from './VideoControls';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { ContactsPanel } from './ContactsPanel';
 import audioVisualizer from '@/assets/audio-visualizer-animated.gif';
+import defaultVideoThumb from '@/assets/video-thumbnails.jpg';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,7 +28,6 @@ import { safeLocalStorage } from '@/lib/safeLocalStorage';
 import type { SortOrder } from '@/types/organization';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
 import { useMediaQueue } from '@/contexts/MediaQueueContext';
-
 interface SpacesBarProps {
   spaces: Space[];
   currentSpaceId?: string;
@@ -436,8 +436,9 @@ export function SpacesBar({
           
           if (!fileData || error) return null;
           
-          // Get thumbnail URL only (lightweight)
+          // Get thumbnail URL only (lightweight) with smart fallbacks
           let thumbUrl: string | undefined;
+          // Preferred: explicit thumbnail_path
           if (fileData.thumbnail_path) {
             if (fileData.thumbnail_path.startsWith('space-covers/')) {
               const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
@@ -453,6 +454,20 @@ export function SpacesBar({
                 if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
               }
             }
+          } else if (fileData.file_type === 'image' && fileData.storage_path) {
+            // Fallback: use original image until a thumbnail is generated
+            const normOriginal = fileData.storage_path.replace(/^user-files\//, '');
+            const cachedOrig = getCache('user-files', normOriginal);
+            if (cachedOrig) {
+              thumbUrl = cachedOrig;
+            } else {
+              const { data: signedOrig } = await supabase.storage.from('user-files').createSignedUrl(normOriginal, 3600);
+              thumbUrl = signedOrig?.signedUrl;
+              if (thumbUrl) setCache('user-files', normOriginal, thumbUrl);
+            }
+          } else if (fileData.file_type?.startsWith('video')) {
+            // Placeholder for videos without generated loop thumbnails yet
+            thumbUrl = defaultVideoThumb;
           }
           
           // Store thumbnail for carousel display

@@ -22,7 +22,6 @@ export interface SpaceItem {
 export function useSpaceItems(spaceId?: string) {
   const [items, setItems] = useState<SpaceItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isPublicSpace, setIsPublicSpace] = useState(false);
 
   const fetchItems = async () => {
     if (!spaceId) {
@@ -43,23 +42,8 @@ export function useSpaceItems(spaceId?: string) {
       
       console.log('useSpaceItems: Fetching items for spaceId:', spaceId, 'User:', userId || 'anonymous');
 
-      // First check if this space is public
-      const { data: spaceData, error: spaceError } = await supabase
-        .from('spaces')
-        .select('is_public')
-        .eq('id', spaceId)
-        .maybeSingle();
-      
-      if (spaceError) {
-        console.error('Error fetching space public status:', spaceError);
-      }
-      
-      const isPublic = spaceData?.is_public || false;
-      setIsPublicSpace(isPublic);
-      console.log('Space is public:', isPublic);
-
       // Optimized: Use Promise.all to fetch spaces and files in parallel
-      const [spacesResult, spaceFilesResult] = await Promise.all([
+      const [spacesResult, filesResult] = await Promise.all([
         // Get child spaces with minimal fields
         supabase
           .from('spaces')
@@ -68,13 +52,27 @@ export function useSpaceItems(spaceId?: string) {
           .order('position', { ascending: true })
           .limit(50), // Limit initial load
         
-        // Get space_files first - this has public RLS policy
+        // Get files with metadata in a single query using joins
         supabase
           .from('space_files')
-          .select('file_id, position')
+          .select(`
+            file_id,
+            position,
+            files!inner(
+              id,
+              original_name,
+              file_type,
+              mime_type,
+              storage_path,
+              thumbnail_path,
+              duration,
+              created_at,
+              file_size
+            )
+          `)
           .eq('space_id', spaceId)
           .order('position', { ascending: true })
-          .limit(50)
+          .limit(50) // Limit initial load
       ]);
 
       const allItems: SpaceItem[] = [];
@@ -94,35 +92,26 @@ export function useSpaceItems(spaceId?: string) {
         allItems.push(...spaceItems);
       }
 
-      // Process files - fetch file details separately to avoid INNER JOIN RLS issues
-      if (spaceFilesResult.data && spaceFilesResult.data.length > 0) {
-        const fileIds = spaceFilesResult.data.map(sf => sf.file_id);
-        
-        const { data: filesData } = await supabase
-          .from('files')
-          .select('id, original_name, file_type, mime_type, storage_path, thumbnail_path, duration, created_at, file_size')
-          .in('id', fileIds);
-        
-        if (filesData) {
-          const fileItems: SpaceItem[] = filesData.map(file => {
-            const spaceFile = spaceFilesResult.data.find(sf => sf.file_id === file.id);
-            return {
-              id: file.id,
-              file_id: file.id,
-              original_name: file.original_name,
-              file_type: file.file_type,
-              mime_type: file.mime_type,
-              storage_path: file.storage_path,
-              thumbnail_path: file.thumbnail_path || undefined,
-              duration: file.duration || undefined,
-              created_at: file.created_at,
-              is_space: false,
-              position: spaceFile?.position || 0,
-              file_size: file.file_size || 0,
-            };
-          });
-          allItems.push(...fileItems);
-        }
+      // Process files
+      if (filesResult.data && filesResult.data.length > 0) {
+        const fileItems: SpaceItem[] = filesResult.data.map((sf: any) => {
+          const file = sf.files;
+          return {
+            id: file.id,
+            file_id: file.id,
+            original_name: file.original_name,
+            file_type: file.file_type,
+            mime_type: file.mime_type,
+            storage_path: file.storage_path,
+            thumbnail_path: file.thumbnail_path || undefined,
+            duration: file.duration || undefined,
+            created_at: file.created_at,
+            is_space: false,
+            position: sf.position || 0,
+            file_size: file.file_size || 0,
+          };
+        });
+        allItems.push(...fileItems);
       }
 
       setItems(allItems);
@@ -182,7 +171,6 @@ export function useSpaceItems(spaceId?: string) {
   return {
     items,
     loading,
-    isPublicSpace,
     refetch: fetchItems,
   };
 }

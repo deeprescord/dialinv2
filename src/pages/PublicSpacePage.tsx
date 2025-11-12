@@ -351,11 +351,6 @@ const PublicSpacePage = () => {
     const fileType = item.file_type || item.type;
     console.log('📦 File type detected:', fileType);
     
-    // Normalize storage_path: strip "user-files/" prefix if present
-    const normStoragePath = item.storage_path?.replace(/^user-files\//, '') || item.storage_path;
-    console.log('📂 Normalized storage path:', normStoragePath);
-    console.log('🔗 URL:', item.url);
-
     // Web links - prefer provided URL, fallback to storage_path
     if (fileType === 'web') {
       const transformedItem = {
@@ -363,7 +358,7 @@ const PublicSpacePage = () => {
         type: 'web',
         file_type: 'web',
         url: item.url || item.storage_path,
-        storage_path: normStoragePath,
+        storage_path: item.storage_path,
         thumb: item.thumbnail_path || item.thumb || undefined,
       };
       console.log('🌐 PublicSpacePage - Web link transformed:', transformedItem);
@@ -371,22 +366,21 @@ const PublicSpacePage = () => {
       return;
     }
 
-    // Regular files: normalize storage_path and keep both url and storage_path
+    // Regular files: Keep storage_path and id intact for ContentViewer to use getAssetUrl
     const transformedItem = {
       ...item,
       type: fileType,
       file_type: fileType,
-      storage_path: normStoragePath,
-      url: item.url, // pre-signed by SpacesBar or HomeView
+      storage_path: item.storage_path, // Keep as-is, ContentViewer will handle signing
       mime_type: item.mime_type,
       thumbnail_path: item.thumbnail_path || item.thumb,
       duration: item.duration,
       original_name: item.original_name || item.title,
     };
     
-    // Warn if missing both url and storage_path
-    if (!transformedItem.url && !transformedItem.storage_path) {
-      console.warn('⚠️ PublicSpacePage: Item missing both url and storage_path!', transformedItem);
+    // Warn if missing storage_path
+    if (!transformedItem.storage_path) {
+      console.warn('⚠️ PublicSpacePage: Item missing storage_path!', transformedItem);
       toast.error('Media not available');
     }
     

@@ -85,9 +85,39 @@ export function SpaceItemsGrid({
     return sorted;
   }, [items, sortOrder]);
 
-  // Generate signed URLs for thumbnails (batched for performance, esp. Safari)
+  // Generate signed URLs for thumbnails only on authenticated pages
   useEffect(() => {
     const generateUrls = async () => {
+      // On public pages, only use public bucket thumbnails, skip signing
+      if (isPublicSpace) {
+        const publicUrls: Record<string, string> = {};
+        for (const item of items) {
+          const path = item.thumbnail_path;
+          if (!path) continue;
+
+          // Skip absolute URLs
+          if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
+            publicUrls[item.id] = path;
+            continue;
+          }
+
+          // Only use public buckets on public pages
+          const bucketGuess = path.split('/')[0];
+          const bucket = bucketGuess || 'user-files';
+          const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
+
+          if (bucket === 'space-covers' || bucket === 'profile-media') {
+            const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
+            publicUrls[item.id] = data.publicUrl;
+          }
+          // Skip private buckets on public pages - no client-side signing
+        }
+        console.log('SpaceItemsGrid (public): Using', Object.keys(publicUrls).length, 'public thumbnails');
+        setThumbUrls(publicUrls);
+        return;
+      }
+
+      // Authenticated pages: batch sign as before
       const t0 = performance.now();
       const urls: Record<string, string> = {};
 
@@ -134,7 +164,6 @@ export function SpaceItemsGrid({
       }
 
       // Perform batch signing per bucket
-      const cacheBuster = Date.now();
       await Promise.all(Object.entries(privateBucketPaths).map(async ([bucket, paths]) => {
         if (paths.length === 0) return;
         try {
@@ -143,7 +172,7 @@ export function SpaceItemsGrid({
             .createSignedUrls(paths, 7200);
 
           if (error) {
-            console.error('[Chrome Debug] SpaceItemsGrid: batch signing error for bucket', bucket, error);
+            console.error('SpaceItemsGrid: batch signing error for bucket', bucket, error);
             // Retry individually if batch fails
             for (const p of paths) {
               try {
@@ -151,30 +180,28 @@ export function SpaceItemsGrid({
                   .from(bucket)
                   .createSignedUrl(p, 7200);
                 if (retryError) {
-                  console.error('[Chrome Debug] Retry failed for', bucket, p, retryError);
+                  console.error('Retry failed for', bucket, p, retryError);
                 } else if (retryData?.signedUrl) {
-                  const signedWithCache = `${retryData.signedUrl}&cb=${cacheBuster}`;
                   const ids = pathToIdsByBucket[bucket][p] || [];
-                  ids.forEach((id) => (urls[id] = signedWithCache));
+                  ids.forEach((id) => (urls[id] = retryData.signedUrl));
                 }
               } catch (retryErr) {
-                console.error('[Chrome Debug] Retry exception for', bucket, p, retryErr);
+                console.error('Retry exception for', bucket, p, retryErr);
               }
             }
           } else if (Array.isArray(data)) {
             for (const entry of data) {
               const ids = pathToIdsByBucket[bucket][entry.path] || [];
               if (entry.signedUrl) {
-                const signedWithCache = `${entry.signedUrl}&cb=${cacheBuster}`;
-                ids.forEach((id) => (urls[id] = signedWithCache));
+                ids.forEach((id) => (urls[id] = entry.signedUrl));
               } else {
-                console.warn('[Chrome Debug] No signedUrl for', bucket, entry.path);
+                console.warn('No signedUrl for', bucket, entry.path);
               }
             }
-            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully for bucket', bucket);
+            console.log('Batch signed', data.length, 'URLs successfully for bucket', bucket);
           }
         } catch (err) {
-          console.error('[Chrome Debug] SpaceItemsGrid: batch sign exception for bucket', bucket, err);
+          console.error('SpaceItemsGrid: batch sign exception for bucket', bucket, err);
         }
       }));
 

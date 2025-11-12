@@ -80,7 +80,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   useEffect(() => {
     const loadUrls = async () => {
       const url = await getAssetUrl({ 
-        path: content.storage_path, 
+        path: content.storage_path,
+        fileId: content.id,
         isPublicView 
       });
       if (url) {
@@ -90,7 +91,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       
       if (content.thumbnail_path) {
         const thumbUrl = await getAssetUrl({ 
-          path: content.thumbnail_path, 
+          path: content.thumbnail_path,
+          fileId: content.id,
           isPublicView 
         });
         if (thumbUrl) {
@@ -101,7 +103,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     };
     
     loadUrls();
-  }, [content.storage_path, content.thumbnail_path, isPublicView]);
+  }, [content.id, content.storage_path, content.thumbnail_path, isPublicView]);
 
   // Proactive URL refresh for playing media
   useEffect(() => {
@@ -119,7 +121,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       const savedTime = mediaElement?.currentTime || 0;
       
       const freshUrl = await getAssetUrl({ 
-        path: content.storage_path, 
+        path: content.storage_path,
+        fileId: content.id,
         isPublicView,
         forceRefresh: true 
       });
@@ -150,7 +153,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     
     console.log('🔄 Attempting URL refresh...');
     const freshUrl = await getAssetUrl({ 
-      path: content.storage_path, 
+      path: content.storage_path,
+      fileId: content.id,
       isPublicView,
       forceRefresh: true 
     });
@@ -171,7 +175,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const handleImageError = async (event: React.SyntheticEvent<HTMLImageElement>) => {
     console.error('❌ Image error detected');
     const freshUrl = await getAssetUrl({ 
-      path: content.storage_path, 
+      path: content.storage_path,
+      fileId: content.id,
       isPublicView,
       forceRefresh: true 
     });
@@ -496,12 +501,12 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           <video
             ref={videoRef}
             src={contentUrl}
+            crossOrigin="anonymous"
+            preload="metadata"
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={thumbnailUrl || undefined}
             playsInline
             loop={isLooping}
-            crossOrigin="anonymous"
-            preload="metadata"
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {

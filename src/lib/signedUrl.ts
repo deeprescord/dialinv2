@@ -12,6 +12,7 @@ interface CachedUrl {
 
 interface GetAssetUrlOptions {
   path: string;
+  fileId?: string;
   isPublicView?: boolean;
   forceRefresh?: boolean;
 }
@@ -81,19 +82,26 @@ function normalizePath(path: string): string {
 /**
  * Get asset URL with intelligent caching and signing
  * 
- * @param options.path - Storage path (may include bucket prefix)
- * @param options.isPublicView - Whether this is a public page (shorter TTL)
+ * @param options.path - Storage path (may include bucket prefix) or absolute URL
+ * @param options.fileId - File ID for public-asset gateway (required for public view of private files)
+ * @param options.isPublicView - Whether this is a public page (uses gateway for private files)
  * @param options.forceRefresh - Skip cache and generate fresh URL
  * @returns Promise<string | null> - Asset URL or null if failed
  */
 export async function getAssetUrl({
   path,
+  fileId,
   isPublicView = false,
   forceRefresh = false
 }: GetAssetUrlOptions): Promise<string | null> {
   if (!path) {
     console.warn('getAssetUrl: Empty path provided');
     return null;
+  }
+
+  // Pass-through for absolute URLs (http/https/data URIs)
+  if (/^(https?:|data:)/i.test(path)) {
+    return path;
   }
 
   const bucket = detectBucket(path);
@@ -107,7 +115,17 @@ export async function getAssetUrl({
     return data.publicUrl;
   }
 
-  // Private buckets: check cache first (unless force refresh)
+  // Private buckets on public pages: use gateway
+  if (isPublicView && PRIVATE_BUCKETS.includes(bucket)) {
+    if (!fileId) {
+      console.warn('getAssetUrl: fileId required for public view of private file');
+      return null;
+    }
+    const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+    return `${projectUrl}/functions/v1/public-asset?fileId=${encodeURIComponent(fileId)}&cb=${Date.now()}`;
+  }
+
+  // Private buckets (authenticated): check cache first (unless force refresh)
   if (!forceRefresh) {
     const cachedUrl = getFromCache(bucket, normalizedPath);
     if (cachedUrl) {
@@ -115,8 +133,8 @@ export async function getAssetUrl({
     }
   }
 
-  // Generate signed URL
-  const ttl = isPublicView ? 15 : 120; // 15 min for public, 2 hours for authenticated
+  // Generate signed URL (authenticated only)
+  const ttl = 120; // 2 hours for authenticated
   
   try {
     const { data, error } = await supabase.storage

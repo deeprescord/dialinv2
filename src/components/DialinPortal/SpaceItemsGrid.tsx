@@ -61,11 +61,12 @@ export function SpaceItemsGrid({
             .getPublicUrl(pathToUse);
           urls[item.id] = data.publicUrl;
         } else {
-          // Private bucket - use createSignedUrl
+          // Private bucket - use createSignedUrl (normalize path)
           try {
+            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse;
             const { data } = await supabase.storage
               .from('user-files')
-              .createSignedUrl(pathToUse, 3600);
+              .createSignedUrl(norm, 3600);
             if (data?.signedUrl) {
               urls[item.id] = data.signedUrl;
             }

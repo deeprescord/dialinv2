@@ -81,15 +81,17 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
         return data.publicUrl;
       }
       // Default: private user-files bucket
+      const norm = path.replace(/^user-files\//, '');
       const { data, error } = await supabase.storage
         .from('user-files')
-        .createSignedUrl(path, 3600); // 1 hour expiry
+        .createSignedUrl(norm, 3600); // 1 hour expiry
       if (error || !data) throw error;
       return data.signedUrl;
     } catch (error) {
       console.error('Error getting URL:', error);
       // Fallback public URL attempt (may 404 if bucket is private)
-      return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/user-files/${path}`;
+      const norm = path.replace(/^user-files\//, '');
+      return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/user-files/${norm}`;
     }
   };
 

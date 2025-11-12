@@ -42,8 +42,8 @@ export function useSpaceItems(spaceId?: string) {
       
       console.log('useSpaceItems: Fetching items for spaceId:', spaceId, 'User:', userId || 'anonymous');
 
-      // Optimized: Fetch child spaces and link table first (works without FK joins)
-      const [spacesResult, linksResult] = await Promise.all([
+      // Optimized: Use Promise.all to fetch spaces and files in parallel
+      const [spacesResult, filesResult] = await Promise.all([
         // Get child spaces with minimal fields
         supabase
           .from('spaces')
@@ -51,32 +51,30 @@ export function useSpaceItems(spaceId?: string) {
           .eq('parent_id', spaceId)
           .order('position', { ascending: true })
           .limit(50), // Limit initial load
-
-        // Get file links for this space
+        
+        // Get files with metadata in a single query using joins
         supabase
           .from('space_files')
-          .select('file_id, position')
+          .select(`
+            file_id,
+            position,
+            files!inner(
+              id,
+              original_name,
+              file_type,
+              mime_type,
+              storage_path,
+              thumbnail_path,
+              duration,
+              created_at,
+              file_size
+            )
+          `)
           .eq('space_id', spaceId)
           .order('position', { ascending: true })
-          .limit(200)
+          .limit(50) // Limit initial load
       ]);
 
-      // Now fetch files by IDs (public-safe via RLS: allows files in public spaces)
-      const fileIds = (linksResult.data || []).map((l: any) => l.file_id);
-      const positionByFileId: Record<string, number> = {};
-      (linksResult.data || []).forEach((l: any) => { positionByFileId[l.file_id] = l.position || 0; });
-
-      let filesRows: any[] = [];
-      if (fileIds.length > 0) {
-        const { data: filesData, error: filesError } = await supabase
-          .from('files')
-          .select('id, original_name, file_type, mime_type, storage_path, thumbnail_path, duration, created_at, file_size')
-          .in('id', fileIds);
-        if (filesError) {
-          console.error('useSpaceItems: files query error', filesError);
-        }
-        filesRows = filesData || [];
-      }
       const allItems: SpaceItem[] = [];
 
       // Process child spaces
@@ -95,21 +93,24 @@ export function useSpaceItems(spaceId?: string) {
       }
 
       // Process files
-      if (filesRows.length > 0) {
-        const fileItems: SpaceItem[] = filesRows.map((file: any) => ({
-          id: file.id,
-          file_id: file.id,
-          original_name: file.original_name,
-          file_type: file.file_type,
-          mime_type: file.mime_type,
-          storage_path: file.storage_path,
-          thumbnail_path: file.thumbnail_path || undefined,
-          duration: file.duration || undefined,
-          created_at: file.created_at,
-          is_space: false,
-          position: positionByFileId[file.id] || 0,
-          file_size: file.file_size || 0,
-        }));
+      if (filesResult.data && filesResult.data.length > 0) {
+        const fileItems: SpaceItem[] = filesResult.data.map((sf: any) => {
+          const file = sf.files;
+          return {
+            id: file.id,
+            file_id: file.id,
+            original_name: file.original_name,
+            file_type: file.file_type,
+            mime_type: file.mime_type,
+            storage_path: file.storage_path,
+            thumbnail_path: file.thumbnail_path || undefined,
+            duration: file.duration || undefined,
+            created_at: file.created_at,
+            is_space: false,
+            position: sf.position || 0,
+            file_size: file.file_size || 0,
+          };
+        });
         allItems.push(...fileItems);
       }
 

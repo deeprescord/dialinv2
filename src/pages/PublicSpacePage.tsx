@@ -439,6 +439,9 @@ const PublicSpacePage = () => {
   const handleSpaceClick = (space: UISpace) => {
     if (space.id === 'default-home') {
       navigate('/home');
+    } else if (space.id === publicSpace.id) {
+      // Clicking current space goes back to space grid view
+      setSelectedItemData(null);
     }
   };
 

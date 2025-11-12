@@ -27,7 +27,8 @@ export function SpaceItemsGrid({
   enableDragDrop = true,
   isPublicSpace = false
 }: SpaceItemsGridProps) {
-  const { items, loading, refetch } = useSpaceItems(spaceId);
+  const { items, loading, isPublicSpace: detectedPublicSpace, refetch } = useSpaceItems(spaceId);
+  const actuallyPublic = isPublicSpace || detectedPublicSpace;
   const { addToSpace, moveToSpace, connectSpaces, reorderItems } = useSpaceOrganization();
   
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
@@ -111,7 +112,7 @@ export function SpaceItemsGrid({
             .from('space-covers')
             .getPublicUrl(pathToUse);
           urls[item.id] = data.publicUrl;
-        } else if (isPublicSpace) {
+        } else if (actuallyPublic) {
           // Public space - use getPublicUrl for user-files
           const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
           const { data } = supabase.storage
@@ -140,7 +141,7 @@ export function SpaceItemsGrid({
     if (items.length > 0) {
       generateUrls();
     }
-  }, [items]);
+  }, [items, actuallyPublic]);
 
   const handleOrgAdd = (itemId: string, isSpace: boolean) => {
     setSelectedOrgItemId(itemId);

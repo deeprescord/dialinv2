@@ -47,6 +47,12 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
   const [lastScrollY, setLastScrollY] = useState(0);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Only animate once on mount
+  useEffect(() => {
+    setHasAnimated(true);
+  }, []);
 
   // Check auth state
   useEffect(() => {
@@ -112,7 +118,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
   return (
     <motion.div 
       className="fixed top-4 left-4 right-4 z-50"
-      initial={{ y: -100, opacity: 0 }}
+      initial={hasAnimated ? false : { y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >

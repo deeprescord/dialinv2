@@ -16,6 +16,7 @@ interface SpaceItemsGridProps {
   onItemLongPress?: (item: any) => void;
   showSort?: boolean;
   enableDragDrop?: boolean;
+  isPublicSpace?: boolean;
 }
 
 export function SpaceItemsGrid({ 
@@ -23,7 +24,8 @@ export function SpaceItemsGrid({
   onItemClick,
   onItemLongPress,
   showSort = true,
-  enableDragDrop = true
+  enableDragDrop = true,
+  isPublicSpace = false
 }: SpaceItemsGridProps) {
   const { items, loading, refetch } = useSpaceItems(spaceId);
   const { addToSpace, moveToSpace, connectSpaces, reorderItems } = useSpaceOrganization();
@@ -83,7 +85,7 @@ export function SpaceItemsGrid({
     return sorted;
   }, [items, sortOrder]);
 
-  // Generate signed URLs for thumbnails
+  // Generate URLs for thumbnails (public URLs for public spaces, signed for private)
   useEffect(() => {
     const generateUrls = async () => {
       const urls: Record<string, string> = {};
@@ -110,17 +112,27 @@ export function SpaceItemsGrid({
             .getPublicUrl(pathToUse);
           urls[item.id] = data.publicUrl;
         } else {
-          // Private bucket - use createSignedUrl (normalize path)
-          try {
-            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
-            const { data } = await supabase.storage
+          // Normalize path for user-files bucket
+          const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
+          
+          if (isPublicSpace) {
+            // Public spaces can use getPublicUrl thanks to storage policies
+            const { data } = supabase.storage
               .from('user-files')
-              .createSignedUrl(norm, 3600);
-            if (data?.signedUrl) {
-              urls[item.id] = data.signedUrl;
+              .getPublicUrl(norm);
+            urls[item.id] = data.publicUrl;
+          } else {
+            // Private spaces need signed URLs
+            try {
+              const { data } = await supabase.storage
+                .from('user-files')
+                .createSignedUrl(norm, 3600);
+              if (data?.signedUrl) {
+                urls[item.id] = data.signedUrl;
+              }
+            } catch (error) {
+              console.error('Error signing URL:', error);
             }
-          } catch (error) {
-            console.error('Error signing URL:', error);
           }
         }
       }
@@ -131,7 +143,7 @@ export function SpaceItemsGrid({
     if (items.length > 0) {
       generateUrls();
     }
-  }, [items]);
+  }, [items, isPublicSpace]);
 
   const handleOrgAdd = (itemId: string, isSpace: boolean) => {
     setSelectedOrgItemId(itemId);

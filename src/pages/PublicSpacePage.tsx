@@ -534,6 +534,7 @@ const PublicSpacePage = () => {
             onPreviousItem={handlePreviousItem}
             sortOrder={sortOrder}
             onSortChange={setSortOrder}
+            isPublicSpace={true}
           />
         </div>
 

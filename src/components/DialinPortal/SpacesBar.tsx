@@ -80,6 +80,7 @@ interface SpacesBarProps {
   isHome?: boolean;
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
+  isPublicSpace?: boolean;
 }
 
 export function SpacesBar({
@@ -125,7 +126,8 @@ export function SpacesBar({
   showPeopleBar = false,
   isHome = false,
   sortOrder: propSortOrder,
-  onSortChange: propOnSortChange
+  onSortChange: propOnSortChange,
+  isPublicSpace = false
 }: SpacesBarProps) {
   const { isAutoplay, setIsAutoplay, repeatMode, setRepeatMode } = useMediaQueue();
   const navigate = useNavigate();
@@ -491,8 +493,13 @@ export function SpacesBar({
                 if (cachedThumb) {
                   thumbUrl = cachedThumb;
                 } else {
-                  const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
-                  thumbUrl = signedThumb?.signedUrl;
+                  if (isPublicSpace) {
+                    const { data } = supabase.storage.from('user-files').getPublicUrl(normThumb);
+                    thumbUrl = data.publicUrl;
+                  } else {
+                    const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
+                    thumbUrl = signedThumb?.signedUrl;
+                  }
                   if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
                 }
               }
@@ -503,19 +510,29 @@ export function SpacesBar({
               if (cachedOrig) {
                 thumbUrl = cachedOrig;
               } else {
-                const { data: signedOrig } = await supabase.storage.from('user-files').createSignedUrl(normOriginal, 3600);
-                thumbUrl = signedOrig?.signedUrl;
+                if (isPublicSpace) {
+                  const { data } = supabase.storage.from('user-files').getPublicUrl(normOriginal);
+                  thumbUrl = data.publicUrl;
+                } else {
+                  const { data: signedOrig } = await supabase.storage.from('user-files').createSignedUrl(normOriginal, 3600);
+                  thumbUrl = signedOrig?.signedUrl;
+                }
                 if (thumbUrl) setCache('user-files', normOriginal, thumbUrl);
               }
             } else if (fileData.file_type?.startsWith('video') && fileData.storage_path) {
-              // Use signed original video URL for 15s loop preview
+              // Use original video URL for 15s loop preview
               const normVideo = fileData.storage_path.replace(/^user-files\//, '');
               const cachedVid = getCache('user-files', normVideo);
               if (cachedVid) {
                 thumbUrl = cachedVid;
               } else {
-                const { data: signedVid } = await supabase.storage.from('user-files').createSignedUrl(normVideo, 3600);
-                thumbUrl = signedVid?.signedUrl;
+                if (isPublicSpace) {
+                  const { data } = supabase.storage.from('user-files').getPublicUrl(normVideo);
+                  thumbUrl = data.publicUrl;
+                } else {
+                  const { data: signedVid } = await supabase.storage.from('user-files').createSignedUrl(normVideo, 3600);
+                  thumbUrl = signedVid?.signedUrl;
+                }
                 if (thumbUrl) setCache('user-files', normVideo, thumbUrl);
               }
             }
@@ -744,13 +761,18 @@ export function SpacesBar({
                                         if (cacheKey) {
                                           mediaUrl = cacheKey;
                                         } else {
-                                          const { data: signed, error } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
-                                          if (error) {
-                                            console.warn('Failed to sign URL:', error);
-                                            toast.error('Failed to load media');
-                                            return;
+                                          if (isPublicSpace) {
+                                            const { data } = supabase.storage.from('user-files').getPublicUrl(normPath);
+                                            mediaUrl = data.publicUrl;
+                                          } else {
+                                            const { data: signed, error } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
+                                            if (error) {
+                                              console.warn('Failed to sign URL:', error);
+                                              toast.error('Failed to load media');
+                                              return;
+                                            }
+                                            mediaUrl = signed?.signedUrl;
                                           }
-                                          mediaUrl = signed?.signedUrl;
                                           if (mediaUrl) setCached('user-files', normPath, mediaUrl);
                                         }
                                       }

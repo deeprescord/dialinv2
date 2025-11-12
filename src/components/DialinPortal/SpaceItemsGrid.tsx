@@ -8,6 +8,7 @@ import { sortItems } from '@/lib/sortItems';
 import type { SortOrder } from '@/types/organization';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import defaultVideoThumb from '@/assets/video-thumbnails.jpg';
 
 interface SpaceItemsGridProps {
   spaceId?: string;
@@ -88,8 +89,16 @@ export function SpaceItemsGrid({
       const urls: Record<string, string> = {};
       
       for (const item of items) {
-        const pathToUse = item.thumbnail_path || item.storage_path;
-        if (!pathToUse) continue;
+        // Only use original file as a fallback if it's an image
+        let pathToUse: string | undefined;
+        if (item.thumbnail_path) {
+          pathToUse = item.thumbnail_path;
+        } else if (item.file_type === 'image' && item.storage_path) {
+          pathToUse = item.storage_path;
+        } else {
+          // For videos without a generated thumbnail, skip so UI uses a placeholder
+          continue;
+        }
         
         // Bypass absolute URLs
         if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
@@ -103,7 +112,7 @@ export function SpaceItemsGrid({
         } else {
           // Private bucket - use createSignedUrl (normalize path)
           try {
-            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse;
+            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
             const { data } = await supabase.storage
               .from('user-files')
               .createSignedUrl(norm, 3600);
@@ -211,13 +220,19 @@ export function SpaceItemsGrid({
   };
 
   // Transform items to MediaGrid format
-  const gridItems = sortedItems.map(item => ({
-    id: item.id,
-    title: item.original_name,
-    thumb: thumbUrls[item.id] || '/placeholder.svg',
-    duration: item.duration ? `${Math.floor(item.duration / 60)}:${(item.duration % 60).toString().padStart(2, '0')}` : undefined,
-    is_space: item.is_space
-  }));
+  const gridItems = sortedItems.map(item => {
+    const thumb = (item.file_type === 'video' && !thumbUrls[item.id])
+      ? defaultVideoThumb
+      : (thumbUrls[item.id] || '/placeholder.svg');
+
+    return {
+      id: item.id,
+      title: item.original_name,
+      thumb,
+      duration: item.duration ? `${Math.floor(item.duration / 60)}:${(item.duration % 60).toString().padStart(2, '0')}` : undefined,
+      is_space: item.is_space
+    };
+  });
 
   if (loading) {
     return (

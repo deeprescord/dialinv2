@@ -33,6 +33,7 @@ interface ItemsPeopleBarProps {
   on360RotationSpeedChange?: (spaceId: string, speed: number) => void;
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
+  isPublicSpace?: boolean;
 }
 
 type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
@@ -55,7 +56,8 @@ export function ItemsPeopleBar({
   on360RotationToggle,
   on360RotationSpeedChange,
   on360RotationAxisChange,
-  onItem360Toggle
+  onItem360Toggle,
+  isPublicSpace = false
 }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -188,6 +190,15 @@ export function ItemsPeopleBar({
           return [item.id, data.publicUrl] as const;
         }
         
+        // For public spaces, use public URLs instead of signed URLs
+        if (isPublicSpace) {
+          const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
+          const { data } = supabase.storage
+            .from('user-files')
+            .getPublicUrl(norm);
+          return [item.id, data.publicUrl] as const;
+        }
+        
         // Private bucket - sign URL (normalize path)
         try {
           const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
@@ -218,7 +229,7 @@ export function ItemsPeopleBar({
     return () => {
       cancelled = true;
     };
-  }, [items]);
+  }, [items, isPublicSpace]);
 
   // Handle long press
   const handleMouseDown = (item: any, event: React.MouseEvent) => {

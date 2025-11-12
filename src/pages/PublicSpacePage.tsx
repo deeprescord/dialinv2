@@ -495,6 +495,7 @@ const PublicSpacePage = () => {
           onAddOptionSelect={handleGatedAction}
           movieMode={false}
           spaceId={publicSpace.id}
+          isPublicSpace={true}
           showItemsBar={showItemsBar}
           onCloseItemsBar={() => setShowItemsBar(false)}
           itemsPeopleView={itemsPeopleView}

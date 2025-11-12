@@ -16,6 +16,7 @@ interface SpaceItemsGridProps {
   onItemLongPress?: (item: any) => void;
   showSort?: boolean;
   enableDragDrop?: boolean;
+  isPublicSpace?: boolean;
 }
 
 export function SpaceItemsGrid({ 
@@ -23,7 +24,8 @@ export function SpaceItemsGrid({
   onItemClick,
   onItemLongPress,
   showSort = true,
-  enableDragDrop = true
+  enableDragDrop = true,
+  isPublicSpace = false
 }: SpaceItemsGridProps) {
   const { items, loading, refetch } = useSpaceItems(spaceId);
   const { addToSpace, moveToSpace, connectSpaces, reorderItems } = useSpaceOrganization();
@@ -108,6 +110,13 @@ export function SpaceItemsGrid({
           const { data } = supabase.storage
             .from('space-covers')
             .getPublicUrl(pathToUse);
+          urls[item.id] = data.publicUrl;
+        } else if (isPublicSpace) {
+          // Public space - use getPublicUrl for user-files
+          const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
+          const { data } = supabase.storage
+            .from('user-files')
+            .getPublicUrl(norm);
           urls[item.id] = data.publicUrl;
         } else {
           // Private bucket - use createSignedUrl (normalize path)

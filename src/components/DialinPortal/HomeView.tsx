@@ -80,6 +80,7 @@ interface HomeViewProps {
   movieMode?: boolean;
   onMovieModeToggle?: () => void;
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
+  isPublicSpace?: boolean;
 }
 
 export function HomeView({ 
@@ -132,7 +133,8 @@ export function HomeView({
   onSortChange,
   movieMode = false,
   onMovieModeToggle,
-  onItem360Toggle
+  onItem360Toggle,
+  isPublicSpace = false
 }: HomeViewProps) {
   const { isAutoplay, skipToNext, repeatMode } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
@@ -521,6 +523,7 @@ export function HomeView({
           onItemClick={handleItemClickFromBar}
           onClose={onCloseItemsBar}
           onItem360Toggle={onItem360Toggle}
+          isPublicSpace={isPublicSpace}
         />
       )}
     </motion.div>

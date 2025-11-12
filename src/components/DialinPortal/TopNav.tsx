@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon, Settings } from '../icons';
 import { ArrowUpDown, Film, ScanEye } from 'lucide-react';
@@ -40,9 +42,26 @@ const tabs = [
 const filterTabs = ['videos', 'music', 'locations'];
 
 export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel, sortOrder = 'custom', onSortChange, movieMode = false, onMovieModeToggle, spaceId, isPublic, shareSlug }: TopNavProps) {
+  const navigate = useNavigate();
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  // Check auth state
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsSignedIn(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsSignedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -108,7 +127,10 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
       >
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2 sm:space-x-8 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2">
+          <div 
+            className="flex items-center space-x-2 sm:space-x-8 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 cursor-pointer hover:bg-black/70 transition-colors"
+            onClick={() => navigate(isSignedIn ? '/' : '/default')}
+          >
             <img 
               src="/brand/dialin-logo-white.png" 
               alt="Dialin" 

@@ -193,12 +193,23 @@ export function ItemsPeopleBar({
         // Always sign user-files (bucket is private)
         try {
           const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
-          const { data } = await supabase.storage
+          const { data, error } = await supabase.storage
             .from('user-files')
             .createSignedUrl(norm, 7200); // 2 hour cache
+          
+          if (error) {
+            console.error('ItemsPeopleBar: Signed URL error for', norm, ':', error);
+            return [item.id, null] as const;
+          }
+          
+          if (!data?.signedUrl) {
+            console.warn('ItemsPeopleBar: No signed URL returned for', norm);
+            return [item.id, null] as const;
+          }
+          
           return [item.id, data.signedUrl] as const;
         } catch (err) {
-          console.warn('Signed URL failed for', path, err);
+          console.warn('ItemsPeopleBar: Signed URL failed for', path, err);
           return [item.id, null] as const;
         }
       });

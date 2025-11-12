@@ -115,10 +115,13 @@ export function SpaceItemsGrid({
           // Private bucket - always create a signed URL (normalize path)
           try {
             const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : (pathToUse as string);
-            const { data } = await supabase.storage
+            const { data, error } = await supabase.storage
               .from('user-files')
-              .createSignedUrl(norm, 3600);
-            if (data?.signedUrl) {
+              .createSignedUrl(norm, 7200); // Extended to 2 hours for better Safari compatibility
+            
+            if (error) {
+              console.error('Error signing URL for', norm, ':', error);
+            } else if (data?.signedUrl) {
               urls[item.id] = data.signedUrl;
             }
           } catch (error) {
@@ -127,6 +130,7 @@ export function SpaceItemsGrid({
         }
       }
       
+      console.log('SpaceItemsGrid: Generated', Object.keys(urls).length, 'thumbnail URLs for', items.length, 'items');
       setThumbUrls(urls);
     };
 

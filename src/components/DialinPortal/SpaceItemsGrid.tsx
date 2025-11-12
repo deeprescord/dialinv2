@@ -33,6 +33,46 @@ export function SpaceItemsGrid({
   const [selectedOrgItemId, setSelectedOrgItemId] = useState<string | null>(null);
   const [selectedOrgIsSpace, setSelectedOrgIsSpace] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+  
+  // Track processed items to avoid duplicate generation
+  const processedRef = React.useRef<Set<string>>(new Set());
+
+  // Auto-generate thumbnails for images in this space missing them
+  useEffect(() => {
+    const generateMissingThumbs = async () => {
+      const missing = items.filter(
+        (it) => it.file_type === 'image' && !it.thumbnail_path && it.storage_path && !processedRef.current.has(it.id)
+      );
+      if (missing.length === 0) return;
+      console.log(`Auto-generating thumbnails for ${missing.length} images in this space...`);
+      const batchSize = 5;
+      for (let i = 0; i < missing.length; i += batchSize) {
+        const batch = missing.slice(i, i + batchSize);
+        await Promise.all(
+          batch.map(async (file) => {
+            try {
+              processedRef.current.add(file.id);
+              const { error } = await supabase.functions.invoke('generate-thumbnail', {
+                body: {
+                  fileId: file.id,
+                  storagePath: file.storage_path,
+                  mimeType: file.mime_type || 'image/jpeg',
+                }
+              });
+              if (error) {
+                console.warn('Thumb gen failed for', file.id, error);
+              }
+            } catch (err) {
+              console.warn('Thumb gen error for', file.id, err);
+            }
+          })
+        );
+      }
+    };
+
+    if (items.length > 0) generateMissingThumbs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
 
   // Sort items
   const sortedItems = React.useMemo(() => {

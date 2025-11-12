@@ -190,23 +190,12 @@ export function ItemsPeopleBar({
           return [item.id, data.publicUrl] as const;
         }
         
-        // For public spaces, use public URLs instead of signed URLs
-        if (isPublicSpace) {
-          const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
-          const { data } = supabase.storage
-            .from('user-files')
-            .getPublicUrl(norm);
-          return [item.id, data.publicUrl] as const;
-        }
-        
-        // Private bucket - sign URL (normalize path)
+        // Always sign user-files (bucket is private)
         try {
           const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
-          const { data, error } = await supabase.storage
+          const { data } = await supabase.storage
             .from('user-files')
             .createSignedUrl(norm, 7200); // 2 hour cache
-            
-          if (error) throw error;
           return [item.id, data.signedUrl] as const;
         } catch (err) {
           console.warn('Signed URL failed for', path, err);

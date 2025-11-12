@@ -128,15 +128,17 @@ export async function getThumbUrlForItem(item: {
 }): Promise<string | null> {
   // Prefer explicit thumbnail
   if (item.thumbnail_path) {
-    // Detect bucket from path
-    if (item.thumbnail_path.startsWith('space-covers/')) {
-      return getObjectUrl(item.thumbnail_path, 'space-covers');
+    // Detect bucket from path - handle both prefixed and non-prefixed paths
+    let bucket: 'user-files' | 'space-covers' | 'profile-media' = 'user-files';
+    let path = item.thumbnail_path;
+    
+    if (path.startsWith('space-covers/') || path.includes('/space-covers/')) {
+      bucket = 'space-covers';
+    } else if (path.startsWith('profile-media/') || path.includes('/profile-media/')) {
+      bucket = 'profile-media';
     }
-    if (item.thumbnail_path.startsWith('profile-media/')) {
-      return getObjectUrl(item.thumbnail_path, 'profile-media');
-    }
-    // Default to user-files
-    return getObjectUrl(item.thumbnail_path, 'user-files');
+    
+    return getObjectUrl(path, bucket);
   }
   
   // For images, use the original file as thumbnail

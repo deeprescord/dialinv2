@@ -75,23 +75,29 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     if (path.includes('/object/public/')) return path;
 
     try {
-      // Public bucket: space-covers
-      if (path.startsWith('space-covers/')) {
-        const { data } = supabase.storage.from('space-covers').getPublicUrl(path);
+      const bucketGuess = path.split('/')[0] || 'user-files';
+      const bucket = bucketGuess;
+      const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
+
+      // Public buckets
+      if (bucket === 'space-covers' || bucket === 'profile-media') {
+        const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
         return data.publicUrl;
       }
-      // Default: private user-files bucket
-      const norm = path.replace(/^user-files\//, '');
+
+      // Private buckets (default to user-files)
+      const cacheBuster = Date.now();
       const { data, error } = await supabase.storage
-        .from('user-files')
-        .createSignedUrl(norm, 3600); // 1 hour expiry
-      if (error || !data) throw error;
-      return data.signedUrl;
+        .from(bucket)
+        .createSignedUrl(objectPath, 3600); // 1 hour expiry
+      if (error || !data?.signedUrl) throw error;
+      return `${data.signedUrl}&cb=${cacheBuster}`;
     } catch (error) {
       console.error('Error getting URL:', error);
       // Fallback public URL attempt (may 404 if bucket is private)
-      const norm = path.replace(/^user-files\//, '');
-      return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/user-files/${norm}`;
+      const bucketGuess = path.split('/')[0] || 'user-files';
+      const objectPath = path.startsWith(bucketGuess + '/') ? path.slice(bucketGuess.length + 1) : path;
+      return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/${bucketGuess}/${objectPath}`;
     }
   };
 

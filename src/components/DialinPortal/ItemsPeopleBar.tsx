@@ -174,9 +174,9 @@ export function ItemsPeopleBar({
       const t0 = performance.now();
       const urlMap: Record<string, string> = {};
 
-      // Collect batch of private user-files to sign
-      const userFilePaths: string[] = [];
-      const pathToIds: Record<string, string[]> = {};
+      // Collect batch of private paths per-bucket
+      const privateBucketPaths: Record<string, string[]> = {};
+      const pathToIdsByBucket: Record<string, Record<string, string[]>> = {};
 
       for (const item of items) {
         const path = item.thumbnail_path || item.storage_path;
@@ -187,65 +187,71 @@ export function ItemsPeopleBar({
           continue;
         }
 
-        if (path.startsWith('space-covers/')) {
-          const { data } = supabase.storage.from('space-covers').getPublicUrl(path);
+        const bucketGuess = path.split('/')[0];
+        const bucket = bucketGuess || 'user-files';
+        const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
+
+        // Known public buckets
+        if (bucket === 'space-covers' || bucket === 'profile-media') {
+          const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
           urlMap[item.id] = data.publicUrl;
           continue;
         }
 
-        // Private bucket (user-files) - collect for batch signing
-        const norm = path.replace(/^user-files\//, '');
-        if (!pathToIds[norm]) {
-          pathToIds[norm] = [];
-          userFilePaths.push(norm);
+        // Private buckets - collect for batch signing
+        if (!pathToIdsByBucket[bucket]) pathToIdsByBucket[bucket] = {};
+        if (!privateBucketPaths[bucket]) privateBucketPaths[bucket] = [];
+        if (!pathToIdsByBucket[bucket][objectPath]) {
+          pathToIdsByBucket[bucket][objectPath] = [];
+          privateBucketPaths[bucket].push(objectPath);
         }
-        pathToIds[norm].push(item.id);
+        pathToIdsByBucket[bucket][objectPath].push(item.id);
       }
 
-      if (userFilePaths.length > 0) {
+      // Batch sign per bucket
+      const cacheBuster = Date.now();
+      await Promise.all(Object.entries(privateBucketPaths).map(async ([bucket, paths]) => {
+        if (paths.length === 0) return;
         try {
-          const cacheBuster = Date.now();
           const { data, error } = await supabase.storage
-            .from('user-files')
-            .createSignedUrls(userFilePaths, 7200); // 2 hours for Safari stability
+            .from(bucket)
+            .createSignedUrls(paths, 7200); // 2 hours for Safari stability
 
           if (error) {
-            console.error('[Chrome Debug] ItemsPeopleBar: batch signing error:', error);
+            console.error('[Chrome Debug] ItemsPeopleBar: batch signing error for bucket', bucket, error);
             // Retry individually if batch fails
-            for (const path of userFilePaths) {
+            for (const p of paths) {
               try {
                 const { data: retryData, error: retryError } = await supabase.storage
-                  .from('user-files')
-                  .createSignedUrl(path, 7200);
+                  .from(bucket)
+                  .createSignedUrl(p, 7200);
                 if (retryError) {
-                  console.error('[Chrome Debug] Retry failed for path:', path, retryError);
+                  console.error('[Chrome Debug] Retry failed for', bucket, p, retryError);
                 } else if (retryData?.signedUrl) {
                   const signedWithCache = `${retryData.signedUrl}&cb=${cacheBuster}`;
-                  const ids = pathToIds[path] || [];
+                  const ids = pathToIdsByBucket[bucket][p] || [];
                   ids.forEach((id) => (urlMap[id] = signedWithCache));
-                  console.log('[Chrome Debug] Retry success for path:', path);
                 }
               } catch (retryErr) {
-                console.error('[Chrome Debug] Retry exception for path:', path, retryErr);
+                console.error('[Chrome Debug] Retry exception for', bucket, p, retryErr);
               }
             }
           } else if (Array.isArray(data)) {
             data.forEach((entry) => {
               if (!entry.signedUrl) {
-                console.warn('[Chrome Debug] No signedUrl for path:', entry.path);
+                console.warn('[Chrome Debug] No signedUrl for', bucket, entry.path);
                 return;
               }
-              // Add cache-buster to prevent Chrome caching issues
               const signedWithCache = `${entry.signedUrl}&cb=${cacheBuster}`;
-              const ids = pathToIds[entry.path] || [];
+              const ids = pathToIdsByBucket[bucket][entry.path] || [];
               ids.forEach((id) => (urlMap[id] = signedWithCache));
             });
-            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully');
+            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully for bucket', bucket);
           }
         } catch (err) {
-          console.error('[Chrome Debug] ItemsPeopleBar: batch sign exception:', err);
+          console.error('[Chrome Debug] ItemsPeopleBar: batch sign exception for bucket', bucket, err);
         }
-      }
+      }));
 
       if (!cancelled) {
         console.log(
@@ -335,7 +341,7 @@ export function ItemsPeopleBar({
       thumb: item.thumbnail_path ? url : undefined,
       duration: item.duration,
       mime_type: item.mime_type,
-      storage_path: normPath,
+      storage_path: item.storage_path, // keep bucket prefix so per-bucket signing works
       file_type: item.file_type,
       original_name: item.original_name,
       thumbnail_path: item.thumbnail_path

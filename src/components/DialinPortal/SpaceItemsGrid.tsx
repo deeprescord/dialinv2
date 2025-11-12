@@ -91,9 +91,9 @@ export function SpaceItemsGrid({
       const t0 = performance.now();
       const urls: Record<string, string> = {};
 
-      // Collect paths to sign in batch
-      const userFilePaths: string[] = [];
-      const pathToIds: Record<string, string[]> = {};
+      // Collect paths to sign in batch per-bucket
+      const privateBucketPaths: Record<string, string[]> = {};
+      const pathToIdsByBucket: Record<string, Record<string, string[]>> = {};
 
       for (const item of items) {
         // Only use original file as a fallback if it's an image
@@ -112,66 +112,71 @@ export function SpaceItemsGrid({
           continue;
         }
 
-        if (pathToUse.startsWith('space-covers/')) {
-          // Public bucket - use getPublicUrl
-          const { data } = supabase.storage.from('space-covers').getPublicUrl(pathToUse);
+        const bucketGuess = pathToUse.split('/')[0];
+        const bucket = bucketGuess || 'user-files';
+        const objectPath = pathToUse.startsWith(bucket + '/') ? pathToUse.slice(bucket.length + 1) : pathToUse;
+
+        // Known public buckets
+        if (bucket === 'space-covers' || bucket === 'profile-media') {
+          const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
           urls[item.id] = data.publicUrl;
           continue;
         }
 
-        // Private bucket - batch sign (normalize path)
-        const norm = pathToUse.replace(/^user-files\//, '');
-        if (!pathToIds[norm]) {
-          pathToIds[norm] = [];
-          userFilePaths.push(norm);
+        // Private buckets - batch sign per bucket
+        if (!pathToIdsByBucket[bucket]) pathToIdsByBucket[bucket] = {};
+        if (!privateBucketPaths[bucket]) privateBucketPaths[bucket] = [];
+        if (!pathToIdsByBucket[bucket][objectPath]) {
+          pathToIdsByBucket[bucket][objectPath] = [];
+          privateBucketPaths[bucket].push(objectPath);
         }
-        pathToIds[norm].push(item.id);
+        pathToIdsByBucket[bucket][objectPath].push(item.id);
       }
 
-      if (userFilePaths.length > 0) {
+      // Perform batch signing per bucket
+      const cacheBuster = Date.now();
+      await Promise.all(Object.entries(privateBucketPaths).map(async ([bucket, paths]) => {
+        if (paths.length === 0) return;
         try {
-          const cacheBuster = Date.now();
           const { data, error } = await supabase.storage
-            .from('user-files')
-            .createSignedUrls(userFilePaths, 7200); // 2 hours
+            .from(bucket)
+            .createSignedUrls(paths, 7200);
 
           if (error) {
-            console.error('[Chrome Debug] SpaceItemsGrid: batch signing error:', error);
+            console.error('[Chrome Debug] SpaceItemsGrid: batch signing error for bucket', bucket, error);
             // Retry individually if batch fails
-            for (const path of userFilePaths) {
+            for (const p of paths) {
               try {
                 const { data: retryData, error: retryError } = await supabase.storage
-                  .from('user-files')
-                  .createSignedUrl(path, 7200);
+                  .from(bucket)
+                  .createSignedUrl(p, 7200);
                 if (retryError) {
-                  console.error('[Chrome Debug] Retry failed for path:', path, retryError);
+                  console.error('[Chrome Debug] Retry failed for', bucket, p, retryError);
                 } else if (retryData?.signedUrl) {
                   const signedWithCache = `${retryData.signedUrl}&cb=${cacheBuster}`;
-                  const ids = pathToIds[path] || [];
+                  const ids = pathToIdsByBucket[bucket][p] || [];
                   ids.forEach((id) => (urls[id] = signedWithCache));
-                  console.log('[Chrome Debug] Retry success for path:', path);
                 }
               } catch (retryErr) {
-                console.error('[Chrome Debug] Retry exception for path:', path, retryErr);
+                console.error('[Chrome Debug] Retry exception for', bucket, p, retryErr);
               }
             }
           } else if (Array.isArray(data)) {
             for (const entry of data) {
-              const ids = pathToIds[entry.path] || [];
+              const ids = pathToIdsByBucket[bucket][entry.path] || [];
               if (entry.signedUrl) {
-                // Add cache-buster to prevent Chrome caching issues
                 const signedWithCache = `${entry.signedUrl}&cb=${cacheBuster}`;
                 ids.forEach((id) => (urls[id] = signedWithCache));
               } else {
-                console.warn('[Chrome Debug] No signedUrl for path:', entry.path);
+                console.warn('[Chrome Debug] No signedUrl for', bucket, entry.path);
               }
             }
-            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully');
+            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully for bucket', bucket);
           }
         } catch (err) {
-          console.error('[Chrome Debug] SpaceItemsGrid: batch sign exception:', err);
+          console.error('[Chrome Debug] SpaceItemsGrid: batch sign exception for bucket', bucket, err);
         }
-      }
+      }));
 
       console.log(
         'SpaceItemsGrid: Generated',

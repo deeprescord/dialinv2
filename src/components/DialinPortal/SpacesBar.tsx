@@ -427,10 +427,13 @@ export function SpacesBar({
     if (spaceItems.length > 0) {
       setLoadingThumbs(true);
     }
-    
+  }, [spaceItems.length]);
+  
+  React.useEffect(() => {
     const generateUrls = async () => {
       const thumbs: Record<string, string> = {};
       const medias: Record<string, { mediaUrl?: string; thumbUrl?: string; fileData?: any }> = {};
+      const filesToProcess: Array<{ id: string; path: string; bucket: 'user-files' | 'space-covers' }>= [];
 
       const now = Date.now();
       const getCache = (bucket: string, path: string): string | undefined => {
@@ -458,105 +461,87 @@ export function SpacesBar({
       // Check if current space is public
       const isPublicSpace = allSpaces.find(s => s.id === currentSpaceId)?.isPublic || false;
       
-      // Process items with timeout protection
-      const processItem = async (item: any) => {
+      // Lightweight: Only fetch thumbnails upfront, use public URLs for public spaces
+      const fileDataPromises = spaceItems.map(async (item) => {
         if (item.is_space) return null;
         
         try {
-          // Add timeout wrapper
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 5000)
-          );
+          const { data: fileData, error } = await supabase
+            .from('files')
+            .select('*')
+            .eq('id', item.id)
+            .maybeSingle();
           
-          const fetchPromise = (async () => {
-            const { data: fileData, error } = await supabase
-              .from('files')
-              .select('*')
-              .eq('id', item.id)
-              .maybeSingle();
-            
-            if (!fileData || error) return null;
-            
-            // Get thumbnail URL with smart fallbacks
-            let thumbUrl: string | undefined;
-            
-            // Preferred: explicit thumbnail_path
-            if (fileData.thumbnail_path) {
-              if (fileData.thumbnail_path.startsWith('space-covers/')) {
-                const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
-                thumbUrl = data.publicUrl;
+          if (!fileData || error) return null;
+          
+          // Get thumbnail URL only (lightweight) with smart fallbacks
+          let thumbUrl: string | undefined;
+          // Preferred: explicit thumbnail_path
+          if (fileData.thumbnail_path) {
+            if (fileData.thumbnail_path.startsWith('space-covers/')) {
+              const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
+              thumbUrl = data.publicUrl;
+            } else {
+              const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
+              const cachedThumb = getCache('user-files', normThumb);
+              if (cachedThumb) {
+                thumbUrl = cachedThumb;
               } else {
-                const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
-                const cachedThumb = getCache('user-files', normThumb);
-                if (cachedThumb) {
-                  thumbUrl = cachedThumb;
-                } else {
-                  const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
-                  thumbUrl = signedThumb?.signedUrl;
-                  if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
-                }
-              }
-            } else if (fileData.file_type === 'image' && fileData.storage_path) {
-              // Fallback: use original image
-              const normOriginal = fileData.storage_path.replace(/^user-files\//, '');
-              const cachedOrig = getCache('user-files', normOriginal);
-              if (cachedOrig) {
-                thumbUrl = cachedOrig;
-              } else {
-                const { data: signedOrig } = await supabase.storage.from('user-files').createSignedUrl(normOriginal, 3600);
-                thumbUrl = signedOrig?.signedUrl;
-                if (thumbUrl) setCache('user-files', normOriginal, thumbUrl);
-              }
-            } else if (fileData.file_type?.startsWith('video') && fileData.storage_path) {
-              // Use signed original video URL for 15s loop preview
-              const normVideo = fileData.storage_path.replace(/^user-files\//, '');
-              const cachedVid = getCache('user-files', normVideo);
-              if (cachedVid) {
-                thumbUrl = cachedVid;
-              } else {
-                const { data: signedVid } = await supabase.storage.from('user-files').createSignedUrl(normVideo, 3600);
-                thumbUrl = signedVid?.signedUrl;
-                if (thumbUrl) setCache('user-files', normVideo, thumbUrl);
+                const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
+                thumbUrl = signedThumb?.signedUrl;
+                if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
               }
             }
-            
-            if (thumbUrl) {
-              thumbs[item.id] = thumbUrl;
+          } else if (fileData.file_type === 'image' && fileData.storage_path) {
+            // Fallback: use original image until a thumbnail is generated
+            const normOriginal = fileData.storage_path.replace(/^user-files\//, '');
+            const cachedOrig = getCache('user-files', normOriginal);
+            if (cachedOrig) {
+              thumbUrl = cachedOrig;
+            } else {
+              const { data: signedOrig } = await supabase.storage.from('user-files').createSignedUrl(normOriginal, 3600);
+              thumbUrl = signedOrig?.signedUrl;
+              if (thumbUrl) setCache('user-files', normOriginal, thumbUrl);
             }
-            
-            medias[item.id] = {
-              thumbUrl,
-              fileData: {
-                ...fileData,
-                storage_path: fileData.storage_path?.replace(/^user-files\//, ''),
-                isPublicSpace,
-              }
-            };
-            
-            return null;
-          })();
-          
-          await Promise.race([fetchPromise, timeoutPromise]);
-        } catch (error) {
-          if (error instanceof Error && error.message === 'Timeout') {
-            console.warn('Thumbnail loading timeout for', item.id);
-          } else {
-            console.error('Error pre-fetching file data for', item.id, error);
+          } else if (fileData.file_type?.startsWith('video') && fileData.storage_path) {
+            // Use signed original video URL so we can render a real preview loop
+            const normVideo = fileData.storage_path.replace(/^user-files\//, '');
+            const cachedVid = getCache('user-files', normVideo);
+            if (cachedVid) {
+              thumbUrl = cachedVid;
+            } else {
+              const { data: signedVid } = await supabase.storage.from('user-files').createSignedUrl(normVideo, 3600);
+              thumbUrl = signedVid?.signedUrl;
+              if (thumbUrl) setCache('user-files', normVideo, thumbUrl);
+            }
           }
+          
+          // Store thumbnail for carousel display
+          if (thumbUrl) {
+            thumbs[item.id] = thumbUrl;
+          }
+          
+          // Store file metadata only (no media URL pre-signing)
+          medias[item.id] = {
+            thumbUrl,
+            fileData: {
+              ...fileData,
+              storage_path: fileData.storage_path?.replace(/^user-files\//, ''),
+              isPublicSpace, // Pass this info for on-demand signing
+            }
+          };
+          
+          return null;
+        } catch (error) {
+          console.error('Error pre-fetching file data for', item.id, error);
+          return null;
         }
-      };
+      });
       
-      // Process in batches of 5 with progressive updates
-      const batchSize = 5;
-      for (let i = 0; i < spaceItems.length; i += batchSize) {
-        const batch = spaceItems.slice(i, i + batchSize);
-        await Promise.all(batch.map(processItem));
-        
-        // Progressive update - show thumbnails as they load
-        setThumbUrls((prev) => ({ ...prev, ...thumbs }));
-        setMediaUrls((prev) => ({ ...prev, ...medias }));
-      }
+      await Promise.allSettled(fileDataPromises);
       
+      setThumbUrls((prev) => ({ ...prev, ...thumbs }));
+      setMediaUrls((prev) => ({ ...prev, ...medias }));
       setLoadingThumbs(false);
     };
 

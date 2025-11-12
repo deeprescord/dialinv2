@@ -38,9 +38,8 @@ export const ShareSpaceButton = ({ spaceId, isPublic, shareSlug }: ShareSpaceBut
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Share2 className="h-4 w-4" />
-          Share
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Share2 size={18} className="text-white" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

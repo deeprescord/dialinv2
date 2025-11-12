@@ -27,29 +27,31 @@ serve(async (req) => {
 
     // Only generate thumbnails for images and videos
     if (mimeType.startsWith('image/')) {
-      // For images, create a smaller version
+      // Normalize storage path (remove bucket prefix if present)
+      const normalizedPath = storagePath.replace(/^user-files\//, '');
+      
+      // Download the file from private storage
       const { data: fileData, error: downloadError } = await supabaseClient.storage
         .from('user-files')
-        .download(storagePath);
+        .download(normalizedPath);
 
       if (downloadError) throw downloadError;
 
-      // Generate thumbnail filename
-      const pathParts = storagePath.split('/');
-      const fileName = pathParts[pathParts.length - 1];
-      const userId = pathParts[0];
-      thumbnailPath = `${userId}/thumbnails/thumb_${fileName}`;
-
-      // For now, upload the same image as thumbnail
-      // In production, you'd resize it here using an image processing library
+      // Upload to PUBLIC bucket (space-covers) for web-optimized access
+      const publicThumbnailPath = `thumbnails/${fileId}.jpg`;
+      
       const { error: uploadError } = await supabaseClient.storage
-        .from('user-files')
-        .upload(thumbnailPath, fileData, {
-          contentType: mimeType,
-          upsert: true
+        .from('space-covers')
+        .upload(publicThumbnailPath, fileData, {
+          contentType: 'image/jpeg',
+          upsert: true,
+          cacheControl: '3600'
         });
 
       if (uploadError) throw uploadError;
+
+      // Store path WITH bucket prefix for consistency
+      thumbnailPath = `space-covers/${publicThumbnailPath}`;
 
     } else if (mimeType.startsWith('video/')) {
       // For videos, we'll extract the first frame as thumbnail
@@ -58,7 +60,7 @@ serve(async (req) => {
       thumbnailPath = null;
     }
 
-    // Update the file record with thumbnail path
+    // Update the file record with PUBLIC thumbnail path
     if (thumbnailPath) {
       const { error: updateError } = await supabaseClient
         .from('files')

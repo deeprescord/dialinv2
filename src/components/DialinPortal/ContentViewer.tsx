@@ -6,6 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { SkyboxViewer } from './SkyboxViewer';
 import audioVisualizer from '@/assets/audio-visualizer.gif';
+import { getAssetUrl, getRefreshTiming } from '@/lib/signedUrl';
 
 interface ContentViewerProps {
   content: {
@@ -69,55 +70,117 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const is360 = content.metadata?.is_360 || content.original_name.toLowerCase().includes('360');
   const isScrollableVideo = isVideo && videoDimensions ? videoDimensions.height > window.innerHeight * 1.1 : false;
 
-  const getPublicUrl = async (path: string): Promise<string> => {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    if (path.includes('/object/public/')) return path;
+  const [contentUrl, setContentUrl] = useState<string>('');
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+  const [urlRefreshTimer, setUrlRefreshTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isUrlRefreshing, setIsUrlRefreshing] = useState(false);
+  const isPublicView = window.location.pathname.startsWith('/s/');
 
-    try {
-      const bucketGuess = path.split('/')[0] || 'user-files';
-      const bucket = bucketGuess;
-      const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
-
-      // Public buckets
-      if (bucket === 'space-covers' || bucket === 'profile-media') {
-        const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
-        return data.publicUrl;
+  // Load URLs using centralized signing
+  useEffect(() => {
+    const loadUrls = async () => {
+      const url = await getAssetUrl({ 
+        path: content.storage_path, 
+        isPublicView 
+      });
+      if (url) {
+        console.log('Content URL loaded:', url);
+        setContentUrl(url);
       }
+      
+      if (content.thumbnail_path) {
+        const thumbUrl = await getAssetUrl({ 
+          path: content.thumbnail_path, 
+          isPublicView 
+        });
+        if (thumbUrl) {
+          console.log('Thumbnail URL loaded:', thumbUrl);
+          setThumbnailUrl(thumbUrl);
+        }
+      }
+    };
+    
+    loadUrls();
+  }, [content.storage_path, content.thumbnail_path, isPublicView]);
 
-      // Private buckets (default to user-files)
-      const cacheBuster = Date.now();
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(objectPath, 3600); // 1 hour expiry
-      if (error || !data?.signedUrl) throw error;
-      return `${data.signedUrl}&cb=${cacheBuster}`;
-    } catch (error) {
-      console.error('Error getting URL:', error);
-      // Fallback public URL attempt (may 404 if bucket is private)
-      const bucketGuess = path.split('/')[0] || 'user-files';
-      const objectPath = path.startsWith(bucketGuess + '/') ? path.slice(bucketGuess.length + 1) : path;
-      return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/${bucketGuess}/${objectPath}`;
+  // Proactive URL refresh for playing media
+  useEffect(() => {
+    if (!isPlaying || !contentUrl) return;
+    
+    // Clear any existing timer
+    if (urlRefreshTimer) clearTimeout(urlRefreshTimer);
+    
+    const refreshDelay = getRefreshTiming(isPublicView);
+    const timer = setTimeout(async () => {
+      console.log('🔄 Proactive URL refresh for playing media');
+      setIsUrlRefreshing(true);
+      
+      const mediaElement = videoRef.current || audioRef.current;
+      const savedTime = mediaElement?.currentTime || 0;
+      
+      const freshUrl = await getAssetUrl({ 
+        path: content.storage_path, 
+        isPublicView,
+        forceRefresh: true 
+      });
+      
+      if (freshUrl && mediaElement) {
+        setContentUrl(freshUrl);
+        // Wait for new URL to load, then resume
+        setTimeout(() => {
+          mediaElement.currentTime = savedTime;
+          if (isPlaying) mediaElement.play().catch(console.error);
+          setIsUrlRefreshing(false);
+        }, 100);
+      }
+    }, refreshDelay);
+    
+    setUrlRefreshTimer(timer);
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isPlaying, contentUrl, isPublicView, content.storage_path]);
+
+  // Auto-refresh URLs on media errors
+  const handleMediaError = async (event: React.SyntheticEvent<HTMLMediaElement>) => {
+    console.error('❌ Media error detected:', event);
+    const mediaElement = event.currentTarget;
+    const savedTime = mediaElement.currentTime;
+    
+    console.log('🔄 Attempting URL refresh...');
+    const freshUrl = await getAssetUrl({ 
+      path: content.storage_path, 
+      isPublicView,
+      forceRefresh: true 
+    });
+    
+    if (freshUrl && freshUrl !== contentUrl) {
+      setContentUrl(freshUrl);
+      setTimeout(() => {
+        mediaElement.currentTime = savedTime;
+        if (isPlaying) {
+          mediaElement.play().catch(err => {
+            console.error('Failed to resume after refresh:', err);
+          });
+        }
+      }, 100);
     }
   };
 
-  const [contentUrl, setContentUrl] = useState<string>('');
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
-
-  useEffect(() => {
-    getPublicUrl(content.storage_path).then(url => {
-      console.log('Content URL loaded:', url);
-      setContentUrl(url);
+  const handleImageError = async (event: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error('❌ Image error detected');
+    const freshUrl = await getAssetUrl({ 
+      path: content.storage_path, 
+      isPublicView,
+      forceRefresh: true 
     });
-    if (content.thumbnail_path) {
-      getPublicUrl(content.thumbnail_path).then(url => {
-        console.log('Thumbnail URL loaded:', url);
-        setThumbnailUrl(url);
-      });
-    } else {
-      console.log('No thumbnail_path provided:', content);
+    
+    if (freshUrl && freshUrl !== contentUrl) {
+      console.log('🔄 Refreshing image URL');
+      setContentUrl(freshUrl);
     }
-  }, [content.storage_path, content.thumbnail_path]);
+  };
 
   useEffect(() => {
     const mediaRef = isVideo ? videoRef.current : audioRef.current;
@@ -437,12 +500,16 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             poster={thumbnailUrl || undefined}
             playsInline
             loop={isLooping}
+            crossOrigin="anonymous"
+            preload="metadata"
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {
                 setVideoDimensions({ width: v.videoWidth, height: v.videoHeight });
               }
             }}
+            onError={handleMediaError}
+            onStalled={handleMediaError}
             onClick={togglePlay}
             onContextMenu={(e) => e.preventDefault()}
           />
@@ -452,7 +519,15 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       {/* Audio Content */}
       {isAudio && contentUrl && (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-          <audio ref={audioRef} src={contentUrl} loop={isLooping} />
+          <audio 
+            ref={audioRef} 
+            src={contentUrl} 
+            loop={isLooping}
+            crossOrigin="anonymous"
+            preload="metadata"
+            onError={handleMediaError}
+            onStalled={handleMediaError}
+          />
           {/* Show thumbnail if available, or fallback to audio visualizer GIF */}
           {thumbnailUrl ? (
             <div className="w-full h-full relative">
@@ -491,6 +566,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
               alt={content.original_name}
               className="max-w-full max-h-full object-contain transition-transform duration-200"
               style={{ transform: `scale(${zoom})` }}
+              crossOrigin="anonymous"
+              onError={handleImageError}
               onContextMenu={(e) => e.preventDefault()}
             />
           </div>

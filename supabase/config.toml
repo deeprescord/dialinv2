@@ -1,1 +1,4 @@
 project_id = "dkhpfwgejjyheixkpvpr"
+
+[functions.public-asset]
+verify_jwt = false

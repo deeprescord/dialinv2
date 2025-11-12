@@ -44,11 +44,15 @@ export function useSpaceItems(spaceId?: string) {
       console.log('useSpaceItems: Fetching items for spaceId:', spaceId, 'User:', userId || 'anonymous');
 
       // First check if this space is public
-      const { data: spaceData } = await supabase
+      const { data: spaceData, error: spaceError } = await supabase
         .from('spaces')
         .select('is_public')
         .eq('id', spaceId)
-        .single();
+        .maybeSingle();
+      
+      if (spaceError) {
+        console.error('Error fetching space public status:', spaceError);
+      }
       
       const isPublic = spaceData?.is_public || false;
       setIsPublicSpace(isPublic);

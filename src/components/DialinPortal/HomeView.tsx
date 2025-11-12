@@ -177,9 +177,14 @@ export function HomeView({
         return;
       }
       if (si?.storage_path) {
-        const { getObjectUrl } = await import('@/lib/storageUrls');
-        const url = await getObjectUrl(si.storage_path, 'user-files');
-        setPdfUrlForHero(url || undefined);
+        try {
+          const norm = si.storage_path.replace(/^user-files\//, '');
+          const { data } = await supabase.storage.from('user-files').createSignedUrl(norm, 3600);
+          setPdfUrlForHero(data?.signedUrl);
+        } catch (e) {
+          console.warn('Failed to sign PDF URL', e);
+          setPdfUrlForHero(undefined);
+        }
       } else {
         setPdfUrlForHero(undefined);
       }
@@ -203,9 +208,14 @@ export function HomeView({
       }
       // Otherwise, sign the storage path
       if (si.storage_path) {
-        const { getObjectUrl } = await import('@/lib/storageUrls');
-        const url = await getObjectUrl(si.storage_path, 'user-files');
-        setItem360UrlForHero(url || undefined);
+        try {
+          const norm = si.storage_path.replace(/^user-files\//, '');
+        const { data } = await supabase.storage.from('user-files').createSignedUrl(norm, 3600);
+          setItem360UrlForHero(data?.signedUrl);
+        } catch (e) {
+          console.warn('Failed to sign 360 media URL', e);
+          setItem360UrlForHero(undefined);
+        }
       } else {
         setItem360UrlForHero(undefined);
       }
@@ -305,8 +315,11 @@ export function HomeView({
         }
         
         // Generate signed URL for regular storage files
-        const { getObjectUrl } = await import('@/lib/storageUrls');
-        const url = await getObjectUrl(fileData.storage_path, 'user-files') || '';
+        const { data: signedData } = await supabase.storage
+          .from('user-files')
+          .createSignedUrl(fileData.storage_path, 3600);
+        
+        const url = signedData?.signedUrl || '';
         
         // Transform with all 360 settings
         const transformedItem = {
@@ -340,8 +353,10 @@ export function HomeView({
     try {
       let url: string | undefined = item.url;
       if (!url && item.storage_path) {
-        const { getObjectUrl } = await import('@/lib/storageUrls');
-        url = await getObjectUrl(item.storage_path, 'user-files') || '';
+        const { data: signed } = await supabase.storage
+          .from('user-files')
+          .createSignedUrl(item.storage_path, 3600);
+        url = signed?.signedUrl || '';
       }
 
       const fallbackItem = {

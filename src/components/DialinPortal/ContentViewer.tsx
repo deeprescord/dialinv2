@@ -69,29 +69,48 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const is360 = content.metadata?.is_360 || content.original_name.toLowerCase().includes('360');
   const isScrollableVideo = isVideo && videoDimensions ? videoDimensions.height > window.innerHeight * 1.1 : false;
 
+  const getPublicUrl = async (path: string): Promise<string> => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    if (path.includes('/object/public/')) return path;
+
+    try {
+      // Public bucket: space-covers
+      if (path.startsWith('space-covers/')) {
+        const { data } = supabase.storage.from('space-covers').getPublicUrl(path);
+        return data.publicUrl;
+      }
+      // Default: private user-files bucket
+      const norm = path.replace(/^user-files\//, '');
+      const { data, error } = await supabase.storage
+        .from('user-files')
+        .createSignedUrl(norm, 3600); // 1 hour expiry
+      if (error || !data) throw error;
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Error getting URL:', error);
+      // Fallback public URL attempt (may 404 if bucket is private)
+      const norm = path.replace(/^user-files\//, '');
+      return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/user-files/${norm}`;
+    }
+  };
+
   const [contentUrl, setContentUrl] = useState<string>('');
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
 
   useEffect(() => {
-    const loadUrls = async () => {
-      const { getObjectUrl } = await import('@/lib/storageUrls');
-      
-      const url = await getObjectUrl(content.storage_path, 'user-files');
-      if (url) {
-        console.log('Content URL loaded:', url);
-        setContentUrl(url);
-      }
-      
-      if (content.thumbnail_path) {
-        const thumbUrl = await getObjectUrl(content.thumbnail_path, 'user-files');
-        if (thumbUrl) {
-          console.log('Thumbnail URL loaded:', thumbUrl);
-          setThumbnailUrl(thumbUrl);
-        }
-      }
-    };
-    
-    loadUrls();
+    getPublicUrl(content.storage_path).then(url => {
+      console.log('Content URL loaded:', url);
+      setContentUrl(url);
+    });
+    if (content.thumbnail_path) {
+      getPublicUrl(content.thumbnail_path).then(url => {
+        console.log('Thumbnail URL loaded:', url);
+        setThumbnailUrl(url);
+      });
+    } else {
+      console.log('No thumbnail_path provided:', content);
+    }
   }, [content.storage_path, content.thumbnail_path]);
 
   useEffect(() => {

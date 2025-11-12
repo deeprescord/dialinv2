@@ -85,11 +85,16 @@ export function SpaceItemsGrid({
     return sorted;
   }, [items, sortOrder]);
 
-  // Generate signed URLs for thumbnails
+  // Generate signed URLs for thumbnails (batched for performance, esp. Safari)
   useEffect(() => {
     const generateUrls = async () => {
+      const t0 = performance.now();
       const urls: Record<string, string> = {};
-      
+
+      // Collect paths to sign in batch
+      const userFilePaths: string[] = [];
+      const pathToIds: Record<string, string[]> = {};
+
       for (const item of items) {
         // Only use original file as a fallback if it's an image
         let pathToUse: string | undefined;
@@ -101,36 +106,58 @@ export function SpaceItemsGrid({
           // For videos without a generated thumbnail, skip so UI uses a placeholder
           continue;
         }
-        
-        // Bypass absolute URLs
+
         if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
           urls[item.id] = pathToUse;
-        } else if (pathToUse.startsWith('space-covers/')) {
+          continue;
+        }
+
+        if (pathToUse.startsWith('space-covers/')) {
           // Public bucket - use getPublicUrl
-          const { data } = supabase.storage
-            .from('space-covers')
-            .getPublicUrl(pathToUse);
+          const { data } = supabase.storage.from('space-covers').getPublicUrl(pathToUse);
           urls[item.id] = data.publicUrl;
-        } else {
-          // Private bucket - always create a signed URL (normalize path)
-          try {
-            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : (pathToUse as string);
-            const { data, error } = await supabase.storage
-              .from('user-files')
-              .createSignedUrl(norm, 7200); // Extended to 2 hours for better Safari compatibility
-            
-            if (error) {
-              console.error('Error signing URL for', norm, ':', error);
-            } else if (data?.signedUrl) {
-              urls[item.id] = data.signedUrl;
+          continue;
+        }
+
+        // Private bucket - batch sign (normalize path)
+        const norm = pathToUse.replace(/^user-files\//, '');
+        if (!pathToIds[norm]) {
+          pathToIds[norm] = [];
+          userFilePaths.push(norm);
+        }
+        pathToIds[norm].push(item.id);
+      }
+
+      if (userFilePaths.length > 0) {
+        try {
+          const { data, error } = await supabase.storage
+            .from('user-files')
+            .createSignedUrls(userFilePaths, 7200); // 2 hours
+
+          if (error) {
+            console.error('SpaceItemsGrid: batch signing error:', error);
+          } else if (Array.isArray(data)) {
+            for (const entry of data) {
+              const ids = pathToIds[entry.path] || [];
+              if (entry.signedUrl) {
+                ids.forEach((id) => (urls[id] = entry.signedUrl!));
+              }
             }
-          } catch (error) {
-            console.error('Error signing URL:', error);
           }
+        } catch (err) {
+          console.error('SpaceItemsGrid: batch sign failed:', err);
         }
       }
-      
-      console.log('SpaceItemsGrid: Generated', Object.keys(urls).length, 'thumbnail URLs for', items.length, 'items');
+
+      console.log(
+        'SpaceItemsGrid: Generated',
+        Object.keys(urls).length,
+        'thumbnail URLs for',
+        items.length,
+        'items in',
+        Math.round(performance.now() - t0),
+        'ms'
+      );
       setThumbUrls(urls);
     };
 

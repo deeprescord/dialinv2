@@ -170,61 +170,72 @@ export function ItemsPeopleBar({
     let cancelled = false;
     const loadThumbs = async () => {
       if (!items?.length) return;
-      
-      // Batch create signed URLs more efficiently
-      const urlPromises = items.map(async (item) => {
-        // Prefer thumbnail for faster loading
+
+      const t0 = performance.now();
+      const urlMap: Record<string, string> = {};
+
+      // Collect batch of private user-files to sign
+      const userFilePaths: string[] = [];
+      const pathToIds: Record<string, string[]> = {};
+
+      for (const item of items) {
         const path = item.thumbnail_path || item.storage_path;
-        if (!path) return [item.id, null] as const;
-        
-        // Check if absolute URL
+        if (!path) continue;
+
         if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
-          return [item.id, path] as const;
+          urlMap[item.id] = path;
+          continue;
         }
-        
-        // Check if public bucket
+
         if (path.startsWith('space-covers/')) {
-          const { data } = supabase.storage
-            .from('space-covers')
-            .getPublicUrl(path);
-          return [item.id, data.publicUrl] as const;
+          const { data } = supabase.storage.from('space-covers').getPublicUrl(path);
+          urlMap[item.id] = data.publicUrl;
+          continue;
         }
-        
-        // Always sign user-files (bucket is private)
+
+        // Private bucket (user-files) - collect for batch signing
+        const norm = path.replace(/^user-files\//, '');
+        if (!pathToIds[norm]) {
+          pathToIds[norm] = [];
+          userFilePaths.push(norm);
+        }
+        pathToIds[norm].push(item.id);
+      }
+
+      if (userFilePaths.length > 0) {
         try {
-          const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
           const { data, error } = await supabase.storage
             .from('user-files')
-            .createSignedUrl(norm, 7200); // 2 hour cache
-          
-          if (error) {
-            console.error('ItemsPeopleBar: Signed URL error for', norm, ':', error);
-            return [item.id, null] as const;
-          }
-          
-          if (!data?.signedUrl) {
-            console.warn('ItemsPeopleBar: No signed URL returned for', norm);
-            return [item.id, null] as const;
-          }
-          
-          return [item.id, data.signedUrl] as const;
-        } catch (err) {
-          console.warn('ItemsPeopleBar: Signed URL failed for', path, err);
-          return [item.id, null] as const;
-        }
-      });
+            .createSignedUrls(userFilePaths, 7200); // 2 hours for Safari stability
 
-      const pairs = await Promise.all(urlPromises);
-      
-      if (!cancelled) {
-        const urlMap: Record<string, string> = {};
-        for (const [id, url] of pairs) {
-          if (url) urlMap[id] = url;
+          if (error) {
+            console.error('ItemsPeopleBar: batch signing error:', error);
+          } else if (Array.isArray(data)) {
+            data.forEach((entry) => {
+              if (!entry.signedUrl) return;
+              const ids = pathToIds[entry.path] || [];
+              ids.forEach((id) => (urlMap[id] = entry.signedUrl!));
+            });
+          }
+        } catch (err) {
+          console.error('ItemsPeopleBar: batch sign failed:', err);
         }
+      }
+
+      if (!cancelled) {
+        console.log(
+          'ItemsPeopleBar: Generated',
+          Object.keys(urlMap).length,
+          'thumbnail URLs for',
+          items.length,
+          'items in',
+          Math.round(performance.now() - t0),
+          'ms'
+        );
         setThumbUrls(urlMap);
       }
     };
-    
+
     loadThumbs();
     return () => {
       cancelled = true;

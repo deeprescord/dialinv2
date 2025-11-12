@@ -21,6 +21,7 @@ import lobbyBackground from '@/assets/lobby-background.jpg';
 import appBackground from '@/assets/app-background.jpg';
 import type { HeroHeaderVideoHandle } from './HeroHeaderVideo';
 import { useMediaQueue } from '@/contexts/MediaQueueContext';
+import { getAssetUrl } from '@/lib/signedUrl';
 
 interface HomeViewProps {
   pinnedContacts: Friend[];
@@ -178,11 +179,10 @@ export function HomeView({
       }
       if (si?.storage_path) {
         try {
-          const norm = si.storage_path.replace(/^user-files\//, '');
-          const { data } = await supabase.storage.from('user-files').createSignedUrl(norm, 3600);
-          setPdfUrlForHero(data?.signedUrl);
+          const url = await getAssetUrl({ path: si.storage_path, fileId: si.id, isPublicView: window.location.pathname.startsWith('/s/') });
+          setPdfUrlForHero(url || undefined);
         } catch (e) {
-          console.warn('Failed to sign PDF URL', e);
+          console.warn('Failed to resolve PDF URL', e);
           setPdfUrlForHero(undefined);
         }
       } else {
@@ -209,9 +209,8 @@ export function HomeView({
       // Otherwise, sign the storage path
       if (si.storage_path) {
         try {
-          const norm = si.storage_path.replace(/^user-files\//, '');
-        const { data } = await supabase.storage.from('user-files').createSignedUrl(norm, 3600);
-          setItem360UrlForHero(data?.signedUrl);
+          const url = await getAssetUrl({ path: si.storage_path, fileId: si.id, isPublicView: window.location.pathname.startsWith('/s/') });
+          setItem360UrlForHero(url || undefined);
         } catch (e) {
           console.warn('Failed to sign 360 media URL', e);
           setItem360UrlForHero(undefined);

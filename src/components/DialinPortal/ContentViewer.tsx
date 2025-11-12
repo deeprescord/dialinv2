@@ -197,21 +197,16 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
     const handleLoadedMetadata = () => {
       setDuration(mediaRef.duration);
-      // Try to autoplay with sound
+      // Autoplay muted to satisfy browser policies; unmute only on user action
       if (mediaRef instanceof HTMLVideoElement || mediaRef instanceof HTMLAudioElement) {
         mediaRef.volume = 0.7;
-        mediaRef.muted = false;
-        setIsMuted(false);
+        mediaRef.muted = true;
+        setIsMuted(true);
         setVolume(0.7);
         mediaRef.play().then(() => {
           setIsPlaying(true);
-        }).catch(() => {
-          // If autoplay with sound fails, try muted
-          mediaRef.muted = true;
-          setIsMuted(true);
-          mediaRef.play().then(() => {
-            setIsPlaying(true);
-          }).catch(e => console.log('Autoplay prevented:', e));
+        }).catch((e) => {
+          console.log('Autoplay prevented:', e);
         });
       }
     };
@@ -506,6 +501,8 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             className={`${isScrollableVideo ? 'w-full h-auto object-contain block bg-black' : 'w-full h-full object-contain bg-black'}`}
             poster={thumbnailUrl || undefined}
             playsInline
+            autoPlay
+            muted={isMuted}
             loop={isLooping}
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;

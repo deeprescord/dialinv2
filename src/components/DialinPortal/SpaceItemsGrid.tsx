@@ -111,20 +111,27 @@ export function SpaceItemsGrid({
             .from('space-covers')
             .getPublicUrl(pathToUse);
           urls[item.id] = data.publicUrl;
-          } else {
-            // Private bucket - use createSignedUrl (normalize path)
-            try {
-              const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : (pathToUse as string);
-              const { data } = await supabase.storage
-                .from('user-files')
-                .createSignedUrl(norm, 3600);
-              if (data?.signedUrl) {
-                urls[item.id] = data.signedUrl;
-              }
-            } catch (error) {
-              console.error('Error signing URL:', error);
+        } else if (isPublicSpace) {
+          // Public space - use getPublicUrl for user-files
+          const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
+          const { data } = supabase.storage
+            .from('user-files')
+            .getPublicUrl(norm);
+          urls[item.id] = data.publicUrl;
+        } else {
+          // Private bucket - use createSignedUrl (normalize path)
+          try {
+            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
+            const { data } = await supabase.storage
+              .from('user-files')
+              .createSignedUrl(norm, 3600);
+            if (data?.signedUrl) {
+              urls[item.id] = data.signedUrl;
             }
+          } catch (error) {
+            console.error('Error signing URL:', error);
           }
+        }
       }
       
       setThumbUrls(urls);

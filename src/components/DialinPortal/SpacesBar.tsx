@@ -235,6 +235,37 @@ export function SpacesBar({
     return sorted;
   }, [rawSpaceItems, sortOrder]);
   
+  // Auto-generate thumbnails for images in this bar missing them (connect to thumbnail wizard)
+  useEffect(() => {
+    const generateMissingThumbs = async () => {
+      const missing = rawSpaceItems.filter(
+        (it: any) => it.file_type === 'image' && !it.thumbnail_path && it.storage_path
+      );
+      if (missing.length === 0) return;
+      const batchSize = 5;
+      for (let i = 0; i < missing.length; i += batchSize) {
+        const batch = missing.slice(i, i + batchSize);
+        await Promise.all(
+          batch.map(async (file: any) => {
+            try {
+              await supabase.functions.invoke('generate-thumbnail', {
+                body: {
+                  fileId: file.id,
+                  storagePath: file.storage_path,
+                  mimeType: file.mime_type || 'image/jpeg',
+                }
+              });
+            } catch (err) {
+              console.warn('Thumb gen error for', file.id, err);
+            }
+          })
+        );
+      }
+    };
+    if (rawSpaceItems.length > 0) generateMissingThumbs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawSpaceItems]);
+
   const [sharedUsers, setSharedUsers] = React.useState<Friend[]>([]);
   const [allContacts, setAllContacts] = React.useState<Friend[]>([]);
   
@@ -465,9 +496,17 @@ export function SpacesBar({
               thumbUrl = signedOrig?.signedUrl;
               if (thumbUrl) setCache('user-files', normOriginal, thumbUrl);
             }
-          } else if (fileData.file_type?.startsWith('video')) {
-            // Placeholder for videos without generated loop thumbnails yet
-            thumbUrl = defaultVideoThumb;
+          } else if (fileData.file_type?.startsWith('video') && fileData.storage_path) {
+            // Use signed original video URL so we can render a real preview loop
+            const normVideo = fileData.storage_path.replace(/^user-files\//, '');
+            const cachedVid = getCache('user-files', normVideo);
+            if (cachedVid) {
+              thumbUrl = cachedVid;
+            } else {
+              const { data: signedVid } = await supabase.storage.from('user-files').createSignedUrl(normVideo, 3600);
+              thumbUrl = signedVid?.signedUrl;
+              if (thumbUrl) setCache('user-files', normVideo, thumbUrl);
+            }
           }
           
           // Store thumbnail for carousel display
@@ -753,8 +792,14 @@ export function SpacesBar({
                                         autoPlay
                                         muted
                                         playsInline
-                                        loop
-                                        preload="auto"
+                                        preload="metadata"
+                                        onTimeUpdate={(e) => {
+                                          const v = e.currentTarget;
+                                          if (!Number.isNaN(v.currentTime) && v.currentTime >= 15) {
+                                            v.currentTime = 0;
+                                            v.play().catch(() => {});
+                                          }
+                                        }}
                                       />
                                     ) : (
                                       <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />

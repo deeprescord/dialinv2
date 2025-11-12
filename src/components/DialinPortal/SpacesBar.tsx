@@ -151,6 +151,7 @@ export function SpacesBar({
   const [showAddOptionsModal, setShowAddOptionsModal] = useState(false);
   const [showContactsPanel, setShowContactsPanel] = useState(false);
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
+  const [loadingThumbs, setLoadingThumbs] = useState(true);
   const [internalSortOrder, setInternalSortOrder] = useState<SortOrder>('custom');
   
   // Use prop sortOrder if provided, otherwise use internal state
@@ -423,6 +424,12 @@ export function SpacesBar({
   
   // Optimized: Batch signed URL generation with localStorage cache (TTL) - now includes media URLs
   React.useEffect(() => {
+    if (spaceItems.length > 0) {
+      setLoadingThumbs(true);
+    }
+  }, [spaceItems.length]);
+  
+  React.useEffect(() => {
     const generateUrls = async () => {
       const thumbs: Record<string, string> = {};
       const medias: Record<string, { mediaUrl?: string; thumbUrl?: string; fileData?: any }> = {};
@@ -535,6 +542,7 @@ export function SpacesBar({
       
       setThumbUrls((prev) => ({ ...prev, ...thumbs }));
       setMediaUrls((prev) => ({ ...prev, ...medias }));
+      setLoadingThumbs(false);
     };
 
     if (spaceItems.length > 0) {
@@ -542,6 +550,7 @@ export function SpacesBar({
     } else {
       setThumbUrls({});
       setMediaUrls({});
+      setLoadingThumbs(false);
     }
   }, [spaceItems]);
 
@@ -784,11 +793,18 @@ export function SpacesBar({
                               <div className="relative rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
                                 {(() => {
                                   const url = thumbUrls[item.id];
+                                  if (loadingThumbs && !url) {
+                                    return (
+                                      <div className="w-full h-full bg-gradient-to-br from-muted/30 via-muted/20 to-muted/30 animate-pulse relative overflow-hidden">
+                                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                      </div>
+                                    );
+                                  }
                                   if (url) {
                                     return isVideoUrl(url) ? (
                                       <video
                                         src={url}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover animate-fade-in"
                                         autoPlay
                                         muted
                                         playsInline
@@ -802,7 +818,7 @@ export function SpacesBar({
                                         }}
                                       />
                                     ) : (
-                                      <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover" />
+                                      <ImageFallback src={url} alt={item.original_name} className="w-full h-full object-cover animate-fade-in" />
                                     );
                                   }
                                   return (

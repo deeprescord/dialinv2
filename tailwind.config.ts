@@ -98,9 +98,13 @@ export default {
 				'pulse-glow': {
 					'0%, 100%': { boxShadow: '0 0 0 0 hsl(var(--primary) / 0.7)' },
 					'70%': { boxShadow: '0 0 0 10px hsl(var(--primary) / 0)' }
+				},
+				shimmer: {
+					'100%': { transform: 'translateX(100%)' }
 				}
 			},
 			animation: {
+				shimmer: 'shimmer 2s infinite',
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'float-up': 'float-up 0.3s ease-out',

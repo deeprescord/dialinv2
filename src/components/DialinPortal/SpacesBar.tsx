@@ -433,35 +433,14 @@ export function SpacesBar({
     const generateUrls = async () => {
       const thumbs: Record<string, string> = {};
       const medias: Record<string, { mediaUrl?: string; thumbUrl?: string; fileData?: any }> = {};
-      const filesToProcess: Array<{ id: string; path: string; bucket: 'user-files' | 'space-covers' }>= [];
 
-      const now = Date.now();
-      const getCache = (bucket: string, path: string): string | undefined => {
-        try {
-          const raw = safeLocalStorage.getItem(`signed-url-cache:${bucket}:${path}`);
-          if (!raw) return undefined;
-          const parsed = JSON.parse(raw) as { url: string; exp: number };
-          if (!parsed?.url || !parsed?.exp || parsed.exp < now) {
-            safeLocalStorage.removeItem(`signed-url-cache:${bucket}:${path}`);
-            return undefined;
-          }
-          return parsed.url;
-        } catch { return undefined; }
-      };
-      const setCache = (bucket: string, path: string, url: string) => {
-        try {
-          const ttlMs = 25 * 60 * 1000; // 25 minutes
-          safeLocalStorage.setItem(
-            `signed-url-cache:${bucket}:${path}`,
-            JSON.stringify({ url, exp: now + ttlMs })
-          );
-        } catch {}
-      };
-
+      // Import storage helper
+      const { getThumbUrlForItem } = await import('@/lib/storageUrls');
+      
       // Check if current space is public
       const isPublicSpace = allSpaces.find(s => s.id === currentSpaceId)?.isPublic || false;
       
-      // Lightweight: Only fetch thumbnails upfront, use public URLs for public spaces
+      // Lightweight: Fetch file data and generate thumbnail URLs
       const fileDataPromises = spaceItems.map(async (item) => {
         if (item.is_space) return null;
         
@@ -474,47 +453,8 @@ export function SpacesBar({
           
           if (!fileData || error) return null;
           
-          // Get thumbnail URL only (lightweight) with smart fallbacks
-          let thumbUrl: string | undefined;
-          // Preferred: explicit thumbnail_path
-          if (fileData.thumbnail_path) {
-            if (fileData.thumbnail_path.startsWith('space-covers/')) {
-              const { data } = supabase.storage.from('space-covers').getPublicUrl(fileData.thumbnail_path);
-              thumbUrl = data.publicUrl;
-            } else {
-              const normThumb = fileData.thumbnail_path.replace(/^user-files\//, '');
-              const cachedThumb = getCache('user-files', normThumb);
-              if (cachedThumb) {
-                thumbUrl = cachedThumb;
-              } else {
-                const { data: signedThumb } = await supabase.storage.from('user-files').createSignedUrl(normThumb, 3600);
-                thumbUrl = signedThumb?.signedUrl;
-                if (thumbUrl) setCache('user-files', normThumb, thumbUrl);
-              }
-            }
-          } else if (fileData.file_type === 'image' && fileData.storage_path) {
-            // Fallback: use original image until a thumbnail is generated
-            const normOriginal = fileData.storage_path.replace(/^user-files\//, '');
-            const cachedOrig = getCache('user-files', normOriginal);
-            if (cachedOrig) {
-              thumbUrl = cachedOrig;
-            } else {
-              const { data: signedOrig } = await supabase.storage.from('user-files').createSignedUrl(normOriginal, 3600);
-              thumbUrl = signedOrig?.signedUrl;
-              if (thumbUrl) setCache('user-files', normOriginal, thumbUrl);
-            }
-          } else if (fileData.file_type?.startsWith('video') && fileData.storage_path) {
-            // Use signed original video URL so we can render a real preview loop
-            const normVideo = fileData.storage_path.replace(/^user-files\//, '');
-            const cachedVid = getCache('user-files', normVideo);
-            if (cachedVid) {
-              thumbUrl = cachedVid;
-            } else {
-              const { data: signedVid } = await supabase.storage.from('user-files').createSignedUrl(normVideo, 3600);
-              thumbUrl = signedVid?.signedUrl;
-              if (thumbUrl) setCache('user-files', normVideo, thumbUrl);
-            }
-          }
+          // Get thumbnail URL using helper
+          const thumbUrl = await getThumbUrlForItem(fileData);
           
           // Store thumbnail for carousel display
           if (thumbUrl) {
@@ -696,49 +636,20 @@ export function SpacesBar({
                                     const fileData = cached.fileData;
                                     const normPath = fileData.storage_path;
                                     
-                                    // Check cache with localStorage
-                                    const now = Date.now();
-                                    const getCached = (bucket: string, path: string): string | undefined => {
-                                      try {
-                                        const raw = safeLocalStorage.getItem(`signed-url-cache:${bucket}:${path}`);
-                                        if (!raw) return undefined;
-                                        const parsed = JSON.parse(raw) as { url: string; exp: number };
-                                        if (!parsed?.url || !parsed?.exp || parsed.exp < now) {
-                                          safeLocalStorage.removeItem(`signed-url-cache:${bucket}:${path}`);
-                                          return undefined;
-                                        }
-                                        return parsed.url;
-                                      } catch { return undefined; }
-                                    };
-                                    const setCached = (bucket: string, path: string, url: string) => {
-                                      try {
-                                        const ttlMs = 25 * 60 * 1000;
-                                        safeLocalStorage.setItem(
-                                          `signed-url-cache:${bucket}:${path}`,
-                                          JSON.stringify({ url, exp: now + ttlMs })
-                                        );
-                                      } catch {}
-                                    };
+                                    // Import storage helper for on-demand signing
+                                    const { getObjectUrl } = await import('@/lib/storageUrls');
                                     
-                                    // Sign URL on-demand or use public URL for public spaces
+                                    // Get media URL using helper (handles signing and caching)
                                     let mediaUrl: string | undefined;
-                                      if (fileData.file_type === 'web') {
-                                        mediaUrl = fileData.storage_path;
-                                      } else if (normPath) {
-                                        const cacheKey = getCached('user-files', normPath);
-                                        if (cacheKey) {
-                                          mediaUrl = cacheKey;
-                                        } else {
-                                          const { data: signed, error } = await supabase.storage.from('user-files').createSignedUrl(normPath, 3600);
-                                          if (error) {
-                                            console.warn('Failed to sign URL:', error);
-                                            toast.error('Failed to load media');
-                                            return;
-                                          }
-                                          mediaUrl = signed?.signedUrl;
-                                          if (mediaUrl) setCached('user-files', normPath, mediaUrl);
-                                        }
+                                    if (fileData.file_type === 'web') {
+                                      mediaUrl = fileData.storage_path;
+                                    } else if (normPath) {
+                                      mediaUrl = await getObjectUrl(normPath, 'user-files') || undefined;
+                                      if (!mediaUrl) {
+                                        toast.error('Failed to load media');
+                                        return;
                                       }
+                                    }
                                     
                                     if (!mediaUrl) {
                                       toast.error('No media URL available');

@@ -340,7 +340,7 @@ const PublicSpacePage = () => {
     }
   };
 
-  const handleMediaClick = (item: any) => {
+  const handleMediaClick = async (item: any) => {
     console.log('🔍 PublicSpacePage handleMediaClick - Incoming item:', JSON.stringify(item, null, 2));
     
     if (!item) {
@@ -371,13 +371,17 @@ const PublicSpacePage = () => {
       return;
     }
 
-    // Regular files: normalize storage_path and keep both url and storage_path
+    // Get media URL using storage helper for consistent signed URL handling
+    const { getObjectUrl } = await import('@/lib/storageUrls');
+    const url = await getObjectUrl(normStoragePath, 'user-files');
+    
+    // Regular files: normalize storage_path and use helper for URL
     const transformedItem = {
       ...item,
       type: fileType,
       file_type: fileType,
       storage_path: normStoragePath,
-      url: item.url, // pre-signed by SpacesBar or HomeView
+      url: url || item.url, // Use helper URL or fallback to provided URL
       mime_type: item.mime_type,
       thumbnail_path: item.thumbnail_path || item.thumb,
       duration: item.duration,

@@ -171,56 +171,22 @@ export function ItemsPeopleBar({
     const loadThumbs = async () => {
       if (!items?.length) return;
       
-      // Batch create signed URLs more efficiently
-      const urlPromises = items.map(async (item) => {
-        // Prefer thumbnail for faster loading
-        const path = item.thumbnail_path || item.storage_path;
-        if (!path) return [item.id, null] as const;
-        
-        // Check if absolute URL
-        if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
-          return [item.id, path] as const;
-        }
-        
-        // Check if public bucket
-        if (path.startsWith('space-covers/')) {
-          const { data } = supabase.storage
-            .from('space-covers')
-            .getPublicUrl(path);
-          return [item.id, data.publicUrl] as const;
-        }
-        
-        // For public spaces, use public URLs instead of signed URLs
-        if (isPublicSpace) {
-          const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
-          const { data } = supabase.storage
-            .from('user-files')
-            .getPublicUrl(norm);
-          return [item.id, data.publicUrl] as const;
-        }
-        
-        // Private bucket - sign URL (normalize path)
-        try {
-          const norm = typeof path === 'string' ? path.replace(/^user-files\//, '') : path;
-          const { data, error } = await supabase.storage
-            .from('user-files')
-            .createSignedUrl(norm, 7200); // 2 hour cache
-            
-          if (error) throw error;
-          return [item.id, data.signedUrl] as const;
-        } catch (err) {
-          console.warn('Signed URL failed for', path, err);
-          return [item.id, null] as const;
-        }
-      });
-
-      const pairs = await Promise.all(urlPromises);
+      // Dynamically import the storage URL helper
+      const { getThumbUrlForItem } = await import('@/lib/storageUrls');
+      
+      // Batch load thumbnails using the helper
+      const urlMap: Record<string, string> = {};
+      
+      await Promise.all(
+        items.map(async (item) => {
+          const url = await getThumbUrlForItem(item);
+          if (url && !cancelled) {
+            urlMap[item.id] = url;
+          }
+        })
+      );
       
       if (!cancelled) {
-        const urlMap: Record<string, string> = {};
-        for (const [id, url] of pairs) {
-          if (url) urlMap[id] = url;
-        }
         setThumbUrls(urlMap);
       }
     };
@@ -229,7 +195,7 @@ export function ItemsPeopleBar({
     return () => {
       cancelled = true;
     };
-  }, [items, isPublicSpace]);
+  }, [items]);
 
   // Handle long press
   const handleMouseDown = (item: any, event: React.MouseEvent) => {
@@ -282,13 +248,9 @@ export function ItemsPeopleBar({
       return;
     }
     
-    // Generate signed URL for the item
-    const normPath = (item.storage_path || '').replace(/^user-files\//, '');
-    const { data: signedData } = await supabase.storage
-      .from('user-files')
-      .createSignedUrl(normPath, 3600);
-    
-    const url = signedData?.signedUrl || '';
+    // Get media URL using storage helper
+    const { getObjectUrl } = await import('@/lib/storageUrls');
+    const url = await getObjectUrl(item.storage_path, 'user-files') || '';
     
     // Transform SpaceItem to the format expected by ContentViewer/HeroHeaderVideo
     const transformedItem = {
@@ -296,10 +258,10 @@ export function ItemsPeopleBar({
       title: item.original_name,
       type: item.file_type,
       url: url,
-      thumb: item.thumbnail_path ? url : undefined,
+      thumb: thumbUrls[item.id],
       duration: item.duration,
       mime_type: item.mime_type,
-      storage_path: normPath,
+      storage_path: item.storage_path,
       file_type: item.file_type,
       original_name: item.original_name,
       thumbnail_path: item.thumbnail_path

@@ -88,51 +88,17 @@ export function SpaceItemsGrid({
   // Generate signed URLs for thumbnails
   useEffect(() => {
     const generateUrls = async () => {
+      const { getThumbUrlForItem } = await import('@/lib/storageUrls');
       const urls: Record<string, string> = {};
       
-      for (const item of items) {
-        // Only use original file as a fallback if it's an image
-        let pathToUse: string | undefined;
-        if (item.thumbnail_path) {
-          pathToUse = item.thumbnail_path;
-        } else if (item.file_type === 'image' && item.storage_path) {
-          pathToUse = item.storage_path;
-        } else {
-          // For videos without a generated thumbnail, skip so UI uses a placeholder
-          continue;
-        }
-        
-        // Bypass absolute URLs
-        if (typeof pathToUse === 'string' && /^https?:\/\//i.test(pathToUse)) {
-          urls[item.id] = pathToUse;
-        } else if (pathToUse.startsWith('space-covers/')) {
-          // Public bucket - use getPublicUrl
-          const { data } = supabase.storage
-            .from('space-covers')
-            .getPublicUrl(pathToUse);
-          urls[item.id] = data.publicUrl;
-        } else if (isPublicSpace) {
-          // Public space - use getPublicUrl for user-files
-          const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
-          const { data } = supabase.storage
-            .from('user-files')
-            .getPublicUrl(norm);
-          urls[item.id] = data.publicUrl;
-        } else {
-          // Private bucket - use createSignedUrl (normalize path)
-          try {
-            const norm = typeof pathToUse === 'string' ? pathToUse.replace(/^user-files\//, '') : pathToUse as string;
-            const { data } = await supabase.storage
-              .from('user-files')
-              .createSignedUrl(norm, 3600);
-            if (data?.signedUrl) {
-              urls[item.id] = data.signedUrl;
-            }
-          } catch (error) {
-            console.error('Error signing URL:', error);
+      await Promise.all(
+        items.map(async (item) => {
+          const url = await getThumbUrlForItem(item);
+          if (url) {
+            urls[item.id] = url;
           }
-        }
-      }
+        })
+      );
       
       setThumbUrls(urls);
     };

@@ -204,21 +204,46 @@ export function ItemsPeopleBar({
 
       if (userFilePaths.length > 0) {
         try {
+          const cacheBuster = Date.now();
           const { data, error } = await supabase.storage
             .from('user-files')
             .createSignedUrls(userFilePaths, 7200); // 2 hours for Safari stability
 
           if (error) {
-            console.error('ItemsPeopleBar: batch signing error:', error);
+            console.error('[Chrome Debug] ItemsPeopleBar: batch signing error:', error);
+            // Retry individually if batch fails
+            for (const path of userFilePaths) {
+              try {
+                const { data: retryData, error: retryError } = await supabase.storage
+                  .from('user-files')
+                  .createSignedUrl(path, 7200);
+                if (retryError) {
+                  console.error('[Chrome Debug] Retry failed for path:', path, retryError);
+                } else if (retryData?.signedUrl) {
+                  const signedWithCache = `${retryData.signedUrl}&cb=${cacheBuster}`;
+                  const ids = pathToIds[path] || [];
+                  ids.forEach((id) => (urlMap[id] = signedWithCache));
+                  console.log('[Chrome Debug] Retry success for path:', path);
+                }
+              } catch (retryErr) {
+                console.error('[Chrome Debug] Retry exception for path:', path, retryErr);
+              }
+            }
           } else if (Array.isArray(data)) {
             data.forEach((entry) => {
-              if (!entry.signedUrl) return;
+              if (!entry.signedUrl) {
+                console.warn('[Chrome Debug] No signedUrl for path:', entry.path);
+                return;
+              }
+              // Add cache-buster to prevent Chrome caching issues
+              const signedWithCache = `${entry.signedUrl}&cb=${cacheBuster}`;
               const ids = pathToIds[entry.path] || [];
-              ids.forEach((id) => (urlMap[id] = entry.signedUrl!));
+              ids.forEach((id) => (urlMap[id] = signedWithCache));
             });
+            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully');
           }
         } catch (err) {
-          console.error('ItemsPeopleBar: batch sign failed:', err);
+          console.error('[Chrome Debug] ItemsPeopleBar: batch sign exception:', err);
         }
       }
 

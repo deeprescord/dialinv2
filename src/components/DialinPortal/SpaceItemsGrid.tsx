@@ -130,22 +130,46 @@ export function SpaceItemsGrid({
 
       if (userFilePaths.length > 0) {
         try {
+          const cacheBuster = Date.now();
           const { data, error } = await supabase.storage
             .from('user-files')
             .createSignedUrls(userFilePaths, 7200); // 2 hours
 
           if (error) {
-            console.error('SpaceItemsGrid: batch signing error:', error);
+            console.error('[Chrome Debug] SpaceItemsGrid: batch signing error:', error);
+            // Retry individually if batch fails
+            for (const path of userFilePaths) {
+              try {
+                const { data: retryData, error: retryError } = await supabase.storage
+                  .from('user-files')
+                  .createSignedUrl(path, 7200);
+                if (retryError) {
+                  console.error('[Chrome Debug] Retry failed for path:', path, retryError);
+                } else if (retryData?.signedUrl) {
+                  const signedWithCache = `${retryData.signedUrl}&cb=${cacheBuster}`;
+                  const ids = pathToIds[path] || [];
+                  ids.forEach((id) => (urls[id] = signedWithCache));
+                  console.log('[Chrome Debug] Retry success for path:', path);
+                }
+              } catch (retryErr) {
+                console.error('[Chrome Debug] Retry exception for path:', path, retryErr);
+              }
+            }
           } else if (Array.isArray(data)) {
             for (const entry of data) {
               const ids = pathToIds[entry.path] || [];
               if (entry.signedUrl) {
-                ids.forEach((id) => (urls[id] = entry.signedUrl!));
+                // Add cache-buster to prevent Chrome caching issues
+                const signedWithCache = `${entry.signedUrl}&cb=${cacheBuster}`;
+                ids.forEach((id) => (urls[id] = signedWithCache));
+              } else {
+                console.warn('[Chrome Debug] No signedUrl for path:', entry.path);
               }
             }
+            console.log('[Chrome Debug] Batch signed', data.length, 'URLs successfully');
           }
         } catch (err) {
-          console.error('SpaceItemsGrid: batch sign failed:', err);
+          console.error('[Chrome Debug] SpaceItemsGrid: batch sign exception:', err);
         }
       }
 

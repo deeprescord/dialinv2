@@ -383,15 +383,14 @@ export function ItemsPeopleBar({
   };
 
   const renderCarouselView = () => (
-    <div className="relative">
-      <Carousel 
-        className="w-full max-w-5xl mx-auto"
-        opts={{
-          dragFree: true,
-        }}
-      >
-        <CarouselContent className="-ml-2 cursor-grab active:cursor-grabbing">
-          {items.map((item, index) => {
+    <Carousel 
+      className="w-full max-w-5xl mx-auto"
+      opts={{
+        dragFree: true,
+      }}
+    >
+      <CarouselContent className="-ml-2 cursor-grab active:cursor-grabbing">
+        {items.map((item, index) => {
           const thumbnail = thumbUrls[item.id];
           return (
             <CarouselItem key={item.id} className="pl-2 md:basis-1/2 lg:basis-1/3">
@@ -440,28 +439,6 @@ export function ItemsPeopleBar({
       <CarouselPrevious className="left-2" />
       <CarouselNext className="right-2" />
     </Carousel>
-    
-    {/* Play All Button - Centered on vertical separator */}
-    {onMovieModeToggle && items.length > 0 && (
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-        <div className="relative flex items-center justify-center">
-          {/* Vertical separator line */}
-          <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-border/40 to-transparent h-[400px]" />
-          
-          {/* Play All Button */}
-          <Button
-            onClick={onMovieModeToggle}
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto glass-card hover:glass-card-hover bg-background/50 backdrop-blur-md border border-border/40 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 px-4 py-2 rounded-full"
-          >
-            <Play className="h-4 w-4 mr-2" />
-            <span className="text-sm font-medium">Play All</span>
-          </Button>
-        </div>
-      </div>
-    )}
-  </div>
   );
 
   const renderIconView = () => (
@@ -645,7 +622,7 @@ export function ItemsPeopleBar({
       <div className="fixed top-20 left-0 right-0 z-40 flex items-start justify-center pt-4" style={{ bottom: 'calc(12.5vh + 6rem)' }}>
         <div ref={panelRef} className="relative z-10 w-[85vw] max-w-4xl h-full max-h-full pointer-events-auto">
           <div className="w-full h-full glass-card rounded-2xl border border-white/20 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl bg-black/40">
-            {/* Header with View Selector */}
+            {/* Header with View Selector and Play All */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               {view === 'items' && (
                 <div className="flex gap-2">
@@ -689,6 +666,22 @@ export function ItemsPeopleBar({
                   </Button>
                 </div>
               )}
+              
+              {/* Play All Button - Center */}
+              {view === 'items' && onMovieModeToggle && items.length > 0 && (
+                <div className="absolute left-1/2 transform -translate-x-1/2">
+                  <Button
+                    onClick={onMovieModeToggle}
+                    variant="ghost"
+                    size="sm"
+                    className="glass-card hover:glass-card-hover bg-background/50 backdrop-blur-md border border-border/40 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-4 py-2 rounded-full"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    <span className="text-sm font-medium">Play All</span>
+                  </Button>
+                </div>
+              )}
+              
               <h2 className="text-lg font-semibold text-foreground ml-auto">
                 {view === 'items' ? 'Items' : 'People'}
               </h2>

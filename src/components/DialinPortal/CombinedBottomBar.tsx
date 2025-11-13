@@ -64,6 +64,7 @@ interface CombinedBottomBarProps {
   isHome?: boolean;
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
+  onMovieModeToggle?: () => void;
 }
 
 export function CombinedBottomBar({
@@ -109,7 +110,8 @@ export function CombinedBottomBar({
   showPeopleBar = false,
   isHome = false,
   sortOrder,
-  onSortChange
+  onSortChange,
+  onMovieModeToggle
 }: CombinedBottomBarProps) {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{
@@ -203,6 +205,7 @@ export function CombinedBottomBar({
           isHome={isHome}
           sortOrder={sortOrder}
           onSortChange={onSortChange}
+          onMovieModeToggle={onMovieModeToggle}
         />
       </div>
     </>

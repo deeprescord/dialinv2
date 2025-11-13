@@ -97,15 +97,18 @@ export function SpaceContextMenu({
 
   // Fetch show_play_all_button setting when menu opens
   useEffect(() => {
+    console.log('SpaceContextMenu: Fetch play all setting effect', { isOpen, spaceId: space.id });
     if (isOpen) {
       const fetchPlayAllSetting = async () => {
         try {
+          console.log('SpaceContextMenu: Fetching play all setting for space', space.id);
           const { data, error } = await supabase
             .from('spaces')
             .select('show_play_all_button')
             .eq('id', space.id)
             .maybeSingle();
           
+          console.log('SpaceContextMenu: Fetch result', { data, error });
           if (data && !error) {
             setShowPlayAllButton(data.show_play_all_button || false);
           }

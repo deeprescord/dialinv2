@@ -36,6 +36,9 @@ interface ActionOption {
 }
 
 export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, on360Toggle }: DialPopupProps) {
+  // Early return MUST be before any hooks
+  if (!item) return null;
+
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
@@ -95,8 +98,6 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
       fetchSettings();
     }
   }, [isOpen, item]);
-
-  if (!item) return null;
 
   const handle360Toggle = async (enabled: boolean) => {
     try {

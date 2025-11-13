@@ -93,39 +93,52 @@ const PublicSpacePage = () => {
 
   const checkAuthAndFetchSpace = async () => {
     console.log('🚀 checkAuthAndFetchSpace start. shareSlug =', shareSlug);
-    // Check authentication - handle localStorage blocking gracefully (Brave browser)
-    let session = null;
-    try {
-      const { data } = await supabase.auth.getSession();
-      session = data.session;
-      console.log('✅ Auth getSession result:', !!session);
-    } catch (error) {
-      console.warn('Auth check failed (likely localStorage blocked):', error);
-      // Continue as anonymous user - public content will still work
-    }
-    setIsAuthenticated(!!session);
 
-    // Fetch public space
+    // Kick off auth check but DO NOT block space loading (handles Chrome iframe storage restrictions)
+    (async () => {
+      try {
+        const raced = await Promise.race<
+          | { kind: 'auth'; data: { session: any } }
+          | { kind: 'timeout' }
+        >([
+          supabase.auth.getSession().then(({ data }) => ({ kind: 'auth', data })),
+          new Promise<{ kind: 'timeout' }>((resolve) => setTimeout(() => resolve({ kind: 'timeout' }), 1200)),
+        ]);
+
+        if (raced.kind === 'auth' && raced.data?.session) {
+          setIsAuthenticated(true);
+          console.log('✅ Auth session detected');
+        } else {
+          setIsAuthenticated(false);
+          console.log('ℹ️ Proceeding as anonymous');
+        }
+      } catch (error) {
+        console.warn('Auth check skipped (likely storage blocked in iframe):', error);
+        setIsAuthenticated(false);
+      }
+    })();
+
+    // Fetch public space immediately (do not await auth)
     if (!shareSlug) {
       console.error('❌ Missing shareSlug in URL');
-      toast.error("Invalid share link");
-      navigate("/");
+      toast.error('Invalid share link');
+      navigate('/');
       return;
     }
 
     try {
       console.log('📡 Fetching public space by share_slug:', shareSlug);
       const { data, error } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("share_slug", shareSlug)
-        .eq("is_public", true)
+        .from('spaces')
+        .select('*')
+        .eq('share_slug', shareSlug)
+        .eq('is_public', true)
         .single();
       console.log('📥 Fetch result:', { hasData: !!data, hasError: !!error, error });
 
       if (error || !data) {
-        toast.error("Space not found or not publicly accessible");
-        navigate("/");
+        toast.error('Space not found or not publicly accessible');
+        navigate('/');
         return;
       }
 
@@ -147,9 +160,9 @@ const PublicSpacePage = () => {
         flip_vertical: data.flip_vertical ?? false,
       });
     } catch (err) {
-      console.error("Error fetching public space:", err);
-      toast.error("Failed to load space");
-      navigate("/");
+      console.error('Error fetching public space:', err);
+      toast.error('Failed to load space');
+      navigate('/');
     } finally {
       console.log('🏁 checkAuthAndFetchSpace finished → setLoading(false)');
       setLoading(false);
@@ -416,7 +429,19 @@ const PublicSpacePage = () => {
   }
 
   if (!publicSpace) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <p className="text-foreground">Space unavailable or private.</p>
+          <button
+            onClick={() => navigate('/')}
+            className="mt-4 inline-flex items-center rounded-md border border-border px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // SEO Meta tags

@@ -125,15 +125,16 @@ export function ItemsPeopleBar({
       const { data: files, error } = await supabase
         .from('files')
         .select('*')
-        .eq('file_type', 'image')
+        .in('file_type', ['image', 'video'])
         .is('thumbnail_path', null);
 
       if (error || !files || files.length === 0) {
-        toast.info('No images need thumbnail generation');
+        toast.info('No files need thumbnail generation');
         setRegeneratingThumbs(false);
         return;
       }
 
+      console.log(`🎬 Generating thumbnails for ${files.length} files`);
       let processed = 0;
       const batchSize = 3;
       
@@ -143,16 +144,17 @@ export function ItemsPeopleBar({
         await Promise.all(
           batch.map(async (file) => {
             try {
-              await supabase.functions.invoke('generate-thumbnail', {
+              const response = await supabase.functions.invoke('generate-thumbnail', {
                 body: {
                   fileId: file.id,
                   storagePath: file.storage_path,
-                  mimeType: file.mime_type || 'image/jpeg'
+                  mimeType: file.mime_type || (file.file_type === 'video' ? 'video/mp4' : 'image/jpeg')
                 }
               });
+              console.log(`✅ Generated thumbnail for ${file.original_name}:`, response);
               processed++;
             } catch (err) {
-              console.warn(`Error generating thumbnail for ${file.id}:`, err);
+              console.warn(`❌ Error generating thumbnail for ${file.id}:`, err);
             }
           })
         );
@@ -674,6 +676,16 @@ export function ItemsPeopleBar({
                     onClick={() => setViewMode('carousel')}
                   >
                     <LayoutGrid className="w-4 h-4" />
+                  </Button>
+                  <div className="border-l border-white/10 mx-2" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRegenerateThumbnails}
+                    disabled={regeneratingThumbs}
+                    title="Generate thumbnails for videos and images"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${regeneratingThumbs ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               )}

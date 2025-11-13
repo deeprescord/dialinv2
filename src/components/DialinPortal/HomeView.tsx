@@ -489,25 +489,6 @@ export function HomeView({
 
       <CelebrationAnimation isVisible={showCelebration} onComplete={() => setShowCelebration(false)} />
 
-      {/* Play All Button - Glassy separator bar */}
-      {spaceId && spaceId !== 'lobby' && !showInfiniteScroll && (
-        <div className="relative flex items-center justify-center py-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border/20" />
-          </div>
-          <div className="relative flex justify-center">
-            <Button
-              onClick={onMovieModeToggle}
-              variant="ghost"
-              size="sm"
-              className="glass-card hover:glass-card-hover bg-background/40 backdrop-blur-md border border-border/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-4 py-2 rounded-full"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">Play All</span>
-            </Button>
-          </div>
-        </div>
-      )}
 
       {showItemsBar && spaceId && (
         <ItemsPeopleBar
@@ -517,6 +498,7 @@ export function HomeView({
           onClose={onCloseItemsBar}
           onItem360Toggle={onItem360Toggle}
           isPublicSpace={isPublicSpace}
+          onMovieModeToggle={onMovieModeToggle}
         />
       )}
     </motion.div>

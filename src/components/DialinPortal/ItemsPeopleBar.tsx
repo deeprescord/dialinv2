@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { friends } from '@/data/catalogs';
-import { FileText, Music, Video, Image as ImageIcon, File, LayoutGrid, List, Grid3x3, Columns, RefreshCw } from 'lucide-react';
+import { FileText, Music, Video, Image as ImageIcon, File, LayoutGrid, List, Grid3x3, Columns, RefreshCw, Play } from 'lucide-react';
 import { ImageFallback } from '@/components/ui/image-fallback';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,7 @@ interface ItemsPeopleBarProps {
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
   isPublicSpace?: boolean;
+  onMovieModeToggle?: () => void;
 }
 
 type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
@@ -58,7 +59,8 @@ export function ItemsPeopleBar({
   on360RotationSpeedChange,
   on360RotationAxisChange,
   onItem360Toggle,
-  isPublicSpace = false
+  isPublicSpace = false,
+  onMovieModeToggle
 }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -377,14 +379,15 @@ export function ItemsPeopleBar({
   };
 
   const renderCarouselView = () => (
-    <Carousel 
-      className="w-full max-w-5xl mx-auto"
-      opts={{
-        dragFree: true,
-      }}
-    >
-      <CarouselContent className="-ml-2 cursor-grab active:cursor-grabbing">
-        {items.map((item, index) => {
+    <div className="relative">
+      <Carousel 
+        className="w-full max-w-5xl mx-auto"
+        opts={{
+          dragFree: true,
+        }}
+      >
+        <CarouselContent className="-ml-2 cursor-grab active:cursor-grabbing">
+          {items.map((item, index) => {
           const thumbnail = thumbUrls[item.id];
           return (
             <CarouselItem key={item.id} className="pl-2 md:basis-1/2 lg:basis-1/3">
@@ -433,6 +436,28 @@ export function ItemsPeopleBar({
       <CarouselPrevious className="left-2" />
       <CarouselNext className="right-2" />
     </Carousel>
+    
+    {/* Play All Button - Centered on vertical separator */}
+    {onMovieModeToggle && items.length > 0 && (
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+        <div className="relative flex items-center justify-center">
+          {/* Vertical separator line */}
+          <div className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-border/40 to-transparent h-[400px]" />
+          
+          {/* Play All Button */}
+          <Button
+            onClick={onMovieModeToggle}
+            variant="ghost"
+            size="sm"
+            className="pointer-events-auto glass-card hover:glass-card-hover bg-background/50 backdrop-blur-md border border-border/40 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 px-4 py-2 rounded-full"
+          >
+            <Play className="h-4 w-4 mr-2" />
+            <span className="text-sm font-medium">Play All</span>
+          </Button>
+        </div>
+      </div>
+    )}
+  </div>
   );
 
   const renderIconView = () => (

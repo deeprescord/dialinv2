@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink } from 'lucide-react';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -656,28 +656,11 @@ export function SpaceContextMenu({
                   }`}
                   title={syncThumbnailBackground ? 'Linked - uploads will sync' : 'Click to link uploads'}
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    {syncThumbnailBackground ? (
-                      <>
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                      </>
-                    ) : (
-                      <>
-                        <path d="M9 15 3 9m6 0L3 15" />
-                        <path d="M15 9l6 6m-6 0 6-6" />
-                      </>
-                    )}
-                  </svg>
+                  {syncThumbnailBackground ? (
+                    <Link size={16} strokeWidth={2.5} />
+                  ) : (
+                    <Unlink size={16} strokeWidth={2.5} />
+                  )}
                 </button>
               </div>
 

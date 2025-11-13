@@ -224,6 +224,34 @@ export function HomeView({
     loadItem360Url();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedItem?.id, selectedItem?.show360, selectedItem?.url, selectedItem?.storage_path]);
+
+  // DEBUG: Log render conditions (deduped to avoid Safari spam)
+  const lastRenderConditionsRef = React.useRef<string>('');
+  useEffect(() => {
+    const hasStoragePathOrUrl = !!(selectedItem?.storage_path || selectedItem?.url);
+    const isViewerPlayable = !!selectedItem && (
+      selectedItem?.file_type === 'video' ||
+      selectedItem?.file_type === 'audio' ||
+      (selectedItem?.file_type === 'image' || (typeof selectedItem?.mime_type === 'string' && selectedItem.mime_type.startsWith('image/'))) ||
+      (selectedItem?.mime_type === 'application/pdf' || (typeof selectedItem?.storage_path === 'string' && selectedItem.storage_path.toLowerCase().endsWith('.pdf')))
+    );
+    const itemSkyboxReady = Boolean(selectedItem?.show360 && (item360UrlForHero || selectedItem?.url));
+    const willRenderContentViewer = hasStoragePathOrUrl && isViewerPlayable && !itemSkyboxReady;
+    
+    const snapshotObj = {
+      hasStoragePathOrUrl,
+      isViewerPlayable,
+      itemSkyboxReady,
+      willRenderContentViewer,
+    };
+    const snapshot = JSON.stringify(snapshotObj);
+    if (lastRenderConditionsRef.current !== snapshot) {
+      lastRenderConditionsRef.current = snapshot;
+      console.log('🎯 HomeView - Render conditions:', snapshotObj);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItem?.storage_path, selectedItem?.url, selectedItem?.file_type, selectedItem?.mime_type, selectedItem?.show360, item360UrlForHero]);
+
   const handleAddOptionSelect = (optionId: string) => {
     if (onAddOptionSelect) {
       onAddOptionSelect(optionId);
@@ -341,6 +369,7 @@ export function HomeView({
     };
     onItemClick?.(fallbackItem);
   };
+
   // Determine if lobby has a custom uploaded background (disable default video when true)
   const hasCustomBackground = isLobby && typeof backgroundImage === 'string' && (
     backgroundImage.startsWith('http') ||
@@ -348,7 +377,31 @@ export function HomeView({
     backgroundImage.includes('/object/public/space-covers/')
   );
 
-  // Show infinite scroll mode when movie mode is active
+  // Resolve 360 rendering preference and source
+  const itemSkyboxReady = Boolean(selectedItem?.show360 && (item360UrlForHero || selectedItem?.url));
+  const skyboxSrcResolved = itemSkyboxReady
+    ? (item360UrlForHero || selectedItem?.url)
+    : ((show360 && !selectedItem?.show360)
+        ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))
+        : undefined);
+  const effectiveShow360 = itemSkyboxReady || (show360 && !selectedItem?.show360);
+
+  // Determine if the selected item should open in the ContentViewer (supports video, audio, image, pdf)
+  const isPdfSelected = !!selectedItem && (
+    selectedItem?.mime_type === 'application/pdf' ||
+    (typeof selectedItem?.storage_path === 'string' && selectedItem.storage_path.toLowerCase().endsWith('.pdf'))
+  );
+  const isImageSelected = !!selectedItem && (
+    selectedItem?.file_type === 'image' || (typeof selectedItem?.mime_type === 'string' && selectedItem.mime_type.startsWith('image/'))
+  );
+  const isViewerPlayable = !!selectedItem && (
+    selectedItem?.file_type === 'video' ||
+    selectedItem?.file_type === 'audio' ||
+    isImageSelected ||
+    isPdfSelected
+  );
+
+  // Show infinite scroll mode when movie mode is active (moved to end after all hooks)
   if (showInfiniteScroll) {
     return (
       <InfiniteScrollView
@@ -357,48 +410,6 @@ export function HomeView({
        />
      );
    }
- 
-   // Resolve 360 rendering preference and source
-   const itemSkyboxReady = Boolean(selectedItem?.show360 && (item360UrlForHero || selectedItem?.url));
-   const skyboxSrcResolved = itemSkyboxReady
-     ? (item360UrlForHero || selectedItem?.url)
-     : ((show360 && !selectedItem?.show360)
-         ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))
-         : undefined);
-   const effectiveShow360 = itemSkyboxReady || (show360 && !selectedItem?.show360);
-
-   // Determine if the selected item should open in the ContentViewer (supports video, audio, image, pdf)
-   const isPdfSelected = !!selectedItem && (
-     selectedItem?.mime_type === 'application/pdf' ||
-     (typeof selectedItem?.storage_path === 'string' && selectedItem.storage_path.toLowerCase().endsWith('.pdf'))
-   );
-   const isImageSelected = !!selectedItem && (
-     selectedItem?.file_type === 'image' || (typeof selectedItem?.mime_type === 'string' && selectedItem.mime_type.startsWith('image/'))
-   );
-   const isViewerPlayable = !!selectedItem && (
-     selectedItem?.file_type === 'video' ||
-     selectedItem?.file_type === 'audio' ||
-     isImageSelected ||
-     isPdfSelected
-   );
-
-   // DEBUG: Log render conditions (deduped to avoid Safari spam)
-   const lastRenderConditionsRef = React.useRef<string>('');
-   useEffect(() => {
-     const hasStoragePathOrUrl = !!(selectedItem?.storage_path || selectedItem?.url);
-     const snapshotObj = {
-       hasStoragePathOrUrl,
-       isViewerPlayable,
-       itemSkyboxReady,
-       willRenderContentViewer: hasStoragePathOrUrl && isViewerPlayable && !itemSkyboxReady,
-     };
-     const snapshot = JSON.stringify(snapshotObj);
-     if (lastRenderConditionsRef.current !== snapshot) {
-       lastRenderConditionsRef.current = snapshot;
-       console.log('🎯 HomeView - Render conditions:', snapshotObj);
-     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [selectedItem?.storage_path, selectedItem?.url, isViewerPlayable, itemSkyboxReady]);
  
    return (
     <motion.div

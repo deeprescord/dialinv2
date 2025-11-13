@@ -55,6 +55,7 @@ export function useItemVisibility({
 }: UseItemVisibilityOptions) {
   const [visibleIndex, setVisibleIndex] = useState<number>(-1);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const [refVersion, setRefVersion] = useState(0);
 
   const setItemRef = useCallback((index: number, element: HTMLDivElement | null) => {
     if (element) {
@@ -62,6 +63,8 @@ export function useItemVisibility({
     } else {
       itemRefs.current.delete(index);
     }
+    // Trigger observer re-attachment when refs change
+    setRefVersion((v) => v + 1);
   }, []);
 
   useEffect(() => {
@@ -114,7 +117,7 @@ export function useItemVisibility({
       visibilityObserver.disconnect();
       approachingObserver.disconnect();
     };
-  }, [onVisible, onApproaching, onLeaving, threshold, approachThreshold]);
+  }, [onVisible, onApproaching, onLeaving, threshold, approachThreshold, refVersion]);
 
   return { setItemRef, visibleIndex };
 }

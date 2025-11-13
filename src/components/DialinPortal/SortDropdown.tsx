@@ -1,3 +1,4 @@
+import React from 'react';
 import { ArrowUpDown, Calendar, Type as TypeIcon, FileDigit, FolderTree } from 'lucide-react';
 import {
   DropdownMenu,
@@ -27,20 +28,23 @@ const sortOptions: { value: SortOrder; label: string; icon: any }[] = [
   { value: 'type', label: 'Type', icon: TypeIcon },
 ];
 
-export function SortDropdown({ currentSort, onSortChange }: SortDropdownProps) {
-
+export const SortDropdown = React.memo(function SortDropdown({ currentSort, onSortChange }: SortDropdownProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="h-8 w-8"
-        >
-          <ArrowUpDown className="h-4 w-4 text-white" />
-        </Button>
+        <span className="inline-flex">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="h-8 w-8"
+            type="button"
+            aria-label="Sort options"
+          >
+            <ArrowUpDown className="h-4 w-4 text-white" />
+          </Button>
+        </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-sm border-border/50">
+      <DropdownMenuContent align="end" className="w-48 bg-background border-border/50">
         <DropdownMenuLabel>Sort by</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {sortOptions.map((option) => {
@@ -59,4 +63,4 @@ export function SortDropdown({ currentSort, onSortChange }: SortDropdownProps) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

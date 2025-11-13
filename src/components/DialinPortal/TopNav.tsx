@@ -134,7 +134,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div 
-            className="flex items-center space-x-2 sm:space-x-8 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 cursor-pointer hover:bg-black/70 transition-colors"
+            className="flex items-center space-x-2 sm:space-x-8 bg-black/60 rounded-lg px-3 py-2 cursor-pointer hover:bg-black/70 transition-colors"
             onClick={() => navigate(isSignedIn ? '/' : '/default')}
           >
             <img 
@@ -150,7 +150,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-2 sm:space-x-4 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1">
+          <div className="flex items-center space-x-2 sm:space-x-4 bg-black/60 rounded-lg px-2 py-1">
             {/* Sort Dropdown */}
             {onSortChange && (
               <SortDropdown currentSort={sortOrder} onSortChange={onSortChange} />

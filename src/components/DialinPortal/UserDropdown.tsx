@@ -21,13 +21,18 @@ import {
   DropdownMenuSeparator,
 } from '../ui/dropdown-menu';
 
-export function UserDropdown() {
+export const UserDropdown = React.memo(function UserDropdown() {
   const navigate = useNavigate();
   const { profile, refetch } = useProfile();
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  const isSafari = React.useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  }, []);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -74,30 +79,36 @@ export function UserDropdown() {
       />
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center space-x-2 p-2">
-          <Avatar className="h-8 w-8">
-            {isAuthenticated && profile?.profile_media_url ? (
-              profile.profile_media_type === 'video' ? (
-                <video
-                  src={profile.profile_media_url}
-                  className="w-full h-full object-cover rounded-full"
-                  muted
-                  autoPlay
-                  loop
-                  playsInline
-                />
+        <span className="inline-flex">
+          <Button variant="ghost" className="flex items-center space-x-2 p-2" type="button" aria-label="User menu">
+            <Avatar className="h-8 w-8">
+              {isAuthenticated && profile?.profile_media_url ? (
+                profile.profile_media_type === 'video' ? (
+                  isSafari ? (
+                    <AvatarImage src={defaultUserIcon} alt="Default user icon" />
+                  ) : (
+                    <video
+                      src={profile.profile_media_url}
+                      className="w-full h-full object-cover rounded-full"
+                      muted
+                      autoPlay
+                      loop
+                      playsInline
+                    />
+                  )
+                ) : (
+                  <AvatarImage src={profile.profile_media_url} alt="User avatar" />
+                )
               ) : (
-                <AvatarImage src={profile.profile_media_url} alt="User avatar" />
-              )
-            ) : (
-              <AvatarImage src={defaultUserIcon} alt="Default user icon" />
-            )}
-            <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
-          </Avatar>
-          <ChevronDown size={16} className="text-muted-foreground" />
-        </Button>
+                <AvatarImage src={defaultUserIcon} alt="Default user icon" />
+              )}
+              <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
+            </Avatar>
+            <ChevronDown size={16} className="text-muted-foreground" />
+          </Button>
+        </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-background border-white/10">
+      <DropdownMenuContent align="end" className="w-48 bg-background border-border/50">
         <DropdownMenuItem
           className="flex items-center space-x-2 cursor-pointer"
           onClick={() => setShowSettings(true)}
@@ -144,4 +155,4 @@ export function UserDropdown() {
     />
     </>
   );
-}
+});

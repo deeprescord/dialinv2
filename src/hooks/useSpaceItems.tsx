@@ -40,7 +40,28 @@ export function useSpaceItems(spaceId?: string) {
         // Ignore auth errors; proceed anonymously
       }
       
+      // Detect public share route (e.g., /s/:slug) and fetch via backend if unauthenticated
+      const isPublicView = typeof window !== 'undefined' && window.location.pathname.startsWith('/s/');
+      if (!userId && isPublicView) {
+        try {
+          const { data, error } = await supabase.functions.invoke('public-space-items', {
+            body: { spaceId }
+          });
+          if (error) throw error as any;
+          const itemsFromFn = (data as any)?.items || [];
+          setItems(itemsFromFn);
+          return;
+        } catch (err) {
+          console.error('useSpaceItems: public-space-items invoke failed:', err);
+          setItems([]);
+          return;
+        } finally {
+          // loading will be set to false in finally below
+        }
+      }
+      
       console.log('useSpaceItems: Fetching items for spaceId:', spaceId, 'User:', userId || 'anonymous');
+
 
       // Optimized: Use Promise.all to fetch spaces and files in parallel
       const [spacesResult, filesResult] = await Promise.all([

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { safeLocalStorage } from '@/lib/safeLocalStorage';
+import { getAssetUrl } from '@/lib/signedUrl';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { SpaceContextMenu } from './SpaceContextMenu';
 import { DialPopup } from './DialPopup';
@@ -178,25 +179,20 @@ export function ItemsPeopleBar({
           const path = item.thumbnail_path || item.storage_path;
           if (!path) continue;
 
-          // Skip absolute URLs
-          if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
-            publicUrls[item.id] = path;
-            continue;
+          // Try to resolve via gateway for private buckets as well
+          try {
+            const url = await getAssetUrl({
+              path,
+              fileId: item.id,
+              isPublicView: true,
+            });
+            if (url) publicUrls[item.id] = url;
+          } catch (e) {
+            // ignore per-item failures
           }
-
-          // Only use public buckets on public pages
-          const bucketGuess = path.split('/')[0];
-          const bucket = bucketGuess || 'user-files';
-          const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
-
-          if (bucket === 'space-covers' || bucket === 'profile-media') {
-            const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
-            publicUrls[item.id] = data.publicUrl;
-          }
-          // Skip private buckets on public pages - no client-side signing
         }
         if (!cancelled) {
-          console.log('ItemsPeopleBar (public): Using', Object.keys(publicUrls).length, 'public thumbnails');
+          console.log('ItemsPeopleBar (public): Resolved', Object.keys(publicUrls).length, 'thumbnails');
           setThumbUrls(publicUrls);
         }
         return;

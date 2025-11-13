@@ -132,25 +132,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const video = videoRefs.current.get(index);
     const audio = audioRefs.current.get(index);
     
-    if (video) {
-      // Start playing the video muted just off screen for policy compliance
-      try {
-        video.muted = true;
-        video.play().catch(e => console.log('Preload autoplay prevented:', e));
-      } catch (e) {
-        console.log('Preload autoplay prevented:', e);
-      }
+    if (video && video.readyState < 2) {
+      video.load(); // Just preload, don't play
     }
     
-    if (audio) {
-      // Prepare audio for smooth transition (keep volume at 0 and muted)
-      try {
-        audio.volume = 0;
-        audio.muted = true;
-        audio.play().catch(e => console.log('Preload autoplay prevented:', e));
-      } catch (e) {
-        console.log('Preload autoplay prevented:', e);
-      }
+    if (audio && audio.readyState < 2) {
+      audio.load(); // Just preload, don't play
     }
   };
 
@@ -178,33 +165,22 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     // Handle video playback
     videoRefs.current.forEach((video, idx) => {
       if (idx === index) {
-        // Play with sound ON by default
-        try {
-          video.muted = isMuted;
-          video.play().catch(e => {
+        // Play current video
+        video.muted = isMuted;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => {
             console.log('Autoplay prevented, trying muted:', e);
             video.muted = true;
             video.play().catch(console.error);
           });
-        } catch (e) {
-          console.log('Autoplay prevented:', e);
         }
-      } else if (idx === index + 1) {
-        // Keep next item playing for preload (muted)
-        if (video.paused) {
-          try {
-            video.muted = true;
-            video.play().catch(e => console.log('Preload autoplay prevented:', e));
-          } catch (e) {
-            console.log('Preload autoplay prevented:', e);
-          }
-        }
-      } else {
-        // Stop all other videos including previous
-        try {
+      } else if (idx !== index + 1) {
+        // Stop all videos except current and next
+        if (!video.paused) {
           video.pause();
           video.currentTime = 0;
-        } catch {}
+        }
       }
     });
 
@@ -314,30 +290,8 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
               className="w-full h-auto"
               loop
               playsInline
-              autoPlay
-              muted={false}
+              muted={isMuted}
               preload="auto"
-              onLoadedMetadata={(e) => {
-                if (index === 0 && !hasAutoplayedFirst.current) {
-                  try {
-                    e.currentTarget.muted = true;
-                    e.currentTarget.play().catch(err => console.log('onLoadedMetadata autoplay prevented:', err));
-                    hasAutoplayedFirst.current = true;
-                    setPlayingIndex(0);
-                  } catch (err) {
-                    console.log('onLoadedMetadata autoplay prevented:', err);
-                  }
-                }
-              }}
-              onCanPlay={(e) => {
-                if (index === 0 && e.currentTarget.paused) {
-                  try {
-                    e.currentTarget.play().catch(err => console.log('onCanPlay autoplay prevented:', err));
-                  } catch (err) {
-                    console.log('onCanPlay autoplay prevented:', err);
-                  }
-                }
-              }}
             />
           ) : isAudio && url ? (
             <div className="w-full flex flex-col items-center gap-6 p-8">
@@ -362,8 +316,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
                 }}
                 src={url}
                 loop
-                autoPlay
-                muted={false}
+                muted={isMuted}
                 preload="auto"
               />
             </div>

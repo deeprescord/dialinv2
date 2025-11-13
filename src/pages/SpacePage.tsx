@@ -62,7 +62,7 @@ export default function SpacePage() {
     { id: 'lobby', name: 'Home', thumb: '' },
   ]);
   
-  // Video controls state
+  // Video controls state - Private space starts UNMUTED and audio persists across media
   const [videoState, setVideoState] = useState<{
     isPlaying: boolean;
     currentTime: number;
@@ -75,8 +75,8 @@ export default function SpacePage() {
     isPlaying: false,
     currentTime: 0,
     duration: 0,
-    volume: 1,
-    isMuted: true,
+    volume: 0.7,
+    isMuted: false, // Start unmuted in private spaces
     hasVideo: false,
     isLooping: true
   });
@@ -114,8 +114,8 @@ export default function SpacePage() {
         show360: dbSpace.show_360 || false,
         xAxis: dbSpace.x_axis_offset || 0,
         yAxis: dbSpace.y_axis_offset || 0,
-        volume: dbSpace.volume || 50,
-        isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : true,
+        volume: dbSpace.volume || 70,
+        isMuted: dbSpace.is_muted !== undefined ? dbSpace.is_muted : false, // Private spaces unmuted by default
         rotationEnabled: dbSpace.rotation_enabled || false,
         rotationSpeed: dbSpace.rotation_speed || 1,
         rotationAxis: (dbSpace.rotation_axis as 'x' | 'y') || 'x',

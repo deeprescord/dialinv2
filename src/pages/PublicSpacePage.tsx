@@ -45,13 +45,13 @@ const PublicSpacePage = () => {
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
   const [selectedItemData, setSelectedItemData] = useState<any>(null);
   
-  // Video controls state
+  // Video controls state - Public space starts UNMUTED
   const [videoState, setVideoState] = useState({
     isPlaying: false,
     currentTime: 0,
     duration: 0,
     volume: 1,
-    isMuted: true,
+    isMuted: false, // Start unmuted for public spaces
     hasVideo: false,
     isLooping: true
   });
@@ -138,8 +138,8 @@ const PublicSpacePage = () => {
         show_360: data.show_360 ?? false,
         x_axis_offset: data.x_axis_offset ?? 0,
         y_axis_offset: data.y_axis_offset ?? 0,
-        volume: data.volume ?? 50,
-        is_muted: data.is_muted ?? true,
+        volume: data.volume ?? 70,
+        is_muted: data.is_muted ?? false, // Public spaces default to unmuted
         rotation_enabled: data.rotation_enabled ?? false,
         rotation_speed: data.rotation_speed ?? 1,
         rotation_axis: data.rotation_axis ?? 'x',

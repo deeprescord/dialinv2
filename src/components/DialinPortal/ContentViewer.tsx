@@ -50,7 +50,8 @@ export type ContentViewerHandle = {
 
 export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewerProps>(({ content, onClose, onEditMetadata, onShare, onDelete, onMediaEnded, onVideoStateChange }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  // Get initial muted state from parent video state if available, otherwise default unmuted for smoother UX
+  const [isMuted, setIsMuted] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
   const [volume, setVolume] = useState(0.7);
   const [currentTime, setCurrentTime] = useState(0);

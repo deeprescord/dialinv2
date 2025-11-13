@@ -82,6 +82,7 @@ interface HomeViewProps {
   onMovieModeToggle?: () => void;
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
   isPublicSpace?: boolean;
+  showPlayAllButton?: boolean;
 }
 
 export function HomeView({ 
@@ -135,7 +136,8 @@ export function HomeView({
   movieMode = false,
   onMovieModeToggle,
   onItem360Toggle,
-  isPublicSpace = false
+  isPublicSpace = false,
+  showPlayAllButton = false
 }: HomeViewProps) {
   const { isAutoplay, skipToNext, repeatMode } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
@@ -465,7 +467,7 @@ export function HomeView({
                : undefined
            }
            allowDynamicHeight={true}
-           showPlayAllButton={selectedItem?.show_play_all_button || false}
+           showPlayAllButton={(selectedItem?.show_play_all_button || showPlayAllButton) && !isLobby}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
            onMediaEnd={onMediaEnd}

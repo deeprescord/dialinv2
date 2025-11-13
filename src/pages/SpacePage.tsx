@@ -124,6 +124,7 @@ export default function SpacePage() {
         isHome: (dbSpace as any).is_home || (dbSpace as any).isHome || false,
         isPublic: dbSpace.is_public || false,
         shareSlug: dbSpace.share_slug || null,
+        showPlayAllButton: (dbSpace as any).show_play_all_button || false,
       }));
 
       setSpaces([lobby, ...convertedDbSpaces]);
@@ -1337,7 +1338,7 @@ export default function SpacePage() {
                 flipHorizontal={currentSpace?.flipHorizontal}
                 flipVertical={currentSpace?.flipVertical}
                 spaces={spaces}
-                
+                showPlayAllButton={currentSpace?.showPlayAllButton || false}
                 onCreateSpace={handleCreateSpaceFromDrop}
                 isAddModalOpen={isAddModalOpen}
                 onCloseAddModal={() => setIsAddModalOpen(false)}

@@ -66,6 +66,7 @@ export interface Space {
   isHome?: boolean; // Marks the permanent Home space
   isPublic?: boolean; // Public sharing enabled
   shareSlug?: string | null; // URL slug for public sharing
+  showPlayAllButton?: boolean; // Show Play All button in hero header
 }
 
 export interface Post {

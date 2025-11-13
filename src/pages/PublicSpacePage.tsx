@@ -73,20 +73,32 @@ const PublicSpacePage = () => {
   };
 
   useEffect(() => {
+    console.log('🔎 PublicSpacePage mounted. shareSlug =', shareSlug);
     checkAuthAndFetchSpace();
+    
+    // Safety: if something fails silently, stop spinner after 8s
+    const t = setTimeout(() => {
+      if (loading) {
+        console.warn('⏱️ PublicSpacePage timeout fallback: stopping loading spinner.');
+        setLoading(false);
+      }
+    }, 8000);
     
     // Show browser compatibility notice if storage is blocked
     if (!isStorageAvailable()) {
       toast.info('For full functionality, please allow storage in your browser settings');
     }
+    return () => clearTimeout(t);
   }, [shareSlug]);
 
   const checkAuthAndFetchSpace = async () => {
+    console.log('🚀 checkAuthAndFetchSpace start. shareSlug =', shareSlug);
     // Check authentication - handle localStorage blocking gracefully (Brave browser)
     let session = null;
     try {
       const { data } = await supabase.auth.getSession();
       session = data.session;
+      console.log('✅ Auth getSession result:', !!session);
     } catch (error) {
       console.warn('Auth check failed (likely localStorage blocked):', error);
       // Continue as anonymous user - public content will still work
@@ -95,18 +107,21 @@ const PublicSpacePage = () => {
 
     // Fetch public space
     if (!shareSlug) {
+      console.error('❌ Missing shareSlug in URL');
       toast.error("Invalid share link");
       navigate("/");
       return;
     }
 
     try {
+      console.log('📡 Fetching public space by share_slug:', shareSlug);
       const { data, error } = await supabase
         .from("spaces")
         .select("*")
         .eq("share_slug", shareSlug)
         .eq("is_public", true)
         .single();
+      console.log('📥 Fetch result:', { hasData: !!data, hasError: !!error, error });
 
       if (error || !data) {
         toast.error("Space not found or not publicly accessible");
@@ -136,6 +151,7 @@ const PublicSpacePage = () => {
       toast.error("Failed to load space");
       navigate("/");
     } finally {
+      console.log('🏁 checkAuthAndFetchSpace finished → setLoading(false)');
       setLoading(false);
     }
   };

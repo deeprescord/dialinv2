@@ -521,8 +521,8 @@ export function SpaceContextMenu({
 
               {/* Main Content */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                {/* Thumbnail and Background Side by Side */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Thumbnail and Background Side by Side with Link Button */}
+                <div className="relative grid grid-cols-2 gap-3">
                 {/* Space Thumbnail Section */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-1">
@@ -585,42 +585,6 @@ export function SpaceContextMenu({
                   </div>
                 </div>
 
-                {/* Link Button */}
-                <div className="flex items-center justify-center -mx-3 relative z-10">
-                  <button
-                    onClick={() => setSyncThumbnailBackground(!syncThumbnailBackground)}
-                    className={`p-2 rounded-lg border-2 transition-all ${
-                      syncThumbnailBackground
-                        ? 'bg-primary/20 border-primary text-primary'
-                        : 'bg-black/40 border-white/20 text-white/40 hover:border-white/40'
-                    }`}
-                    title={syncThumbnailBackground ? 'Linked' : 'Not linked'}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      {syncThumbnailBackground ? (
-                        <>
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </>
-                      ) : (
-                        <>
-                          <path d="M9 15 3 9m6 0L3 15" />
-                          <path d="M15 9l6 6m-6 0 6-6" />
-                        </>
-                      )}
-                    </svg>
-                  </button>
-                </div>
-
                 {/* Space Background Section */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-1">
@@ -630,8 +594,13 @@ export function SpaceContextMenu({
                   <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
                     <button
                       className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
-                      onClick={() => backgroundInputRef.current?.click()}
-                      disabled={uploadingBackground || syncThumbnailBackground}
+                      onClick={() => {
+                        backgroundInputRef.current?.click();
+                        if (syncThumbnailBackground) {
+                          thumbnailInputRef.current?.click();
+                        }
+                      }}
+                      disabled={uploadingBackground}
                     >
                       {uploadingBackground ? (
                         <>
@@ -652,19 +621,64 @@ export function SpaceContextMenu({
                       type="file"
                       accept="image/*,video/mp4,video/quicktime"
                       multiple
-                      onChange={handleBackgroundUpload}
+                      onChange={(e) => {
+                        handleBackgroundUpload(e);
+                        if (syncThumbnailBackground && e.target.files) {
+                          const thumbEvent = { target: { files: e.target.files } } as React.ChangeEvent<HTMLInputElement>;
+                          handleThumbnailUpload(thumbEvent);
+                        }
+                      }}
                       className="hidden"
                     />
 
                     <MediaCarousel
                       items={uploadedBackgrounds}
                       mediaTypes={backgroundMediaTypes}
-                      onSelect={selectBackground}
+                      onSelect={(url) => {
+                        selectBackground(url);
+                        if (syncThumbnailBackground) {
+                          selectThumbnail(url);
+                        }
+                      }}
                       onRemove={removeBackground}
                       selectedUrl={space.backgroundImage}
                     />
                   </div>
                 </div>
+                
+                {/* Link Icon Button - Positioned between sections */}
+                <button
+                  onClick={() => setSyncThumbnailBackground(!syncThumbnailBackground)}
+                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-2 rounded-full border-2 transition-all shadow-lg ${
+                    syncThumbnailBackground
+                      ? 'bg-primary border-primary text-white'
+                      : 'bg-black/80 border-white/30 text-white/60 hover:border-white/50 hover:text-white'
+                  }`}
+                  title={syncThumbnailBackground ? 'Linked - uploads will sync' : 'Click to link uploads'}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    {syncThumbnailBackground ? (
+                      <>
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M9 15 3 9m6 0L3 15" />
+                        <path d="M15 9l6 6m-6 0 6-6" />
+                      </>
+                    )}
+                  </svg>
+                </button>
               </div>
 
                 {/* Divider */}

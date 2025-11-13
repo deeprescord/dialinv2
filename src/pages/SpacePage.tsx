@@ -1265,12 +1265,24 @@ export default function SpacePage() {
 
   // Show loading state while space is being confirmed
   // Wait for spaces to be populated from dbSpaces (need at least lobby)
+  console.log('🔍 SpacePage loading check:', {
+    spacesLoading,
+    spacesLength: spaces.length,
+    dbSpacesLength: dbSpaces.length,
+    spaceId,
+    currentSpace: currentSpace?.name,
+    willLoad: spacesLoading || spaces.length === 0 || (!currentSpace && spaceId !== 'lobby')
+  });
+  
   if (spacesLoading || spaces.length === 0 || (!currentSpace && spaceId !== 'lobby')) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
           <p className="text-muted-foreground">Loading space...</p>
+          <p className="text-xs text-muted-foreground/60 mt-2">
+            Spaces: {spaces.length}, DB: {dbSpaces.length}, Loading: {spacesLoading ? 'yes' : 'no'}
+          </p>
         </div>
       </div>
     );

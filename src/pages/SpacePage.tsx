@@ -1264,7 +1264,8 @@ export default function SpacePage() {
   const show360 = currentSpace?.show360 || false;
 
   // Show loading state while space is being confirmed
-  if (spacesLoading || (!currentSpace && spaceId !== 'lobby')) {
+  // Wait for spaces to be populated from dbSpaces (need at least lobby)
+  if (spacesLoading || spaces.length === 0 || (!currentSpace && spaceId !== 'lobby')) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

@@ -19,7 +19,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const audioRefs = useRef<Map<number, HTMLAudioElement>>(new Map());
   const [playingIndex, setPlayingIndex] = useState<number>(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const crossfadeDuration = 3000; // 3 second crossfade
@@ -43,8 +43,8 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       handleItemVisible(index);
     },
     onApproaching: (index) => {
-      // Preload the next item when it's approaching
-      preloadNextItem(index);
+      // Preload the NEXT item when the current one is approaching view
+      preloadNextItem(index + 1);
     },
     onLeaving: (index) => {
       // Stop the item when it leaves the viewport

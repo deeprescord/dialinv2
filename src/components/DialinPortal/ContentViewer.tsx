@@ -203,16 +203,20 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
     const handleLoadedMetadata = () => {
       setDuration(mediaRef.duration);
-      // Autoplay muted to satisfy browser policies; unmute only on user action
+      // Start with sound ON for better UX
       if (mediaRef instanceof HTMLVideoElement || mediaRef instanceof HTMLAudioElement) {
         mediaRef.volume = 0.7;
-        mediaRef.muted = true;
-        setIsMuted(true);
+        mediaRef.muted = false;
+        setIsMuted(false);
         setVolume(0.7);
         mediaRef.play().then(() => {
           setIsPlaying(true);
         }).catch((e) => {
           console.log('Autoplay prevented:', e);
+          // Fallback to muted if required by browser
+          mediaRef.muted = true;
+          setIsMuted(true);
+          mediaRef.play().catch(console.error);
         });
       }
     };

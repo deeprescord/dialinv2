@@ -43,8 +43,8 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       handleItemVisible(index);
     },
     onApproaching: (index) => {
-      // Preload the NEXT item when the current one is approaching view
-      preloadNextItem(index + 1);
+      // Pre-start the item just before it enters the viewport
+      prestartItem(index);
     },
     onLeaving: (index) => {
       // Stop the item when it leaves the viewport
@@ -141,6 +141,28 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     }
   };
 
+  // Pre-start an item (muted) just before it enters the viewport
+  const prestartItem = (index: number) => {
+    const video = videoRefs.current.get(index);
+    const audio = audioRefs.current.get(index);
+
+    if (video) {
+      // Ensure muted pre-start to satisfy autoplay policies
+      video.muted = true;
+      if (video.readyState < 2) video.load();
+      const p = video.play();
+      if (p) p.catch(() => {});
+    }
+
+    if (audio) {
+      audio.muted = true;
+      audio.volume = 0;
+      if (audio.readyState < 2) audio.load();
+      const p = audio.play();
+      if (p) p.catch(() => {});
+    }
+  };
+
   // Handle item leaving viewport - stop playback
   const handleItemLeaving = (index: number) => {
     const video = videoRefs.current.get(index);
@@ -156,7 +178,6 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       audio.currentTime = 0;
     }
   };
-
   // Handle item visibility - autoplay videos and crossfade audio
   const handleItemVisible = (index: number) => {
     const previousIndex = playingIndex;

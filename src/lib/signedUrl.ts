@@ -115,14 +115,28 @@ export async function getAssetUrl({
     return data.publicUrl;
   }
 
-  // Private buckets on public pages: use gateway
+  // Private buckets on public pages: use gateway (and try to dereference to final signed URL for Chrome/Safari)
   if (isPublicView && PRIVATE_BUCKETS.includes(bucket)) {
     if (!fileId) {
       console.warn('getAssetUrl: fileId required for public view of private file');
       return null;
     }
     const projectUrl = import.meta.env.VITE_SUPABASE_URL;
-    return `${projectUrl}/functions/v1/public-asset?fileId=${encodeURIComponent(fileId)}&cb=${Date.now()}`;
+    const gatewayUrl = `${projectUrl}/functions/v1/public-asset?fileId=${encodeURIComponent(fileId)}&cb=${Date.now()}`;
+    // Some browsers behave better when given the final signed URL (not a 302). Try a HEAD to follow redirect.
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const resp = await fetch(gatewayUrl, { method: 'HEAD', redirect: 'follow', mode: 'cors', signal: controller.signal });
+      clearTimeout(timeout);
+      if (resp.ok && resp.url && resp.url !== gatewayUrl) {
+        return resp.url;
+      }
+    } catch (e) {
+      console.warn('getAssetUrl: gateway dereference failed, falling back to redirect URL', e);
+    }
+    // Fallback to the redirecting gateway URL
+    return gatewayUrl;
   }
 
   // Private buckets (authenticated): check cache first (unless force refresh)

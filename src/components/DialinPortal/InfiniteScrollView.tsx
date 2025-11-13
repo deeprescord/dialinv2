@@ -288,6 +288,10 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const isImage = item.file_type === 'image';
     const isWeb = item.file_type === 'web';
     const isPdf = item.file_type === 'document' || item.mime_type === 'application/pdf';
+    
+    // Check if item needs a URL and if it's loaded yet
+    const needsUrl = ['video', 'audio', 'image', 'document'].includes(item.file_type);
+    const isUrlReady = !needsUrl || !!url;
 
     return (
       <motion.div
@@ -300,8 +304,10 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
         className="w-full snap-start relative bg-background"
       >
         {/* Content */}
-        <div className="w-full">
-          {isVideo && url ? (
+        <div className="w-full min-h-screen flex items-center justify-center">
+          {!isUrlReady ? (
+            <LoadingState type="infinite" count={1} />
+          ) : isVideo && url ? (
             <video
               ref={(el) => el && videoRefs.current.set(index, el)}
               src={url}
@@ -379,11 +385,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
               className="w-full min-h-[80vh] border-0"
               title={item.original_name}
             />
-          ) : (
-            <div className="w-full text-center p-8">
-              <p className="text-muted-foreground">Unsupported file type</p>
-            </div>
-          )}
+          ) : null}
         </div>
       </motion.div>
     );

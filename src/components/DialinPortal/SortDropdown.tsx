@@ -15,19 +15,19 @@ interface SortDropdownProps {
   onSortChange: (sort: SortOrder) => void;
 }
 
-export function SortDropdown({ currentSort, onSortChange }: SortDropdownProps) {
-  const sortOptions: { value: SortOrder; label: string; icon: any }[] = [
-    { value: 'custom', label: 'Custom order', icon: FolderTree },
-    { value: 'date-newest', label: 'Date (newest first)', icon: Calendar },
-    { value: 'date-oldest', label: 'Date (oldest first)', icon: Calendar },
-    { value: 'name-az', label: 'Name (A-Z)', icon: TypeIcon },
-    { value: 'name-za', label: 'Name (Z-A)', icon: TypeIcon },
-    { value: 'size-largest', label: 'Size (largest)', icon: FileDigit },
-    { value: 'size-smallest', label: 'Size (smallest)', icon: FileDigit },
-    { value: 'type', label: 'Type', icon: TypeIcon },
-  ];
+// Define sort options outside component to prevent re-creation on every render
+const sortOptions: { value: SortOrder; label: string; icon: any }[] = [
+  { value: 'custom', label: 'Custom order', icon: FolderTree },
+  { value: 'date-newest', label: 'Date (newest first)', icon: Calendar },
+  { value: 'date-oldest', label: 'Date (oldest first)', icon: Calendar },
+  { value: 'name-az', label: 'Name (A-Z)', icon: TypeIcon },
+  { value: 'name-za', label: 'Name (Z-A)', icon: TypeIcon },
+  { value: 'size-largest', label: 'Size (largest)', icon: FileDigit },
+  { value: 'size-smallest', label: 'Size (smallest)', icon: FileDigit },
+  { value: 'type', label: 'Type', icon: TypeIcon },
+];
 
-  const currentOption = sortOptions.find(opt => opt.value === currentSort);
+export function SortDropdown({ currentSort, onSortChange }: SortDropdownProps) {
 
   return (
     <DropdownMenu>

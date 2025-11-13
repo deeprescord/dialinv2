@@ -20,7 +20,7 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
   }
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
+    <div className="flex gap-2 overflow-x-auto pb-2 pt-2 px-2">
       {items.map((url, index) => (
         <motion.div
           key={url}

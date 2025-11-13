@@ -465,9 +465,11 @@ export function HomeView({
                : undefined
            }
            allowDynamicHeight={true}
+           showPlayAllButton={selectedItem?.show_play_all_button || false}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
            onMediaEnd={onMediaEnd}
+           onMovieModeToggle={onMovieModeToggle}
          />
       )}
 

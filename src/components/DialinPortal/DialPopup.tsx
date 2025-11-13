@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye, Globe } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye, Globe, Play } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +40,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [newName, setNewName] = useState('');
   const [showingDetails, setShowingDetails] = useState(false);
   const [show360, setShow360] = useState(false);
+  const [showPlayAllButton, setShowPlayAllButton] = useState(false);
 
   // ESC key handling
   useEffect(() => {
@@ -72,25 +73,26 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     }
   }, [isOpen]);
 
-  // Fetch 360 settings when popup opens
+  // Fetch 360 settings and play all button when popup opens
   useEffect(() => {
     if (isOpen && item) {
-      const fetch360Settings = async () => {
+      const fetchSettings = async () => {
         try {
           const { data, error } = await supabase
             .from('files')
-            .select('show_360')
+            .select('show_360, show_play_all_button')
             .eq('id', item.id)
             .maybeSingle();
           
           if (data && !error) {
             setShow360(data.show_360 || false);
+            setShowPlayAllButton(data.show_play_all_button || false);
           }
         } catch (error) {
-          console.error('Error fetching 360 settings:', error);
+          console.error('Error fetching settings:', error);
         }
       };
-      fetch360Settings();
+      fetchSettings();
     }
   }, [isOpen, item]);
 
@@ -115,6 +117,25 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     } catch (error) {
       console.error('Error updating 360 setting:', error);
       toast.error('Failed to update 360 setting');
+    }
+  };
+
+  const handlePlayAllButtonToggle = async (enabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('files')
+        .update({ show_play_all_button: enabled })
+        .eq('id', item.id);
+      
+      if (error) throw error;
+      setShowPlayAllButton(enabled);
+      toast.success(enabled ? 'Play All button enabled' : 'Play All button disabled');
+      onClose();
+      // Trigger a refetch to update the UI
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating play all button setting:', error);
+      toast.error('Failed to update play all button setting');
     }
   };
 
@@ -342,6 +363,20 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                         <Switch
                           checked={show360}
                           onCheckedChange={handle360Toggle}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Play All Button Toggle */}
+                    <div className="mb-4 p-3 bg-background/50 rounded-lg border border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Play size={18} className="text-primary" />
+                          <span className="text-sm font-medium">Show Play All Button</span>
+                        </div>
+                        <Switch
+                          checked={showPlayAllButton}
+                          onCheckedChange={handlePlayAllButtonToggle}
                         />
                       </div>
                     </div>

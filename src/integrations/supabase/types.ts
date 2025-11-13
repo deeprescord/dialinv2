@@ -125,6 +125,7 @@ export type Database = {
           rotation_enabled: boolean | null
           rotation_speed: number | null
           show_360: boolean | null
+          show_play_all_button: boolean | null
           storage_path: string
           thumbnail_path: string | null
           updated_at: string
@@ -145,6 +146,7 @@ export type Database = {
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
           show_360?: boolean | null
+          show_play_all_button?: boolean | null
           storage_path: string
           thumbnail_path?: string | null
           updated_at?: string
@@ -165,6 +167,7 @@ export type Database = {
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
           show_360?: boolean | null
+          show_play_all_button?: boolean | null
           storage_path?: string
           thumbnail_path?: string | null
           updated_at?: string

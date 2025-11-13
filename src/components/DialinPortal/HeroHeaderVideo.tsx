@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import { SkyboxViewer } from './SkyboxViewer';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut, Play } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { PdfViewer } from './PdfViewer';
+import { Button } from '@/components/ui/button';
 
 interface HeroHeaderVideoProps {
   videoSrc?: string;
@@ -26,6 +27,7 @@ interface HeroHeaderVideoProps {
   flipVertical?: boolean;
   webUrl?: string;
   allowDynamicHeight?: boolean; // Enable dynamic height for tall content
+  showPlayAllButton?: boolean;
   onOpenAddPanel?: () => void;
   onVideoStateChange?: (state: {
     isPlaying: boolean;
@@ -36,6 +38,7 @@ interface HeroHeaderVideoProps {
     hasVideo: boolean;
   }) => void;
   onMediaEnd?: () => void;
+  onMovieModeToggle?: () => void;
 }
 
 export type HeroHeaderVideoHandle = {
@@ -65,9 +68,11 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   flipVertical,
   webUrl,
   allowDynamicHeight = true,
+  showPlayAllButton = false,
   onOpenAddPanel,
   onVideoStateChange,
-  onMediaEnd
+  onMediaEnd,
+  onMovieModeToggle
 }: HeroHeaderVideoProps, ref) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
@@ -950,6 +955,23 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
       {/* Gradient Overlay - don't show for web view, 360° view, or scrollable content */}
       {!webUrl && !needsScrolling && <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />}
+
+      {/* Play All Button - centered in hero */}
+      {showPlayAllButton && onMovieModeToggle && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMovieModeToggle();
+            }}
+            className="glass-card border-white/20 text-white hover:bg-white/20 pointer-events-auto"
+            size="lg"
+          >
+            <Play className="mr-2" size={20} />
+            Play All
+          </Button>
+        </div>
+      )}
 
       {/* Content - Only show for non-lobby spaces */}
       {title && subtitle && (

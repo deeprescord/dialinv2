@@ -13,7 +13,7 @@ interface MediaCarouselProps {
 export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedUrl }: MediaCarouselProps) {
   if (items.length === 0) {
     return (
-      <div className="flex items-center justify-center h-16 text-xs text-white/40">
+      <div className="flex items-center justify-center h-24 text-xs text-white/40">
         No media uploaded yet
       </div>
     );
@@ -30,7 +30,7 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
         >
           <button
             onClick={() => onSelect(url)}
-            className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+            className={`relative w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${
               selectedUrl === url
                 ? 'border-primary shadow-lg shadow-primary/50'
                 : 'border-white/10 hover:border-white/30'
@@ -60,8 +60,8 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
             )}
             {mediaTypes[index] === 'video' && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
-                <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
-                  <div className="w-0 h-0 border-l-[6px] border-l-black border-y-[4px] border-y-transparent ml-0.5" />
+                <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center">
+                  <div className="w-0 h-0 border-l-[8px] border-l-black border-y-[5px] border-y-transparent ml-0.5" />
                 </div>
               </div>
             )}
@@ -71,9 +71,9 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
               e.stopPropagation();
               onRemove(index);
             }}
-            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <X className="w-3 h-3 text-white" />
+            <X className="w-4 h-4 text-white" />
           </button>
         </motion.div>
       ))}

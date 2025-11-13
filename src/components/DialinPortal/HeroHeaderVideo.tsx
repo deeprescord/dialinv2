@@ -957,11 +957,19 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
       {!webUrl && !needsScrolling && <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent ${show360 ? 'pointer-events-none z-20' : ''}`} />}
 
       {/* Play All Button - centered in hero */}
-      {showPlayAllButton && onMovieModeToggle && (
+      {(() => {
+        console.log('🎬 HeroHeaderVideo render check:', {
+          showPlayAllButton,
+          onMovieModeToggle: !!onMovieModeToggle,
+          shouldShow: showPlayAllButton && onMovieModeToggle
+        });
+        return showPlayAllButton && onMovieModeToggle;
+      })() && (
         <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
           <Button
             onClick={(e) => {
               e.stopPropagation();
+              console.log('🎬 Play All button clicked!');
               onMovieModeToggle();
             }}
             className="glass-card border-white/20 text-white hover:bg-white/20 pointer-events-auto"

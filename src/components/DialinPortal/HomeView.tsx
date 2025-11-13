@@ -467,7 +467,17 @@ export function HomeView({
                : undefined
            }
            allowDynamicHeight={true}
-           showPlayAllButton={(selectedItem?.show_play_all_button || showPlayAllButton) && !isLobby}
+           showPlayAllButton={(() => {
+             const result = (selectedItem?.show_play_all_button || showPlayAllButton) && !isLobby;
+             console.log('🎬 HeroHeaderVideo showPlayAllButton check:', {
+               selectedItemButton: selectedItem?.show_play_all_button,
+               spaceButton: showPlayAllButton,
+               isLobby,
+               result,
+               onMovieModeToggle: !!onMovieModeToggle
+             });
+             return result;
+           })()}
            onOpenAddPanel={onOpenAddPanel}
            onVideoStateChange={onVideoStateChange}
            onMediaEnd={onMediaEnd}

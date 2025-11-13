@@ -89,12 +89,13 @@ export function SpaceItemsGrid({
   // Generate signed URLs for thumbnails only on authenticated pages
   useEffect(() => {
     const generateUrls = async () => {
-      // On public pages, only use public bucket thumbnails, skip signing
+      // On public pages, only use public bucket thumbnails or placeholders
       if (isPublicSpace) {
+        console.log('📷 SpaceItemsGrid (public): Loading thumbnails for', items.length, 'items');
         const publicUrls: Record<string, string> = {};
         for (const item of items) {
-          // Prefer generated thumbnail; fallback to original image for images
-          const path: string | null = item.thumbnail_path || (item.file_type === 'image' ? item.storage_path : null);
+          // Only use thumbnail_path (never storage_path on public)
+          const path: string | null = item.thumbnail_path;
           if (!path) continue;
 
           // Absolute URLs passthrough
@@ -107,17 +108,15 @@ export function SpaceItemsGrid({
           const bucket = bucketGuess || 'user-files';
           const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
 
+          // Only public buckets on public pages
           if (bucket === 'space-covers' || bucket === 'profile-media') {
             const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
             publicUrls[item.id] = data.publicUrl;
-          } else if (item.file_type === 'image') {
-            // Use gateway for private image thumbnails on public pages
-            const url = await getAssetUrl({ path, fileId: item.id, isPublicView: true });
-            if (url) publicUrls[item.id] = url;
+            console.log('📷 Public thumbnail loaded:', item.original_name);
           }
-          // For non-images (e.g., videos without generated thumbs), we keep default placeholders
+          // Skip private buckets - will use placeholder
         }
-        console.log('SpaceItemsGrid (public): Using', Object.keys(publicUrls).length, 'thumbnails (incl. gateway)');
+        console.log('📷 SpaceItemsGrid (public): Loaded', Object.keys(publicUrls).length, 'public thumbnails');
         setThumbUrls(publicUrls);
         return;
       }

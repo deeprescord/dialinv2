@@ -246,6 +246,7 @@ export function HomeView({
   // Handle item click from ItemsPeopleBar
   const handleItemClickFromBar = async (item: any) => {
     if (!item) return;
+    console.log('🔍 HomeView handleItemClickFromBar - isPublicSpace:', isPublicSpace);
 
     // Fast-path for public viewers: use provided data when possible without DB reads
     try {
@@ -258,24 +259,6 @@ export function HomeView({
           url: item.storage_path || item.url,
           thumb: item.thumbnail_path || item.thumb,
           file_type: 'web',
-        };
-        onItemClick?.(transformedItem);
-        return;
-      }
-
-      // If already has a direct URL (e.g., pre-signed by the caller), use it
-      if (item.url && typeof item.url === 'string') {
-        const transformedItem = {
-          id: item.id,
-          title: item.original_name || item.title,
-          type: item.file_type || item.type,
-          url: item.url,
-          thumb: item.thumbnail_path || item.thumb,
-          duration: item.duration,
-          mime_type: item.mime_type,
-          storage_path: item.storage_path,
-          file_type: item.file_type || item.type,
-          original_name: item.original_name || item.title,
         };
         onItemClick?.(transformedItem);
         return;
@@ -313,23 +296,16 @@ export function HomeView({
           return;
         }
         
-        // Generate signed URL for regular storage files
-        const { data: signedData } = await supabase.storage
-          .from('user-files')
-          .createSignedUrl(fileData.storage_path, 3600);
-        
-        const url = signedData?.signedUrl || '';
-        
-        // Transform with all 360 settings
+        // Transform with all 360 settings; NO URL signing here - ContentViewer resolves via getAssetUrl
+        console.log('🔍 Passing item to ContentViewer - storage_path:', fileData.storage_path);
         const transformedItem = {
           id: fileData.id,
           title: fileData.original_name,
           type: fileData.file_type,
-          url: url,
-          thumb: fileData.thumbnail_path || url,
+          storage_path: fileData.storage_path, // ContentViewer will resolve via getAssetUrl
+          thumb: fileData.thumbnail_path,
           duration: fileData.duration,
           mime_type: fileData.mime_type,
-          storage_path: fileData.storage_path,
           file_type: fileData.file_type,
           original_name: fileData.original_name,
           thumbnail_path: fileData.thumbnail_path,
@@ -348,32 +324,20 @@ export function HomeView({
       console.error('Error fetching file data:', error);
     }
 
-    // Public-safe fallback: sign the provided storage_path and forward
-    try {
-      let url: string | undefined = item.url;
-      if (!url && item.storage_path) {
-        const { data: signed } = await supabase.storage
-          .from('user-files')
-          .createSignedUrl(item.storage_path, 3600);
-        url = signed?.signedUrl || '';
-      }
-
-      const fallbackItem = {
-        id: item.id,
-        title: item.original_name || item.title,
-        type: item.file_type || item.type,
-        url,
-        thumb: item.thumbnail_path ? url : item.thumb,
-        duration: item.duration,
-        mime_type: item.mime_type,
-        storage_path: item.storage_path,
-        file_type: item.file_type || item.type,
-        original_name: item.original_name || item.title,
-      };
-      onItemClick?.(fallbackItem);
-    } catch (e) {
-      console.error('Fallback signing failed:', e);
-    }
+    // Fallback: forward storage_path without signing
+    console.log('🔍 Fallback - passing storage_path:', item.storage_path);
+    const fallbackItem = {
+      id: item.id,
+      title: item.original_name || item.title,
+      type: item.file_type || item.type,
+      storage_path: item.storage_path,
+      thumb: item.thumbnail_path || item.thumb,
+      duration: item.duration,
+      mime_type: item.mime_type,
+      file_type: item.file_type || item.type,
+      original_name: item.original_name || item.title,
+    };
+    onItemClick?.(fallbackItem);
   };
   // Determine if lobby has a custom uploaded background (disable default video when true)
   const hasCustomBackground = isLobby && typeof backgroundImage === 'string' && (
@@ -434,12 +398,12 @@ export function HomeView({
 
 
       {/* Hero Header / Content Viewer */}
-      {(selectedItem?.storage_path || selectedItem?.url) && isViewerPlayable && !itemSkyboxReady ? (
+      {selectedItem?.storage_path && isViewerPlayable && !itemSkyboxReady ? (
         <ContentViewer
           ref={heroRef as any}
           content={{
             id: selectedItem.id || selectedItem.thumb,
-            storage_path: (selectedItem.url || selectedItem.storage_path),
+            storage_path: selectedItem.storage_path, // Always pass storage_path (no URL fallback)
             file_type: selectedItem.file_type,
             mime_type: selectedItem.mime_type,
             original_name: selectedItem.title || selectedItem.original_name || selectedItem.name || 'Untitled',

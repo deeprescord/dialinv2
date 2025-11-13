@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useImperativeHandle } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, X, Maximize, Settings, Edit, Share2, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, X, Maximize, Settings, Edit, Share2, Trash2, ZoomIn, ZoomOut, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { SkyboxViewer } from './SkyboxViewer';
 import audioVisualizer from '@/assets/audio-visualizer.gif';
 import { getAssetUrl, getRefreshTiming } from '@/lib/signedUrl';
+import { SetThumbnailModal } from './SetThumbnailModal';
 
 interface ContentViewerProps {
   content: {
@@ -74,19 +75,23 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [urlRefreshTimer, setUrlRefreshTimer] = useState<NodeJS.Timeout | null>(null);
   const [isUrlRefreshing, setIsUrlRefreshing] = useState(false);
+  const [showSetThumbnailModal, setShowSetThumbnailModal] = useState(false);
   const isPublicView = window.location.pathname.startsWith('/s/');
 
   // Load URLs using centralized signing
   useEffect(() => {
     const loadUrls = async () => {
+      console.log('🎬 ContentViewer loading URLs - isPublicView:', isPublicView, 'storage_path:', content.storage_path);
       const url = await getAssetUrl({ 
         path: content.storage_path,
         fileId: content.id,
         isPublicView 
       });
       if (url) {
-        console.log('Content URL loaded:', url);
+        console.log('✅ Content URL loaded:', url.substring(0, 100) + '...');
         setContentUrl(url);
+      } else {
+        console.error('❌ Failed to load content URL');
       }
       
       if (content.thumbnail_path) {
@@ -96,7 +101,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           isPublicView 
         });
         if (thumbUrl) {
-          console.log('Thumbnail URL loaded:', thumbUrl);
+          console.log('✅ Thumbnail URL loaded');
           setThumbnailUrl(thumbUrl);
         }
       }
@@ -435,6 +440,16 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
             className="absolute top-20 right-4 z-50 bg-background/95 backdrop-blur-lg rounded-xl shadow-2xl border border-border overflow-hidden"
           >
             <div className="p-2 space-y-1 min-w-[200px]">
+              <button
+                onClick={() => {
+                  setShowContextMenu(false);
+                  setShowSetThumbnailModal(true);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left"
+              >
+                <ImageIcon className="w-4 h-4" />
+                <span className="text-sm font-medium">Set Thumbnail</span>
+              </button>
               {onEditMetadata && (
                 <button
                   onClick={() => {
@@ -611,18 +626,30 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       {!isVideo && !isAudio && !isImage && !isPDF && (
         <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-muted via-background to-muted flex items-center justify-center">
           <div className="text-center space-y-4 p-8">
-            <h2 className="text-2xl font-bold text-foreground">{content.original_name}</h2>
-            <p className="text-muted-foreground">Preview not available for this file type</p>
-            {contentUrl && (
-              <Button asChild>
-                <a href={contentUrl} download={content.original_name}>
-                  Download File
-                </a>
-              </Button>
-            )}
+            <div className="w-20 h-20 mx-auto rounded-full bg-muted-foreground/10 flex items-center justify-center">
+              <Settings className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold mb-2">{content.original_name}</h3>
+              <p className="text-muted-foreground">Content preview not available for this file type</p>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Set Thumbnail Modal */}
+      <SetThumbnailModal
+        fileId={content.id}
+        currentThumb={thumbnailUrl || contentUrl}
+        isOpen={showSetThumbnailModal}
+        onClose={() => setShowSetThumbnailModal(false)}
+        onSaved={() => {
+          // Optionally refetch to show new thumbnail
+          window.location.reload();
+        }}
+      />
     </div>
   );
 });
+
+ContentViewer.displayName = 'ContentViewer';

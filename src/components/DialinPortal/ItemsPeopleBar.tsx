@@ -174,6 +174,8 @@ export function ItemsPeopleBar({
     const loadThumbs = async () => {
       if (!items?.length) return;
 
+      console.log('🖼️ ItemsPeopleBar: Loading thumbnails for', items.length, 'items');
+
       // On public pages, only use public bucket thumbnails, skip signing
       if (isPublicSpace) {
         const publicUrls: Record<string, string> = {};
@@ -545,31 +547,36 @@ export function ItemsPeopleBar({
     </ScrollArea>
   );
 
-  const renderTileView = () => (
-    <ScrollArea className="h-[500px] w-full">
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 p-4">
-        {items.map((item) => {
-          const thumbnail = thumbUrls[item.id];
-          return (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="cursor-pointer group mb-4 break-inside-avoid"
-              onClick={() => handleItemClick(item)}
-            >
-              <div className="rounded-lg overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative bg-muted/50">
-                {thumbnail ? (
-                  <ImageFallback 
-                    src={thumbnail}
-                    alt={item.original_name}
-                    className="w-full h-auto object-cover"
-                  />
-                ) : (
-                  <div className="w-full aspect-square flex items-center justify-center">
-                    {getFileIcon(item.file_type)}
-                  </div>
-                )}
+  const renderTileView = () => {
+    console.log('🎨 Rendering tile view with', items.length, 'items and', Object.keys(thumbUrls).length, 'thumbnail URLs');
+    console.log('📸 Thumbnail URLs:', thumbUrls);
+    
+    return (
+      <ScrollArea className="h-[500px] w-full">
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 p-4">
+          {items.map((item) => {
+            const thumbnail = thumbUrls[item.id];
+            console.log(`Item ${item.original_name}: thumbnail =`, thumbnail);
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="cursor-pointer group mb-4 break-inside-avoid"
+                onClick={() => handleItemClick(item)}
+              >
+                <div className="rounded-lg overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative bg-muted/50">
+                  {thumbnail ? (
+                    <ImageFallback 
+                      src={thumbnail}
+                      alt={item.original_name}
+                      className="w-full h-auto object-cover"
+                    />
+                  ) : (
+                    <div className="w-full aspect-square flex items-center justify-center">
+                      {getFileIcon(item.file_type)}
+                    </div>
+                  )}
                 {/* File type icon badge */}
                 <div className="absolute bottom-12 right-2 bg-black/60 backdrop-blur-sm rounded p-1">
                   {item.file_type === 'image' && <ImageIcon className="w-3 h-3 text-white" />}
@@ -590,6 +597,7 @@ export function ItemsPeopleBar({
       </div>
     </ScrollArea>
   );
+};
 
   const renderContent = () => {
     if (view === 'people') {

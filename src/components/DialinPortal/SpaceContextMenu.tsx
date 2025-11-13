@@ -521,18 +521,6 @@ export function SpaceContextMenu({
 
               {/* Main Content */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                {/* Sync Toggle */}
-                <div className="flex items-center justify-between bg-black/20 border border-white/10 rounded-xl p-3">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon size={14} className="text-primary" />
-                    <span className="text-xs font-medium text-white">Sync Thumbnail & Background</span>
-                  </div>
-                  <Switch
-                    checked={syncThumbnailBackground}
-                    onCheckedChange={setSyncThumbnailBackground}
-                  />
-                </div>
-
                 {/* Thumbnail and Background Side by Side */}
                 <div className="grid grid-cols-2 gap-3">
                 {/* Space Thumbnail Section */}
@@ -544,7 +532,12 @@ export function SpaceContextMenu({
                   <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
                     <button
                       className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
-                      onClick={() => thumbnailInputRef.current?.click()}
+                      onClick={() => {
+                        thumbnailInputRef.current?.click();
+                        if (syncThumbnailBackground) {
+                          backgroundInputRef.current?.click();
+                        }
+                      }}
                       disabled={uploadingThumbnail}
                     >
                       {uploadingThumbnail ? (
@@ -566,18 +559,66 @@ export function SpaceContextMenu({
                       type="file"
                       accept="image/*,video/mp4,video/quicktime"
                       multiple
-                      onChange={handleThumbnailUpload}
+                      onChange={(e) => {
+                        handleThumbnailUpload(e);
+                        if (syncThumbnailBackground && e.target.files) {
+                          // Create a new event with the same files for background upload
+                          const bgEvent = { target: { files: e.target.files } } as React.ChangeEvent<HTMLInputElement>;
+                          handleBackgroundUpload(bgEvent);
+                        }
+                      }}
                       className="hidden"
                     />
 
                     <MediaCarousel
                       items={uploadedThumbnails}
                       mediaTypes={thumbnailMediaTypes}
-                      onSelect={selectThumbnail}
+                      onSelect={(url) => {
+                        selectThumbnail(url);
+                        if (syncThumbnailBackground) {
+                          selectBackground(url);
+                        }
+                      }}
                       onRemove={removeThumbnail}
                       selectedUrl={space.thumb}
                     />
                   </div>
+                </div>
+
+                {/* Link Button */}
+                <div className="flex items-center justify-center -mx-3 relative z-10">
+                  <button
+                    onClick={() => setSyncThumbnailBackground(!syncThumbnailBackground)}
+                    className={`p-2 rounded-lg border-2 transition-all ${
+                      syncThumbnailBackground
+                        ? 'bg-primary/20 border-primary text-primary'
+                        : 'bg-black/40 border-white/20 text-white/40 hover:border-white/40'
+                    }`}
+                    title={syncThumbnailBackground ? 'Linked' : 'Not linked'}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {syncThumbnailBackground ? (
+                        <>
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </>
+                      ) : (
+                        <>
+                          <path d="M9 15 3 9m6 0L3 15" />
+                          <path d="M15 9l6 6m-6 0 6-6" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
                 </div>
 
                 {/* Space Background Section */}

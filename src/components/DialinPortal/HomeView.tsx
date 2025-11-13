@@ -380,13 +380,23 @@ export function HomeView({
      isPdfSelected
    );
 
-   // DEBUG: Log render conditions
-   console.log('🎯 HomeView - Render conditions:', {
-     hasStoragePathOrUrl: !!(selectedItem?.storage_path || selectedItem?.url),
-     isViewerPlayable,
-     itemSkyboxReady,
-     willRenderContentViewer: !!(selectedItem?.storage_path || selectedItem?.url) && isViewerPlayable && !itemSkyboxReady
-   });
+   // DEBUG: Log render conditions (deduped to avoid Safari spam)
+   const lastRenderConditionsRef = React.useRef<string>('');
+   useEffect(() => {
+     const hasStoragePathOrUrl = !!(selectedItem?.storage_path || selectedItem?.url);
+     const snapshotObj = {
+       hasStoragePathOrUrl,
+       isViewerPlayable,
+       itemSkyboxReady,
+       willRenderContentViewer: hasStoragePathOrUrl && isViewerPlayable && !itemSkyboxReady,
+     };
+     const snapshot = JSON.stringify(snapshotObj);
+     if (lastRenderConditionsRef.current !== snapshot) {
+       lastRenderConditionsRef.current = snapshot;
+       console.log('🎯 HomeView - Render conditions:', snapshotObj);
+     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [selectedItem?.storage_path, selectedItem?.url, isViewerPlayable, itemSkyboxReady]);
  
    return (
     <motion.div

@@ -418,6 +418,7 @@ export type Database = {
           rotation_speed: number | null
           share_slug: string | null
           show_360: boolean | null
+          show_play_all_button: boolean | null
           thumbnail_url: string | null
           updated_at: string
           user_id: string
@@ -445,6 +446,7 @@ export type Database = {
           rotation_speed?: number | null
           share_slug?: string | null
           show_360?: boolean | null
+          show_play_all_button?: boolean | null
           thumbnail_url?: string | null
           updated_at?: string
           user_id: string
@@ -472,6 +474,7 @@ export type Database = {
           rotation_speed?: number | null
           share_slug?: string | null
           show_360?: boolean | null
+          show_play_all_button?: boolean | null
           thumbnail_url?: string | null
           updated_at?: string
           user_id?: string

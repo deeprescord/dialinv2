@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play } from 'lucide-react';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -89,10 +89,33 @@ export function SpaceContextMenu({
   const [showAIControls, setShowAIControls] = useState(false);
   const [syncThumbnailBackground, setSyncThumbnailBackground] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
+  const [showPlayAllButton, setShowPlayAllButton] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [computedPos, setComputedPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+
+  // Fetch show_play_all_button setting when menu opens
+  useEffect(() => {
+    if (isOpen) {
+      const fetchPlayAllSetting = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('spaces')
+            .select('show_play_all_button')
+            .eq('id', space.id)
+            .maybeSingle();
+          
+          if (data && !error) {
+            setShowPlayAllButton(data.show_play_all_button || false);
+          }
+        } catch (error) {
+          console.error('Error fetching play all setting:', error);
+        }
+      };
+      fetchPlayAllSetting();
+    }
+  }, [isOpen, space.id]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -725,6 +748,34 @@ export function SpaceContextMenu({
                         checked={space.show360 || false}
                         onCheckedChange={(checked) => {
                           onToggle360(space.id, checked);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Play All Button Toggle */}
+                  <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Play size={14} className="text-white" />
+                      <span className="text-xs text-white">Show Play All Button</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={showPlayAllButton}
+                        onCheckedChange={async (checked) => {
+                          try {
+                            const { error } = await supabase
+                              .from('spaces')
+                              .update({ show_play_all_button: checked })
+                              .eq('id', space.id);
+                            
+                            if (error) throw error;
+                            setShowPlayAllButton(checked);
+                            toast.success(checked ? 'Play All button enabled' : 'Play All button disabled');
+                          } catch (error) {
+                            console.error('Error updating play all button setting:', error);
+                            toast.error('Failed to update play all button setting');
+                          }
                         }}
                       />
                     </div>

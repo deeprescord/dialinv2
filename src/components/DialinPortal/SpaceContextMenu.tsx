@@ -615,65 +615,6 @@ export function SpaceContextMenu({
                       className="hidden"
                     />
 
-                    {/* AI Generation Option */}
-                    <button
-                      className={`w-full flex items-center justify-center gap-2 px-3 py-2 border rounded-xl transition-all duration-200 ${
-                        showAIControls 
-                          ? 'bg-primary/20 border-primary/50 text-white' 
-                          : 'bg-black/40 hover:bg-black/50 border-white/10 hover:border-white/20 text-white'
-                      }`}
-                      onClick={() => setShowAIControls(!showAIControls)}
-                      disabled={syncThumbnailBackground}
-                    >
-                      <Sparkles size={14} />
-                      <span className="text-xs font-medium">AI Generate</span>
-                    </button>
-
-                    {/* AI Controls - Collapsible */}
-                    <AnimatePresence>
-                      {showAIControls && !syncThumbnailBackground && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="space-y-1.5 pt-1">
-                            <div className="flex gap-1.5">
-                              <Input
-                                value={aiPrompt}
-                                onChange={(e) => setAiPrompt(e.target.value)}
-                                placeholder="Describe your background..."
-                                className="flex-1 bg-black/40 border-white/10 h-8 text-white placeholder:text-white/40 text-xs"
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-white/10 hover:bg-white/5 px-2 h-8 text-white"
-                                onClick={handleGenerateWithAI}
-                                disabled={!aiPrompt.trim() || isGenerating}
-                              >
-                                {isGenerating ? (
-                                  <div className="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
-                                ) : (
-                                  <Sparkles size={14} />
-                                )}
-                              </Button>
-                            </div>
-                            <div className="flex items-center gap-1.5 px-1">
-                              <Switch
-                                checked={is360Mode}
-                                onCheckedChange={setIs360Mode}
-                                className="scale-90"
-                              />
-                              <span className="text-[10px] text-white/60">360° Mode</span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
                     <MediaCarousel
                       items={uploadedBackgrounds}
                       mediaTypes={backgroundMediaTypes}

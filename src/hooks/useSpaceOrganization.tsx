@@ -3,7 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { SortOrder, OrganizationAction } from '@/types/organization';
 
-// Reference chain entries stored as JSONB
+interface ReferenceEntry {
+  userId: string;
+  timestamp: string;
+  action: string;
+  toSpaceId?: string;
+}
 
 export function useSpaceOrganization() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
@@ -13,11 +18,29 @@ export function useSpaceOrganization() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      const refEntry: ReferenceEntry = {
+        userId: user.id,
+        timestamp: new Date().toISOString(),
+        action: 'add',
+        toSpaceId: targetSpaceId,
+      };
+
       if (isSpace) {
-        // For spaces, just update parent
+        // For spaces, update parent and append to reference chain
+        const { data: currentSpace } = await supabase
+          .from('spaces')
+          .select('reference_chain')
+          .eq('id', itemId)
+          .single();
+
+        const newChain = [...(currentSpace?.reference_chain || []), refEntry];
+
         const { error } = await supabase
           .from('spaces')
-          .update({ parent_id: targetSpaceId })
+          .update({ 
+            parent_id: targetSpaceId,
+            reference_chain: newChain,
+          })
           .eq('id', itemId);
         
         if (error) throw error;
@@ -45,6 +68,20 @@ export function useSpaceOrganization() {
           .single();
 
         const newPosition = (maxPos?.position || 0) + 1;
+
+        // Update file reference chain
+        const { data: currentFile } = await supabase
+          .from('files')
+          .select('reference_chain')
+          .eq('id', itemId)
+          .single();
+
+        const newChain = [...(currentFile?.reference_chain || []), refEntry];
+
+        await supabase
+          .from('files')
+          .update({ reference_chain: newChain })
+          .eq('id', itemId);
 
         const { error } = await supabase
           .from('space_files')
@@ -123,12 +160,22 @@ export function useSpaceOrganization() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Calculate coupling strength
+      const { data: couplingData, error: couplingError } = await supabase
+        .rpc('calculate_coupling_strength', {
+          _from_space_id: fromSpaceId,
+          _to_space_id: toSpaceId,
+        });
+
+      if (couplingError) throw couplingError;
+
       const { error } = await supabase
         .from('space_connections')
         .insert({
           from_space_id: fromSpaceId,
           to_space_id: toSpaceId,
           created_by: user.id,
+          coupling_strength: couplingData || 0,
         });
 
       if (error) {

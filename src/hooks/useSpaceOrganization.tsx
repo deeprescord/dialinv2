@@ -27,15 +27,18 @@ export function useSpaceOrganization() {
 
       if (isSpace) {
         // For spaces, update parent and append to reference chain
-        const { data: currentSpace } = await supabase
+        const { data: currentSpace } = await (supabase as any)
           .from('spaces')
           .select('reference_chain')
           .eq('id', itemId)
           .single();
 
-        const newChain = [...(currentSpace?.reference_chain || []), refEntry];
+        const currentChain = Array.isArray(currentSpace?.reference_chain) 
+          ? currentSpace.reference_chain 
+          : [];
+        const newChain = [...currentChain, refEntry];
 
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('spaces')
           .update({ 
             parent_id: targetSpaceId,
@@ -70,15 +73,18 @@ export function useSpaceOrganization() {
         const newPosition = (maxPos?.position || 0) + 1;
 
         // Update file reference chain
-        const { data: currentFile } = await supabase
+        const { data: currentFile } = await (supabase as any)
           .from('files')
           .select('reference_chain')
           .eq('id', itemId)
           .single();
 
-        const newChain = [...(currentFile?.reference_chain || []), refEntry];
+        const currentChain = Array.isArray(currentFile?.reference_chain)
+          ? currentFile.reference_chain
+          : [];
+        const newChain = [...currentChain, refEntry];
 
-        await supabase
+        await (supabase as any)
           .from('files')
           .update({ reference_chain: newChain })
           .eq('id', itemId);
@@ -161,7 +167,7 @@ export function useSpaceOrganization() {
       if (!user) throw new Error('Not authenticated');
 
       // Calculate coupling strength
-      const { data: couplingData, error: couplingError } = await supabase
+      const { data: couplingData, error: couplingError } = await (supabase as any)
         .rpc('calculate_coupling_strength', {
           _from_space_id: fromSpaceId,
           _to_space_id: toSpaceId,

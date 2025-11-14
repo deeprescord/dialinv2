@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,9 +20,9 @@ export interface MetadataItem {
   id: string;
   file_id: string;
   hashtags: string[];
-  dial_values: Record<string, any>;
-  detected_objects: any[];
-  detected_people: any[];
+  dial_values: Json;
+  detected_objects: Json;
+  detected_people: Json;
   ai_confidence: number;
   created_at: string;
 }

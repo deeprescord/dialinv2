@@ -13,35 +13,11 @@ export function useSpaceOrganization() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create reference chain entry
-      const refEntry = {
-        userId: user.id,
-        timestamp: new Date().toISOString(),
-        action: 'add',
-        toSpaceId: targetSpaceId,
-      };
-
       if (isSpace) {
-        // For spaces, update parent and append to reference chain
-        const { data: currentSpace, error: fetchError } = await supabase
-          .from('spaces')
-          .select('reference_chain')
-          .eq('id', itemId)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        const currentChain = Array.isArray(currentSpace?.reference_chain) 
-          ? currentSpace.reference_chain 
-          : [];
-        const updatedChain = [...currentChain, refEntry];
-
+        // For spaces, just update parent
         const { error } = await supabase
           .from('spaces')
-          .update({ 
-            parent_id: targetSpaceId,
-            reference_chain: updatedChain,
-          })
+          .update({ parent_id: targetSpaceId })
           .eq('id', itemId);
         
         if (error) throw error;
@@ -69,27 +45,6 @@ export function useSpaceOrganization() {
           .single();
 
         const newPosition = (maxPos?.position || 0) + 1;
-
-        // Update file reference chain
-        const { data: currentFile, error: fetchError } = await supabase
-          .from('files')
-          .select('reference_chain')
-          .eq('id', itemId)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        const currentChain = Array.isArray(currentFile?.reference_chain)
-          ? currentFile.reference_chain
-          : [];
-        const updatedChain = [...currentChain, refEntry];
-
-        const { error: updateError } = await supabase
-          .from('files')
-          .update({ reference_chain: updatedChain })
-          .eq('id', itemId);
-
-        if (updateError) throw updateError;
 
         const { error } = await supabase
           .from('space_files')
@@ -168,25 +123,12 @@ export function useSpaceOrganization() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Calculate coupling strength using UIP principles
-      const { data: couplingData } = await supabase.rpc('calculate_coupling_strength', {
-        _from_space_id: fromSpaceId,
-        _to_space_id: toSpaceId,
-      });
-
-      const coupling = couplingData || 0.0;
-
       const { error } = await supabase
         .from('space_connections')
         .insert({
           from_space_id: fromSpaceId,
           to_space_id: toSpaceId,
           created_by: user.id,
-          coupling_strength: coupling,
-          interaction_data: {
-            timestamp: new Date().toISOString(),
-            userId: user.id,
-          },
         });
 
       if (error) {

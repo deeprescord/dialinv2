@@ -56,6 +56,7 @@ interface SpacesBarProps {
   onToggleAIChat?: () => void;
   onToggleChatWindow?: () => void;
   onToggleAddModal?: () => void;
+  onToggleDOSPanel?: () => void;
   videoControlsState?: {
     isPlaying: boolean;
     currentTime: number;
@@ -111,6 +112,7 @@ export function SpacesBar({
   onToggleAIChat,
   onToggleChatWindow,
   onToggleAddModal,
+  onToggleDOSPanel,
   videoControlsState,
   onVideoPlayPause,
   onVideoSeek,

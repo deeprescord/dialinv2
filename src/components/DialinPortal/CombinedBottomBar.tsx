@@ -40,6 +40,7 @@ interface CombinedBottomBarProps {
   showAIChat?: boolean;
   onToggleAIChat?: () => void;
   onToggleAddModal?: () => void;
+  onToggleDOSPanel?: () => void;
   videoControlsState?: {
     isPlaying: boolean;
     currentTime: number;
@@ -95,6 +96,7 @@ export function CombinedBottomBar({
   showAIChat,
   onToggleAIChat,
   onToggleAddModal,
+  onToggleDOSPanel,
   videoControlsState,
   onVideoPlayPause,
   onVideoSeek,
@@ -189,6 +191,7 @@ export function CombinedBottomBar({
           onToggleAIChat={onToggleAIChat}
           onToggleChatWindow={onToggleChatWindow}
           onToggleAddModal={onToggleAddModal}
+          onToggleDOSPanel={onToggleDOSPanel}
           videoControlsState={videoControlsState}
           onVideoPlayPause={onVideoPlayPause}
           onVideoSeek={onVideoSeek}

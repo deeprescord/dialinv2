@@ -113,14 +113,18 @@ export type Database = {
       }
       files: {
         Row: {
+          coupling_strength: number | null
           created_at: string
           duration: number | null
           file_size: number
           file_type: string
           id: string
+          interaction_potential: number | null
           mime_type: string | null
           original_name: string
           owner_id: string
+          p_value: number | null
+          reference_chain: Json | null
           rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
@@ -134,14 +138,18 @@ export type Database = {
           y_axis_offset: number | null
         }
         Insert: {
+          coupling_strength?: number | null
           created_at?: string
           duration?: number | null
           file_size: number
           file_type: string
           id?: string
+          interaction_potential?: number | null
           mime_type?: string | null
           original_name: string
           owner_id: string
+          p_value?: number | null
+          reference_chain?: Json | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
@@ -155,14 +163,18 @@ export type Database = {
           y_axis_offset?: number | null
         }
         Update: {
+          coupling_strength?: number | null
           created_at?: string
           duration?: number | null
           file_size?: number
           file_type?: string
           id?: string
+          interaction_potential?: number | null
           mime_type?: string | null
           original_name?: string
           owner_id?: string
+          p_value?: number | null
+          reference_chain?: Json | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
@@ -319,24 +331,30 @@ export type Database = {
       }
       space_connections: {
         Row: {
+          coupling_strength: number | null
           created_at: string
           created_by: string
           from_space_id: string
           id: string
+          interaction_data: Json | null
           to_space_id: string
         }
         Insert: {
+          coupling_strength?: number | null
           created_at?: string
           created_by: string
           from_space_id: string
           id?: string
+          interaction_data?: Json | null
           to_space_id: string
         }
         Update: {
+          coupling_strength?: number | null
           created_at?: string
           created_by?: string
           from_space_id?: string
           id?: string
+          interaction_data?: Json | null
           to_space_id?: string
         }
         Relationships: [
@@ -400,19 +418,24 @@ export type Database = {
       }
       spaces: {
         Row: {
+          coupling_strength: number | null
           cover_url: string | null
           created_at: string
+          creator_id: string | null
           description: string | null
           flip_horizontal: boolean | null
           flip_vertical: boolean | null
           horizontal_flip: boolean | null
           id: string
+          interaction_potential: number | null
           is_home: boolean
           is_muted: boolean | null
           is_public: boolean | null
           name: string
+          p_value: number | null
           parent_id: string | null
           position: number | null
+          reference_chain: Json | null
           rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
@@ -428,19 +451,24 @@ export type Database = {
           y_axis_offset: number | null
         }
         Insert: {
+          coupling_strength?: number | null
           cover_url?: string | null
           created_at?: string
+          creator_id?: string | null
           description?: string | null
           flip_horizontal?: boolean | null
           flip_vertical?: boolean | null
           horizontal_flip?: boolean | null
           id?: string
+          interaction_potential?: number | null
           is_home?: boolean
           is_muted?: boolean | null
           is_public?: boolean | null
           name: string
+          p_value?: number | null
           parent_id?: string | null
           position?: number | null
+          reference_chain?: Json | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
@@ -456,19 +484,24 @@ export type Database = {
           y_axis_offset?: number | null
         }
         Update: {
+          coupling_strength?: number | null
           cover_url?: string | null
           created_at?: string
+          creator_id?: string | null
           description?: string | null
           flip_horizontal?: boolean | null
           flip_vertical?: boolean | null
           horizontal_flip?: boolean | null
           id?: string
+          interaction_potential?: number | null
           is_home?: boolean
           is_muted?: boolean | null
           is_public?: boolean | null
           name?: string
+          p_value?: number | null
           parent_id?: string | null
           position?: number | null
+          reference_chain?: Json | null
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
@@ -493,23 +526,60 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["interaction_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["interaction_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["interaction_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      append_reference: {
+        Args: { current_chain: Json; new_ref: Json }
+        Returns: Json
+      }
+      calculate_coupling_strength: {
+        Args: { _from_space_id: string; _to_space_id: string }
+        Returns: number
+      }
+      calculate_interaction_potential: {
+        Args: { p_val: number }
+        Returns: number
+      }
       file_shared_with_user: {
         Args: { _file_id: string; _user_id: string }
         Returns: boolean
       }
       generate_share_slug: { Args: { space_name: string }; Returns: string }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["interaction_role"]
+      }
       user_owns_file: {
         Args: { _file_id: string; _user_id: string }
         Returns: boolean
       }
     }
     Enums: {
-      [_ in never]: never
+      interaction_role: "artist" | "viewer" | "creator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -636,6 +706,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      interaction_role: ["artist", "viewer", "creator"],
+    },
   },
 } as const

@@ -25,6 +25,7 @@ import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { SpaceSelectionModal } from '@/components/DialinPortal/SpaceSelectionModal';
 import { MetadataAdjustmentPanel } from '@/components/DialinPortal/MetadataAdjustmentPanel';
 import { UploadLoader } from '@/components/DialinPortal/UploadLoader';
+import { DOSPanel } from '@/components/DialinPortal/DOSPanel';
 import { useContactFieldSharing } from '@/hooks/useContactFieldSharing';
 import { useFileUpload, AIMetadata } from '@/hooks/useFileUpload';
 import { useSpacesContext } from '@/contexts/SpacesContext';
@@ -183,6 +184,7 @@ export default function SpacePage() {
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [showDOSPanel, setShowDOSPanel] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isWebLinkModalOpen, setIsWebLinkModalOpen] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
@@ -375,10 +377,11 @@ export default function SpacePage() {
   };
 
   // Panel management
-  const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
+  const openPanel = (panelName: 'chat' | 'ai' | 'add' | 'dos') => {
     setShowChatWindow(panelName === 'chat');
     setShowAIChat(panelName === 'ai');
     setIsAddModalOpen(panelName === 'add');
+    setShowDOSPanel(panelName === 'dos');
   };
 
   // Handle add option selection
@@ -1087,6 +1090,10 @@ export default function SpacePage() {
     if (showChatWindow) setShowChatWindow(false);
   };
 
+  const handleToggleDOSPanel = () => {
+    setShowDOSPanel(prev => !prev);
+  };
+
   // Handle contact click from chat window
   const handleChatContactClick = (contactId: string) => {
     const contact = pinnedContacts.find(c => c.id === contactId);
@@ -1308,6 +1315,7 @@ export default function SpacePage() {
           spaceId={spaceId}
           isPublic={spaces.find(s => s.id === spaceId)?.isPublic}
           shareSlug={spaces.find(s => s.id === spaceId)?.shareSlug}
+          onToggleDOSPanel={handleToggleDOSPanel}
         />
 
         <MobileTabBar
@@ -1458,6 +1466,7 @@ export default function SpacePage() {
             showAIChat={showAIChat}
             onToggleAIChat={handleToggleAIChat}
             onToggleAddModal={() => setIsAddModalOpen(prev => !prev)}
+            onToggleDOSPanel={handleToggleDOSPanel}
             videoControlsState={videoState}
             onVideoPlayPause={handleVideoPlayPause}
             onVideoSeek={handleVideoSeek}
@@ -1563,6 +1572,14 @@ export default function SpacePage() {
           isOpen={showAIChat}
           onClose={() => setShowAIChat(false)}
         />
+
+        {showDOSPanel && (
+          <DOSPanel
+            onClose={() => setShowDOSPanel(false)}
+            spaceId={spaceId}
+            isSpace={true}
+          />
+        )}
 
         <AddContactPanel
           isOpen={showAddPanel}

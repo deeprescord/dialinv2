@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { Search, Bell, Users, Video, Music, MapPin, Home as HomeIcon, Settings } from '../icons';
-import { ArrowUpDown, Film, ScanEye } from 'lucide-react';
+import { ArrowUpDown, Film, ScanEye, Network } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { UserDropdown } from './UserDropdown';
@@ -29,6 +29,7 @@ interface TopNavProps {
   spaceId?: string;
   isPublic?: boolean;
   shareSlug?: string | null;
+  onToggleDOSPanel?: () => void;
 }
 
 const tabs = [
@@ -41,7 +42,7 @@ const tabs = [
 
 const filterTabs = ['videos', 'music', 'locations'];
 
-export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel, sortOrder = 'custom', onSortChange, movieMode = false, onMovieModeToggle, spaceId, isPublic, shareSlug }: TopNavProps) {
+export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount, show360, onOpen360Settings, userPoints = 0, onOpenAddPanel, sortOrder = 'custom', onSortChange, movieMode = false, onMovieModeToggle, spaceId, isPublic, shareSlug, onToggleDOSPanel }: TopNavProps) {
   const navigate = useNavigate();
   const [showMobileTabs, setShowMobileTabs] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -165,6 +166,19 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
                 onClick={onMovieModeToggle}
               >
                 <Film size={18} className={movieMode ? "text-primary" : "text-white"} />
+              </Button>
+            )}
+            
+            {/* DOS Panel Toggle */}
+            {onToggleDOSPanel && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={onToggleDOSPanel}
+                title="DOS Panel"
+              >
+                <Network size={18} className="text-orange-400" />
               </Button>
             )}
             

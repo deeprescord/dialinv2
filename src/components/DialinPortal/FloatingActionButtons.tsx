@@ -2,17 +2,20 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
+import { Network } from 'lucide-react';
 
 interface FloatingActionButtonsProps {
   onAddClick: () => void;
   onAIClick: () => void;
   onChatClick: () => void;
+  onDOSClick: () => void;
 }
 
 export function FloatingActionButtons({
   onAddClick,
   onAIClick,
-  onChatClick
+  onChatClick,
+  onDOSClick
 }: FloatingActionButtonsProps) {
   const buttonSize = 56; // Compact size
   const iconSize = 24;
@@ -70,6 +73,24 @@ export function FloatingActionButtons({
           aria-label="Chat"
         >
           <MessageSquare size={iconSize} className="text-purple-400" />
+        </Button>
+      </motion.div>
+
+      {/* DOS Button */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2, delay: 0.15 }}
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center justify-center glass-card border-white/30 hover:bg-white/10 hover:border-primary/50 rounded-xl shadow-lg backdrop-blur-md"
+          style={{ width: `${buttonSize}px`, height: `${buttonSize}px` }}
+          onClick={onDOSClick}
+          aria-label="DOS Panel"
+        >
+          <Network size={iconSize} className="text-orange-400" />
         </Button>
       </motion.div>
     </div>

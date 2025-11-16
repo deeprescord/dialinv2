@@ -8,6 +8,7 @@ import { SkyboxViewer } from './SkyboxViewer';
 import audioVisualizer from '@/assets/audio-visualizer.gif';
 import { getAssetUrl, getRefreshTiming } from '@/lib/signedUrl';
 import { SetThumbnailModal } from './SetThumbnailModal';
+import { PdfViewer } from './PdfViewer';
 
 interface ContentViewerProps {
   content: {
@@ -618,11 +619,12 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
       {/* PDF Content */}
       {isPDF && contentUrl && (
-        <div className="absolute inset-0 w-full h-full bg-background">
-          <iframe
-            src={contentUrl}
+        <div className="absolute inset-0 w-full h-full bg-background overflow-auto">
+          <PdfViewer
+            url={contentUrl}
+            zoom={1}
             className="w-full h-full"
-            title={content.original_name}
+            onError={(error) => console.error('PDF load error:', error)}
           />
         </div>
       )}

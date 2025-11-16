@@ -76,7 +76,7 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto h-full flex flex-col p-6">
+      <div className="container mx-auto h-full flex flex-col p-6 max-w-5xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>

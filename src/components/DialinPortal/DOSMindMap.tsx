@@ -56,11 +56,16 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     canvas.height = Math.floor(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Clear and apply transforms
+    // Clear and apply transforms centered on canvas
     ctx.clearRect(0, 0, width, height);
     ctx.save();
-    ctx.translate(panX, panY);
+    
+    // Center the zoom transform
+    const zoomCenterX = width / 2;
+    const zoomCenterY = height / 2;
+    ctx.translate(zoomCenterX + panX, zoomCenterY + panY);
     ctx.scale(zoom, zoom);
+    ctx.translate(-zoomCenterX, -zoomCenterY);
 
     // Extract unique hashtags and their connections
     const tagMap = new Map<string, Set<string>>();

@@ -52,8 +52,8 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     });
 
     // Draw connections
-    ctx.strokeStyle = 'hsl(var(--muted-foreground) / 0.2)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'hsl(var(--muted-foreground) / 0.4)';
+    ctx.lineWidth = 1.5;
     tagMap.forEach((connections, tag) => {
       const pos = nodePositions.get(tag);
       if (!pos) return;
@@ -74,17 +74,26 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
       const connectionCount = tagMap.get(tag)?.size || 0;
       const nodeRadius = 8 + connectionCount * 2;
 
+      // Draw glow effect
+      ctx.fillStyle = 'hsl(var(--primary) / 0.3)';
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, nodeRadius + 4, 0, Math.PI * 2);
+      ctx.fill();
+
       // Draw node circle
       ctx.fillStyle = 'hsl(var(--primary))';
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, nodeRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw label
+      // Draw label with shadow for better readability
+      ctx.shadowColor = 'hsl(var(--background))';
+      ctx.shadowBlur = 3;
       ctx.fillStyle = 'hsl(var(--foreground))';
-      ctx.font = '12px sans-serif';
+      ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(tag, pos.x, pos.y - nodeRadius - 5);
+      ctx.shadowBlur = 0;
     });
   }, [metadata, loading]);
 

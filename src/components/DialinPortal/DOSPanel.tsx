@@ -31,9 +31,11 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
   const [metadata, setMetadata] = useState<MetadataItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCompact, setIsCompact] = useState(false);
+  const [headerMedia, setHeaderMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
 
   useEffect(() => {
     loadMetadata();
+    loadHeaderMedia();
   }, [itemId, spaceId]);
 
   const loadMetadata = async () => {
@@ -75,35 +77,98 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
     }
   };
 
+  const loadHeaderMedia = async () => {
+    try {
+      if (isSpace && spaceId) {
+        // Load space cover/thumbnail
+        const { data: space } = await supabase
+          .from('spaces')
+          .select('cover_url, thumbnail_url')
+          .eq('id', spaceId)
+          .single();
+        
+        if (space?.cover_url) {
+          const isVideo = space.cover_url.match(/\.(mp4|webm|ogg)$/i);
+          setHeaderMedia({ url: space.cover_url, type: isVideo ? 'video' : 'image' });
+        } else if (space?.thumbnail_url) {
+          setHeaderMedia({ url: space.thumbnail_url, type: 'image' });
+        }
+      } else if (itemId) {
+        // Load item thumbnail
+        const { data: file } = await supabase
+          .from('files')
+          .select('thumbnail_path, storage_path, file_type')
+          .eq('id', itemId)
+          .single();
+        
+        if (file?.thumbnail_path) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('files')
+            .getPublicUrl(file.thumbnail_path);
+          setHeaderMedia({ url: publicUrl, type: 'image' });
+        } else if (file?.file_type === 'video' && file?.storage_path) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('files')
+            .getPublicUrl(file.storage_path);
+          setHeaderMedia({ url: publicUrl, type: 'video' });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading header media:', error);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[120] bg-background/95 backdrop-blur-sm">
       <div className={`container mx-auto h-full flex flex-col max-w-4xl max-h-[92vh] overflow-y-auto ${
         isCompact ? 'p-3 md:p-4 mt-3 md:mt-4' : 'p-6 md:p-8 mt-6 md:mt-8'
       }`}>
         {/* Header */}
-        <div className={`sticky top-0 z-10 bg-background/95 backdrop-blur flex items-center justify-between border-b border-border ${
+        <div className={`sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border ${
           isCompact ? 'mb-3 md:mb-4 pb-2' : 'mb-6 md:mb-8 pb-3 md:pb-4'
         }`}>
-          <div className="flex-1 min-w-0 pr-4">
-            <h1 className={`font-bold text-foreground ${isCompact ? 'text-lg mb-0.5' : 'text-2xl mb-1'}`}>
-              Data Observation System
-            </h1>
-            <p className={`text-muted-foreground ${isCompact ? 'text-xs' : 'text-sm'}`}>
-              {isSpace ? 'Analyzing space metadata' : 'Analyzing item metadata'}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button 
-              onClick={() => setIsCompact(!isCompact)} 
-              variant="ghost" 
-              size="icon"
-              title={isCompact ? "Expand view" : "Compact view"}
-            >
-              {isCompact ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-            </Button>
-            <Button onClick={onClose} variant="ghost" size="icon">
-              <X className="h-5 w-5" />
-            </Button>
+          {headerMedia && (
+            <div className={`w-full rounded-lg overflow-hidden mb-3 ${isCompact ? 'h-24' : 'h-32'}`}>
+              {headerMedia.type === 'video' ? (
+                <video 
+                  src={headerMedia.url} 
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                />
+              ) : (
+                <img 
+                  src={headerMedia.url} 
+                  alt="Header" 
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0 pr-4">
+              <h1 className={`font-bold text-foreground ${isCompact ? 'text-lg mb-0.5' : 'text-2xl mb-1'}`}>
+                Data Observation System
+              </h1>
+              <p className={`text-muted-foreground ${isCompact ? 'text-xs' : 'text-sm'}`}>
+                {isSpace ? 'Analyzing space metadata' : 'Analyzing item metadata'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button 
+                onClick={() => setIsCompact(!isCompact)} 
+                variant="ghost" 
+                size="icon"
+                title={isCompact ? "Expand view" : "Compact view"}
+              >
+                {isCompact ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+              </Button>
+              <Button onClick={onClose} variant="ghost" size="icon">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
 

@@ -438,7 +438,30 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                     </div>
                   </>
                 )}
-              </div>
+                </TabsContent>
+
+                {/* Dials Tab */}
+                <TabsContent value="dials" className="flex-1 overflow-y-auto p-4 mt-0">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold mb-4">Data Observation System</h3>
+                    
+                    {loadingMetadata ? (
+                      <div className="text-center py-8 text-muted-foreground">Loading metadata...</div>
+                    ) : metadata.length > 0 ? (
+                      <>
+                        <DOSMindMap metadata={metadata} loading={loadingMetadata} />
+                        <DOSHeatMap metadata={metadata} loading={loadingMetadata} />
+                        <DOSCharts metadata={metadata} loading={loadingMetadata} />
+                        <DOSVennDiagram metadata={metadata} loading={loadingMetadata} />
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No metadata available. Upload and analyze items to see dial data.
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </Card>
           </motion.div>
         </div>

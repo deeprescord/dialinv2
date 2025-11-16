@@ -619,6 +619,17 @@ export default function SpacePage() {
         for (const file of files) {
           const result = await uploadFile(file, spaceId);
           if (result) {
+            // Auto-analyze and save metadata without showing panel
+            const aiMetadata = await analyzeWithAI(file, result.id);
+            if (aiMetadata) {
+              await saveMetadata(
+                result.id,
+                aiMetadata.hashtags,
+                aiMetadata.dial_values,
+                !aiMetadata.fallback,
+                aiMetadata.confidence
+              );
+            }
             uploadResults.push({
               fileId: result.id,
               fileName: file.name,
@@ -627,32 +638,9 @@ export default function SpacePage() {
           }
         }
         
-        // Set up queue and show panel for first file
         if (uploadResults.length > 0) {
-          const [firstUpload, ...remainingUploads] = uploadResults;
-          setUploadQueue(remainingUploads);
-          
-          // Analyze first file with AI
-          const aiMetadata = await analyzeWithAI(
-            files[0],
-            firstUpload.fileId
-          );
-          
-          setPendingFile({
-            file: {
-              id: firstUpload.fileId,
-              original_name: firstUpload.fileName,
-              file_type: firstUpload.fileType
-            },
-            metadata: aiMetadata || {
-              hashtags: [],
-              dial_values: {},
-              suggested_dials: [],
-              suggested_spaces: [],
-              confidence: 0,
-              fallback: true
-            }
-          });
+          toast.success(`Uploaded ${uploadResults.length} file(s) successfully`);
+          if (refetch) refetch();
         }
       } catch (error) {
         console.error('Error uploading files:', error);
@@ -678,8 +666,18 @@ export default function SpacePage() {
       for (const file of droppedFiles) {
         const result = await uploadFile(file, selectedSpaceId);
         if (result) {
+          // Auto-analyze and save metadata without showing panel
+          const aiMetadata = await analyzeWithAI(file, result.id);
+          if (aiMetadata) {
+            await saveMetadata(
+              result.id,
+              aiMetadata.hashtags,
+              aiMetadata.dial_values,
+              !aiMetadata.fallback,
+              aiMetadata.confidence
+            );
+          }
           uploadResults.push({
-            file,
             fileId: result.id,
             fileName: file.name,
             fileType: result.file_type
@@ -687,36 +685,9 @@ export default function SpacePage() {
         }
       }
       
-      // Set up queue and show panel for first file
       if (uploadResults.length > 0) {
-        const [firstUpload, ...remainingUploads] = uploadResults;
-        setUploadQueue(remainingUploads.map(u => ({
-          fileId: u.fileId,
-          fileName: u.fileName,
-          fileType: u.fileType
-        })));
-        
-        // Analyze first file with AI
-        const aiMetadata = await analyzeWithAI(
-          firstUpload.file,
-          firstUpload.fileId
-        );
-        
-        setPendingFile({
-          file: {
-            id: firstUpload.fileId,
-            original_name: firstUpload.fileName,
-            file_type: firstUpload.fileType
-          },
-          metadata: aiMetadata || {
-            hashtags: [],
-            dial_values: {},
-            suggested_dials: [],
-            suggested_spaces: [],
-            confidence: 0,
-            fallback: true
-          }
-        });
+        toast.success(`Uploaded ${uploadResults.length} file(s) successfully`);
+        if (refetch) refetch();
         
         // Navigate to the selected space to view uploaded files
         if (selectedSpaceId !== 'lobby' && selectedSpaceId !== spaceId) {

@@ -31,6 +31,7 @@ interface MediaGridProps {
   onMove?: (itemId: string, isSpace: boolean) => void;
   onConnect?: (itemId: string) => void;
   onDelete?: (itemId: string, isSpace: boolean) => void;
+  onEditMetadata?: (itemId: string) => void;
 }
 
 export function MediaGrid({ 
@@ -43,7 +44,8 @@ export function MediaGrid({
   onAdd,
   onMove,
   onConnect,
-  onDelete
+  onDelete,
+  onEditMetadata
 }: MediaGridProps) {
   
   const sensors = useSensors(
@@ -134,7 +136,7 @@ export function MediaGrid({
           <div key={item.id}>{cardContent}</div>
         );
 
-        const withContextMenu = (onAdd || onMove || onConnect || onDelete) ? (
+        const withContextMenu = (onAdd || onMove || onConnect || onDelete || onEditMetadata) ? (
           <OrganizationMenu
             key={item.id}
             itemId={item.id}
@@ -143,6 +145,7 @@ export function MediaGrid({
             onMove={onMove ? () => onMove(item.id, isSpace) : undefined}
             onConnect={isSpace && onConnect ? () => onConnect(item.id) : undefined}
             onDelete={onDelete ? () => onDelete(item.id, isSpace) : undefined}
+            onEditMetadata={!isSpace && onEditMetadata ? () => onEditMetadata(item.id) : undefined}
             isDraggable={enableDragDrop}
           >
             {wrappedCard}

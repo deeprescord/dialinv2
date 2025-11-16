@@ -83,6 +83,7 @@ interface HomeViewProps {
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
   isPublicSpace?: boolean;
   showPlayAllButton?: boolean;
+  onEditMetadata?: (itemId: string) => void;
 }
 
 export function HomeView({ 
@@ -524,6 +525,7 @@ export function HomeView({
           onItem360Toggle={onItem360Toggle}
           isPublicSpace={isPublicSpace}
           onMovieModeToggle={onMovieModeToggle}
+          onEditMetadata={onEditMetadata}
         />
       )}
     </motion.div>

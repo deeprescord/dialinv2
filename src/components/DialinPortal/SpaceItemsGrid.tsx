@@ -19,6 +19,7 @@ interface SpaceItemsGridProps {
   showSort?: boolean;
   enableDragDrop?: boolean;
   isPublicSpace?: boolean;
+  onEditMetadata?: (itemId: string) => void;
 }
 
 export function SpaceItemsGrid({ 
@@ -28,7 +29,8 @@ export function SpaceItemsGrid({
   onDOSOpen,
   showSort = true,
   enableDragDrop = true,
-  isPublicSpace = false
+  isPublicSpace = false,
+  onEditMetadata
 }: SpaceItemsGridProps) {
   const { items, loading, refetch } = useSpaceItems(spaceId);
   const { addToSpace, moveToSpace, connectSpaces, reorderItems } = useSpaceOrganization();
@@ -367,6 +369,7 @@ export function SpaceItemsGrid({
         onMove={handleOrgMove}
         onConnect={handleOrgConnect}
         onDelete={handleOrgDelete}
+        onEditMetadata={onEditMetadata}
       />
 
       <SpacePickerModal

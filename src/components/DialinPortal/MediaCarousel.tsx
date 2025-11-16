@@ -1,16 +1,19 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLongPress } from '@/hooks/useLongPress';
 
 interface MediaCarouselProps {
   items: string[];
   mediaTypes: ('image' | 'video')[];
+  itemIds?: string[];
   onSelect: (url: string) => void;
   onRemove: (index: number) => void;
+  onDOSOpen?: (itemId: string) => void;
   selectedUrl?: string;
 }
 
-export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedUrl }: MediaCarouselProps) {
+export function MediaCarousel({ items, mediaTypes, itemIds, onSelect, onRemove, onDOSOpen, selectedUrl }: MediaCarouselProps) {
   if (items.length === 0) {
     return (
       <div className="flex items-center justify-center h-24 text-xs text-white/40">
@@ -21,21 +24,35 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 pt-2 px-2">
-      {items.map((url, index) => (
-        <motion.div
-          key={url}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative group shrink-0"
-        >
-          <button
-            onClick={() => onSelect(url)}
-            className={`relative w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${
-              selectedUrl === url
-                ? 'border-primary shadow-lg shadow-primary/50'
-                : 'border-white/10 hover:border-white/30'
-            }`}
+      {items.map((url, index) => {
+        const itemId = itemIds?.[index];
+        
+        // Long press handlers for DOS panel
+        const longPressHandlers = useLongPress({
+          onLongPress: () => {
+            if (onDOSOpen && itemId) {
+              onDOSOpen(itemId);
+            }
+          },
+          onClick: () => onSelect(url),
+          delay: 500
+        });
+
+        return (
+          <motion.div
+            key={url}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative group shrink-0"
           >
+            <div
+              {...longPressHandlers}
+              className={`relative w-24 h-24 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                selectedUrl === url
+                  ? 'border-primary shadow-lg shadow-primary/50'
+                  : 'border-white/10 hover:border-white/30'
+              }`}
+            >
             {mediaTypes[index] === 'video' ? (
               <video
                 src={url}
@@ -65,18 +82,19 @@ export function MediaCarousel({ items, mediaTypes, onSelect, onRemove, selectedU
                 </div>
               </div>
             )}
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(index);
-            }}
-            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <X className="w-4 h-4 text-white" />
-          </button>
-        </motion.div>
-      ))}
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(index);
+              }}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

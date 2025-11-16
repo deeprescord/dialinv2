@@ -15,6 +15,7 @@ interface SpaceItemsGridProps {
   spaceId?: string;
   onItemClick?: (item: any) => void;
   onItemLongPress?: (item: any) => void;
+  onDOSOpen?: (itemId: string, isSpace: boolean) => void;
   showSort?: boolean;
   enableDragDrop?: boolean;
   isPublicSpace?: boolean;
@@ -24,6 +25,7 @@ export function SpaceItemsGrid({
   spaceId, 
   onItemClick,
   onItemLongPress,
+  onDOSOpen,
   showSort = true,
   enableDragDrop = true,
   isPublicSpace = false
@@ -358,6 +360,7 @@ export function SpaceItemsGrid({
         items={gridItems}
         onItemClick={onItemClick || (() => {})}
         onItemLongPress={onItemLongPress}
+        onDOSOpen={onDOSOpen}
         enableDragDrop={enableDragDrop && sortOrder === 'custom'}
         onReorder={handleReorder}
         onAdd={handleOrgAdd}

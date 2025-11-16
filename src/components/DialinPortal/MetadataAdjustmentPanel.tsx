@@ -11,6 +11,9 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { SpacesBar } from './SpacesBar';
+import { MultiSelectDial } from './MultiSelectDial';
+import { CustomDialInput } from './CustomDialInput';
+import { getDialTaxonomy } from '@/data/dialTaxonomies';
 
 interface DialSuggestion {
   key: string;
@@ -74,6 +77,10 @@ export function MetadataAdjustmentPanel({
   const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [customDials, setCustomDials] = useState<Array<{ id: string; name: string }>>([]);
+  
+  // Get content type for custom dials
+  const contentType = fileType === 'audio' ? 'music' : fileType;
 
   const moodOptions = ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'];
   const vibeOptions = ['chill', 'energetic', 'dark', 'uplifting', 'contemplative', 'futuristic', 'neutral'];
@@ -150,15 +157,26 @@ export function MetadataAdjustmentPanel({
     setDialValues(rest);
   };
 
+  const handleCustomDialsChange = (dials: Array<{ id: string; name: string }>) => {
+    setCustomDials(dials);
+  };
+
   const handleSave = () => {
     if (!selectedSpaceId) {
       toast.error('Please select a space');
       setCurrentStep(3);
       return;
     }
+    
+    // Build final dial values including custom dials
+    const finalDialValues = {
+      ...dialValues,
+      custom: customDials.map(d => d.name)
+    };
+    
     onSave({
       hashtags,
-      dialValues,
+      dialValues: finalDialValues,
       selectedSpaceId,
       location: location || undefined
     });
@@ -442,23 +460,36 @@ export function MetadataAdjustmentPanel({
                                   className="py-3"
                                 />
                               </div>
-                            ) : (
-                              <Select
-                                value={dialValues[dial.key] || dial.value}
-                                onValueChange={(value) => handleDialChange(dial.key, value)}
-                              >
-                                <SelectTrigger className="bg-background h-12 text-base border-2 border-primary/30">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {getDialOptions(dial).map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
+                            ) : dial.options ? (
+                              (() => {
+                                const dialDef = getDialTaxonomy(fileType, '').find(d => d.key === dial.key);
+                                return dialDef?.multiSelect ? (
+                                  <MultiSelectDial
+                                    label={dial.label}
+                                    options={dial.options}
+                                    value={Array.isArray(dialValues[dial.key]) ? dialValues[dial.key] : (dialValues[dial.key] ? [dialValues[dial.key]] : [])}
+                                    onChange={(values) => handleDialChange(dial.key, values)}
+                                    placeholder={`Select ${dial.label.toLowerCase()}...`}
+                                  />
+                                ) : (
+                                  <Select
+                                    value={dialValues[dial.key] || dial.value}
+                                    onValueChange={(value) => handleDialChange(dial.key, value)}
+                                  >
+                                    <SelectTrigger className="bg-background h-12 text-base border-2 border-primary/30">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {dial.options.map((option) => (
+                                        <SelectItem key={option} value={option} className="text-base">
+                                          {option}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                );
+                              })()
+                            ) : null}
                           </motion.div>
                         ))}
                       </div>
@@ -488,6 +519,23 @@ export function MetadataAdjustmentPanel({
                     </div>
                   </div>
                 )}
+
+                {/* Custom Dials Section */}
+                <div className="space-y-4 p-5 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30">
+                  <Label className="text-xl font-bold flex items-center gap-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    <Plus className="w-5 h-5 text-primary" />
+                    Custom Dials
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Add your own tags in any language to describe this content
+                  </p>
+                  <CustomDialInput
+                    contentType={contentType}
+                    fileId=""
+                    selectedDials={customDials}
+                    onDialsChange={handleCustomDialsChange}
+                  />
+                </div>
               </motion.div>
             )}
 

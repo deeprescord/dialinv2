@@ -33,6 +33,7 @@ interface BreadcrumbNavBarProps {
   showCreateSpaceModal?: boolean;
   showAIChat?: boolean;
   onToggleAIChat?: () => void;
+  onToggleDOSPanel?: () => void;
 }
 
 export function BreadcrumbNavBar({
@@ -59,7 +60,8 @@ export function BreadcrumbNavBar({
   onToggleChatWindow,
   showCreateSpaceModal,
   showAIChat,
-  onToggleAIChat
+  onToggleAIChat,
+  onToggleDOSPanel
 }: BreadcrumbNavBarProps) {
   const [contextMenu, setContextMenu] = useState<{
     space: Space;
@@ -335,6 +337,7 @@ export function BreadcrumbNavBar({
             on360RotationToggle={on360RotationToggle}
             on360RotationSpeedChange={on360RotationSpeedChange}
             on360RotationAxisChange={on360RotationAxisChange}
+            onToggleDOSPanel={onToggleDOSPanel}
             position={contextMenu.position}
           />
         )}

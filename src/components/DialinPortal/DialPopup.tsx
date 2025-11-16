@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye, Globe, Play } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye, Globe, Play, Sparkles } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,6 +54,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [loadingMetadata, setLoadingMetadata] = useState(false);
   const [activeTab, setActiveTab] = useState<'settings' | 'dials'>('settings');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [previewMetadata, setPreviewMetadata] = useState<{ hashtags: string[], dial_values: any } | null>(null);
 
   // ESC key handling
   useEffect(() => {
@@ -289,7 +290,43 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
 
       if (error) throw error;
 
-      toast.success('Analysis complete! Metadata has been generated.');
+      // Show preview instead of saving immediately
+      setPreviewMetadata({
+        hashtags: data.hashtags || [],
+        dial_values: data.dial_values || {}
+      });
+      
+      toast.success('Analysis complete! Review the results below.');
+    } catch (error) {
+      console.error('Error analyzing item:', error);
+      toast.error('Failed to analyze item. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveMetadata = async () => {
+    if (!previewMetadata) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Save the metadata
+      const { error } = await supabase
+        .from('item_metadata')
+        .upsert({
+          file_id: item.id,
+          user_id: user.id,
+          hashtags: previewMetadata.hashtags,
+          dial_values: previewMetadata.dial_values,
+          ai_generated: true,
+          ai_confidence: 0.8
+        });
+
+      if (error) throw error;
+
+      toast.success('Metadata saved successfully!');
       
       // Refresh metadata
       const { data: newMetadata, error: fetchError } = await supabase
@@ -300,12 +337,16 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
 
       if (fetchError) throw fetchError;
       setMetadata(newMetadata || []);
+      setPreviewMetadata(null);
     } catch (error) {
-      console.error('Error analyzing item:', error);
-      toast.error('Failed to analyze item. Please try again.');
-    } finally {
-      setIsAnalyzing(false);
+      console.error('Error saving metadata:', error);
+      toast.error('Failed to save metadata. Please try again.');
     }
+  };
+
+  const handleDiscardMetadata = () => {
+    setPreviewMetadata(null);
+    toast.info('Analysis results discarded');
   };
 
   const handleRenameSubmit = async () => {
@@ -496,6 +537,51 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                     
                     {loadingMetadata ? (
                       <div className="text-center py-8 text-muted-foreground">Loading metadata...</div>
+                    ) : previewMetadata ? (
+                      <div className="space-y-4">
+                        <div className="border border-border rounded-lg p-4 bg-muted/50">
+                          <h3 className="font-semibold mb-3 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            Generated Metadata Preview
+                          </h3>
+                          
+                          {previewMetadata.hashtags && previewMetadata.hashtags.length > 0 && (
+                            <div className="mb-4">
+                              <p className="text-sm font-medium mb-2">Hashtags:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {previewMetadata.hashtags.map((tag, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">
+                                    #{tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {previewMetadata.dial_values && Object.keys(previewMetadata.dial_values).length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium mb-2">Dial Values:</p>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                {Object.entries(previewMetadata.dial_values).map(([key, value]) => (
+                                  <div key={key} className="flex justify-between">
+                                    <span className="text-muted-foreground">{key}:</span>
+                                    <span className="font-medium">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="outline" onClick={handleDiscardMetadata}>
+                            Discard
+                          </Button>
+                          <Button onClick={handleSaveMetadata}>
+                            Save Metadata
+                          </Button>
+                        </div>
+                      </div>
                     ) : metadata.length > 0 ? (
                       <>
                         <DOSMindMap metadata={metadata} loading={loadingMetadata} />

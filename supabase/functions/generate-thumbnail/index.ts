@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getDocument } from "https://esm.sh/pdfjs-dist@4.10.38/legacy/build/pdf.mjs";
+
+// PDF.js worker configuration
+const PDFJS_WORKER_URL = "https://esm.sh/pdfjs-dist@4.10.38/legacy/build/pdf.worker.min.mjs";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,7 +29,7 @@ serve(async (req) => {
 
     let thumbnailPath: string | null = null;
 
-    // Only generate thumbnails for images and videos
+    // Generate thumbnails for images, videos, and PDFs
     if (mimeType.startsWith('image/')) {
       // Normalize storage path (remove bucket prefix if present)
       const normalizedPath = storagePath.replace(/^user-files\//, '');
@@ -58,6 +62,74 @@ serve(async (req) => {
       // This requires ffmpeg which isn't available in edge functions
       // So we'll skip video thumbnail generation for now
       thumbnailPath = null;
+    } else if (mimeType === 'application/pdf') {
+      console.log('Generating PDF thumbnail for:', fileId);
+      
+      // Normalize storage path
+      const normalizedPath = storagePath.replace(/^user-files\//, '');
+      
+      // Download the PDF file
+      const { data: pdfData, error: downloadError } = await supabaseClient.storage
+        .from('user-files')
+        .download(normalizedPath);
+
+      if (downloadError) throw downloadError;
+
+      // Convert blob to array buffer
+      const arrayBuffer = await pdfData.arrayBuffer();
+      
+      // Load PDF document
+      const loadingTask = getDocument({
+        data: new Uint8Array(arrayBuffer),
+        workerSrc: PDFJS_WORKER_URL,
+      });
+      
+      const pdf = await loadingTask.promise;
+      console.log('PDF loaded, pages:', pdf.numPages);
+      
+      // Get first page
+      const page = await pdf.getPage(1);
+      
+      // Set viewport scale for good quality thumbnail
+      const viewport = page.getViewport({ scale: 2.0 });
+      
+      // Create canvas using OffscreenCanvas (available in Deno)
+      const canvas = new OffscreenCanvas(viewport.width, viewport.height);
+      const context = canvas.getContext('2d');
+      
+      if (!context) throw new Error('Could not get canvas context');
+      
+      // Render PDF page to canvas
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+      }).promise;
+      
+      console.log('PDF page rendered to canvas');
+      
+      // Convert canvas to blob
+      const blob = await canvas.convertToBlob({
+        type: 'image/jpeg',
+        quality: 0.85,
+      });
+      
+      // Upload thumbnail to public bucket
+      const publicThumbnailPath = `thumbnails/${fileId}.jpg`;
+      
+      const { error: uploadError } = await supabaseClient.storage
+        .from('space-covers')
+        .upload(publicThumbnailPath, blob, {
+          contentType: 'image/jpeg',
+          upsert: true,
+          cacheControl: '3600'
+        });
+
+      if (uploadError) throw uploadError;
+      
+      console.log('PDF thumbnail uploaded:', publicThumbnailPath);
+
+      // Store path WITH bucket prefix for consistency
+      thumbnailPath = `space-covers/${publicThumbnailPath}`;
     }
 
     // Update the file record with PUBLIC thumbnail path

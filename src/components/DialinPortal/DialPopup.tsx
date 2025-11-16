@@ -9,6 +9,12 @@ import { Switch } from '../ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MetadataDetailsPanel } from './MetadataDetailsPanel';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { DOSMindMap } from './DOSMindMap';
+import { DOSHeatMap } from './DOSHeatMap';
+import { DOSCharts } from './DOSCharts';
+import { DOSVennDiagram } from './DOSVennDiagram';
+import type { MetadataItem } from './DOSPanel';
 
 interface DialPopupProps {
   isOpen: boolean;
@@ -44,6 +50,9 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [showingDetails, setShowingDetails] = useState(false);
   const [show360, setShow360] = useState(false);
   const [showPlayAllButton, setShowPlayAllButton] = useState(false);
+  const [metadata, setMetadata] = useState<MetadataItem[]>([]);
+  const [loadingMetadata, setLoadingMetadata] = useState(false);
+  const [activeTab, setActiveTab] = useState<'settings' | 'dials'>('settings');
 
   // ESC key handling
   useEffect(() => {
@@ -76,7 +85,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     }
   }, [isOpen]);
 
-  // Fetch 360 settings and play all button when popup opens
+  // Fetch 360 settings, play all button, and metadata when popup opens
   useEffect(() => {
     if (isOpen && item) {
       const fetchSettings = async () => {
@@ -95,7 +104,30 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
           console.error('Error fetching settings:', error);
         }
       };
+      
+      const fetchMetadata = async () => {
+        try {
+          setLoadingMetadata(true);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data, error } = await supabase
+            .from('item_metadata')
+            .select('*')
+            .eq('file_id', item.id)
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+          setMetadata(data || []);
+        } catch (error) {
+          console.error('Error loading metadata:', error);
+        } finally {
+          setLoadingMetadata(false);
+        }
+      };
+      
       fetchSettings();
+      fetchMetadata();
     }
   }, [isOpen, item]);
 
@@ -278,9 +310,9 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="relative z-10 w-80"
+            className="relative z-10 w-full max-w-4xl mx-4"
           >
-            <Card className="glass-card border-white/20 overflow-hidden">
+            <Card className="glass-card border-white/20 overflow-hidden max-h-[90vh] flex flex-col">
               <Button
                 variant="ghost"
                 size="sm"
@@ -290,17 +322,25 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                 <Close size={12} />
               </Button>
 
-              {/* Item Preview */}
-              <div className="relative">
+              {/* Header with Preview */}
+              <div className="relative flex-shrink-0">
                 <img
                   src={item.thumb}
                   alt={item.title}
-                  className="w-full h-40 object-cover"
+                  className="w-full h-32 object-cover"
                 />
               </div>
 
-              <div className="p-4">
-                {isRenaming ? (
+              {/* Tabs */}
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'settings' | 'dials')} className="flex-1 flex flex-col overflow-hidden">
+                <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                  <TabsTrigger value="dials">Dials</TabsTrigger>
+                </TabsList>
+
+                {/* Settings Tab */}
+                <TabsContent value="settings" className="flex-1 overflow-y-auto p-4 mt-0">
+                  {isRenaming ? (
                   <div className="space-y-3">
                     <h3 className="font-semibold">Rename Item</h3>
                     <Input

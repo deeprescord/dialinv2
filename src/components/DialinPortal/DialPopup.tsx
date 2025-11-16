@@ -53,6 +53,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [metadata, setMetadata] = useState<MetadataItem[]>([]);
   const [loadingMetadata, setLoadingMetadata] = useState(false);
   const [activeTab, setActiveTab] = useState<'settings' | 'dials'>('settings');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // ESC key handling
   useEffect(() => {
@@ -259,6 +260,40 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     }
   };
 
+  const handleAnalyzeItem = async () => {
+    try {
+      setIsAnalyzing(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to analyze items');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('analyze-item', {
+        body: { fileId: item.id }
+      });
+
+      if (error) throw error;
+
+      toast.success('Analysis complete! Metadata has been generated.');
+      
+      // Refresh metadata
+      const { data: newMetadata, error: fetchError } = await supabase
+        .from('item_metadata')
+        .select('*')
+        .eq('file_id', item.id)
+        .eq('user_id', user.id);
+
+      if (fetchError) throw fetchError;
+      setMetadata(newMetadata || []);
+    } catch (error) {
+      console.error('Error analyzing item:', error);
+      toast.error('Failed to analyze item. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleRenameSubmit = async () => {
     if (!newName.trim()) {
       toast.error('Name cannot be empty');
@@ -455,8 +490,17 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                         <DOSVennDiagram metadata={metadata} loading={loadingMetadata} />
                       </>
                     ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        No metadata available. Upload and analyze items to see dial data.
+                      <div className="text-center py-8 space-y-4">
+                        <p className="text-muted-foreground">
+                          No metadata available. Analyze this item to generate dial data.
+                        </p>
+                        <Button
+                          onClick={handleAnalyzeItem}
+                          disabled={isAnalyzing}
+                          className="mx-auto"
+                        >
+                          {isAnalyzing ? 'Analyzing...' : 'Analyze Item'}
+                        </Button>
                       </div>
                     )}
                   </div>

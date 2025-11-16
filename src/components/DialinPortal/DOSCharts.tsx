@@ -68,17 +68,25 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Top Hashtags Bar Chart */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Top Hashtags</h3>
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Top Hashtags</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topTags}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-              <YAxis stroke="hsl(var(--foreground))" />
+              <XAxis 
+                dataKey="name" 
+                stroke="hsl(var(--foreground))" 
+                tick={{ fill: 'hsl(var(--foreground))' }}
+              />
+              <YAxis 
+                stroke="hsl(var(--foreground))" 
+                tick={{ fill: 'hsl(var(--foreground))' }}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'hsl(var(--popover))',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '6px',
+                  color: 'hsl(var(--popover-foreground))',
                 }}
               />
               <Bar dataKey="value" fill="hsl(var(--primary))" />
@@ -88,7 +96,7 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
 
         {/* AI Confidence Pie Chart */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">AI Confidence Distribution</h3>
+          <h3 className="text-lg font-semibold mb-4 text-foreground">AI Confidence Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -100,6 +108,7 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
                 outerRadius={100}
                 fill="hsl(var(--primary))"
                 dataKey="value"
+                style={{ fill: 'hsl(var(--foreground))' }}
               >
                 {confidenceData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -110,6 +119,7 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
                   backgroundColor: 'hsl(var(--popover))',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '6px',
+                  color: 'hsl(var(--popover-foreground))',
                 }}
               />
             </PieChart>
@@ -121,17 +131,17 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-muted rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-primary">{metadata.length}</div>
-              <div className="text-sm text-muted-foreground mt-2">Total Items</div>
+              <div className="text-sm text-foreground mt-2">Total Items</div>
             </div>
             <div className="bg-muted rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-primary">{tagFrequency.size}</div>
-              <div className="text-sm text-muted-foreground mt-2">Unique Hashtags</div>
+              <div className="text-sm text-foreground mt-2">Unique Hashtags</div>
             </div>
             <div className="bg-muted rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-primary">
                 {(metadata.reduce((sum, m) => sum + (m.ai_confidence || 0), 0) / metadata.length * 100).toFixed(0)}%
               </div>
-              <div className="text-sm text-muted-foreground mt-2">Avg AI Confidence</div>
+              <div className="text-sm text-foreground mt-2">Avg AI Confidence</div>
             </div>
           </div>
         </div>

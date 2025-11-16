@@ -80,8 +80,8 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">DOS Panel</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold text-foreground">Data Observation System</h1>
+            <p className="text-foreground/80">
               Dial Organization System - Collapse the wave
             </p>
           </div>

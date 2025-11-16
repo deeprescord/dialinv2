@@ -75,10 +75,10 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto h-full flex flex-col p-8 max-w-6xl">
+    <div className="fixed inset-0 z-[120] bg-background/95 backdrop-blur-sm">
+      <div className="container mx-auto h-full flex flex-col p-6 md:p-8 max-w-4xl max-h-[92vh] overflow-y-auto mt-6 md:mt-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur flex items-center justify-between mb-6 md:mb-8 pb-3 md:pb-4 border-b border-border">
           <div className="flex-1 min-w-0 pr-4">
             <h1 className="text-2xl font-bold text-foreground mb-1">Data Observation System</h1>
             <p className="text-sm text-muted-foreground">
@@ -100,19 +100,19 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
           </TabsList>
 
           <div className="flex-1 min-h-0">
-            <TabsContent value="mindmap" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+            <TabsContent value="mindmap" className="h-[60vh] min-h-[360px] m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSMindMap metadata={metadata} loading={loading} />
             </TabsContent>
 
-            <TabsContent value="heatmap" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+            <TabsContent value="heatmap" className="h-[60vh] min-h-[360px] m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSHeatMap metadata={metadata} loading={loading} />
             </TabsContent>
 
-            <TabsContent value="charts" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+            <TabsContent value="charts" className="h-[60vh] min-h-[360px] m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSCharts metadata={metadata} loading={loading} />
             </TabsContent>
 
-            <TabsContent value="venn" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+            <TabsContent value="venn" className="h-[60vh] min-h-[360px] m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSVennDiagram metadata={metadata} loading={loading} />
             </TabsContent>
           </div>

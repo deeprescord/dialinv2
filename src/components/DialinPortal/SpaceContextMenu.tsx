@@ -6,7 +6,8 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink, BarChart3 } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink, BarChart3, CheckSquare } from 'lucide-react';
+import { useSelection } from '@/contexts/SelectionContext';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -85,6 +86,7 @@ export function SpaceContextMenu({
   const [uploadedBackgrounds, setUploadedBackgrounds] = useState<string[]>([]);
   const [backgroundMediaTypes, setBackgroundMediaTypes] = useState<('image' | 'video')[]>([]);
   const [aiPrompt, setAiPrompt] = useState('');
+  const { toggleSelectMode, addToSelection, isSelectMode } = useSelection();
   const [isGenerating, setIsGenerating] = useState(false);
   const [is360Mode, setIs360Mode] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
@@ -890,6 +892,25 @@ export function SpaceContextMenu({
                   </div>
 
                   <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
+                    {/* Select Mode */}
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => {
+                        addToSelection({
+                          id: space.id,
+                          type: 'space',
+                          name: space.name,
+                          thumbnailUrl: space.thumb || undefined,
+                          isSpace: true,
+                        });
+                        if (!isSelectMode) toggleSelectMode();
+                        onClose();
+                      }}
+                    >
+                      <CheckSquare size={14} className="text-white" />
+                      <span className="text-xs text-white">Select Mode</span>
+                    </button>
+
                     {/* Rename */}
                     <button
                       className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"

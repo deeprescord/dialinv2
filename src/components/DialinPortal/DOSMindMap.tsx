@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MetadataItem } from './DOSPanel';
+import { Button } from '@/components/ui/button';
+import { RotateCcw } from 'lucide-react';
 
 interface DOSMindMapProps {
   metadata: MetadataItem[];
@@ -8,7 +10,19 @@ interface DOSMindMapProps {
 
 export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
 
+  const resetView = () => {
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
+  };
+
+  // Drawing effect
   useEffect(() => {
     if (!canvasRef.current || loading) return;
 
@@ -39,8 +53,11 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     canvas.height = Math.floor(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Clear canvas
+    // Clear and apply transforms
     ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.translate(panX, panY);
+    ctx.scale(zoom, zoom);
 
     // Extract unique hashtags and their connections
     const tagMap = new Map<string, Set<string>>();
@@ -124,7 +141,59 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
       ctx.fillStyle = `hsl(${foreground})`;
       ctx.fillText(tag, pos.x, labelY);
     });
-  }, [metadata, loading]);
+
+    ctx.restore();
+  }, [metadata, loading, zoom, panX, panY]);
+
+  // Zoom with mouse wheel
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      setZoom(prev => Math.max(0.1, Math.min(5, prev * delta)));
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  // Pan with mouse drag
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      setIsDragging(true);
+      dragStartRef.current = { x: e.clientX - panX, y: e.clientY - panY };
+      canvas.style.cursor = 'grabbing';
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      setPanX(e.clientX - dragStartRef.current.x);
+      setPanY(e.clientY - dragStartRef.current.y);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      canvas.style.cursor = 'grab';
+    };
+
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    canvas.style.cursor = 'grab';
+
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, panX, panY]);
 
   if (loading) {
     return (
@@ -143,7 +212,16 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
   }
 
   return (
-    <div className="h-full w-full bg-card rounded-lg border overflow-hidden">
+    <div className="h-full w-full bg-card rounded-lg border overflow-hidden relative">
+      <Button
+        onClick={resetView}
+        size="sm"
+        variant="secondary"
+        className="absolute top-4 right-4 z-10 gap-2"
+      >
+        <RotateCcw className="h-4 w-4" />
+        Reset View
+      </Button>
       <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );

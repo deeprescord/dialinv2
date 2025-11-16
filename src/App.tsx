@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { SpacesProvider } from "@/contexts/SpacesContext";
 import { MediaQueueProvider } from "@/contexts/MediaQueueContext";
 import { InteractionProvider } from "@/contexts/InteractionContext";
+import { SelectionProvider } from "@/contexts/SelectionContext";
 import Index from "./pages/Index";
 import SpacePage from "./pages/SpacePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -22,23 +23,25 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <InteractionProvider>
           <SpacesProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <MediaQueueProvider>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/home" element={<DefaultHomePage />} />
-                    <Route path="/space/:spaceId" element={<SpacePage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/s/:shareSlug" element={<PublicSpacePage />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </MediaQueueProvider>
-              </BrowserRouter>
-            </TooltipProvider>
+            <SelectionProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <MediaQueueProvider>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/home" element={<DefaultHomePage />} />
+                      <Route path="/space/:spaceId" element={<SpacePage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route path="/s/:shareSlug" element={<PublicSpacePage />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </MediaQueueProvider>
+                </BrowserRouter>
+              </TooltipProvider>
+            </SelectionProvider>
           </SpacesProvider>
         </InteractionProvider>
       </QueryClientProvider>

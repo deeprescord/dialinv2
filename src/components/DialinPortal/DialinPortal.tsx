@@ -14,6 +14,8 @@ import { LocationsView } from './LocationsView';
 import { CombinedBottomBar } from './CombinedBottomBar';
 import { ShareMyBar } from './ShareMyBar';
 import { FloatingPlayer } from './FloatingPlayer';
+import { FloatingSelectionPanel } from './FloatingSelectionPanel';
+import { BackgroundLoader } from './BackgroundLoader';
 import { ContactPane } from './ContactPane';
 import { DialPopup } from './DialPopup';
 import { DialControlPanel } from './DialControlPanel';
@@ -872,6 +874,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
       <DragDropZone onFilesDropped={handleFilesDropped}>
         <></>
       </DragDropZone>
+
+      <FloatingSelectionPanel />
     </div>
   );
 }

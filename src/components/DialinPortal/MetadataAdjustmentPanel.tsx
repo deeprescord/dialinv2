@@ -33,6 +33,8 @@ interface MetadataAdjustmentPanelProps {
   availableSpaces: Array<{ id: string; name: string; parent_id?: string | null; cover_url?: string | null; updated_at?: string | null }>;
   confidence?: number;
   isAiGenerated?: boolean;
+  currentIndex?: number;
+  totalFiles?: number;
   onSave: (metadata: {
     hashtags: string[];
     dialValues: Record<string, any>;
@@ -57,6 +59,8 @@ export function MetadataAdjustmentPanel({
   availableSpaces,
   confidence = 0,
   isAiGenerated = true,
+  currentIndex,
+  totalFiles,
   onSave,
   onCancel,
   onCreateSpace,
@@ -269,6 +273,11 @@ export function MetadataAdjustmentPanel({
                 )}
               </div>
               <p className="text-base text-muted-foreground font-medium">{fileName}</p>
+              {totalFiles && totalFiles > 1 && (
+                <p className="text-sm text-muted-foreground">
+                  File {currentIndex || 1} of {totalFiles}
+                </p>
+              )}
             </div>
             <Button variant="ghost" size="icon" onClick={onCancel} className="h-10 w-10">
               <X className="w-5 h-5" />

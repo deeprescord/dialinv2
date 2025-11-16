@@ -234,6 +234,7 @@ export type Database = {
           file_type: string
           id: string
           interaction_potential: number | null
+          is_public: boolean | null
           mime_type: string | null
           original_name: string
           owner_id: string
@@ -242,6 +243,7 @@ export type Database = {
           rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
+          share_slug: string | null
           show_360: boolean | null
           show_play_all_button: boolean | null
           storage_path: string
@@ -259,6 +261,7 @@ export type Database = {
           file_type: string
           id?: string
           interaction_potential?: number | null
+          is_public?: boolean | null
           mime_type?: string | null
           original_name: string
           owner_id: string
@@ -267,6 +270,7 @@ export type Database = {
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
+          share_slug?: string | null
           show_360?: boolean | null
           show_play_all_button?: boolean | null
           storage_path: string
@@ -284,6 +288,7 @@ export type Database = {
           file_type?: string
           id?: string
           interaction_potential?: number | null
+          is_public?: boolean | null
           mime_type?: string | null
           original_name?: string
           owner_id?: string
@@ -292,6 +297,7 @@ export type Database = {
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
+          share_slug?: string | null
           show_360?: boolean | null
           show_play_all_button?: boolean | null
           storage_path?: string
@@ -302,6 +308,54 @@ export type Database = {
           y_axis_offset?: number | null
         }
         Relationships: []
+      }
+      item_connections: {
+        Row: {
+          coupling_strength: number | null
+          created_at: string
+          created_by: string
+          from_item_id: string
+          id: string
+          semantic_similarity: number | null
+          to_item_id: string
+          updated_at: string
+        }
+        Insert: {
+          coupling_strength?: number | null
+          created_at?: string
+          created_by: string
+          from_item_id: string
+          id?: string
+          semantic_similarity?: number | null
+          to_item_id: string
+          updated_at?: string
+        }
+        Update: {
+          coupling_strength?: number | null
+          created_at?: string
+          created_by?: string
+          from_item_id?: string
+          id?: string
+          semantic_similarity?: number | null
+          to_item_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_connections_from_item_id_fkey"
+            columns: ["from_item_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_connections_to_item_id_fkey"
+            columns: ["to_item_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       item_metadata: {
         Row: {
@@ -530,6 +584,50 @@ export type Database = {
           },
         ]
       }
+      space_metadata: {
+        Row: {
+          ai_confidence: number | null
+          ai_generated: boolean | null
+          created_at: string
+          detected_objects: Json | null
+          dial_values: Json | null
+          hashtags: string[] | null
+          id: string
+          space_id: string
+          updated_at: string
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
+          created_at?: string
+          detected_objects?: Json | null
+          dial_values?: Json | null
+          hashtags?: string[] | null
+          id?: string
+          space_id: string
+          updated_at?: string
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
+          created_at?: string
+          detected_objects?: Json | null
+          dial_values?: Json | null
+          hashtags?: string[] | null
+          id?: string
+          space_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "space_metadata_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: true
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spaces: {
         Row: {
           ai_confidence: number | null
@@ -675,7 +773,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_semantic_layer: {
+        Row: {
+          created_at: string | null
+          detected_objects: Json | null
+          detected_people: Json | null
+          dial_values: Json | null
+          file_id: string | null
+          file_type: string | null
+          hashtags: string[] | null
+          space_dial_values: Json | null
+          space_hashtags: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_metadata_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: true
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       append_reference: {
@@ -688,6 +807,10 @@ export type Database = {
       }
       calculate_interaction_potential: {
         Args: { p_val: number }
+        Returns: number
+      }
+      calculate_item_similarity: {
+        Args: { _from_item_id: string; _to_item_id: string }
         Returns: number
       }
       file_shared_with_user: {
@@ -709,6 +832,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["interaction_role"]
       }
+      refresh_public_semantic_layer: { Args: never; Returns: undefined }
       user_owns_file: {
         Args: { _file_id: string; _user_id: string }
         Returns: boolean

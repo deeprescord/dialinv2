@@ -503,7 +503,12 @@ export function HomeView({
         isOpen={isAddModalOpen}
         onClose={onCloseAddModal || (() => {})}
         onCreate={(name) => {
-          handleAddOptionSelect('space');
+          if (onCreateSpace) {
+            onCreateSpace(name);
+          }
+          if (onCloseAddModal) {
+            onCloseAddModal();
+          }
         }}
       />
 

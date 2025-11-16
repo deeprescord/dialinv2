@@ -38,6 +38,120 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_dial_values: {
+        Row: {
+          created_at: string | null
+          custom_dial_id: string
+          file_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_dial_id: string
+          file_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_dial_id?: string
+          file_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_dial_values_custom_dial_id_fkey"
+            columns: ["custom_dial_id"]
+            isOneToOne: false
+            referencedRelation: "custom_dials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_dial_values_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_dials: {
+        Row: {
+          content_type: string
+          created_at: string | null
+          dial_language: string | null
+          dial_name: string
+          id: string
+          normalized_name: string | null
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string | null
+          dial_language?: string | null
+          dial_name: string
+          id?: string
+          normalized_name?: string | null
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string | null
+          dial_language?: string | null
+          dial_name?: string
+          id?: string
+          normalized_name?: string | null
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dial_translations: {
+        Row: {
+          created_at: string | null
+          id: string
+          similarity_score: number | null
+          source_dial_id: string
+          target_dial_id: string
+          translation_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          similarity_score?: number | null
+          source_dial_id: string
+          target_dial_id: string
+          translation_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          similarity_score?: number | null
+          source_dial_id?: string
+          target_dial_id?: string
+          translation_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dial_translations_source_dial_id_fkey"
+            columns: ["source_dial_id"]
+            isOneToOne: false
+            referencedRelation: "custom_dials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dial_translations_target_dial_id_fkey"
+            columns: ["target_dial_id"]
+            isOneToOne: false
+            referencedRelation: "custom_dials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_comments: {
         Row: {
           comment: string
@@ -569,6 +683,16 @@ export type Database = {
         Returns: boolean
       }
       generate_share_slug: { Args: { space_name: string }; Returns: string }
+      get_trending_dials: {
+        Args: { p_content_type: string; p_days?: number; p_limit?: number }
+        Returns: {
+          dial_id: string
+          dial_name: string
+          recent_usage_count: number
+          total_usage_count: number
+          trend_score: number
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["interaction_role"]

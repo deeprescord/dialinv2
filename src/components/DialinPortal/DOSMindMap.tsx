@@ -16,12 +16,31 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // Resolve design tokens from CSS variables for use in canvas
+    const styles = getComputedStyle(canvas);
+    const getVar = (name: string) => styles.getPropertyValue(name).trim();
+
+    const foreground = getVar('--foreground');
+    const background = getVar('--background');
+    const primary = getVar('--primary');
+
+    // Build a bright palette from chart tokens, fallback to primary
+    const chartVars = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'];
+    const paletteValues = chartVars
+      .map(v => getVar(v))
+      .filter(Boolean);
+    const palette = paletteValues.length ? paletteValues : [primary];
+
+    // Handle HiDPI/retina for crisp lines
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, width, height);
 
     // Extract unique hashtags and their connections
     const tagMap = new Map<string, Set<string>>();
@@ -36,24 +55,26 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     });
 
     const tags = Array.from(tagMap.keys());
-    const nodePositions = new Map<string, { x: number; y: number }>();
+    const nodePositions = new Map<string, { x: number; y: number; color: string }>();
 
     // Position nodes in a circle
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(canvas.width, canvas.height) * 0.35;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) * 0.35;
 
     tags.forEach((tag, i) => {
       const angle = (i / tags.length) * Math.PI * 2;
+      const color = palette[i % palette.length];
       nodePositions.set(tag, {
         x: centerX + Math.cos(angle) * radius,
         y: centerY + Math.sin(angle) * radius,
+        color,
       });
     });
 
-    // Draw connections
-    ctx.strokeStyle = 'hsl(var(--muted-foreground) / 0.4)';
-    ctx.lineWidth = 1.5;
+    // Draw connections (use foreground with transparency for brightness)
+    ctx.strokeStyle = `hsl(${foreground} / 0.5)`;
+    ctx.lineWidth = 1.75;
     tagMap.forEach((connections, tag) => {
       const pos = nodePositions.get(tag);
       if (!pos) return;
@@ -69,31 +90,39 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
       });
     });
 
-    // Draw nodes
+    // Draw nodes and labels with high contrast
     nodePositions.forEach((pos, tag) => {
       const connectionCount = tagMap.get(tag)?.size || 0;
       const nodeRadius = 8 + connectionCount * 2;
 
-      // Draw glow effect
-      ctx.fillStyle = 'hsl(var(--primary) / 0.3)';
+      // Glow
+      ctx.fillStyle = `hsl(${pos.color} / 0.35)`;
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, nodeRadius + 4, 0, Math.PI * 2);
+      ctx.arc(pos.x, pos.y, nodeRadius + 5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw node circle
-      ctx.fillStyle = 'hsl(var(--primary))';
+      // Node circle (vibrant color)
+      ctx.fillStyle = `hsl(${pos.color})`;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, nodeRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw label with shadow for better readability
-      ctx.shadowColor = 'hsl(var(--background))';
-      ctx.shadowBlur = 3;
-      ctx.fillStyle = 'hsl(var(--foreground))';
-      ctx.font = 'bold 12px sans-serif';
+      // Outline to separate from dark background
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = `hsl(${background})`;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, nodeRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Label with outline for readability
+      const labelY = pos.y - nodeRadius - 6;
+      ctx.font = '600 13px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(tag, pos.x, pos.y - nodeRadius - 5);
-      ctx.shadowBlur = 0;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = `hsl(${background})`;
+      ctx.strokeText(tag, pos.x, labelY);
+      ctx.fillStyle = `hsl(${foreground})`;
+      ctx.fillText(tag, pos.x, labelY);
     });
   }, [metadata, loading]);
 

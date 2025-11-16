@@ -138,7 +138,8 @@ export function HomeView({
   onMovieModeToggle,
   onItem360Toggle,
   isPublicSpace = false,
-  showPlayAllButton = false
+  showPlayAllButton = false,
+  onEditMetadata
 }: HomeViewProps) {
   const { isAutoplay, skipToNext, repeatMode } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
@@ -525,7 +526,6 @@ export function HomeView({
           onItem360Toggle={onItem360Toggle}
           isPublicSpace={isPublicSpace}
           onMovieModeToggle={onMovieModeToggle}
-          onEditMetadata={onEditMetadata}
         />
       )}
     </motion.div>

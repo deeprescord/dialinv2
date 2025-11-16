@@ -948,24 +948,25 @@ export function SpaceContextMenu({
               {/* Dials Tab */}
               <TabsContent value="dials" className="flex-1 overflow-y-auto p-3 mt-0">
                 <div className="space-y-4">
-                  <div className="text-center space-y-2">
+                  <div className="text-center space-y-4">
                     <BarChart3 className="w-12 h-12 mx-auto text-primary/60" />
                     <h3 className="text-lg font-semibold text-white">Space DOS Analysis</h3>
-                    <p className="text-sm text-white/60">Click "View DOS" to analyze this space's metadata and relationships</p>
-                  </div>
-
-                  {onToggleDOSPanel && (
+                    <p className="text-sm text-white/60">Analyze this space's metadata and semantic relationships</p>
+                    
                     <Button
                       onClick={() => {
-                        onToggleDOSPanel();
+                        if (onToggleDOSPanel) {
+                          onToggleDOSPanel();
+                        }
                         onClose();
                       }}
-                      className="w-full bg-primary/20 hover:bg-primary/30 border border-primary/40 text-white"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                      disabled={!onToggleDOSPanel}
                     >
                       <BarChart3 className="w-4 h-4 mr-2" />
-                      View DOS Panel
+                      Analyze Space
                     </Button>
-                  )}
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>

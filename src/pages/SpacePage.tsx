@@ -207,6 +207,7 @@ export default function SpacePage() {
   const [pendingFile, setPendingFile] = useState<{
     file: { id: string; original_name: string; file_type: string };
     metadata: AIMetadata;
+    isEdit?: boolean;
   } | null>(null);
   
   // Upload queue for batch uploads
@@ -848,6 +849,72 @@ export default function SpacePage() {
     }
   };
 
+  // Handle editing metadata for existing files
+  const handleEditMetadata = async (fileId: string) => {
+    try {
+      // Fetch file details
+      const { data: fileData, error: fileError } = await supabase
+        .from('files')
+        .select('id, original_name, file_type, storage_path, thumbnail_path')
+        .eq('id', fileId)
+        .single();
+
+      if (fileError || !fileData) {
+        toast.error('Failed to load file details');
+        return;
+      }
+
+      // Fetch existing metadata
+      const { data: metadataData } = await supabase
+        .from('item_metadata')
+        .select('hashtags, dial_values, ai_generated, ai_confidence')
+        .eq('file_id', fileId)
+        .single();
+
+      // Fetch custom dials
+      const { data: customDialsData } = await supabase
+        .from('custom_dial_values')
+        .select(`
+          id,
+          custom_dial_id,
+          custom_dials (
+            id,
+            dial_name
+          )
+        `)
+        .eq('file_id', fileId);
+
+      // Extract custom dial names
+      const existingCustomDials = customDialsData?.map((cdv: any) => ({
+        id: cdv.custom_dials.id,
+        name: cdv.custom_dials.dial_name
+      })) || [];
+
+      // Set pending file with existing data
+      setPendingFile({
+        file: {
+          id: fileData.id,
+          original_name: fileData.original_name,
+          file_type: fileData.file_type
+        },
+        metadata: {
+          hashtags: metadataData?.hashtags || [],
+          dial_values: (metadataData?.dial_values as Record<string, any>) || {},
+          suggested_dials: [],
+          suggested_spaces: [],
+          confidence: metadataData?.ai_confidence || 0,
+          fallback: !metadataData?.ai_generated
+        },
+        isEdit: true
+      });
+
+    } catch (error) {
+      console.error('Error loading metadata for editing:', error);
+      toast.error('Failed to load file metadata');
+    }
+  };
+
+
   // Handle space reordering
   const handleReorderSpace = (spaceId: string, direction: 'left' | 'right') => {
     setSpaces(prev => {
@@ -1404,6 +1471,7 @@ export default function SpacePage() {
                 pinnedContacts={pinnedContacts}
                 onContactClick={handleContactClick}
                 onMediaClick={handleMediaClick}
+                onEditMetadata={handleEditMetadata}
                 onMediaLongPress={handleMediaLongPress}
                 backgroundImage={backgroundImage}
                 spaceName={currentSpace?.name || 'Home'}
@@ -1737,6 +1805,7 @@ export default function SpacePage() {
               ]}
               confidence={pendingFile.metadata.confidence}
               isAiGenerated={!pendingFile.metadata.fallback}
+              isEdit={pendingFile.isEdit}
               onSave={handleMetadataSave}
               onCancel={() => {
                 setPendingFile(null);

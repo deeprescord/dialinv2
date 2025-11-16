@@ -35,6 +35,7 @@ interface MetadataAdjustmentPanelProps {
   isAiGenerated?: boolean;
   currentIndex?: number;
   totalFiles?: number;
+  isEdit?: boolean;
   onSave: (metadata: {
     hashtags: string[];
     dialValues: Record<string, any>;
@@ -61,6 +62,7 @@ export function MetadataAdjustmentPanel({
   isAiGenerated = true,
   currentIndex,
   totalFiles,
+  isEdit = false,
   onSave,
   onCancel,
   onCreateSpace,
@@ -263,9 +265,9 @@ export function MetadataAdjustmentPanel({
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                  Organize & Place Item
+                  {isEdit ? 'Edit Metadata' : 'Organize & Place Item'}
                 </h2>
-                {isAiGenerated && (
+                {isAiGenerated && !isEdit && (
                   <Badge variant="secondary" className="gap-1.5 px-3 py-1 text-sm bg-primary/20 text-primary border-primary/40">
                     <Sparkles className="w-4 h-4" />
                     AI Analyzed
@@ -273,7 +275,7 @@ export function MetadataAdjustmentPanel({
                 )}
               </div>
               <p className="text-base text-muted-foreground font-medium">{fileName}</p>
-              {totalFiles && totalFiles > 1 && (
+              {!isEdit && totalFiles && totalFiles > 1 && (
                 <p className="text-sm text-muted-foreground">
                   File {currentIndex || 1} of {totalFiles}
                 </p>
@@ -685,7 +687,7 @@ export function MetadataAdjustmentPanel({
                 className="w-full h-14 text-lg font-bold gap-3 bg-gradient-to-r from-primary to-accent hover:scale-105 transition-transform shadow-lg shadow-primary/30"
               >
                 <Check className="w-6 h-6" />
-                Save & Place Item
+                {isEdit ? 'Update Metadata' : 'Save & Place Item'}
               </Button>
             )}
           </div>

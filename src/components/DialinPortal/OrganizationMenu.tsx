@@ -3,7 +3,8 @@ import {
   Move, 
   Link2, 
   Trash2, 
-  GripVertical 
+  GripVertical,
+  Edit
 } from 'lucide-react';
 import {
   ContextMenu,
@@ -21,6 +22,7 @@ interface OrganizationMenuProps {
   onMove?: () => void;
   onConnect?: () => void;
   onDelete?: () => void;
+  onEditMetadata?: () => void;
   isDraggable?: boolean;
 }
 
@@ -32,6 +34,7 @@ export function OrganizationMenu({
   onMove,
   onConnect,
   onDelete,
+  onEditMetadata,
   isDraggable = true,
 }: OrganizationMenuProps) {
   return (
@@ -68,6 +71,13 @@ export function OrganizationMenu({
           <ContextMenuItem onClick={onConnect}>
             <Link2 className="mr-2 h-4 w-4" />
             Connect spaces
+          </ContextMenuItem>
+        )}
+        
+        {!isSpace && onEditMetadata && (
+          <ContextMenuItem onClick={onEditMetadata}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Metadata
           </ContextMenuItem>
         )}
         

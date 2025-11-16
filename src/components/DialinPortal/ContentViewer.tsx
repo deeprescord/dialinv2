@@ -582,7 +582,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
         <>
           <div 
             ref={imageContainerRef}
-            className="absolute inset-0 w-full h-full bg-black flex items-center justify-center overflow-auto"
+            className="absolute inset-0 w-full h-full bg-black flex items-center justify-center overflow-auto pb-32"
           >
             <img
               src={contentUrl}
@@ -619,7 +619,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
       {/* PDF Content */}
       {isPDF && contentUrl && (
-        <div className="absolute inset-0 w-full h-full bg-background overflow-auto">
+        <div className="absolute inset-0 w-full h-full bg-background overflow-auto pb-32">
           <PdfViewer
             url={contentUrl}
             zoom={1}

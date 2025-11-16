@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MetadataItem } from './DOSPanel';
 import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface DOSMindMapProps {
   metadata: MetadataItem[];
@@ -21,6 +21,9 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     setPanX(0);
     setPanY(0);
   };
+
+  const zoomIn = () => setZoom(prev => Math.min(5, prev * 1.2));
+  const zoomOut = () => setZoom(prev => Math.max(0.1, prev * 0.8));
 
   // Drawing effect
   useEffect(() => {
@@ -145,21 +148,6 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
     ctx.restore();
   }, [metadata, loading, zoom, panX, panY]);
 
-  // Zoom with mouse wheel
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      setZoom(prev => Math.max(0.1, Math.min(5, prev * delta)));
-    };
-
-    canvas.addEventListener('wheel', handleWheel, { passive: false });
-    return () => canvas.removeEventListener('wheel', handleWheel);
-  }, []);
-
   // Pan with mouse drag
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -213,15 +201,17 @@ export function DOSMindMap({ metadata, loading }: DOSMindMapProps) {
 
   return (
     <div className="h-full w-full bg-card rounded-lg border overflow-hidden relative">
-      <Button
-        onClick={resetView}
-        size="sm"
-        variant="secondary"
-        className="absolute top-4 right-4 z-10 gap-2"
-      >
-        <RotateCcw className="h-4 w-4" />
-        Reset View
-      </Button>
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button onClick={zoomOut} size="icon" variant="secondary">
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button onClick={zoomIn} size="icon" variant="secondary">
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button onClick={resetView} size="icon" variant="secondary">
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+      </div>
       <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );

@@ -952,6 +952,29 @@ export function SpaceContextMenu({
                       <span className="text-xs text-white">Move Right</span>
                     </button>
 
+                    {/* Select */}
+                    {!space.isHome && (
+                      <button
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-accent/20 text-foreground rounded-lg transition-colors text-left"
+                        onClick={() => {
+                          addToSelection({
+                            id: space.id,
+                            type: 'space',
+                            name: space.name,
+                            thumbnailUrl: space.thumb,
+                            isSpace: true,
+                          });
+                          if (!isSelectMode) {
+                            toggleSelectMode();
+                          }
+                          onClose();
+                        }}
+                      >
+                        <CheckSquare size={14} />
+                        <span className="text-xs">Select</span>
+                      </button>
+                    )}
+
                     {/* Delete - disabled for Home */}
                     {!space.isHome && (
                       <button

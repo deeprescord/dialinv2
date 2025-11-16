@@ -4,7 +4,8 @@ import {
   Link2, 
   Trash2, 
   GripVertical,
-  Edit
+  Edit,
+  CheckSquare
 } from 'lucide-react';
 import {
   ContextMenu,
@@ -13,11 +14,14 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { useSelection } from '@/contexts/SelectionContext';
 
 interface OrganizationMenuProps {
   children: React.ReactNode;
   itemId: string;
   isSpace: boolean;
+  itemName: string;
+  thumbnailUrl?: string;
   onAdd?: () => void;
   onMove?: () => void;
   onConnect?: () => void;
@@ -30,6 +34,8 @@ export function OrganizationMenu({
   children,
   itemId,
   isSpace,
+  itemName,
+  thumbnailUrl,
   onAdd,
   onMove,
   onConnect,
@@ -37,6 +43,21 @@ export function OrganizationMenu({
   onEditMetadata,
   isDraggable = true,
 }: OrganizationMenuProps) {
+  const { addToSelection, toggleSelectMode, isSelectMode } = useSelection();
+
+  const handleSelect = () => {
+    addToSelection({
+      id: itemId,
+      type: isSpace ? 'space' : 'file',
+      name: itemName,
+      thumbnailUrl,
+      isSpace,
+    });
+    if (!isSelectMode) {
+      toggleSelectMode();
+    }
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -84,6 +105,10 @@ export function OrganizationMenu({
         {onDelete && (
           <>
             <ContextMenuSeparator />
+            <ContextMenuItem onClick={handleSelect}>
+              <CheckSquare className="mr-2 h-4 w-4" />
+              Select
+            </ContextMenuItem>
             <ContextMenuItem 
               onClick={onDelete}
               className="text-destructive focus:text-destructive"

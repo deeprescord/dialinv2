@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
-import { Network } from 'lucide-react';
+import { Network, CheckSquare } from 'lucide-react';
+import { useSelection } from '@/contexts/SelectionContext';
 
 interface FloatingActionButtonsProps {
   onAddClick: () => void;
@@ -17,6 +18,7 @@ export function FloatingActionButtons({
   onChatClick,
   onDOSClick
 }: FloatingActionButtonsProps) {
+  const { isSelectMode, toggleSelectMode } = useSelection();
   const buttonSize = 56; // Compact size
   const iconSize = 24;
 
@@ -91,6 +93,28 @@ export function FloatingActionButtons({
           aria-label="DOS Panel"
         >
           <Network size={iconSize} className="text-orange-400" />
+        </Button>
+      </motion.div>
+
+      {/* Select Mode Button */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2, delay: 0.2 }}
+      >
+        <Button
+          variant={isSelectMode ? "default" : "outline"}
+          size="sm"
+          className={`flex items-center justify-center rounded-xl shadow-lg backdrop-blur-md ${
+            isSelectMode 
+              ? 'bg-primary text-primary-foreground border-primary' 
+              : 'glass-card border-white/30 hover:bg-white/10 hover:border-primary/50'
+          }`}
+          style={{ width: `${buttonSize}px`, height: `${buttonSize}px` }}
+          onClick={toggleSelectMode}
+          aria-label="Select Mode"
+        >
+          <CheckSquare size={iconSize} className={isSelectMode ? "text-primary-foreground" : "text-yellow-400"} />
         </Button>
       </motion.div>
     </div>

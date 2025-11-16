@@ -1089,6 +1089,7 @@ export function SpacesBar({
             on360RotationAxisChange={on360RotationAxisChange}
             onFlipHorizontalToggle={onFlipHorizontalToggle}
             onFlipVerticalToggle={onFlipVerticalToggle}
+            onToggleDOSPanel={onToggleDOSPanel}
             position={contextMenu.position}
           />
         )}

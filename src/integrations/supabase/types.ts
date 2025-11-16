@@ -532,13 +532,17 @@ export type Database = {
       }
       spaces: {
         Row: {
+          ai_confidence: number | null
+          ai_generated: boolean | null
           coupling_strength: number | null
           cover_url: string | null
           created_at: string
           creator_id: string | null
           description: string | null
+          dial_values: Json | null
           flip_horizontal: boolean | null
           flip_vertical: boolean | null
+          hashtags: string[] | null
           horizontal_flip: boolean | null
           id: string
           interaction_potential: number | null
@@ -565,13 +569,17 @@ export type Database = {
           y_axis_offset: number | null
         }
         Insert: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
           coupling_strength?: number | null
           cover_url?: string | null
           created_at?: string
           creator_id?: string | null
           description?: string | null
+          dial_values?: Json | null
           flip_horizontal?: boolean | null
           flip_vertical?: boolean | null
+          hashtags?: string[] | null
           horizontal_flip?: boolean | null
           id?: string
           interaction_potential?: number | null
@@ -598,13 +606,17 @@ export type Database = {
           y_axis_offset?: number | null
         }
         Update: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
           coupling_strength?: number | null
           cover_url?: string | null
           created_at?: string
           creator_id?: string | null
           description?: string | null
+          dial_values?: Json | null
           flip_horizontal?: boolean | null
           flip_vertical?: boolean | null
+          hashtags?: string[] | null
           horizontal_flip?: boolean | null
           id?: string
           interaction_potential?: number | null

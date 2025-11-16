@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink, BarChart3 } from 'lucide-react';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -41,6 +41,7 @@ interface SpaceContextMenuProps {
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   onFlipHorizontalToggle?: (spaceId: string, flipped: boolean) => void;
   onFlipVerticalToggle?: (spaceId: string, flipped: boolean) => void;
+  onToggleDOSPanel?: () => void;
   position: { x: number; y: number };
 }
 
@@ -62,6 +63,7 @@ export function SpaceContextMenu({
   on360RotationAxisChange,
   onFlipHorizontalToggle,
   onFlipVerticalToggle,
+  onToggleDOSPanel,
   position
 }: SpaceContextMenuProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -894,6 +896,20 @@ export function SpaceContextMenu({
                         </div>
                       )}
                     </div>
+                  )}
+
+                  {/* View DOS */}
+                  {onToggleDOSPanel && (
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => {
+                        onToggleDOSPanel();
+                        onClose();
+                      }}
+                    >
+                      <BarChart3 size={14} className="text-white" />
+                      <span className="text-xs text-white">View DOS</span>
+                    </button>
                   )}
 
                   {/* Rename */}

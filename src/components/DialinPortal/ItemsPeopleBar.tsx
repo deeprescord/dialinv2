@@ -36,6 +36,7 @@ interface ItemsPeopleBarProps {
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
   isPublicSpace?: boolean;
   onMovieModeToggle?: () => void;
+  onToggleDOSPanel?: () => void;
 }
 
 type ViewMode = 'carousel' | 'icon' | 'list' | 'tile';
@@ -60,7 +61,8 @@ export function ItemsPeopleBar({
   on360RotationAxisChange,
   onItem360Toggle,
   isPublicSpace = false,
-  onMovieModeToggle
+  onMovieModeToggle,
+  onToggleDOSPanel
 }: ItemsPeopleBarProps) {
   const { items, loading } = useSpaceItems(spaceId);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -713,6 +715,7 @@ export function ItemsPeopleBar({
           on360RotationToggle={on360RotationToggle}
           on360RotationSpeedChange={on360RotationSpeedChange}
           on360RotationAxisChange={on360RotationAxisChange}
+          onToggleDOSPanel={onToggleDOSPanel}
           position={contextMenu.position}
         />
       )}

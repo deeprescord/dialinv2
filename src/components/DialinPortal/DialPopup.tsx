@@ -269,8 +269,22 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
         return;
       }
 
+      // Fetch full file data
+      const { data: fileData, error: fileError } = await supabase
+        .from('files')
+        .select('original_name, file_type, mime_type')
+        .eq('id', item.id)
+        .single();
+
+      if (fileError) throw fileError;
+
       const { data, error } = await supabase.functions.invoke('analyze-item', {
-        body: { fileId: item.id }
+        body: { 
+          fileId: item.id,
+          fileName: fileData.original_name,
+          fileType: fileData.file_type,
+          mimeType: fileData.mime_type
+        }
       });
 
       if (error) throw error;

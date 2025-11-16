@@ -1,5 +1,5 @@
 import { MetadataItem } from './DOSPanel';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface DOSChartsProps {
   metadata: MetadataItem[];
@@ -104,11 +104,9 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`}
-                outerRadius={100}
-                fill="hsl(var(--primary))"
+                label={false}
+                outerRadius={80}
                 dataKey="value"
-                style={{ fill: 'hsl(var(--foreground))' }}
               >
                 {confidenceData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -121,6 +119,10 @@ export function DOSCharts({ metadata, loading }: DOSChartsProps) {
                   borderRadius: '6px',
                   color: 'hsl(var(--popover-foreground))',
                 }}
+              />
+              <Legend 
+                wrapperStyle={{ color: 'hsl(var(--foreground))' }}
+                iconType="circle"
               />
             </PieChart>
           </ResponsiveContainer>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye, Globe, Play, Sparkles } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye, Globe, Play, Sparkles, X } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +55,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [activeTab, setActiveTab] = useState<'settings' | 'dials'>('settings');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [previewMetadata, setPreviewMetadata] = useState<{ hashtags: string[], dial_values: any } | null>(null);
+  const [newHashtag, setNewHashtag] = useState('');
 
   // ESC key handling
   useEffect(() => {
@@ -382,6 +383,28 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     }
   };
 
+  const handleAddHashtag = () => {
+    if (!newHashtag.trim() || !previewMetadata) return;
+    
+    const cleanTag = newHashtag.trim().replace(/^#+/, '');
+    if (!cleanTag) return;
+    
+    setPreviewMetadata({
+      ...previewMetadata,
+      hashtags: [...(previewMetadata.hashtags || []), cleanTag]
+    });
+    setNewHashtag('');
+  };
+
+  const handleRemoveHashtag = (index: number) => {
+    if (!previewMetadata) return;
+    
+    setPreviewMetadata({
+      ...previewMetadata,
+      hashtags: previewMetadata.hashtags.filter((_, i) => i !== index)
+    });
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -545,18 +568,47 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                             Generated Metadata Preview
                           </h3>
                           
-                          {previewMetadata.hashtags && previewMetadata.hashtags.length > 0 && (
-                            <div className="mb-4">
-                              <p className="text-sm font-medium mb-2">Hashtags:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {previewMetadata.hashtags.map((tag, idx) => (
-                                  <span key={idx} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">
-                                    #{tag}
-                                  </span>
-                                ))}
-                              </div>
+                          <div className="mb-4">
+                            <p className="text-sm font-medium mb-2">Hashtags:</p>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {previewMetadata.hashtags?.map((tag, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className="px-2 py-1 bg-primary/10 text-primary rounded-md text-sm flex items-center gap-1 group"
+                                >
+                                  #{tag}
+                                  <button
+                                    onClick={() => handleRemoveHashtag(idx)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ))}
                             </div>
-                          )}
+                            <div className="flex gap-2">
+                              <Input
+                                value={newHashtag}
+                                onChange={(e) => setNewHashtag(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddHashtag();
+                                  }
+                                }}
+                                placeholder="Add hashtag..."
+                                className="flex-1 h-8 text-sm"
+                              />
+                              <Button 
+                                onClick={handleAddHashtag}
+                                size="sm"
+                                className="h-8"
+                                disabled={!newHashtag.trim()}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          </div>
 
                           {previewMetadata.dial_values && Object.keys(previewMetadata.dial_values).length > 0 && (
                             <div>

@@ -10,7 +10,7 @@ import { ContentViewer } from './ContentViewer';
 import { PinnedContactsRow } from './PinnedContactsRow';
 import { ItemsPeopleBar } from './ItemsPeopleBar';
 import { MediaRow } from './MediaRow';
-import { AddOptionsModal } from './AddOptionsModal';
+import { CreateSpaceModal } from './CreateSpaceModal';
 import { DialControlPanel } from './DialControlPanel';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { InfiniteScrollView } from './InfiniteScrollView';
@@ -499,11 +499,12 @@ export function HomeView({
       )}
 
 
-      <AddOptionsModal
+      <CreateSpaceModal
         isOpen={isAddModalOpen}
         onClose={onCloseAddModal || (() => {})}
-        onOptionSelect={handleAddOptionSelect}
-        onUploadClick={onUploadClick}
+        onCreate={(name) => {
+          handleAddOptionSelect('space');
+        }}
       />
 
       <DialControlPanel

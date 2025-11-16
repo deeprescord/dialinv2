@@ -7,6 +7,7 @@ import { Card } from '../ui/card';
 import { ImageFallback } from '../ui/image-fallback';
 import { DraggableItem } from './DraggableItem';
 import { OrganizationMenu } from './OrganizationMenu';
+import { useLongPress } from '@/hooks/useLongPress';
 
 interface GridItem {
   id: string;
@@ -23,6 +24,7 @@ interface MediaGridProps {
   items: GridItem[];
   onItemClick: (item: any) => void;
   onItemLongPress?: (item: any) => void;
+  onDOSOpen?: (itemId: string, isSpace: boolean) => void;
   enableDragDrop?: boolean;
   onReorder?: (itemIds: string[]) => void;
   onAdd?: (itemId: string, isSpace: boolean) => void;
@@ -35,6 +37,7 @@ export function MediaGrid({
   items, 
   onItemClick, 
   onItemLongPress,
+  onDOSOpen,
   enableDragDrop = false,
   onReorder,
   onAdd,
@@ -42,8 +45,6 @@ export function MediaGrid({
   onConnect,
   onDelete
 }: MediaGridProps) {
-  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isPressed, setIsPressed] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -68,49 +69,30 @@ export function MediaGrid({
     }
   };
 
-  const handleMouseDown = (item: GridItem) => {
-    setIsPressed(item.id);
-    if (onItemLongPress) {
-      const timer = setTimeout(() => {
-        onItemLongPress(item);
-        setIsPressed(null);
-      }, 550);
-      setPressTimer(timer);
-    }
-  };
-
-  const handleMouseUp = () => {
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      setPressTimer(null);
-    }
-    setIsPressed(null);
-  };
-
-  const handleClick = (item: GridItem) => {
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      setPressTimer(null);
-      setIsPressed(null);
-    }
-    onItemClick(item);
-  };
-
   const gridContent = (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
       {items.map((item, index) => {
         const isSpace = !!(item as any).is_space;
+        
+        // Long press handlers for DOS panel
+        const longPressHandlers = useLongPress({
+          onLongPress: () => {
+            if (onDOSOpen) {
+              onDOSOpen(item.id, isSpace);
+            } else if (onItemLongPress) {
+              onItemLongPress(item);
+            }
+          },
+          onClick: () => onItemClick(item),
+          delay: 500
+        });
+
         const cardContent = (
           <Card 
             className={`glass-card hover:bg-white/10 cursor-pointer transition-all duration-200 ${
               enableDragDrop ? 'overflow-visible' : 'overflow-hidden'
-            } group hover-lift ${
-              isPressed === item.id ? 'scale-95' : ''
-            }`}
-            onMouseDown={() => handleMouseDown(item)}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onClick={() => handleClick(item)}
+            } group hover-lift`}
+            {...longPressHandlers}
           >
             <div className={`relative ${enableDragDrop ? '' : 'overflow-hidden'}`}>
               <ImageFallback 

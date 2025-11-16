@@ -76,43 +76,43 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto h-full flex flex-col p-6 max-w-5xl">
+      <div className="container mx-auto h-full flex flex-col p-8 max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Data Observation System</h1>
-            <p className="text-foreground/80">
-              Dial Organization System - Collapse the wave
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
+          <div className="flex-1 min-w-0 pr-4">
+            <h1 className="text-2xl font-bold text-foreground mb-1">Data Observation System</h1>
+            <p className="text-sm text-muted-foreground">
+              {isSpace ? 'Analyzing space metadata' : 'Analyzing item metadata'}
             </p>
           </div>
-          <Button onClick={onClose} variant="ghost" size="icon">
-            <X className="h-6 w-6" />
+          <Button onClick={onClose} variant="ghost" size="icon" className="shrink-0">
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Visualization Tabs */}
-        <Tabs defaultValue="mindmap" className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
+        <Tabs defaultValue="mindmap" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-muted">
             <TabsTrigger value="mindmap">Mind Map</TabsTrigger>
             <TabsTrigger value="heatmap">Heat Map</TabsTrigger>
             <TabsTrigger value="charts">Charts</TabsTrigger>
             <TabsTrigger value="venn">Venn Diagram</TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-hidden">
-            <TabsContent value="mindmap" className="h-full m-0">
+          <div className="flex-1 min-h-0">
+            <TabsContent value="mindmap" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSMindMap metadata={metadata} loading={loading} />
             </TabsContent>
 
-            <TabsContent value="heatmap" className="h-full m-0">
+            <TabsContent value="heatmap" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSHeatMap metadata={metadata} loading={loading} />
             </TabsContent>
 
-            <TabsContent value="charts" className="h-full m-0">
+            <TabsContent value="charts" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSCharts metadata={metadata} loading={loading} />
             </TabsContent>
 
-            <TabsContent value="venn" className="h-full m-0">
+            <TabsContent value="venn" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
               <DOSVennDiagram metadata={metadata} loading={loading} />
             </TabsContent>
           </div>

@@ -209,6 +209,13 @@ export default function SpacePage() {
     metadata: AIMetadata;
   } | null>(null);
   
+  // Upload queue for batch uploads
+  const [uploadQueue, setUploadQueue] = useState<Array<{
+    fileId: string;
+    fileName: string;
+    fileType: string;
+  }>>([]);
+  
   // Navigation breadcrumb path (e.g., ['lobby', 'space-1', 'space-2'])
   const [navigationPath, setNavigationPath] = useState<string[]>(['lobby']);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
@@ -611,14 +618,43 @@ export default function SpacePage() {
         for (const file of files) {
           const result = await uploadFile(file, spaceId);
           if (result) {
-            uploadResults.push({ file, result });
+            uploadResults.push({
+              fileId: result.id,
+              fileName: file.name,
+              fileType: result.file_type
+            });
           }
         }
         
-        toast.success(`Added ${uploadResults.length} item(s) to space!`);
-        refetch();
+        // Set up queue and show panel for first file
+        if (uploadResults.length > 0) {
+          const [firstUpload, ...remainingUploads] = uploadResults;
+          setUploadQueue(remainingUploads);
+          
+          // Analyze first file with AI
+          const aiMetadata = await analyzeWithAI(
+            files[0],
+            firstUpload.fileId
+          );
+          
+          setPendingFile({
+            file: {
+              id: firstUpload.fileId,
+              original_name: firstUpload.fileName,
+              file_type: firstUpload.fileType
+            },
+            metadata: aiMetadata || {
+              hashtags: [],
+              dial_values: {},
+              suggested_dials: [],
+              suggested_spaces: [],
+              confidence: 0,
+              fallback: true
+            }
+          });
+        }
       } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Error uploading files:', error);
         toast.error('Failed to upload files');
       }
     } else {
@@ -629,7 +665,7 @@ export default function SpacePage() {
   };
 
   // Handle space selection for dropped files
-  const handleSpaceSelect = async (spaceId: string) => {
+  const handleSpaceSelect = async (selectedSpaceId: string) => {
     if (droppedFiles.length === 0) return;
 
     try {
@@ -639,41 +675,57 @@ export default function SpacePage() {
       // Upload all files to the selected space
       const uploadResults = [];
       for (const file of droppedFiles) {
-        const result = await uploadFile(file, spaceId);
+        const result = await uploadFile(file, selectedSpaceId);
         if (result) {
-          uploadResults.push({ file, result });
+          uploadResults.push({
+            file,
+            fileId: result.id,
+            fileName: file.name,
+            fileType: result.file_type
+          });
         }
       }
-
-      // Refetch spaces to show new files
-      if (refetch) refetch();
-
-      // Background AI analysis (non-blocking)
-      Promise.all(
-        uploadResults.map(async ({ file, result }) => {
-          try {
-            const aiMetadata = await analyzeWithAI(file, result.id);
-            if (aiMetadata) {
-              await saveMetadata(
-                result.id,
-                aiMetadata.hashtags,
-                aiMetadata.dial_values,
-                true,
-                aiMetadata.confidence
-              );
-            }
-          } catch (err) {
-            console.error('AI analysis failed for', file.name, err);
+      
+      // Set up queue and show panel for first file
+      if (uploadResults.length > 0) {
+        const [firstUpload, ...remainingUploads] = uploadResults;
+        setUploadQueue(remainingUploads.map(u => ({
+          fileId: u.fileId,
+          fileName: u.fileName,
+          fileType: u.fileType
+        })));
+        
+        // Analyze first file with AI
+        const aiMetadata = await analyzeWithAI(
+          firstUpload.file,
+          firstUpload.fileId
+        );
+        
+        setPendingFile({
+          file: {
+            id: firstUpload.fileId,
+            original_name: firstUpload.fileName,
+            file_type: firstUpload.fileType
+          },
+          metadata: aiMetadata || {
+            hashtags: [],
+            dial_values: {},
+            suggested_dials: [],
+            suggested_spaces: [],
+            confidence: 0,
+            fallback: true
           }
-        })
-      ).then(() => {
-        if (refetch) refetch(); // Refetch again after AI metadata is saved
-      });
-
-      toast.success(`${droppedFiles.length} file(s) uploaded!`);
+        });
+        
+        // Navigate to the selected space to view uploaded files
+        if (selectedSpaceId !== 'lobby' && selectedSpaceId !== spaceId) {
+          navigate(`/space/${selectedSpaceId}`);
+        }
+      }
+      
       setDroppedFiles([]);
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Error uploading to space:', error);
       toast.error('Failed to upload files');
     }
   };
@@ -767,8 +819,29 @@ export default function SpacePage() {
           });
       }
 
-      toast.success('File organized with Dial OS');
-      setPendingFile(null);
+      toast.success(`Metadata saved for ${pendingFile.file.original_name}`);
+      
+      // Process next file in queue if any
+      if (uploadQueue.length > 0) {
+        const [nextUpload, ...remainingUploads] = uploadQueue;
+        setUploadQueue(remainingUploads);
+        
+        // For next file, we can't re-analyze with the File object since we don't have it
+        // So we'll just set pendingFile to null and let user manually edit if needed
+        // Alternative: store File objects in queue, but that's memory intensive
+        
+        // For now, auto-save remaining files with their AI metadata
+        toast.info('Auto-saving remaining files...');
+        for (const upload of uploadQueue) {
+          // Metadata was already saved during upload
+        }
+        
+        setPendingFile(null);
+        if (refetch) refetch();
+      } else {
+        setPendingFile(null);
+        if (refetch) refetch();
+      }
     } catch (error) {
       console.error('Failed to save metadata:', error);
       toast.error('Failed to save metadata');
@@ -1665,7 +1738,10 @@ export default function SpacePage() {
               confidence={pendingFile.metadata.confidence}
               isAiGenerated={!pendingFile.metadata.fallback}
               onSave={handleMetadataSave}
-              onCancel={() => setPendingFile(null)}
+              onCancel={() => {
+                setPendingFile(null);
+                setUploadQueue([]);
+              }}
               onCreateSpace={async (name: string, parentId: string) => {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;

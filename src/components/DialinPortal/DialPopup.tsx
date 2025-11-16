@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Close, Share, Users, Smile, Plus } from '../icons';
 import { Card } from '../ui/card';
-import { Trash2, Edit3, Download, Copy, Eye, Globe, Play, Sparkles, X } from 'lucide-react';
+import { Trash2, Edit3, Download, Copy, Eye, Globe, Play, Sparkles, X, Volume2, VolumeX, Image, Upload, Settings } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
+import { Slider } from '../ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MetadataDetailsPanel } from './MetadataDetailsPanel';
@@ -14,6 +15,7 @@ import { DOSMindMap } from './DOSMindMap';
 import { DOSHeatMap } from './DOSHeatMap';
 import { DOSCharts } from './DOSCharts';
 import { DOSVennDiagram } from './DOSVennDiagram';
+import { MediaCarousel } from './MediaCarousel';
 import type { MetadataItem } from './DOSPanel';
 
 interface DialPopupProps {
@@ -32,6 +34,14 @@ interface DialPopupProps {
   onDelete?: (itemId: string) => void;
   onRename?: (itemId: string, newName: string) => void;
   on360Toggle?: (itemId: string, enabled: boolean) => void;
+  on360AxisChange?: (itemId: string, axis: 'x' | 'y', value: number) => void;
+  on360VolumeChange?: (itemId: string, volume: number) => void;
+  on360MuteToggle?: (itemId: string, muted: boolean) => void;
+  on360RotationToggle?: (itemId: string, enabled: boolean) => void;
+  on360RotationSpeedChange?: (itemId: string, speed: number) => void;
+  onFlipHorizontalToggle?: (itemId: string, flipped: boolean) => void;
+  onFlipVerticalToggle?: (itemId: string, flipped: boolean) => void;
+  onUpdateThumbnail?: (itemId: string, thumbnailUrl: string) => void;
 }
 
 interface ActionOption {
@@ -41,7 +51,7 @@ interface ActionOption {
   variant?: 'default' | 'destructive';
 }
 
-export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, on360Toggle }: DialPopupProps) {
+export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onRename, on360Toggle, on360AxisChange, on360VolumeChange, on360MuteToggle, on360RotationToggle, on360RotationSpeedChange, onFlipHorizontalToggle, onFlipVerticalToggle, onUpdateThumbnail }: DialPopupProps) {
   // Early return MUST be before any hooks
   if (!item) return null;
 
@@ -56,6 +66,18 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [previewMetadata, setPreviewMetadata] = useState<{ hashtags: string[], dial_values: any } | null>(null);
   const [newHashtag, setNewHashtag] = useState('');
+  const [xAxis, setXAxis] = useState(0);
+  const [yAxis, setYAxis] = useState(0);
+  const [volume, setVolume] = useState(50);
+  const [isMuted, setIsMuted] = useState(true);
+  const [rotationEnabled, setRotationEnabled] = useState(false);
+  const [rotationSpeed, setRotationSpeed] = useState(1);
+  const [flipHorizontal, setFlipHorizontal] = useState(false);
+  const [flipVertical, setFlipVertical] = useState(false);
+  const [uploadedThumbnails, setUploadedThumbnails] = useState<string[]>([]);
+  const [thumbnailMediaTypes, setThumbnailMediaTypes] = useState<('image' | 'video')[]>([]);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const thumbnailInputRef = React.useRef<HTMLInputElement>(null);
 
   // ESC key handling
   useEffect(() => {
@@ -95,13 +117,23 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
         try {
           const { data, error } = await supabase
             .from('files')
-            .select('show_360, show_play_all_button')
+            .select('show_360, show_play_all_button, x_axis_offset, y_axis_offset, rotation_enabled, rotation_speed, thumbnail_path')
             .eq('id', item.id)
             .maybeSingle();
           
           if (data && !error) {
             setShow360(data.show_360 || false);
             setShowPlayAllButton(data.show_play_all_button || false);
+            setXAxis(data.x_axis_offset || 0);
+            setYAxis(data.y_axis_offset || 0);
+            setRotationEnabled(data.rotation_enabled || false);
+            setRotationSpeed(data.rotation_speed || 1);
+            
+            // Load thumbnail if available
+            if (data.thumbnail_path) {
+              setUploadedThumbnails([data.thumbnail_path]);
+              setThumbnailMediaTypes(['image']);
+            }
           }
         } catch (error) {
           console.error('Error fetching settings:', error);
@@ -172,6 +204,107 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
     } catch (error) {
       console.error('Error updating play all button setting:', error);
       toast.error('Failed to update play all button setting');
+    }
+  };
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    setUploadingThumbnail(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to upload files');
+        setUploadingThumbnail(false);
+        return;
+      }
+
+      for (const file of Array.from(files)) {
+        const isVideo = file.type.startsWith('video/');
+        const isImage = file.type.startsWith('image/');
+
+        if (!isVideo && !isImage) {
+          toast.error('Please select image or video files only');
+          continue;
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/thumbnails/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from('space-covers')
+          .upload(fileName, file);
+
+        if (error) {
+          console.error('Upload error:', error);
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('space-covers')
+          .getPublicUrl(data.path);
+
+        setUploadedThumbnails(prev => [...prev, publicUrl]);
+        setThumbnailMediaTypes(prev => [...prev, isVideo ? 'video' : 'image']);
+        
+        // Update the file thumbnail_path in the database
+        const { error: updateError } = await supabase
+          .from('files')
+          .update({ thumbnail_path: `space-covers/${data.path}` })
+          .eq('id', item.id)
+          .eq('owner_id', user.id);
+
+        if (updateError) {
+          console.error('Error updating file thumbnail:', updateError);
+        }
+        
+        if (onUpdateThumbnail) {
+          onUpdateThumbnail(item.id, publicUrl);
+        }
+        
+        toast.success(`Thumbnail uploaded and set`);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
+  const removeThumbnail = async (index: number) => {
+    setUploadedThumbnails(prev => prev.filter((_, i) => i !== index));
+    setThumbnailMediaTypes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const selectThumbnail = async (imageUrl: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('files')
+        .update({ thumbnail_path: imageUrl })
+        .eq('id', item.id)
+        .eq('owner_id', user.id);
+
+      if (error) {
+        console.error('Error updating file thumbnail:', error);
+        toast.error('Failed to update thumbnail');
+        return;
+      }
+
+      if (onUpdateThumbnail) {
+        onUpdateThumbnail(item.id, imageUrl);
+      }
+      
+      toast.success('Thumbnail updated');
+    } catch (err) {
+      console.error('Error updating file:', err);
+      toast.error('Failed to update thumbnail');
     }
   };
 
@@ -507,9 +640,55 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                   <>
                     <h3 className="font-semibold mb-4 break-words whitespace-normal">{item.title}</h3>
 
+                    {/* Thumbnail Upload Section */}
+                    <div className="mb-4 space-y-2">
+                      <div className="flex items-center gap-2 px-1">
+                        <Image size={14} className="text-primary" />
+                        <span className="text-xs font-bold text-foreground uppercase tracking-wider">Thumbnail</span>
+                      </div>
+                      <div className="bg-background/50 border border-white/10 rounded-lg p-3 space-y-2">
+                        <button
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-lg transition-all duration-200"
+                          onClick={() => thumbnailInputRef.current?.click()}
+                          disabled={uploadingThumbnail}
+                        >
+                          {uploadingThumbnail ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+                              <span className="text-xs font-medium text-foreground">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={16} className="text-foreground" />
+                              <span className="text-xs font-medium text-foreground">Upload Thumbnail</span>
+                            </>
+                          )}
+                        </button>
+                        
+                        <input
+                          ref={thumbnailInputRef}
+                          type="file"
+                          accept="image/*,video/mp4,video/quicktime"
+                          multiple
+                          onChange={handleThumbnailUpload}
+                          className="hidden"
+                        />
+
+                        {uploadedThumbnails.length > 0 && (
+                          <MediaCarousel
+                            items={uploadedThumbnails}
+                            mediaTypes={thumbnailMediaTypes}
+                            onSelect={selectThumbnail}
+                            onRemove={removeThumbnail}
+                            selectedUrl={item.thumb}
+                          />
+                        )}
+                      </div>
+                    </div>
+
                     {/* 360 View Toggle */}
                     <div className="mb-4 p-3 bg-background/50 rounded-lg border border-white/10">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <Globe size={18} className="text-primary" />
                           <span className="text-sm font-medium">Display as 360°</span>
@@ -519,6 +698,114 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
                           onCheckedChange={handle360Toggle}
                         />
                       </div>
+
+                      {/* 360 Advanced Controls */}
+                      {show360 && (
+                        <div className="space-y-3 pt-3 border-t border-white/10">
+                          <div className="space-y-1">
+                            <label className="text-xs text-foreground/70">X-Axis Offset</label>
+                            <Slider
+                              value={[xAxis]}
+                              onValueChange={(value) => setXAxis(value[0])}
+                              onValueCommit={(value) => on360AxisChange?.(item.id, 'x', value[0])}
+                              min={-90}
+                              max={90}
+                              step={1}
+                            />
+                            <span className="text-[10px] text-foreground/60">{xAxis}°</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs text-foreground/70">Y-Axis Offset</label>
+                            <Slider
+                              value={[yAxis]}
+                              onValueChange={(value) => setYAxis(value[0])}
+                              onValueCommit={(value) => on360AxisChange?.(item.id, 'y', value[0])}
+                              min={-90}
+                              max={90}
+                              step={1}
+                            />
+                            <span className="text-[10px] text-foreground/60">{yAxis}°</span>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              {isMuted ? <VolumeX size={12} className="text-foreground" /> : <Volume2 size={12} className="text-foreground" />}
+                              <span className="text-xs text-foreground">Audio</span>
+                            </div>
+                            <Switch
+                              checked={!isMuted}
+                              onCheckedChange={(checked) => {
+                                setIsMuted(!checked);
+                                on360MuteToggle?.(item.id, !checked);
+                              }}
+                            />
+                          </div>
+
+                          {!isMuted && (
+                            <div className="space-y-1">
+                              <label className="text-xs text-foreground/70">Volume</label>
+                              <Slider
+                                value={[volume]}
+                                onValueChange={(value) => setVolume(value[0])}
+                                onValueCommit={(value) => on360VolumeChange?.(item.id, value[0])}
+                                min={0}
+                                max={100}
+                                step={1}
+                              />
+                              <span className="text-[10px] text-foreground/60">{volume}%</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-foreground">Auto Rotate</span>
+                            <Switch
+                              checked={rotationEnabled}
+                              onCheckedChange={(checked) => {
+                                setRotationEnabled(checked);
+                                on360RotationToggle?.(item.id, checked);
+                              }}
+                            />
+                          </div>
+
+                          {rotationEnabled && (
+                            <div className="space-y-1">
+                              <label className="text-xs text-foreground/70">Rotation Speed</label>
+                              <Slider
+                                value={[rotationSpeed]}
+                                onValueChange={(value) => setRotationSpeed(value[0])}
+                                onValueCommit={(value) => on360RotationSpeedChange?.(item.id, value[0])}
+                                min={0.1}
+                                max={5}
+                                step={0.1}
+                              />
+                              <span className="text-[10px] text-foreground/60">{rotationSpeed.toFixed(1)}x</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-foreground">Flip Horizontal</span>
+                            <Switch
+                              checked={flipHorizontal}
+                              onCheckedChange={(checked) => {
+                                setFlipHorizontal(checked);
+                                onFlipHorizontalToggle?.(item.id, checked);
+                              }}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-foreground">Flip Vertical</span>
+                            <Switch
+                              checked={flipVertical}
+                              onCheckedChange={(checked) => {
+                                setFlipVertical(checked);
+                                onFlipVerticalToggle?.(item.id, checked);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Play All Button Toggle */}

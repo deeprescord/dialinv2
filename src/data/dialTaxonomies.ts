@@ -6,73 +6,199 @@ export interface DialDefinition {
   type: 'slider' | 'select';
   options?: string[];
   defaultValue: any;
+  multiSelect?: boolean; // Allow multiple selections for select type
+  sliderLabels?: { min: string; max: string }; // Semantic labels for slider endpoints
 }
 
-// Common dials for all content
-export const commonDials: DialDefinition[] = [
-  { key: 'mood', label: 'Mood', type: 'select', options: ['happy', 'sad', 'calm', 'excited', 'angry', 'peaceful', 'neutral'], defaultValue: 'neutral' },
-  { key: 'vibe', label: 'Vibe', type: 'select', options: ['chill', 'energetic', 'dark', 'uplifting', 'contemplative', 'futuristic', 'neutral'], defaultValue: 'neutral' },
-  { key: 'energy', label: 'Energy Level', type: 'slider', defaultValue: 5 },
-];
+// Common dials - not used directly, replaced by semantic content-specific dials
 
-// Food/Restaurant photos
+// Food/Restaurant photos - TRIANGULATION: Heat Level + Cuisine + Occasion
 export const foodDials: DialDefinition[] = [
-  ...commonDials,
-  { key: 'spiciness', label: 'Spiciness', type: 'slider', defaultValue: 5 },
-  { key: 'richness', label: 'Richness', type: 'slider', defaultValue: 5 },
-  { key: 'presentation', label: 'Presentation', type: 'slider', defaultValue: 7 },
-  { key: 'price_range', label: 'Price Range', type: 'select', options: ['$', '$$', '$$$', '$$$$'], defaultValue: '$$' },
-  { key: 'cuisine', label: 'Cuisine Type', type: 'select', options: ['italian', 'chinese', 'mexican', 'japanese', 'american', 'indian', 'thai', 'other'], defaultValue: 'other' },
+  { 
+    key: 'heat_level', 
+    label: 'Heat Level', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: 'Mild', max: 'Fiery' }
+  },
+  { 
+    key: 'cuisine', 
+    label: 'Cuisine', 
+    type: 'select', 
+    multiSelect: true,
+    options: ['italian', 'chinese', 'mexican', 'japanese', 'american', 'indian', 'thai', 'mediterranean', 'fusion', 'french', 'korean', 'vietnamese', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'occasion', 
+    label: 'Occasion', 
+    type: 'select',
+    multiSelect: true,
+    options: ['casual', 'fine-dining', 'comfort-food', 'healthy', 'indulgent', 'street-food', 'homemade', 'brunch', 'date-night', 'family', 'other'], 
+    defaultValue: [] 
+  },
 ];
 
-// Music files
+// Music files - TRIANGULATION: Energy + Genre + Vibe
 export const musicDials: DialDefinition[] = [
-  ...commonDials,
-  { key: 'tempo', label: 'Tempo', type: 'slider', defaultValue: 5 },
-  { key: 'genre', label: 'Genre', type: 'select', options: ['rock', 'pop', 'jazz', 'classical', 'electronic', 'hip-hop', 'country', 'r&b', 'other'], defaultValue: 'other' },
-  { key: 'acousticness', label: 'Acousticness', type: 'slider', defaultValue: 5 },
-  { key: 'danceability', label: 'Danceability', type: 'slider', defaultValue: 5 },
-  { key: 'decade', label: 'Decade', type: 'select', options: ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'], defaultValue: '2020s' },
+  { 
+    key: 'energy', 
+    label: 'Energy', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: '9pm (Background)', max: '2am (Peak Party)' }
+  },
+  { 
+    key: 'genre', 
+    label: 'Genre', 
+    type: 'select',
+    multiSelect: true,
+    options: ['dance', 'hip-hop', 'pop', 'rock', 'electronic', 'jazz', 'classical', 'r&b', 'country', 'indie', 'metal', 'reggae', 'latin', 'k-pop', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'vibe', 
+    label: 'Vibe', 
+    type: 'select',
+    multiSelect: true,
+    options: ['inspired', 'club', 'studying', 'cooking', 'workout', 'relaxing', 'romantic', 'driving', 'focus', 'party', 'melancholic', 'uplifting', 'other'], 
+    defaultValue: [] 
+  },
 ];
 
-// Location/Travel photos
+// Location/Travel photos - TRIANGULATION: Atmosphere + Setting + Vibe
 export const locationDials: DialDefinition[] = [
-  ...commonDials,
-  { key: 'atmosphere', label: 'Atmosphere', type: 'slider', defaultValue: 5 },
-  { key: 'noise_level', label: 'Noise Level', type: 'slider', defaultValue: 5 },
-  { key: 'lighting', label: 'Lighting Quality', type: 'slider', defaultValue: 5 },
-  { key: 'crowd_size', label: 'Crowd Size', type: 'slider', defaultValue: 5 },
-  { key: 'location_type', label: 'Location Type', type: 'select', options: ['restaurant', 'park', 'museum', 'beach', 'mountain', 'city', 'indoor', 'outdoor', 'other'], defaultValue: 'other' },
+  { 
+    key: 'atmosphere', 
+    label: 'Atmosphere', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: 'Quiet Retreat', max: 'Bustling Venue' }
+  },
+  { 
+    key: 'setting', 
+    label: 'Setting', 
+    type: 'select',
+    multiSelect: true,
+    options: ['restaurant', 'park', 'museum', 'beach', 'mountain', 'city', 'cafe', 'indoor', 'outdoor', 'venue', 'nature', 'historic', 'modern', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'vibe', 
+    label: 'Vibe', 
+    type: 'select',
+    multiSelect: true,
+    options: ['peaceful', 'lively', 'romantic', 'family-friendly', 'adventurous', 'cultural', 'relaxing', 'inspiring', 'touristy', 'hidden-gem', 'other'], 
+    defaultValue: [] 
+  },
 ];
 
-// People/Social photos
+// People/Social photos - TRIANGULATION: Group Energy + Activity + Vibe
 export const peopleDials: DialDefinition[] = [
-  ...commonDials,
-  { key: 'group_size', label: 'Group Size', type: 'slider', defaultValue: 1 },
-  { key: 'activity', label: 'Activity', type: 'select', options: ['casual', 'sports', 'celebration', 'work', 'travel', 'dining', 'entertainment', 'other'], defaultValue: 'casual' },
-  { key: 'formality', label: 'Formality', type: 'slider', defaultValue: 5 },
+  { 
+    key: 'group_energy', 
+    label: 'Group Energy', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: 'Intimate/Quiet', max: 'Lively/Energetic' }
+  },
+  { 
+    key: 'activity', 
+    label: 'Activity', 
+    type: 'select',
+    multiSelect: true,
+    options: ['casual', 'sports', 'celebration', 'work', 'travel', 'dining', 'entertainment', 'outdoor', 'event', 'party', 'family', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'vibe', 
+    label: 'Vibe', 
+    type: 'select',
+    multiSelect: true,
+    options: ['professional', 'casual', 'festive', 'intimate', 'fun', 'formal', 'relaxed', 'adventurous', 'nostalgic', 'other'], 
+    defaultValue: [] 
+  },
 ];
 
-// Video files
+// Video files - TRIANGULATION: Stimulation + Content Type + Purpose
 export const videoDials: DialDefinition[] = [
-  ...commonDials,
-  { key: 'production_quality', label: 'Production Quality', type: 'slider', defaultValue: 5 },
-  { key: 'video_type', label: 'Video Type', type: 'select', options: ['documentary', 'vlog', 'tutorial', 'music-video', 'short-film', 'animation', 'other'], defaultValue: 'other' },
-  { key: 'decade', label: 'Era', type: 'select', options: ['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'], defaultValue: '2020s' },
+  { 
+    key: 'stimulation', 
+    label: 'Stimulation', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: 'Sleep/Meditation', max: 'Thriller/Horror' }
+  },
+  { 
+    key: 'content_type', 
+    label: 'Content Type', 
+    type: 'select',
+    multiSelect: true,
+    options: ['entertainment', 'educational', 'vlog', 'documentary', 'tutorial', 'music-video', 'sports', 'comedy', 'drama', 'action', 'animation', 'news', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'purpose', 
+    label: 'Purpose', 
+    type: 'select',
+    multiSelect: true,
+    options: ['inspiring', 'relaxing', 'exciting', 'informative', 'funny', 'dramatic', 'atmospheric', 'background', 'learning', 'entertainment', 'sleep', 'focus', 'other'], 
+    defaultValue: [] 
+  },
 ];
 
-// Document files (PDFs, etc.)
+// Document files (PDFs, etc.) - TRIANGULATION: Urgency + Category + Access Frequency
 export const documentDials: DialDefinition[] = [
-  { key: 'importance', label: 'Importance', type: 'slider', defaultValue: 5 },
-  { key: 'document_type', label: 'Document Type', type: 'select', options: ['personal', 'work', 'financial', 'legal', 'educational', 'reference', 'other'], defaultValue: 'other' },
-  { key: 'urgency', label: 'Urgency', type: 'slider', defaultValue: 3 },
+  { 
+    key: 'urgency', 
+    label: 'Urgency', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: 'Archive', max: 'Critical' }
+  },
+  { 
+    key: 'category', 
+    label: 'Category', 
+    type: 'select',
+    multiSelect: true,
+    options: ['personal', 'work', 'financial', 'legal', 'educational', 'reference', 'creative', 'medical', 'travel', 'contracts', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'access_frequency', 
+    label: 'Access Frequency', 
+    type: 'select',
+    multiSelect: false,
+    options: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'archive', 'one-time'], 
+    defaultValue: 'monthly' 
+  },
 ];
 
-// Generic image dials (fallback)
+// Generic image dials (fallback) - TRIANGULATION: Visual Energy + Subject + Context
 export const imageDials: DialDefinition[] = [
-  ...commonDials,
-  { key: 'quality', label: 'Quality', type: 'slider', defaultValue: 7 },
-  { key: 'subject', label: 'Subject', type: 'select', options: ['landscape', 'portrait', 'food', 'architecture', 'nature', 'urban', 'abstract', 'other'], defaultValue: 'other' },
+  { 
+    key: 'visual_energy', 
+    label: 'Visual Energy', 
+    type: 'slider', 
+    defaultValue: 5,
+    sliderLabels: { min: 'Calm/Serene', max: 'Vibrant/Dynamic' }
+  },
+  { 
+    key: 'subject', 
+    label: 'Subject', 
+    type: 'select',
+    multiSelect: true,
+    options: ['landscape', 'portrait', 'food', 'architecture', 'nature', 'urban', 'abstract', 'product', 'animal', 'event', 'art', 'other'], 
+    defaultValue: [] 
+  },
+  { 
+    key: 'context', 
+    label: 'Context', 
+    type: 'select',
+    multiSelect: true,
+    options: ['professional', 'casual', 'artistic', 'nostalgic', 'energetic', 'peaceful', 'dramatic', 'playful', 'inspirational', 'documentary', 'other'], 
+    defaultValue: [] 
+  },
 ];
 
 // Get appropriate dial taxonomy based on file type and detected content
@@ -119,6 +245,6 @@ export function getDialTaxonomy(fileType: string, mimeType: string, detectedCont
     return imageDials;
   }
 
-  // Default to common dials
-  return commonDials;
+  // Default to generic image dials for unknown types
+  return imageDials;
 }

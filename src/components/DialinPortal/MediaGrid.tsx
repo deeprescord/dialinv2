@@ -141,6 +141,8 @@ export function MediaGrid({
             key={item.id}
             itemId={item.id}
             isSpace={isSpace}
+            itemName={item.title || 'Untitled'}
+            thumbnailUrl={item.thumb}
             onAdd={onAdd ? () => onAdd(item.id, isSpace) : undefined}
             onMove={onMove ? () => onMove(item.id, isSpace) : undefined}
             onConnect={isSpace && onConnect ? () => onConnect(item.id) : undefined}

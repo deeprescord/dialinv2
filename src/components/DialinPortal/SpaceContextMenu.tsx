@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink, BarChart3 } from 'lucide-react';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
@@ -92,6 +93,7 @@ export function SpaceContextMenu({
   const [syncThumbnailBackground, setSyncThumbnailBackground] = useState(false);
   const [show360Settings, setShow360Settings] = useState(false);
   const [showPlayAllButton, setShowPlayAllButton] = useState(false);
+  const [activeTab, setActiveTab] = useState<'settings' | 'dials'>('settings');
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -521,180 +523,165 @@ export function SpaceContextMenu({
                 </Button>
               </div>
 
-              {/* Main Content */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                {/* Thumbnail and Background Side by Side with Link Button */}
-                <div className="relative grid grid-cols-2 gap-3">
-                {/* Space Thumbnail Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 px-1">
-                    <Image size={14} className="text-primary" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Thumbnail</span>
-                  </div>
-                  <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
-                    <button
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
-                      onClick={() => {
-                        thumbnailInputRef.current?.click();
-                        if (syncThumbnailBackground) {
-                          backgroundInputRef.current?.click();
-                        }
-                      }}
-                      disabled={uploadingThumbnail}
-                    >
-                      {uploadingThumbnail ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span className="text-xs font-medium text-white">Uploading...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload size={16} className="text-white" />
-                          <span className="text-xs font-medium text-white">Upload</span>
-                        </>
-                      )}
-                    </button>
-                    
-                    
-                    <input
-                      ref={thumbnailInputRef}
-                      type="file"
-                      accept="image/*,video/mp4,video/quicktime"
-                      multiple
-                      onChange={(e) => {
-                        handleThumbnailUpload(e);
-                        if (syncThumbnailBackground && e.target.files) {
-                          // Create a new event with the same files for background upload
-                          const bgEvent = { target: { files: e.target.files } } as React.ChangeEvent<HTMLInputElement>;
-                          handleBackgroundUpload(bgEvent);
-                        }
-                      }}
-                      className="hidden"
-                    />
+              {/* Tabs */}
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'settings' | 'dials')} className="flex-1 flex flex-col">
+                <TabsList className="w-full grid grid-cols-2 bg-black/30 border-b border-white/10 rounded-none h-12">
+                  <TabsTrigger value="settings" className="data-[state=active]:bg-primary/20 data-[state=active]:text-white text-white/60">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </TabsTrigger>
+                  <TabsTrigger value="dials" className="data-[state=active]:bg-primary/20 data-[state=active]:text-white text-white/60">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Dials
+                  </TabsTrigger>
+                </TabsList>
 
-                    <MediaCarousel
-                      items={uploadedThumbnails}
-                      mediaTypes={thumbnailMediaTypes}
-                      onSelect={(url) => {
-                        selectThumbnail(url);
-                        if (syncThumbnailBackground) {
-                          selectBackground(url);
-                        }
-                      }}
-                      onRemove={removeThumbnail}
-                      selectedUrl={space.thumb}
-                    />
-                  </div>
-                </div>
-
-                {/* Space Background Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 px-1">
-                    <ImageIcon size={14} className="text-primary" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Background</span>
-                  </div>
-                  <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
-                    <button
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
-                      onClick={() => {
-                        backgroundInputRef.current?.click();
-                        if (syncThumbnailBackground) {
+                {/* Settings Tab */}
+                <TabsContent value="settings" className="flex-1 overflow-y-auto p-3 space-y-3 mt-0">
+                  {/* Thumbnail and Background Side by Side with Link Button */}
+                  <div className="relative grid grid-cols-2 gap-3">
+                  {/* Space Thumbnail Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-1">
+                      <Image size={14} className="text-primary" />
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">Thumbnail</span>
+                    </div>
+                    <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
+                      <button
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
+                        onClick={() => {
                           thumbnailInputRef.current?.click();
-                        }
-                      }}
-                      disabled={uploadingBackground}
-                    >
-                      {uploadingBackground ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span className="text-xs font-medium text-white">Uploading...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload size={16} className="text-white" />
-                          <span className="text-xs font-medium text-white">Upload</span>
-                        </>
+                          if (syncThumbnailBackground) {
+                            backgroundInputRef.current?.click();
+                          }
+                        }}
+                        disabled={uploadingThumbnail}
+                      >
+                        {uploadingThumbnail ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="text-xs font-medium text-white">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={16} className="text-white" />
+                            <span className="text-xs font-medium text-white">Upload</span>
+                          </>
+                        )}
+                      </button>
+                      
+                      
+                      <input
+                        ref={thumbnailInputRef}
+                        type="file"
+                        accept="image/*,video/mp4,video/quicktime"
+                        multiple
+                        onChange={(e) => {
+                          handleThumbnailUpload(e);
+                          if (syncThumbnailBackground && e.target.files) {
+                            // Create a new event with the same files for background upload
+                            const bgEvent = { target: { files: e.target.files } } as React.ChangeEvent<HTMLInputElement>;
+                            handleBackgroundUpload(bgEvent);
+                          }
+                        }}
+                        className="hidden"
+                      />
+
+                      {uploadedThumbnails.length > 0 && (
+                        <MediaCarousel
+                          items={uploadedThumbnails}
+                          mediaTypes={thumbnailMediaTypes}
+                          onSelect={selectThumbnail}
+                          onRemove={() => {}}
+                        />
                       )}
-                    </button>
-                    
-                    
-                    <input
-                      ref={backgroundInputRef}
-                      type="file"
-                      accept="image/*,video/mp4,video/quicktime"
-                      multiple
-                      onChange={(e) => {
-                        handleBackgroundUpload(e);
-                        if (syncThumbnailBackground && e.target.files) {
-                          const thumbEvent = { target: { files: e.target.files } } as React.ChangeEvent<HTMLInputElement>;
-                          handleThumbnailUpload(thumbEvent);
-                        }
-                      }}
-                      className="hidden"
-                    />
-
-                    <MediaCarousel
-                      items={uploadedBackgrounds}
-                      mediaTypes={backgroundMediaTypes}
-                      onSelect={(url) => {
-                        selectBackground(url);
-                        if (syncThumbnailBackground) {
-                          selectThumbnail(url);
-                        }
-                      }}
-                      onRemove={removeBackground}
-                      selectedUrl={space.backgroundImage}
-                    />
+                    </div>
                   </div>
+
+                  {/* Space Background Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-1">
+                      <ImageIcon size={14} className="text-primary" />
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">Background</span>
+                    </div>
+                    <div className="bg-black/20 border border-white/10 rounded-xl p-3 space-y-2">
+                      <button
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 hover:border-primary/60 rounded-xl transition-all duration-200"
+                        onClick={() => backgroundInputRef.current?.click()}
+                        disabled={uploadingBackground}
+                      >
+                        {uploadingBackground ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="text-xs font-medium text-white">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={16} className="text-white" />
+                            <span className="text-xs font-medium text-white">Upload</span>
+                          </>
+                        )}
+                      </button>
+
+                      <input
+                        ref={backgroundInputRef}
+                        type="file"
+                        accept="image/*,video/mp4,video/quicktime"
+                        multiple
+                        onChange={handleBackgroundUpload}
+                        className="hidden"
+                      />
+
+                      {uploadedBackgrounds.length > 0 && (
+                        <MediaCarousel
+                          items={uploadedBackgrounds}
+                          mediaTypes={backgroundMediaTypes}
+                          onSelect={selectBackground}
+                          onRemove={() => {}}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sync Thumbnail/Background Button */}
+                  <button
+                    onClick={() => setSyncThumbnailBackground(!syncThumbnailBackground)}
+                    className={`absolute -right-1 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full border-2 transition-all duration-200 ${
+                      syncThumbnailBackground
+                        ? 'bg-primary/30 border-primary/60 text-white hover:bg-primary/40'
+                        : 'bg-black/40 border-white/20 text-white/40 hover:border-white/40 hover:text-white/60'
+                    }`}
+                    title={syncThumbnailBackground ? "Unlink uploads" : "Link uploads"}
+                  >
+                    {syncThumbnailBackground ? (
+                      <Link size={14} />
+                    ) : (
+                      <Unlink size={14} />
+                    )}
+                  </button>
                 </div>
-                
-                {/* Link Icon Button - Positioned between sections */}
-                <button
-                  onClick={() => setSyncThumbnailBackground(!syncThumbnailBackground)}
-                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-2 rounded-full border-2 transition-all shadow-lg ${
-                    syncThumbnailBackground
-                      ? 'bg-primary border-primary text-white'
-                      : 'bg-black/80 border-white/30 text-white/60 hover:border-white/50 hover:text-white'
-                  }`}
-                  title={syncThumbnailBackground ? 'Linked - uploads will sync' : 'Click to link uploads'}
-                >
-                  {syncThumbnailBackground ? (
-                    <Link size={16} strokeWidth={2.5} />
-                  ) : (
-                    <Unlink size={16} strokeWidth={2.5} />
-                  )}
-                </button>
-              </div>
 
-                {/* Divider */}
-                <div className="h-px bg-white/10 my-3" />
-
-                {/* Space Name & Description */}
+                {/* Name and Description */}
                 {isRenaming ? (
-                  <div className="mb-2">
-                    <Input
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      onBlur={handleRename}
-                      className="text-xs h-8 bg-black/40 border-white/10 text-white"
-                      autoFocus
-                      placeholder="Space name"
-                    />
-                  </div>
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onBlur={handleRename}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Space name"
+                    className="mb-2 bg-black/40 border-white/20 text-white placeholder:text-white/40 focus:border-primary/60"
+                    autoFocus
+                  />
                 ) : isEditingDescription ? (
-                  <div className="mb-2">
-                    <Textarea
-                      value={newDescription}
-                      onChange={(e) => setNewDescription(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      onBlur={handleDescriptionUpdate}
-                      className="text-xs resize-none bg-black/40 border-white/10 text-white"
-                      rows={2}
-                      autoFocus
-                      placeholder="Welcome back phrase"
-                    />
-                  </div>
+                  <Textarea
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    onBlur={handleDescriptionUpdate}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Space description"
+                    className="mb-2 bg-black/40 border-white/20 text-white placeholder:text-white/40 focus:border-primary/60 min-h-[60px]"
+                    autoFocus
+                  />
                 ) : (
                   <div className="mb-2 space-y-0.5">
                     <p 
@@ -716,18 +703,16 @@ export function SpaceContextMenu({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-1">
                     <Globe size={14} className="text-primary" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">360 Mode</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Display as 360°</span>
                   </div>
 
-                {/* Menu Items */}
-                <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
-                  {/* 360° Toggle */}
-                  <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
-                    <div className="flex items-center gap-2">
-                      <Globe size={14} className="text-white" />
-                      <span className="text-xs text-white">360° View</span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
+                    {/* 360° Toggle */}
+                    <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                      <div className="flex items-center gap-2">
+                        <Globe size={14} className="text-white" />
+                        <span className="text-xs text-white">360° View</span>
+                      </div>
                       <Switch
                         checked={space.show360 || false}
                         onCheckedChange={(checked) => {
@@ -735,15 +720,13 @@ export function SpaceContextMenu({
                         }}
                       />
                     </div>
-                  </div>
 
-                  {/* Play All Button Toggle */}
-                  <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
-                    <div className="flex items-center gap-2">
-                      <Play size={14} className="text-white" />
-                      <span className="text-xs text-white">Show Play All Button</span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                    {/* Play All Button Toggle */}
+                    <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                      <div className="flex items-center gap-2">
+                        <Play size={14} className="text-white" />
+                        <span className="text-xs text-white">Show Play All Button</span>
+                      </div>
                       <Switch
                         checked={showPlayAllButton}
                         onCheckedChange={async (checked) => {
@@ -763,209 +746,229 @@ export function SpaceContextMenu({
                         }}
                       />
                     </div>
+
+                    {/* 360° Settings */}
+                    {space.show360 && (
+                      <div className="space-y-3 pt-2 border-t border-white/10 mt-2">
+                        {/* X-Axis Offset */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between px-2">
+                            <span className="text-xs text-white">X-Axis Offset</span>
+                            <span className="text-xs text-white/60">{xAxis}°</span>
+                          </div>
+                          <Slider
+                            value={[xAxis]}
+                            onValueChange={([value]) => {
+                              setXAxis(value);
+                              on360AxisChange?.(space.id, 'x', value);
+                            }}
+                            min={-180}
+                            max={180}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+
+                        {/* Y-Axis Offset */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between px-2">
+                            <span className="text-xs text-white">Y-Axis Offset</span>
+                            <span className="text-xs text-white/60">{yAxis}°</span>
+                          </div>
+                          <Slider
+                            value={[yAxis]}
+                            onValueChange={([value]) => {
+                              setYAxis(value);
+                              on360AxisChange?.(space.id, 'y', value);
+                            }}
+                            min={-90}
+                            max={90}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+
+                        {/* Audio Controls */}
+                        <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                          <div className="flex items-center gap-2">
+                            {isMuted ? <VolumeX size={14} className="text-white" /> : <Volume2 size={14} className="text-white" />}
+                            <span className="text-xs text-white">Mute Audio</span>
+                          </div>
+                          <Switch
+                            checked={isMuted}
+                            onCheckedChange={(checked) => {
+                              setIsMuted(checked);
+                              on360MuteToggle?.(space.id, checked);
+                            }}
+                          />
+                        </div>
+
+                        {/* Volume Slider */}
+                        {!isMuted && (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between px-2">
+                              <span className="text-xs text-white">Volume</span>
+                              <span className="text-xs text-white/60">{volume}%</span>
+                            </div>
+                            <Slider
+                              value={[volume]}
+                              onValueChange={([value]) => {
+                                setVolume(value);
+                                on360VolumeChange?.(space.id, value);
+                              }}
+                              min={0}
+                              max={100}
+                              step={1}
+                              className="w-full"
+                            />
+                          </div>
+                        )}
+
+                        {/* Auto-Rotate */}
+                        <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                          <span className="text-xs text-white">Auto-Rotate</span>
+                          <Switch
+                            checked={rotationEnabled}
+                            onCheckedChange={(checked) => {
+                              setRotationEnabled(checked);
+                              on360RotationToggle?.(space.id, checked);
+                            }}
+                          />
+                        </div>
+
+                        {/* Rotation Speed */}
+                        {rotationEnabled && (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between px-2">
+                              <span className="text-xs text-white">Rotation Speed</span>
+                              <span className="text-xs text-white/60">{rotationSpeed}x</span>
+                            </div>
+                            <Slider
+                              value={[rotationSpeed]}
+                              onValueChange={([value]) => {
+                                setRotationSpeed(value);
+                                on360RotationSpeedChange?.(space.id, value);
+                              }}
+                              min={0.1}
+                              max={5}
+                              step={0.1}
+                              className="w-full"
+                            />
+                          </div>
+                        )}
+
+                        {/* Flip Controls */}
+                        <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                          <span className="text-xs text-white">Flip Horizontal</span>
+                          <Switch
+                            checked={space.flipHorizontal || false}
+                            onCheckedChange={(checked) => {
+                              onFlipHorizontalToggle?.(space.id, checked);
+                            }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                          <span className="text-xs text-white">Flip Vertical</span>
+                          <Switch
+                            checked={space.flipVertical || false}
+                            onCheckedChange={(checked) => {
+                              onFlipVerticalToggle?.(space.id, checked);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    <Settings size={14} className="text-primary" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">Actions</span>
                   </div>
 
-                  {/* 360° Settings Button */}
-                  {space.show360 && (
+                  <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
+                    {/* Rename */}
                     <button
-                      onClick={() => setShow360Settings(true)}
                       className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => setIsRenaming(true)}
+                      disabled={isRenaming || isEditingDescription}
                     >
-                      <Settings size={14} className="text-white" />
-                      <span className="text-xs text-white">360° Settings</span>
+                      <Edit3 size={14} className="text-white" />
+                      <span className="text-xs text-white">Rename</span>
                     </button>
-                  )}
 
-                  {/* Advanced 360° Controls */}
-                  {space.show360 && show360Advanced && (
-                    <div className="px-2 py-2 space-y-2 bg-black/20 rounded-lg ml-2 mr-1 my-1">
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-white/70">X Axis</label>
-                        <Slider
-                        value={[xAxis]}
-                        onValueChange={(value) => {
-                          setXAxis(value[0]);
-                        }}
-                        onValueCommit={(value) => {
-                          on360AxisChange?.(space.id, 'x', value[0]);
-                        }}
-                        min={-180}
-                        max={180}
-                        step={1}
-                      />
-                        <span className="text-[10px] text-white/60">{xAxis}°</span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-white/70">Y Axis</label>
-                      <Slider
-                        value={[yAxis]}
-                        onValueChange={(value) => {
-                          setYAxis(value[0]);
-                        }}
-                        onValueCommit={(value) => {
-                          on360AxisChange?.(space.id, 'y', value[0]);
-                        }}
-                        min={-90}
-                        max={90}
-                        step={1}
-                      />
-                        <span className="text-[10px] text-white/60">{yAxis}°</span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          {isMuted ? <VolumeX size={12} className="text-white" /> : <Volume2 size={12} className="text-white" />}
-                          <span className="text-[10px] text-white">Audio</span>
-                        </div>
-                      <Switch
-                        checked={!isMuted}
-                        onCheckedChange={(checked) => {
-                          setIsMuted(!checked);
-                          on360MuteToggle?.(space.id, !checked);
-                        }}
-                      />
-                    </div>
-
-                      {!isMuted && (
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-white/70">Volume</label>
-                        <Slider
-                          value={[volume]}
-                          onValueChange={(value) => {
-                            setVolume(value[0]);
-                          }}
-                          onValueCommit={(value) => {
-                            on360VolumeChange?.(space.id, value[0]);
-                          }}
-                          min={0}
-                          max={100}
-                          step={1}
-                        />
-                          <span className="text-[10px] text-white/60">{volume}%</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white">Auto Rotate</span>
-                      <Switch
-                        checked={rotationEnabled}
-                        onCheckedChange={(checked) => {
-                          setRotationEnabled(checked);
-                          on360RotationToggle?.(space.id, checked);
-                        }}
-                      />
-                    </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white">Flip Horizontal</span>
-                        <Switch
-                          checked={space.flipHorizontal || false}
-                          onCheckedChange={(checked) => {
-                            onFlipHorizontalToggle?.(space.id, checked);
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white">Flip Vertical</span>
-                        <Switch
-                          checked={space.flipVertical || false}
-                          onCheckedChange={(checked) => {
-                            onFlipVerticalToggle?.(space.id, checked);
-                          }}
-                        />
-                      </div>
-
-                      {rotationEnabled && (
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-white/70">Rotation Speed</label>
-                        <Slider
-                          value={[rotationSpeed]}
-                          onValueChange={(value) => {
-                            setRotationSpeed(value[0]);
-                          }}
-                          onValueCommit={(value) => {
-                            on360RotationSpeedChange?.(space.id, value[0]);
-                          }}
-                          min={0.1}
-                          max={5}
-                          step={0.1}
-                        />
-                          <span className="text-[10px] text-white/60">{rotationSpeed.toFixed(1)}x</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* View DOS */}
-                  {onToggleDOSPanel && (
+                    {/* Edit Description */}
                     <button
                       className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => setIsEditingDescription(true)}
+                      disabled={isRenaming || isEditingDescription}
+                    >
+                      <MessageSquare size={14} className="text-white" />
+                      <span className="text-xs text-white">Edit Description</span>
+                    </button>
+
+                    {/* Move Left */}
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => onReorder(space.id, 'left')}
+                    >
+                      <GripVertical size={14} className="text-white" />
+                      <span className="text-xs text-white">Move Left</span>
+                    </button>
+
+                    {/* Move Right */}
+                    <button
+                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                      onClick={() => {
+                        onReorder(space.id, 'right');
+                        onClose();
+                      }}
+                    >
+                      <GripVertical size={14} className="text-white" />
+                      <span className="text-xs text-white">Move Right</span>
+                    </button>
+
+                    {/* Delete - disabled for Home */}
+                    {!space.isHome && (
+                      <button
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        <Trash2 size={14} />
+                        <span className="text-xs">Delete</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Dials Tab */}
+              <TabsContent value="dials" className="flex-1 overflow-y-auto p-3 mt-0">
+                <div className="space-y-4">
+                  <div className="text-center space-y-2">
+                    <BarChart3 className="w-12 h-12 mx-auto text-primary/60" />
+                    <h3 className="text-lg font-semibold text-white">Space DOS Analysis</h3>
+                    <p className="text-sm text-white/60">Click "View DOS" to analyze this space's metadata and relationships</p>
+                  </div>
+
+                  {onToggleDOSPanel && (
+                    <Button
                       onClick={() => {
                         onToggleDOSPanel();
                         onClose();
                       }}
+                      className="w-full bg-primary/20 hover:bg-primary/30 border border-primary/40 text-white"
                     >
-                      <BarChart3 size={14} className="text-white" />
-                      <span className="text-xs text-white">View DOS</span>
-                    </button>
-                  )}
-
-                  {/* Rename */}
-                  <button
-                    className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                    onClick={() => setIsRenaming(true)}
-                    disabled={isRenaming || isEditingDescription}
-                  >
-                    <Edit3 size={14} className="text-white" />
-                    <span className="text-xs text-white">Rename</span>
-                  </button>
-
-                  {/* Edit Description */}
-                  <button
-                    className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                    onClick={() => setIsEditingDescription(true)}
-                    disabled={isRenaming || isEditingDescription}
-                  >
-                    <MessageSquare size={14} className="text-white" />
-                    <span className="text-xs text-white">Edit Description</span>
-                  </button>
-
-                  {/* Move Left */}
-                  <button
-                    className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                    onClick={() => onReorder(space.id, 'left')}
-                  >
-                    <GripVertical size={14} className="text-white" />
-                    <span className="text-xs text-white">Move Left</span>
-                  </button>
-
-                  {/* Move Right */}
-                  <button
-                    className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                    onClick={() => {
-                      onReorder(space.id, 'right');
-                      onClose();
-                    }}
-                  >
-                    <GripVertical size={14} className="text-white" />
-                    <span className="text-xs text-white">Move Right</span>
-                  </button>
-
-                  {/* Delete - disabled for Home */}
-                  {!space.isHome && (
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
-                      <Trash2 size={14} />
-                      <span className="text-xs">Delete</span>
-                    </button>
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      View DOS Panel
+                    </Button>
                   )}
                 </div>
-                </div>
-              </div>
+              </TabsContent>
+            </Tabs>
 
               {/* Footer */}
               <div className="p-3 border-t border-white/10 bg-black/10">

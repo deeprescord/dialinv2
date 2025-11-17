@@ -105,10 +105,6 @@ export function OrganizationMenu({
         {onDelete && (
           <>
             <ContextMenuSeparator />
-            <ContextMenuItem onClick={handleSelect}>
-              <CheckSquare className="mr-2 h-4 w-4" />
-              Select
-            </ContextMenuItem>
             <ContextMenuItem 
               onClick={onDelete}
               className="text-destructive focus:text-destructive"

@@ -208,25 +208,19 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const video = videoRefs.current.get(index);
     const audio = audioRefs.current.get(index);
 
-    if (video) {
-      // Ensure muted pre-start to satisfy autoplay policies
+    if (video && video.readyState >= 2) {
+      // Preload video metadata
       video.muted = true;
-      if (video.readyState < 2) video.load();
-      // Start playing early so it's ready when visible
-      const p = video.play();
-      if (p) p.catch(() => {});
+      video.load();
     }
 
-    if (audio) {
+    if (audio && audio.readyState >= 2) {
       audio.muted = true;
       audio.volume = 0;
-      if (audio.readyState < 2) audio.load();
-      // Start playing early so crossfade is smooth
-      const p = audio.play();
-      if (p) p.catch(() => {});
+      audio.load();
     }
 
-    // Also preload next 2 items
+    // Preload next items
     if (index + 1 < displayedItems.length) {
       preloadNextItem(index + 1);
     }
@@ -255,31 +249,37 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const previousIndex = playingIndex;
     setPlayingIndex(index);
     
-    // Handle video playback
-    videoRefs.current.forEach((video, idx) => {
-      if (idx === index) {
-        // Force play current video
-        video.muted = isMuted;
-        
-        // Always force play when visible
-        if (video.paused) {
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(e => {
-              console.log('Autoplay prevented, trying muted:', e);
-              video.muted = true;
-              video.play().then(() => {
-                // Once playing, respect user's mute preference
-                video.muted = isMuted;
-              }).catch(console.error);
-            });
-          }
-        } else {
-          // Already playing, just ensure mute state is correct
-          video.muted = isMuted;
+    // Handle video playback - FORCE play for current item
+    const currentVideo = videoRefs.current.get(index);
+    if (currentVideo) {
+      // Reset and force play
+      currentVideo.muted = true; // Start muted for autoplay
+      
+      const startVideo = () => {
+        const playPromise = currentVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            // Once playing, apply user's mute preference
+            currentVideo.muted = isMuted;
+          }).catch(e => {
+            console.log('Video autoplay failed:', e, 'Index:', index);
+            // Retry after brief delay
+            setTimeout(startVideo, 100);
+          });
         }
-      } else if (idx !== index + 1 && idx !== index + 2) {
-        // Stop all videos except current, next, and next+1
+      };
+      
+      // Start immediately or when ready
+      if (currentVideo.readyState >= 2) {
+        startVideo();
+      } else {
+        currentVideo.addEventListener('loadedmetadata', startVideo, { once: true });
+      }
+    }
+    
+    // Stop other videos (except next ones for preload)
+    videoRefs.current.forEach((video, idx) => {
+      if (idx !== index && idx !== index + 1 && idx !== index + 2) {
         if (!video.paused) {
           video.pause();
           video.currentTime = 0;
@@ -294,33 +294,37 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     if (currentAudio) {
       // Start from zero volume
       currentAudio.volume = 0;
-      currentAudio.muted = false; // Unmute to allow volume control
+      currentAudio.muted = false;
       
-      // Start playing if not already
-      if (currentAudio.paused) {
+      const startAudio = () => {
         const playPromise = currentAudio.play();
         if (playPromise !== undefined) {
-          playPromise.catch(e => {
-            console.log('Audio autoplay prevented:', e);
-            // Try muted
+          playPromise.then(() => {
+            // Fade in if not globally muted
+            if (!isMuted) {
+              const fadeInInterval = setInterval(() => {
+                if (currentAudio.volume < 0.95) {
+                  currentAudio.volume = Math.min(1, currentAudio.volume + 0.05);
+                } else {
+                  currentAudio.volume = 1;
+                  clearInterval(fadeInInterval);
+                }
+              }, crossfadeDuration / 20);
+            } else {
+              currentAudio.muted = true;
+            }
+          }).catch(e => {
+            console.log('Audio autoplay failed:', e);
             currentAudio.muted = true;
             currentAudio.play().catch(console.error);
           });
         }
-      }
-
-      // Fade in current audio (unless globally muted)
-      if (!isMuted) {
-        const fadeInInterval = setInterval(() => {
-          if (currentAudio.volume < 0.95) {
-            currentAudio.volume = Math.min(1, currentAudio.volume + 0.05);
-          } else {
-            currentAudio.volume = 1;
-            clearInterval(fadeInInterval);
-          }
-        }, crossfadeDuration / 20);
+      };
+      
+      if (currentAudio.readyState >= 2) {
+        startAudio();
       } else {
-        currentAudio.muted = true;
+        currentAudio.addEventListener('loadedmetadata', startAudio, { once: true });
       }
     }
 

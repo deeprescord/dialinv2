@@ -104,76 +104,84 @@ export function FloatingSelectionPanel() {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          className="fixed top-1/3 left-0 right-0 -translate-y-1/2 z-50 mx-auto w-[90%] max-w-xl"
+          className="fixed top-[15vh] left-0 right-0 -translate-y-1/2 z-[200] mx-auto w-[90%] max-w-xl"
         >
-          <div className="bg-background/95 backdrop-blur-lg border border-border rounded-2xl shadow-2xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">
-                  {selectedItems.length} Selected
+          <div className="glass-card backdrop-blur-2xl bg-background/30 border-2 border-primary/20 rounded-3xl shadow-2xl p-6 relative overflow-hidden">
+            {/* Glassy gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none rounded-3xl" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30">
+                  <span className="text-sm font-bold text-primary">{selectedItems.length}</span>
+                </div>
+                <span className="text-base font-semibold text-foreground">
+                  Selected Items
                 </span>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={clearSelection}
-                className="h-8 w-8"
+                className="h-10 w-10 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </Button>
             </div>
 
-            <div className="flex items-center gap-3 overflow-x-auto pb-4 mb-4 border-b border-border">
+            <div className="flex items-center gap-3 overflow-x-auto pb-5 mb-5 border-b border-primary/10 scrollbar-thin">
               {selectedItems.map(item => (
                 <div
                   key={item.id}
-                  className="flex-shrink-0 w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center text-xs text-center p-1 border border-border"
+                  className="flex-shrink-0 w-20 h-20 rounded-xl glass-card bg-secondary/30 border border-primary/20 flex items-center justify-center text-xs text-center p-2 hover:border-primary/40 transition-colors"
                 >
-                  {item.name}
+                  <span className="line-clamp-3">{item.name}</span>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-3">
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => setShowDeleteDialog(true)}
-                className="flex flex-col gap-1 h-auto py-3"
+                className="flex flex-col gap-1.5 h-auto py-4 rounded-xl glass-card border-destructive/30 hover:border-destructive/50"
               >
                 <Trash2 className="w-5 h-5" />
-                <span className="text-xs">Delete</span>
+                <span className="text-xs font-medium">Delete</span>
               </Button>
 
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setShowMoveModal(true)}
-                className="flex flex-col gap-1 h-auto py-3"
+                className="flex flex-col gap-1.5 h-auto py-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10"
               >
                 <Move className="w-5 h-5" />
-                <span className="text-xs">Move</span>
+                <span className="text-xs font-medium">Move</span>
               </Button>
 
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setShowAddModal(true)}
-                className="flex flex-col gap-1 h-auto py-3"
+                className="flex flex-col gap-1.5 h-auto py-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10"
               >
                 <Plus className="w-5 h-5" />
-                <span className="text-xs">Add</span>
+                <span className="text-xs font-medium">Add</span>
               </Button>
 
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setShowConnectModal(true)}
-                className="flex flex-col gap-1 h-auto py-3"
+                className="flex flex-col gap-1.5 h-auto py-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10"
               >
                 <Link2 className="w-5 h-5" />
-                <span className="text-xs">Connect</span>
+                <span className="text-xs font-medium">Connect</span>
               </Button>
+            </div>
             </div>
           </div>
         </motion.div>

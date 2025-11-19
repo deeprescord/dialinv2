@@ -101,10 +101,10 @@ export function FloatingSelectionPanel() {
     <>
       <AnimatePresence>
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
+          initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl"
+          exit={{ y: -100, opacity: 0 }}
+          className="fixed top-1/4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl"
         >
           <div className="bg-background/95 backdrop-blur-lg border border-border rounded-2xl shadow-2xl p-4">
             <div className="flex items-center justify-between mb-4">

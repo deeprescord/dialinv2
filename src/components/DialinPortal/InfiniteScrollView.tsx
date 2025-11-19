@@ -58,62 +58,52 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     approachThreshold: 0.5, // Start much earlier - when item is 50% away from viewport
   });
 
-  // Auto-start first item AGGRESSIVELY
+  // Auto-start first item when mounted
   const hasAutoplayedFirst = useRef(false);
-  useEffect(() => {
-    if (hasAutoplayedFirst.current) return;
-    if (displayedItems.length === 0) return;
-
-    const attempt = () => {
-      if (hasAutoplayedFirst.current) return;
-      const v = videoRefs.current.get(0);
-      const a = audioRefs.current.get(0);
-      const firstItem = displayedItems[0];
-      const needsUrl = firstItem && ['video', 'audio', 'image'].includes(firstItem.file_type);
-      const urlReady = !needsUrl || !!signedUrls.get(firstItem.id);
-
-      if ((v || a) && urlReady) {
-        // ALWAYS start muted first to satisfy autoplay policies
-        if (v) {
-          v.muted = true;
-          const playPromise = v.play();
-          if (playPromise) {
-            playPromise.then(() => {
-              // Once playing, apply user's mute preference
-              v.muted = isMuted;
-            }).catch(console.error);
-          }
-        }
-        if (a) {
-          a.muted = true;
-          a.volume = 0;
-          const playPromise = a.play();
-          if (playPromise) {
-            playPromise.then(() => {
-              // Once playing, apply user's mute preference and fade in
-              a.muted = isMuted;
-              if (!isMuted) {
-                const fadeIn = setInterval(() => {
-                  if (a.volume < 0.95) {
-                    a.volume = Math.min(1, a.volume + 0.1);
-                  } else {
-                    a.volume = 1;
-                    clearInterval(fadeIn);
-                  }
-                }, 100);
+  const tryAutoplayFirst = (element: HTMLVideoElement | HTMLAudioElement, index: number) => {
+    if (index !== 0 || hasAutoplayedFirst.current) return;
+    
+    // Wait for element to be ready
+    const startPlayback = () => {
+      element.muted = true;
+      if (element instanceof HTMLAudioElement) {
+        element.volume = 0;
+      }
+      
+      const playPromise = element.play();
+      if (playPromise) {
+        playPromise.then(() => {
+          hasAutoplayedFirst.current = true;
+          setPlayingIndex(0);
+          
+          // Apply user mute preference
+          element.muted = isMuted;
+          
+          // Fade in audio if not muted
+          if (element instanceof HTMLAudioElement && !isMuted) {
+            const fadeIn = setInterval(() => {
+              if (element.volume < 0.95) {
+                element.volume = Math.min(1, element.volume + 0.1);
+              } else {
+                element.volume = 1;
+                clearInterval(fadeIn);
               }
-            }).catch(console.error);
+            }, 100);
           }
-        }
-        setPlayingIndex(0);
-        hasAutoplayedFirst.current = true;
-      } else {
-        setTimeout(attempt, 30); // Check even more frequently
+        }).catch(() => {
+          // If autoplay fails, try again after a short delay
+          setTimeout(startPlayback, 100);
+        });
       }
     };
 
-    attempt();
-  }, [displayedItems, signedUrls, isMuted]);
+    // Start when metadata is loaded
+    if (element.readyState >= 2) {
+      startPlayback();
+    } else {
+      element.addEventListener('loadedmetadata', startPlayback, { once: true });
+    }
+  };
 
   // Fetch signed URLs - PRIORITIZE FIRST ITEM
   useEffect(() => {
@@ -391,7 +381,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
             <LoadingState type="infinite" count={1} />
           ) : isVideo && url ? (
             <video
-              ref={(el) => el && videoRefs.current.set(index, el)}
+              ref={(el) => {
+                if (el) {
+                  videoRefs.current.set(index, el);
+                  tryAutoplayFirst(el, index);
+                }
+              }}
               src={url}
               className="w-full h-auto"
               loop
@@ -418,6 +413,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
                 ref={(el) => {
                   if (el) {
                     audioRefs.current.set(index, el);
+                    tryAutoplayFirst(el, index);
                   }
                 }}
                 src={url}

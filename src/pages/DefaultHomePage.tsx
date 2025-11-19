@@ -167,30 +167,28 @@ const DefaultHomePage = () => {
           </div>
         )}
 
-        {/* Bottom SpacesBar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          <SpacesBar
-            spaces={displaySpaces}
-            currentSpaceId="default-home"
-            onCreateSpace={() => {}}
-            onDeleteSpace={() => {}}
-            onRenameSpace={() => {}}
-            onUpdateSpaceDescription={() => {}}
-            onReorderSpace={() => {}}
-            onToggle360={() => {}}
-            hideActionButtons={true}
-            hideNewButton={true}
-            hideAIButton={true}
-            hideChatButton={true}
-            videoControlsState={videoState}
-            onVideoPlayPause={handleVideoPlayPause}
-            onVideoSeek={handleVideoSeek}
-            onVideoVolumeChange={handleVideoVolumeChange}
-            onVideoMuteToggle={handleVideoMuteToggle}
-            sortOrder={sortOrder}
-            onSortChange={setSortOrder}
-          />
-        </div>
+        {/* Bottom SpacesBar with Video Controls */}
+        <SpacesBar
+          spaces={displaySpaces}
+          currentSpaceId="default-home"
+          onCreateSpace={() => {}}
+          onDeleteSpace={() => {}}
+          onRenameSpace={() => {}}
+          onUpdateSpaceDescription={() => {}}
+          onReorderSpace={() => {}}
+          onToggle360={() => {}}
+          hideActionButtons={true}
+          hideNewButton={true}
+          hideAIButton={true}
+          hideChatButton={true}
+          videoControlsState={videoState}
+          onVideoPlayPause={handleVideoPlayPause}
+          onVideoSeek={handleVideoSeek}
+          onVideoVolumeChange={handleVideoVolumeChange}
+          onVideoMuteToggle={handleVideoMuteToggle}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
+        />
 
         {/* Auth Modal */}
         <AuthModal

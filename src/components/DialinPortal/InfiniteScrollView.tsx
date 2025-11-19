@@ -45,7 +45,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     },
     onApproaching: (index) => {
       console.log('🔜 onApproaching callback for index:', index);
-      // Pre-start the item VERY early so transition is seamless
+      // Pre-start the item SUPER early so it's already playing when visible
       prestartItem(index);
       // Also preload the next item after this one
       if (index + 1 < displayedItems.length) {
@@ -57,8 +57,8 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       // Only stop when completely off screen
       handleItemLeaving(index);
     },
-    threshold: 0.05, // Very low threshold - trigger visibility early
-    approachThreshold: 0.8, // Start VERY early - when item is 80% away from viewport
+    threshold: 0.01, // Extremely low threshold - trigger as soon as any pixel is visible
+    approachThreshold: 0.95, // Start EXTREMELY early - when item is 95% away from viewport
   });
 
   // Auto-start first item when mounted
@@ -294,10 +294,10 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       console.warn('⚠️ No video element found at index:', index);
     }
     
-    // Stop other videos only if they're far away (not adjacent)
+    // Stop other videos only if they're far away - keep more items playing for smoother experience
     videoRefs.current.forEach((video, idx) => {
-      // Keep current, previous, and next 2 items playing
-      if (idx !== index && idx !== index - 1 && idx !== index + 1 && idx !== index + 2) {
+      // Keep current, previous 2, and next 3 items playing for seamless transitions
+      if (idx < index - 2 || idx > index + 3) {
         if (!video.paused) {
           console.log('⏹️ Stopping video at index:', idx);
           video.pause();
@@ -406,11 +406,11 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
             setItemRef(index, el);
           }
         }}
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -50 }}
-        transition={{ duration: 0.3 }}
-        className="w-full snap-start relative bg-background min-h-screen"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="w-full snap-start relative bg-background min-h-screen transition-opacity duration-700"
       >
         {/* Content */}
         <div className="w-full min-h-screen flex items-center justify-center">

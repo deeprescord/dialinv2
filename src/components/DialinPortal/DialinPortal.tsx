@@ -142,6 +142,20 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const [showPeopleBar, setShowPeopleBar] = useState(false);
   const [sortOrder, setSortOrder] = useState<'custom' | 'date-newest' | 'date-oldest' | 'name-az' | 'name-za' | 'size-largest' | 'size-smallest' | 'type'>('custom');
   const [movieMode, setMovieMode] = useState(false);
+  
+  // Video state management for control bar
+  const [videoState, setVideoState] = useState({
+    isPlaying: false,
+    currentTime: 0,
+    duration: 0,
+    volume: 50,
+    isMuted: true,
+    hasVideo: false,
+    isLooping: false,
+  });
+  
+  // Hero ref for video controls
+  const heroRef = React.useRef<any>(null);
 
   // Close other panels when one opens
   const openPanel = (panelName: 'chat' | 'ai' | 'add') => {
@@ -592,6 +606,39 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
     console.log('Selected option:', optionId);
     setIsAddModalOpen(false);
   };
+  
+  // Video control handlers
+  const handleVideoStateChange = (state: any) => {
+    setVideoState(state);
+  };
+
+  const handleVideoPlayPause = () => {
+    heroRef.current?.playPause();
+  };
+
+  const handleVideoSeek = (value: number) => {
+    heroRef.current?.seek(value);
+  };
+
+  const handleVideoVolumeChange = (value: number) => {
+    heroRef.current?.setVolume(value);
+  };
+
+  const handleVideoMuteToggle = () => {
+    heroRef.current?.toggleMute();
+  };
+
+  const handleVideoLoopToggle = () => {
+    heroRef.current?.toggleLoop?.();
+  };
+
+  const handleNextItem = () => {
+    skipToNext();
+  };
+
+  const handlePreviousItem = () => {
+    skipToPrevious();
+  };
 
   const isPinned = selectedContact ? pinnedContacts.some(c => c.id === selectedContact.id) : false;
   const isViewingContact = !!selectedContact;
@@ -655,6 +702,8 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             onUploadClick={handleFilesDropped}
             movieMode={movieMode}
             onMovieModeToggle={() => setMovieMode(!movieMode)}
+            onVideoStateChange={handleVideoStateChange}
+            heroRef={heroRef}
           />
         )}
 
@@ -739,6 +788,17 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             onContactClick={handleContactClick}
             showPeopleBar={showPeopleBar}
             isHome={currentTab === 'home'}
+            sortOrder={sortOrder}
+            onSortChange={setSortOrder}
+            onMovieModeToggle={() => setMovieMode(!movieMode)}
+            videoControlsState={videoState}
+            onVideoPlayPause={handleVideoPlayPause}
+            onVideoSeek={handleVideoSeek}
+            onVideoVolumeChange={handleVideoVolumeChange}
+            onVideoMuteToggle={handleVideoMuteToggle}
+            onVideoLoopToggle={handleVideoLoopToggle}
+            onNextItem={handleNextItem}
+            onPreviousItem={handlePreviousItem}
           />
         </div>
       ) : null}

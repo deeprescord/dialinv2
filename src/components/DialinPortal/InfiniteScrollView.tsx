@@ -246,38 +246,42 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   };
   // Handle item visibility - autoplay videos and crossfade audio
   const handleItemVisible = (index: number) => {
+    console.log('🎬 Item visible:', index);
     const previousIndex = playingIndex;
     setPlayingIndex(index);
     
     // Handle video playback - FORCE play for current item
     const currentVideo = videoRefs.current.get(index);
     if (currentVideo) {
-      // Reset and force play
-      currentVideo.muted = true; // Start muted for autoplay
+      console.log('🎬 Playing video at index:', index, 'readyState:', currentVideo.readyState);
       
-      const startVideo = () => {
+      // Force muted start for autoplay compliance
+      currentVideo.muted = true;
+      currentVideo.currentTime = 0; // Reset to start
+      
+      const attemptPlay = () => {
         const playPromise = currentVideo.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
-            // Once playing, apply user's mute preference
-            currentVideo.muted = isMuted;
+            console.log('✅ Video playing at index:', index);
+            // Apply user's mute preference after successful play
+            setTimeout(() => {
+              currentVideo.muted = isMuted;
+            }, 100);
           }).catch(e => {
-            console.log('Video autoplay failed:', e, 'Index:', index);
-            // Retry after brief delay
-            setTimeout(startVideo, 100);
+            console.error('❌ Video play failed at index:', index, e);
+            // Retry
+            setTimeout(attemptPlay, 200);
           });
         }
       };
       
-      // Start immediately or when ready
-      if (currentVideo.readyState >= 2) {
-        startVideo();
-      } else {
-        currentVideo.addEventListener('loadedmetadata', startVideo, { once: true });
-      }
+      attemptPlay();
+    } else {
+      console.warn('⚠️ No video element found at index:', index);
     }
     
-    // Stop other videos (except next ones for preload)
+    // Stop other videos
     videoRefs.current.forEach((video, idx) => {
       if (idx !== index && idx !== index + 1 && idx !== index + 2) {
         if (!video.paused) {
@@ -292,15 +296,15 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     const previousAudio = audioRefs.current.get(previousIndex);
 
     if (currentAudio) {
-      // Start from zero volume
       currentAudio.volume = 0;
       currentAudio.muted = false;
+      currentAudio.currentTime = 0;
       
-      const startAudio = () => {
+      const attemptPlayAudio = () => {
         const playPromise = currentAudio.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
-            // Fade in if not globally muted
+            console.log('✅ Audio playing at index:', index);
             if (!isMuted) {
               const fadeInInterval = setInterval(() => {
                 if (currentAudio.volume < 0.95) {
@@ -314,22 +318,17 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
               currentAudio.muted = true;
             }
           }).catch(e => {
-            console.log('Audio autoplay failed:', e);
+            console.error('❌ Audio play failed:', e);
             currentAudio.muted = true;
             currentAudio.play().catch(console.error);
           });
         }
       };
       
-      if (currentAudio.readyState >= 2) {
-        startAudio();
-      } else {
-        currentAudio.addEventListener('loadedmetadata', startAudio, { once: true });
-      }
+      attemptPlayAudio();
     }
 
     if (previousAudio && previousIndex !== index) {
-      // Fade out previous audio
       const fadeOutInterval = setInterval(() => {
         if (previousAudio.volume > 0.05) {
           previousAudio.volume = Math.max(0, previousAudio.volume - 0.05);

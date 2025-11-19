@@ -381,11 +381,24 @@ export function HomeView({
 
   // Resolve 360 rendering preference and source
   const itemSkyboxReady = Boolean(selectedItem?.show360 && (item360UrlForHero || selectedItem?.url));
-  const skyboxSrcResolved = itemSkyboxReady
-    ? (item360UrlForHero || selectedItem?.url)
-    : ((show360 && !selectedItem?.show360)
-        ? (backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined))
-        : undefined);
+  
+  // When 360 is toggled on home, use selected item's media (video/image) if available
+  const get360Source = () => {
+    if (itemSkyboxReady) {
+      return item360UrlForHero || selectedItem?.url;
+    }
+    if (show360 && !selectedItem?.show360) {
+      // If there's a selected item with media, use it for 360
+      if (selectedItem?.thumb || selectedItem?.url || selectedItem?.storage_path) {
+        return selectedItem.thumb || selectedItem.url;
+      }
+      // Otherwise fall back to background
+      return backgroundImage || (isLobby ? "https://dialin.io/s/TownSquare2-1.mp4" : undefined);
+    }
+    return undefined;
+  };
+  
+  const skyboxSrcResolved = get360Source();
   const effectiveShow360 = itemSkyboxReady || (show360 && !selectedItem?.show360);
 
   // Determine if the selected item should open in the ContentViewer (supports video, audio, image, pdf)

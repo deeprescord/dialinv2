@@ -743,6 +743,20 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         </div>
       ) : null}
 
+      {/* Floating Player */}
+      <FloatingPlayer
+        isVisible={floatingPlayer.isVisible}
+        item={floatingPlayer.item}
+        isPlaying={floatingPlayer.isPlaying}
+        progress={floatingPlayer.progress}
+        onPlay={handlePlayerPlay}
+        onPause={handlePlayerPause}
+        onClose={handlePlayerClose}
+        onSkipForward={handlePlayerSkipForward}
+        onSkipBack={handlePlayerSkipBack}
+        onExpand={() => console.log('Expand player')}
+      />
+
       {/* Overlays */}
       <ContactPane
         isOpen={isViewingContact}

@@ -1021,27 +1021,6 @@ export function SpaceContextMenu({
                   Organization Tools
                 </div>
                 
-                {/* Move buttons in a grid */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    className="flex items-center justify-center gap-2 px-3 py-2 hover:bg-accent/20 text-foreground rounded-lg transition-colors border border-border/30"
-                    onClick={() => {
-                      onReorder?.(space.id, 'left');
-                    }}
-                  >
-                    <span className="text-xs">Move Left</span>
-                  </button>
-
-                  <button
-                    className="flex items-center justify-center gap-2 px-3 py-2 hover:bg-accent/20 text-foreground rounded-lg transition-colors border border-border/30"
-                    onClick={() => {
-                      onReorder?.(space.id, 'right');
-                    }}
-                  >
-                    <span className="text-xs">Move Right</span>
-                  </button>
-                </div>
-
                 {/* Delete and Select buttons side by side at bottom */}
                 {!space.isHome && (
                   <div className="grid grid-cols-2 gap-2">

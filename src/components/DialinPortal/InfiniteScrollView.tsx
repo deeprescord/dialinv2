@@ -22,7 +22,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   const [isMuted, setIsMuted] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const crossfadeDuration = 3000; // 3 second crossfade
+  const crossfadeDuration = 2000; // 2 second crossfade for smoother transitions
 
   // Paginate items for performance
   const displayedItems = items.slice(0, currentPage * itemsPerPage);
@@ -306,10 +306,32 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       }
     });
 
-    // Handle audio crossfade
+    // Handle audio crossfade - smooth transition between tracks
     const currentAudio = audioRefs.current.get(index);
     const previousAudio = audioRefs.current.get(previousIndex);
 
+    // Start fading out previous audio immediately
+    if (previousAudio && previousIndex !== index && !previousAudio.paused) {
+      const startVolume = previousAudio.volume;
+      const fadeSteps = 40; // More steps for smoother fade
+      const stepDuration = crossfadeDuration / fadeSteps;
+      let step = 0;
+      
+      const fadeOutInterval = setInterval(() => {
+        step++;
+        const progress = step / fadeSteps;
+        previousAudio.volume = Math.max(0, startVolume * (1 - progress));
+        
+        if (progress >= 1) {
+          previousAudio.volume = 0;
+          previousAudio.pause();
+          previousAudio.currentTime = 0;
+          clearInterval(fadeOutInterval);
+        }
+      }, stepDuration);
+    }
+
+    // Start fading in current audio
     if (currentAudio) {
       currentAudio.volume = 0;
       currentAudio.muted = false;
@@ -320,15 +342,23 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
         if (playPromise !== undefined) {
           playPromise.then(() => {
             console.log('✅ Audio playing at index:', index);
+            
             if (!isMuted) {
+              const fadeSteps = 40; // More steps for smoother fade
+              const stepDuration = crossfadeDuration / fadeSteps;
+              let step = 0;
+              
               const fadeInInterval = setInterval(() => {
-                if (currentAudio.volume < 0.95) {
-                  currentAudio.volume = Math.min(1, currentAudio.volume + 0.05);
-                } else {
+                step++;
+                const progress = step / fadeSteps;
+                // Ease-in curve for more natural fade
+                currentAudio.volume = Math.min(1, progress * progress);
+                
+                if (progress >= 1) {
                   currentAudio.volume = 1;
                   clearInterval(fadeInInterval);
                 }
-              }, crossfadeDuration / 20);
+              }, stepDuration);
             } else {
               currentAudio.muted = true;
             }
@@ -341,19 +371,6 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       };
       
       attemptPlayAudio();
-    }
-
-    if (previousAudio && previousIndex !== index) {
-      const fadeOutInterval = setInterval(() => {
-        if (previousAudio.volume > 0.05) {
-          previousAudio.volume = Math.max(0, previousAudio.volume - 0.05);
-        } else {
-          previousAudio.volume = 0;
-          previousAudio.pause();
-          previousAudio.currentTime = 0;
-          clearInterval(fadeOutInterval);
-        }
-      }, crossfadeDuration / 20);
     }
   };
 

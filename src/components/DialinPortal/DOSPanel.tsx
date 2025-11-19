@@ -119,16 +119,16 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[120] bg-background/95 backdrop-blur-sm">
-      <div className={`container mx-auto h-full flex flex-col max-w-4xl max-h-[92vh] overflow-y-auto ${
+    <div className="fixed inset-0 z-[120] bg-background/80 backdrop-blur-xl">
+      <div className={`container mx-auto h-full flex flex-col max-w-5xl max-h-[92vh] ${
         isCompact ? 'p-3 md:p-4 mt-3 md:mt-4' : 'p-6 md:p-8 mt-6 md:mt-8'
       }`}>
         {/* Header */}
-        <div className={`sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border ${
-          isCompact ? 'mb-3 md:mb-4 pb-2' : 'mb-6 md:mb-8 pb-3 md:pb-4'
+        <div className={`glass-card sticky top-0 z-10 rounded-2xl border border-border/50 ${
+          isCompact ? 'mb-3 md:mb-4 p-3' : 'mb-6 md:mb-8 p-4 md:p-6'
         }`}>
           {headerMedia && (
-            <div className={`w-full rounded-lg overflow-hidden mb-3 ${isCompact ? 'h-24' : 'h-32'}`}>
+            <div className={`w-full rounded-xl overflow-hidden mb-4 ring-1 ring-border/30 ${isCompact ? 'h-32' : 'h-40'}`}>
               {headerMedia.type === 'video' ? (
                 <video 
                   src={headerMedia.url} 
@@ -149,23 +149,29 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
           )}
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0 pr-4">
-              <h1 className={`font-bold text-foreground ${isCompact ? 'text-lg mb-0.5' : 'text-2xl mb-1'}`}>
+              <h1 className={`font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent ${isCompact ? 'text-xl mb-1' : 'text-3xl mb-2'}`}>
                 Data Observation System
               </h1>
-              <p className={`text-muted-foreground ${isCompact ? 'text-xs' : 'text-sm'}`}>
+              <p className={`text-muted-foreground/80 ${isCompact ? 'text-xs' : 'text-sm'}`}>
                 {isSpace ? 'Analyzing space metadata' : 'Analyzing item metadata'}
               </p>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <Button 
                 onClick={() => setIsCompact(!isCompact)} 
                 variant="ghost" 
                 size="icon"
+                className="glass-card hover:bg-primary/10 border-border/30"
                 title={isCompact ? "Expand view" : "Compact view"}
               >
                 {isCompact ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
               </Button>
-              <Button onClick={onClose} variant="ghost" size="icon">
+              <Button 
+                onClick={onClose} 
+                variant="ghost" 
+                size="icon"
+                className="glass-card hover:bg-destructive/10 border-border/30"
+              >
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -174,26 +180,38 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
 
         {/* Visualization Tabs */}
         <Tabs defaultValue="mindmap" className="flex-1 flex flex-col min-h-0">
-          <TabsList className={`grid w-full grid-cols-4 bg-muted ${isCompact ? 'mb-3 h-8' : 'mb-6'}`}>
-            <TabsTrigger value="mindmap" className={isCompact ? 'text-xs px-2' : ''}>
+          <TabsList className={`glass-card grid w-full grid-cols-4 border border-border/30 p-1 ${isCompact ? 'mb-3 h-9' : 'mb-6 h-11'}`}>
+            <TabsTrigger 
+              value="mindmap" 
+              className={`data-[state=active]:glass-card data-[state=active]:shadow-lg data-[state=active]:border-primary/20 ${isCompact ? 'text-xs px-2' : ''}`}
+            >
               {isCompact ? 'Mind' : 'Mind Map'}
             </TabsTrigger>
-            <TabsTrigger value="heatmap" className={isCompact ? 'text-xs px-2' : ''}>
+            <TabsTrigger 
+              value="heatmap" 
+              className={`data-[state=active]:glass-card data-[state=active]:shadow-lg data-[state=active]:border-primary/20 ${isCompact ? 'text-xs px-2' : ''}`}
+            >
               {isCompact ? 'Heat' : 'Heat Map'}
             </TabsTrigger>
-            <TabsTrigger value="charts" className={isCompact ? 'text-xs px-2' : ''}>
+            <TabsTrigger 
+              value="charts" 
+              className={`data-[state=active]:glass-card data-[state=active]:shadow-lg data-[state=active]:border-primary/20 ${isCompact ? 'text-xs px-2' : ''}`}
+            >
               Charts
             </TabsTrigger>
-            <TabsTrigger value="venn" className={isCompact ? 'text-xs px-2' : ''}>
+            <TabsTrigger 
+              value="venn" 
+              className={`data-[state=active]:glass-card data-[state=active]:shadow-lg data-[state=active]:border-primary/20 ${isCompact ? 'text-xs px-2' : ''}`}
+            >
               Venn
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 glass-card rounded-2xl border border-border/30 p-4 overflow-hidden">
             <TabsContent 
               value="mindmap" 
-              className={`m-0 data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'h-[50vh] min-h-[280px]' : 'h-[60vh] min-h-[360px]'
+              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
+                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
               }`}
             >
               <DOSMindMap metadata={metadata} loading={loading} />
@@ -201,8 +219,8 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
 
             <TabsContent 
               value="heatmap" 
-              className={`m-0 data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'h-[50vh] min-h-[280px]' : 'h-[60vh] min-h-[360px]'
+              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
+                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
               }`}
             >
               <DOSHeatMap metadata={metadata} loading={loading} />
@@ -210,8 +228,8 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
 
             <TabsContent 
               value="charts" 
-              className={`m-0 data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'h-[50vh] min-h-[280px]' : 'h-[60vh] min-h-[360px]'
+              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
+                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
               }`}
             >
               <DOSCharts metadata={metadata} loading={loading} />
@@ -219,8 +237,8 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
 
             <TabsContent 
               value="venn" 
-              className={`m-0 data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'h-[50vh] min-h-[280px]' : 'h-[60vh] min-h-[360px]'
+              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
+                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
               }`}
             >
               <DOSVennDiagram metadata={metadata} loading={loading} />

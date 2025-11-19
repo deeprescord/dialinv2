@@ -1021,30 +1021,7 @@ export function SpaceContextMenu({
                   Organization Tools
                 </div>
                 
-                {/* Select - Big prominent button */}
-                {!space.isHome && (
-                  <button
-                    className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium shadow-lg"
-                    onClick={() => {
-                      addToSelection({
-                        id: space.id,
-                        type: 'space',
-                        name: space.name,
-                        thumbnailUrl: space.thumb,
-                        isSpace: true,
-                      });
-                      if (!isSelectMode) {
-                        toggleSelectMode();
-                      }
-                      onClose();
-                    }}
-                  >
-                    <CheckSquare size={18} />
-                    <span className="text-sm font-semibold">SELECT</span>
-                  </button>
-                )}
-
-                {/* Other utility buttons in a grid */}
+                {/* Move buttons in a grid */}
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     className="flex items-center justify-center gap-2 px-3 py-2 hover:bg-accent/20 text-foreground rounded-lg transition-colors border border-border/30"
@@ -1065,15 +1042,37 @@ export function SpaceContextMenu({
                   </button>
                 </div>
 
-                {/* Delete button - full width, destructive */}
+                {/* Delete and Select buttons side by side at bottom */}
                 {!space.isHome && (
-                  <button
-                    className="flex items-center justify-center gap-2 w-full px-4 py-2 hover:bg-destructive/90 bg-destructive text-destructive-foreground rounded-lg transition-colors font-medium"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 size={16} />
-                    <span className="text-sm">Delete</span>
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      className="flex items-center justify-center gap-2 px-4 py-3 hover:bg-destructive/90 bg-destructive text-destructive-foreground rounded-lg transition-colors font-medium"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 size={16} />
+                      <span className="text-sm">Delete</span>
+                    </button>
+
+                    <button
+                      className="flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium"
+                      onClick={() => {
+                        addToSelection({
+                          id: space.id,
+                          type: 'space',
+                          name: space.name,
+                          thumbnailUrl: space.thumb,
+                          isSpace: true,
+                        });
+                        if (!isSelectMode) {
+                          toggleSelectMode();
+                        }
+                        onClose();
+                      }}
+                    >
+                      <CheckSquare size={16} />
+                      <span className="text-sm">Select</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

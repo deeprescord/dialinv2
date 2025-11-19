@@ -8,6 +8,7 @@ import { DOSMindMap } from './DOSMindMap';
 import { DOSHeatMap } from './DOSHeatMap';
 import { DOSCharts } from './DOSCharts';
 import { DOSVennDiagram } from './DOSVennDiagram';
+import { DOS3DView } from './DOS3DView';
 
 interface DOSPanelProps {
   onClose: () => void;
@@ -207,43 +208,37 @@ export function DOSPanel({ onClose, itemId, spaceId, isSpace }: DOSPanelProps) {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 min-h-0 glass-card rounded-2xl border border-border/30 p-4 overflow-hidden">
-            <TabsContent 
-              value="mindmap" 
-              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
-              }`}
-            >
-              <DOSMindMap metadata={metadata} loading={loading} />
-            </TabsContent>
+          <DOS3DView isCompact={isCompact}>
+            <div className="w-full h-full overflow-auto">
+              <TabsContent 
+                value="mindmap" 
+                className="m-0 h-full data-[state=active]:block"
+              >
+                <DOSMindMap metadata={metadata} loading={loading} />
+              </TabsContent>
 
-            <TabsContent 
-              value="heatmap" 
-              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
-              }`}
-            >
-              <DOSHeatMap metadata={metadata} loading={loading} />
-            </TabsContent>
+              <TabsContent 
+                value="heatmap" 
+                className="m-0 h-full data-[state=active]:block"
+              >
+                <DOSHeatMap metadata={metadata} loading={loading} />
+              </TabsContent>
 
-            <TabsContent 
-              value="charts" 
-              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
-              }`}
-            >
-              <DOSCharts metadata={metadata} loading={loading} />
-            </TabsContent>
+              <TabsContent 
+                value="charts" 
+                className="m-0 h-full data-[state=active]:block"
+              >
+                <DOSCharts metadata={metadata} loading={loading} />
+              </TabsContent>
 
-            <TabsContent 
-              value="venn" 
-              className={`m-0 h-full data-[state=active]:flex data-[state=active]:flex-col ${
-                isCompact ? 'min-h-[280px]' : 'min-h-[360px]'
-              }`}
-            >
-              <DOSVennDiagram metadata={metadata} loading={loading} />
-            </TabsContent>
-          </div>
+              <TabsContent 
+                value="venn" 
+                className="m-0 h-full data-[state=active]:block"
+              >
+                <DOSVennDiagram metadata={metadata} loading={loading} />
+              </TabsContent>
+            </div>
+          </DOS3DView>
         </Tabs>
       </div>
     </div>

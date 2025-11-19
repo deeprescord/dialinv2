@@ -19,7 +19,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const audioRefs = useRef<Map<number, HTMLAudioElement>>(new Map());
   const [playingIndex, setPlayingIndex] = useState<number>(0);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const crossfadeDuration = 2000; // 2 second crossfade for smoother transitions

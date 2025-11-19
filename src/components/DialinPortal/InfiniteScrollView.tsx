@@ -43,15 +43,19 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       handleItemVisible(index);
     },
     onApproaching: (index) => {
-      // Pre-start the item just before it enters the viewport
+      // Pre-start the item much earlier - when it's approaching viewport
       prestartItem(index);
+      // Also preload the next item after this one
+      if (index + 1 < displayedItems.length) {
+        preloadNextItem(index + 1);
+      }
     },
     onLeaving: (index) => {
       // Stop the item when it leaves the viewport
       handleItemLeaving(index);
     },
-    threshold: 0.5,
-    approachThreshold: 0.1,
+    threshold: 0.3,
+    approachThreshold: 0.5, // Start much earlier - when item is 50% away from viewport
   });
 
   // Auto-start first item AGGRESSIVELY
@@ -195,6 +199,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       // Ensure muted pre-start to satisfy autoplay policies
       video.muted = true;
       if (video.readyState < 2) video.load();
+      // Start playing early so it's ready when visible
       const p = video.play();
       if (p) p.catch(() => {});
     }
@@ -203,8 +208,17 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       audio.muted = true;
       audio.volume = 0;
       if (audio.readyState < 2) audio.load();
+      // Start playing early so crossfade is smooth
       const p = audio.play();
       if (p) p.catch(() => {});
+    }
+
+    // Also preload next 2 items
+    if (index + 1 < displayedItems.length) {
+      preloadNextItem(index + 1);
+    }
+    if (index + 2 < displayedItems.length) {
+      preloadNextItem(index + 2);
     }
   };
 
@@ -231,18 +245,21 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     // Handle video playback
     videoRefs.current.forEach((video, idx) => {
       if (idx === index) {
-        // Play current video
+        // Ensure current video is playing with correct mute state
         video.muted = isMuted;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(e => {
-            console.log('Autoplay prevented, trying muted:', e);
-            video.muted = true;
-            video.play().catch(console.error);
-          });
+        // Force play if not already playing
+        if (video.paused || video.muted !== isMuted) {
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => {
+              console.log('Autoplay prevented, trying muted:', e);
+              video.muted = true;
+              video.play().catch(console.error);
+            });
+          }
         }
-      } else if (idx !== index + 1) {
-        // Stop all videos except current and next
+      } else if (idx !== index + 1 && idx !== index + 2) {
+        // Stop all videos except current, next, and next+1
         if (!video.paused) {
           video.pause();
           video.currentTime = 0;

@@ -40,9 +40,11 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
 
   const { setItemRef, visibleIndex } = useItemVisibility({
     onVisible: (index) => {
+      console.log('👁️ onVisible callback triggered for index:', index);
       handleItemVisible(index);
     },
     onApproaching: (index) => {
+      console.log('🔜 onApproaching callback for index:', index);
       // Pre-start the item much earlier - when it's approaching viewport
       prestartItem(index);
       // Also preload the next item after this one
@@ -51,11 +53,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       }
     },
     onLeaving: (index) => {
+      console.log('👋 onLeaving callback for index:', index);
       // Stop the item when it leaves the viewport
       handleItemLeaving(index);
     },
-    threshold: 0.3,
-    approachThreshold: 0.5, // Start much earlier - when item is 50% away from viewport
+    threshold: 0.1, // Lower threshold - trigger when just 10% visible
+    approachThreshold: 0.5,
   });
 
   // Auto-start first item when mounted
@@ -385,12 +388,17 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     return (
       <motion.div
         key={item.id}
-        ref={(el) => el && setItemRef(index, el)}
+        ref={(el) => {
+          if (el) {
+            console.log('📍 Setting ref for item index:', index, 'name:', item.original_name);
+            setItemRef(index, el);
+          }
+        }}
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
         transition={{ duration: 0.3 }}
-        className="w-full snap-start relative bg-background"
+        className="w-full snap-start relative bg-background min-h-screen"
       >
         {/* Content */}
         <div className="w-full min-h-screen flex items-center justify-center">

@@ -526,8 +526,8 @@ export function SpaceContextMenu({
               </div>
 
               {/* Tabs */}
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'settings' | 'dials')} className="flex-1 flex flex-col">
-                <TabsList className="w-full grid grid-cols-2 bg-black/30 border-b border-white/10 rounded-none h-12">
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'settings' | 'dials')} className="flex-1 flex flex-col min-h-0">
+                <TabsList className="w-full grid grid-cols-2 bg-black/30 border-b border-white/10 rounded-none h-12 flex-shrink-0">
                   <TabsTrigger value="settings" className="data-[state=active]:bg-primary/20 data-[state=active]:text-white text-white/60">
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
@@ -538,8 +538,8 @@ export function SpaceContextMenu({
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Settings Tab */}
-                <TabsContent value="settings" className="flex-1 overflow-y-auto p-3 space-y-3 mt-0">
+              {/* Settings Tab */}
+              <TabsContent value="settings" className="flex-1 overflow-y-auto p-3 space-y-3 mt-0 min-h-0">
                   {/* Thumbnail and Background Side by Side with Link Button */}
                   <div className="relative grid grid-cols-2 gap-3">
                   {/* Space Thumbnail Section */}
@@ -990,7 +990,7 @@ export function SpaceContextMenu({
               </TabsContent>
 
               {/* Dials Tab */}
-              <TabsContent value="dials" className="flex-1 overflow-y-auto p-3 mt-0">
+              <TabsContent value="dials" className="flex-1 overflow-y-auto p-3 mt-0 min-h-0">
                 <div className="space-y-4">
                   <div className="text-center space-y-4">
                     <BarChart3 className="w-12 h-12 mx-auto text-primary/60" />
@@ -1016,7 +1016,7 @@ export function SpaceContextMenu({
             </Tabs>
 
               {/* FOS Utility Section - Always visible at bottom */}
-              <div className="border-t border-border/50 bg-background/5 p-3 space-y-2">
+              <div className="border-t border-border/50 bg-background/5 p-3 space-y-2 flex-shrink-0">
                 <div className="text-xs font-semibold text-muted-foreground mb-2 px-1 uppercase tracking-wider">
                   Organization Tools
                 </div>
@@ -1076,6 +1076,7 @@ export function SpaceContextMenu({
                   </button>
                 )}
               </div>
+            </div>
           </motion.div>
 
           {/* Delete Confirmation Dialog */}

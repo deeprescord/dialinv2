@@ -915,21 +915,6 @@ export function SpacesBar({
                                 <ImageFallback src={chosen} alt={space.name} className="w-full h-full object-cover" />
                               );
                             })()}
-                            {/* Play All Button - Show on current space */}
-                            {isCurrentSpace && onMovieModeToggle && !isLobby && (
-                              <div 
-                                className="absolute bottom-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onMovieModeToggle();
-                                }}
-                              >
-                                <div className="glass-card hover:glass-card-hover bg-background/60 backdrop-blur-md border border-border/40 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 px-2 py-1 rounded-full flex items-center gap-1">
-                                  <Play className="h-3 w-3" />
-                                  <span className="text-xs font-medium">Play All</span>
-                                </div>
-                              </div>
-                            )}
                           </div>
                           <span className={`${fontSize} font-medium text-center overflow-hidden text-ellipsis ${isCurrentSpace ? 'text-primary' : ''}`} style={{ width: `${thumbWidth}px`, height: '2.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{space.name}</span>
                         </div>

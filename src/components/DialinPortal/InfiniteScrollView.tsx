@@ -54,7 +54,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     approachThreshold: 0.1,
   });
 
-  // Auto-start first item reliably once refs and URLs are ready
+  // Auto-start first item AGGRESSIVELY
   const hasAutoplayedFirst = useRef(false);
   useEffect(() => {
     if (hasAutoplayedFirst.current) return;
@@ -69,22 +69,67 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       const urlReady = !needsUrl || !!signedUrls.get(firstItem.id);
 
       if ((v || a) && urlReady) {
-        handleItemVisible(0);
+        // Immediately play
+        if (v) {
+          v.muted = isMuted;
+          v.play().catch(console.error);
+        }
+        if (a) {
+          a.muted = isMuted;
+          a.play().catch(console.error);
+        }
+        setPlayingIndex(0);
         hasAutoplayedFirst.current = true;
       } else {
-        setTimeout(attempt, 150);
+        setTimeout(attempt, 50); // Check more frequently
       }
     };
 
     attempt();
-  }, [displayedItems, signedUrls]);
+  }, [displayedItems, signedUrls, isMuted]);
 
-  // Fetch signed URLs for items
+  // Fetch signed URLs - PRIORITIZE FIRST ITEM
   useEffect(() => {
     const fetchSignedUrls = async () => {
       const newUrls = new Map(signedUrls);
       
-      for (const item of displayedItems) {
+      // FIRST: Load the first item immediately
+      if (displayedItems.length > 0) {
+        const firstItem = displayedItems[0];
+        if (firstItem.storage_path && !firstItem.is_space && firstItem.file_type !== 'web' && !newUrls.has(firstItem.id)) {
+          const path = firstItem.storage_path;
+          
+          // Check if absolute URL
+          if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
+            newUrls.set(firstItem.id, path);
+          } else if (path.startsWith('space-covers/')) {
+            const { data } = supabase.storage
+              .from('space-covers')
+              .getPublicUrl(path);
+            newUrls.set(firstItem.id, data.publicUrl);
+          } else {
+            // Private bucket - sign URL
+            try {
+              const norm = path.replace(/^user-files\//, '');
+              const { data } = await supabase.storage
+                .from('user-files')
+                .createSignedUrl(norm, 3600);
+              
+              if (data?.signedUrl) {
+                newUrls.set(firstItem.id, data.signedUrl);
+              }
+            } catch (error) {
+              console.error('Error creating signed URL for first item:', error);
+            }
+          }
+          // Update immediately after first item
+          setSignedUrls(new Map(newUrls));
+        }
+      }
+      
+      // THEN: Load remaining items in order
+      for (let i = 1; i < displayedItems.length; i++) {
+        const item = displayedItems[i];
         if (!item.storage_path || item.is_space || item.file_type === 'web' || newUrls.has(item.id)) {
           continue;
         }

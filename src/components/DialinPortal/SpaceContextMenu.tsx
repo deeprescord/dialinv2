@@ -723,31 +723,33 @@ export function SpaceContextMenu({
                       />
                     </div>
 
-                    {/* Play All Button Toggle */}
-                    <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
-                      <div className="flex items-center gap-2">
-                        <Play size={14} className="text-white" />
-                        <span className="text-xs text-white">Show Play All Button</span>
+                    {/* Play All Button Toggle - Hidden on Home */}
+                    {!space.isHome && (
+                      <div className="flex items-center justify-between px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors">
+                        <div className="flex items-center gap-2">
+                          <Play size={14} className="text-white" />
+                          <span className="text-xs text-white">Show Play All Button</span>
+                        </div>
+                        <Switch
+                          checked={showPlayAllButton}
+                          onCheckedChange={async (checked) => {
+                            try {
+                              const { error } = await supabase
+                                .from('spaces')
+                                .update({ show_play_all_button: checked })
+                                .eq('id', space.id);
+                              
+                              if (error) throw error;
+                              setShowPlayAllButton(checked);
+                              toast.success(checked ? 'Play All button enabled' : 'Play All button disabled');
+                            } catch (error) {
+                              console.error('Error updating play all button setting:', error);
+                              toast.error('Failed to update play all button setting');
+                            }
+                          }}
+                        />
                       </div>
-                      <Switch
-                        checked={showPlayAllButton}
-                        onCheckedChange={async (checked) => {
-                          try {
-                            const { error } = await supabase
-                              .from('spaces')
-                              .update({ show_play_all_button: checked })
-                              .eq('id', space.id);
-                            
-                            if (error) throw error;
-                            setShowPlayAllButton(checked);
-                            toast.success(checked ? 'Play All button enabled' : 'Play All button disabled');
-                          } catch (error) {
-                            console.error('Error updating play all button setting:', error);
-                            toast.error('Failed to update play all button setting');
-                          }
-                        }}
-                      />
-                    </div>
+                    )}
 
                     {/* 360° Settings */}
                     {space.show360 && (
@@ -884,109 +886,74 @@ export function SpaceContextMenu({
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 px-1">
-                    <Settings size={14} className="text-primary" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Actions</span>
-                  </div>
+                {/* Action Buttons - Hidden on Home */}
+                {!space.isHome && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-1">
+                      <Settings size={14} className="text-primary" />
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">Actions</span>
+                    </div>
 
-                  <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
-                    {/* Select Mode */}
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                      onClick={() => {
-                        addToSelection({
-                          id: space.id,
-                          type: 'space',
-                          name: space.name,
-                          thumbnailUrl: space.thumb || undefined,
-                          isSpace: true,
-                        });
-                        if (!isSelectMode) toggleSelectMode();
-                        onClose();
-                      }}
-                    >
-                      <CheckSquare size={14} className="text-white" />
-                      <span className="text-xs text-white">Select Mode</span>
-                    </button>
-
-                    {/* Rename */}
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                      onClick={() => setIsRenaming(true)}
-                      disabled={isRenaming || isEditingDescription}
-                    >
-                      <Edit3 size={14} className="text-white" />
-                      <span className="text-xs text-white">Rename</span>
-                    </button>
-
-                    {/* Edit Description */}
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                      onClick={() => setIsEditingDescription(true)}
-                      disabled={isRenaming || isEditingDescription}
-                    >
-                      <MessageSquare size={14} className="text-white" />
-                      <span className="text-xs text-white">Edit Description</span>
-                    </button>
-
-                    {/* Move Left */}
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                      onClick={() => onReorder(space.id, 'left')}
-                    >
-                      <GripVertical size={14} className="text-white" />
-                      <span className="text-xs text-white">Move Left</span>
-                    </button>
-
-                    {/* Move Right */}
-                    <button
-                      className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
-                      onClick={() => {
-                        onReorder(space.id, 'right');
-                        onClose();
-                      }}
-                    >
-                      <GripVertical size={14} className="text-white" />
-                      <span className="text-xs text-white">Move Right</span>
-                    </button>
-
-                    {/* Select */}
-                    {!space.isHome && (
+                    <div className="space-y-0.5 bg-black/20 border border-white/10 rounded-xl p-2">
+                      {/* Select Mode */}
                       <button
-                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-accent/20 text-foreground rounded-lg transition-colors text-left"
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
                         onClick={() => {
                           addToSelection({
                             id: space.id,
                             type: 'space',
                             name: space.name,
-                            thumbnailUrl: space.thumb,
+                            thumbnailUrl: space.thumb || undefined,
                             isSpace: true,
                           });
-                          if (!isSelectMode) {
-                            toggleSelectMode();
-                          }
+                          if (!isSelectMode) toggleSelectMode();
                           onClose();
                         }}
                       >
-                        <CheckSquare size={14} />
-                        <span className="text-xs">Select</span>
+                        <CheckSquare size={14} className="text-white" />
+                        <span className="text-xs text-white">Select Mode</span>
                       </button>
-                    )}
 
-                    {/* Delete - disabled for Home */}
-                    {!space.isHome && (
+                      {/* Rename */}
                       <button
-                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-destructive/20 text-destructive rounded-lg transition-colors text-left"
-                        onClick={() => setShowDeleteConfirm(true)}
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                        onClick={() => setIsRenaming(true)}
+                        disabled={isRenaming || isEditingDescription}
                       >
-                        <Trash2 size={14} />
-                        <span className="text-xs">Delete</span>
+                        <Edit3 size={14} className="text-white" />
+                        <span className="text-xs text-white">Rename</span>
                       </button>
-                    )}
+
+                      {/* Edit Description */}
+                      <button
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                        onClick={() => setIsEditingDescription(true)}
+                        disabled={isRenaming || isEditingDescription}
+                      >
+                        <MessageSquare size={14} className="text-white" />
+                        <span className="text-xs text-white">Edit Description</span>
+                      </button>
+
+                      {/* Reorder */}
+                      <button
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                        onClick={() => { onReorder(space.id, 'left'); onClose(); }}
+                      >
+                        <GripVertical size={14} className="text-white" />
+                        <span className="text-xs text-white">Move Left</span>
+                      </button>
+
+                      <button
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                        onClick={() => { onReorder(space.id, 'right'); onClose(); }}
+                      >
+                        <GripVertical size={14} className="text-white" />
+                        <span className="text-xs text-white">Move Right</span>
+                      </button>
+...
+                    </div>
                   </div>
-                </div>
+                )}
               </TabsContent>
 
               {/* Dials Tab */}

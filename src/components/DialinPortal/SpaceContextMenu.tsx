@@ -515,14 +515,39 @@ export function SpaceContextMenu({
                   <h3 className="font-semibold text-white">Space Settings</h3>
                   <p className="text-xs text-white/60">Customize your space</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  className="h-8 w-8 p-0 hover:bg-white/10 text-white"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Force reload by toggling a timestamp query param
+                      window.location.reload();
+                    }}
+                    className="h-8 px-3 bg-white/5 border-white/20 text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      // Force reload to apply changes
+                      toast.success('Settings saved');
+                      window.location.reload();
+                    }}
+                    className="h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClose}
+                    className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               {/* Tabs */}

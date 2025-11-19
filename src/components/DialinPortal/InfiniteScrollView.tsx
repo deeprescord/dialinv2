@@ -73,19 +73,42 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       const urlReady = !needsUrl || !!signedUrls.get(firstItem.id);
 
       if ((v || a) && urlReady) {
-        // Immediately play
+        // ALWAYS start muted first to satisfy autoplay policies
         if (v) {
-          v.muted = isMuted;
-          v.play().catch(console.error);
+          v.muted = true;
+          const playPromise = v.play();
+          if (playPromise) {
+            playPromise.then(() => {
+              // Once playing, apply user's mute preference
+              v.muted = isMuted;
+            }).catch(console.error);
+          }
         }
         if (a) {
-          a.muted = isMuted;
-          a.play().catch(console.error);
+          a.muted = true;
+          a.volume = 0;
+          const playPromise = a.play();
+          if (playPromise) {
+            playPromise.then(() => {
+              // Once playing, apply user's mute preference and fade in
+              a.muted = isMuted;
+              if (!isMuted) {
+                const fadeIn = setInterval(() => {
+                  if (a.volume < 0.95) {
+                    a.volume = Math.min(1, a.volume + 0.1);
+                  } else {
+                    a.volume = 1;
+                    clearInterval(fadeIn);
+                  }
+                }, 100);
+              }
+            }).catch(console.error);
+          }
         }
         setPlayingIndex(0);
         hasAutoplayedFirst.current = true;
       } else {
-        setTimeout(attempt, 50); // Check more frequently
+        setTimeout(attempt, 30); // Check even more frequently
       }
     };
 

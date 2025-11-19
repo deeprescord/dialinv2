@@ -8,6 +8,7 @@ import { ImageFallback } from '../ui/image-fallback';
 import { DraggableItem } from './DraggableItem';
 import { OrganizationMenu } from './OrganizationMenu';
 import { useLongPress } from '@/hooks/useLongPress';
+import { useSelection } from '@/contexts/SelectionContext';
 
 interface GridItem {
   id: string;
@@ -47,6 +48,7 @@ export function MediaGrid({
   onDelete,
   onEditMetadata
 }: MediaGridProps) {
+  const { isSelectMode, addToSelection, isSelected } = useSelection();
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -75,17 +77,38 @@ export function MediaGrid({
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
       {items.map((item, index) => {
         const isSpace = !!(item as any).is_space;
+        const itemIsSelected = isSelected(item.id);
         
-        // Long press handlers for DOS panel
+        // Long press handlers - in select mode, add to selection; otherwise open DOS panel
         const longPressHandlers = useLongPress({
           onLongPress: () => {
-            if (onDOSOpen) {
+            if (isSelectMode) {
+              addToSelection({
+                id: item.id,
+                type: isSpace ? 'space' : 'file',
+                name: item.title,
+                thumbnailUrl: item.thumb,
+                isSpace
+              });
+            } else if (onDOSOpen) {
               onDOSOpen(item.id, isSpace);
             } else if (onItemLongPress) {
               onItemLongPress(item);
             }
           },
-          onClick: () => onItemClick(item),
+          onClick: () => {
+            if (isSelectMode) {
+              addToSelection({
+                id: item.id,
+                type: isSpace ? 'space' : 'file',
+                name: item.title,
+                thumbnailUrl: item.thumb,
+                isSpace
+              });
+            } else {
+              onItemClick(item);
+            }
+          },
           delay: 500
         });
 
@@ -93,7 +116,7 @@ export function MediaGrid({
           <Card 
             className={`glass-card hover:bg-white/10 cursor-pointer transition-all duration-200 ${
               enableDragDrop ? 'overflow-visible' : 'overflow-hidden'
-            } group hover-lift`}
+            } ${itemIsSelected ? 'ring-2 ring-primary' : ''} group hover-lift`}
             {...longPressHandlers}
           >
             <div className={`relative ${enableDragDrop ? '' : 'overflow-hidden'}`}>

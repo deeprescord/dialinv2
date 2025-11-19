@@ -1017,8 +1017,17 @@ export function SpaceContextMenu({
 
               {/* FOS Utility Section - Always visible at bottom */}
               <div className="border-t border-border/50 bg-background/5 p-3 space-y-2 flex-shrink-0">
-                <div className="text-xs font-semibold text-muted-foreground mb-2 px-1 uppercase tracking-wider">
-                  Organization Tools
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Organization Tools
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="p-1 hover:bg-accent/20 rounded-md transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={16} className="text-muted-foreground" />
+                  </button>
                 </div>
                 
                 {/* Delete and Select buttons side by side at bottom */}

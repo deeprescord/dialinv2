@@ -45,7 +45,7 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     },
     onApproaching: (index) => {
       console.log('🔜 onApproaching callback for index:', index);
-      // Pre-start the item much earlier - when it's approaching viewport
+      // Pre-start the item VERY early so transition is seamless
       prestartItem(index);
       // Also preload the next item after this one
       if (index + 1 < displayedItems.length) {
@@ -54,11 +54,11 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     },
     onLeaving: (index) => {
       console.log('👋 onLeaving callback for index:', index);
-      // Stop the item when it leaves the viewport
+      // Only stop when completely off screen
       handleItemLeaving(index);
     },
-    threshold: 0.1, // Lower threshold - trigger when just 10% visible
-    approachThreshold: 0.5,
+    threshold: 0.05, // Very low threshold - trigger visibility early
+    approachThreshold: 0.8, // Start VERY early - when item is 80% away from viewport
   });
 
   // Auto-start first item when mounted
@@ -206,21 +206,31 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
     }
   };
 
-  // Pre-start an item (muted) just before it enters the viewport
+  // Pre-start an item (playing muted) well before it enters the viewport
   const prestartItem = (index: number) => {
     const video = videoRefs.current.get(index);
     const audio = audioRefs.current.get(index);
 
-    if (video && video.readyState >= 2) {
-      // Preload video metadata
+    if (video) {
+      console.log('🎬 Prestarting video at index:', index);
       video.muted = true;
-      video.load();
+      video.currentTime = 0;
+      // Start playing early for seamless transition
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise.catch(e => console.log('Prestart video failed:', e));
+      }
     }
 
-    if (audio && audio.readyState >= 2) {
+    if (audio) {
+      console.log('🎵 Prestarting audio at index:', index);
       audio.muted = true;
       audio.volume = 0;
-      audio.load();
+      audio.currentTime = 0;
+      const playPromise = audio.play();
+      if (playPromise) {
+        playPromise.catch(e => console.log('Prestart audio failed:', e));
+      }
     }
 
     // Preload next items
@@ -284,10 +294,12 @@ export function InfiniteScrollView({ spaceId, onClose }: InfiniteScrollViewProps
       console.warn('⚠️ No video element found at index:', index);
     }
     
-    // Stop other videos
+    // Stop other videos only if they're far away (not adjacent)
     videoRefs.current.forEach((video, idx) => {
-      if (idx !== index && idx !== index + 1 && idx !== index + 2) {
+      // Keep current, previous, and next 2 items playing
+      if (idx !== index && idx !== index - 1 && idx !== index + 1 && idx !== index + 2) {
         if (!video.paused) {
+          console.log('⏹️ Stopping video at index:', idx);
           video.pause();
           video.currentTime = 0;
         }

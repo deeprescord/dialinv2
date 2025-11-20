@@ -1421,8 +1421,6 @@ export default function SpacePage() {
           onOpenAddPanel={() => openPanel('add')}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
-          movieMode={movieMode}
-          onMovieModeToggle={() => setMovieMode(!movieMode)}
           spaceId={spaceId}
           isPublic={spaces.find(s => s.id === spaceId)?.isPublic}
           shareSlug={spaces.find(s => s.id === spaceId)?.shareSlug}
@@ -1487,8 +1485,6 @@ export default function SpacePage() {
                 on360RotationAxisChange={handle360RotationAxisChange}
                 sortOrder={sortOrder}
                 onSortChange={setSortOrder}
-                movieMode={movieMode}
-                onMovieModeToggle={() => setMovieMode(!movieMode)}
                 onItem360Toggle={handleItem360Toggle}
              />
           )}

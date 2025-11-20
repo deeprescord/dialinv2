@@ -239,6 +239,33 @@ export function SpacesBar({
     console.log('SpacesBar first 3 items after sort:', sorted.slice(0, 3).map(i => ({ name: i.original_name, created: i.created_at })));
     return sorted;
   }, [rawSpaceItems, sortOrder]);
+
+  // Fetch show_play_all_button setting for current space
+  const [showPlayAllButton, setShowPlayAllButton] = React.useState(false);
+  React.useEffect(() => {
+    const fetchPlayAllSetting = async () => {
+      if (!currentSpaceId || currentSpaceId === 'lobby') {
+        setShowPlayAllButton(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('spaces')
+          .select('show_play_all_button')
+          .eq('id', currentSpaceId)
+          .single();
+        
+        if (error) throw error;
+        setShowPlayAllButton(data?.show_play_all_button || false);
+      } catch (error) {
+        console.error('Error fetching play all setting:', error);
+        setShowPlayAllButton(false);
+      }
+    };
+    
+    fetchPlayAllSetting();
+  }, [currentSpaceId]);
   
   // Auto-generate thumbnails for images in this bar missing them (connect to thumbnail wizard)
   useEffect(() => {
@@ -997,6 +1024,23 @@ export function SpacesBar({
                 >
                   <PlusCircle size={12} className="mr-1" />
                   Add
+                </Button>
+              )}
+              {!hideActionButtons && showPlayAllButton && spaceItems.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('🎬 Play All clicked in SpacesBar');
+                    onMovieModeToggle?.();
+                  }}
+                  className="h-6 px-2 text-xs hover:bg-white/10"
+                >
+                  <Play size={12} className="mr-1" />
+                  Play All
                 </Button>
               )}
               {!hideActionButtons && (

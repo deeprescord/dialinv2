@@ -65,6 +65,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const touchStartDistance = useRef<number>(0);
 
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
@@ -373,6 +374,36 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
     setZoom(1);
   };
 
+  // Pinch-to-zoom handlers
+  const getTouchDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      touchStartDistance.current = getTouchDistance(e.touches);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const currentDistance = getTouchDistance(e.touches);
+      const scale = currentDistance / touchStartDistance.current;
+      const newZoom = Math.min(Math.max(zoom * scale, 0.5), 5);
+      setZoom(newZoom);
+      touchStartDistance.current = currentDistance;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      touchStartDistance.current = 0;
+    }
+  };
+
   // Mouse wheel zoom for images
   useEffect(() => {
     if (!isImage || !imageContainerRef.current) return;
@@ -583,6 +614,9 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
           <div 
             ref={imageContainerRef}
             className="absolute inset-0 w-full h-full bg-black flex items-center justify-center overflow-auto pb-32"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <img
               src={contentUrl}

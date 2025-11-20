@@ -60,6 +60,9 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [videoDimensions, setVideoDimensions] = useState<{ width: number; height: number } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -373,6 +376,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
 
   const handleResetZoom = () => {
     setZoom(1);
+    setPanPosition({ x: 0, y: 0 });
   };
 
   // Pinch-to-zoom handlers
@@ -411,10 +415,54 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
       
       if (tapInterval < 300 && tapInterval > 0) {
         // Double-tap detected
-        setZoom(zoom === 1 ? 2 : 1);
+        const newZoom = zoom === 1 ? 2 : 1;
+        setZoom(newZoom);
+        if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
       }
       
       lastTapTime.current = currentTime;
+    }
+
+    setIsDragging(false);
+  };
+
+  // Pan/drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoom > 1) {
+      setPanPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStartPan = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && zoom > 1) {
+      setIsDragging(true);
+      setDragStart({ 
+        x: e.touches[0].clientX - panPosition.x, 
+        y: e.touches[0].clientY - panPosition.y 
+      });
+    }
+  };
+
+  const handleTouchMovePan = (e: React.TouchEvent) => {
+    if (isDragging && e.touches.length === 1 && zoom > 1) {
+      setPanPosition({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y
+      });
     }
   };
 
@@ -627,16 +675,30 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
         <>
           <div 
             ref={imageContainerRef}
-            className="absolute inset-0 w-full h-full bg-black flex items-center justify-center overflow-auto pb-32"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
+            className="absolute inset-0 w-full h-full bg-black flex items-center justify-center overflow-hidden pb-32"
+            onTouchStart={(e) => {
+              handleTouchStart(e);
+              handleTouchStartPan(e);
+            }}
+            onTouchMove={(e) => {
+              handleTouchMove(e);
+              handleTouchMovePan(e);
+            }}
             onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
           >
             <img
               src={contentUrl}
               alt={content.original_name}
               className="max-w-full max-h-full object-contain transition-transform duration-200"
-              style={{ transform: `scale(${zoom})` }}
+              style={{ 
+                transform: `scale(${zoom}) translate(${panPosition.x / zoom}px, ${panPosition.y / zoom}px)`,
+                pointerEvents: zoom > 1 ? 'none' : 'auto'
+              }}
               crossOrigin="anonymous"
               onError={handleImageError}
               onContextMenu={(e) => e.preventDefault()}

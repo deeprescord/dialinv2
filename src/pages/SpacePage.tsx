@@ -1259,11 +1259,6 @@ export default function SpacePage() {
     setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
   };
 
-  const handleMovieModeToggle = () => {
-    console.log('🎬 Movie mode toggle called');
-    setMovieMode(prev => !prev);
-  };
-
   // Handle next/previous item within current space
   const handleNextItem = () => {
     if (!selectedItemData || spaceItems.length === 0) return;
@@ -1426,6 +1421,8 @@ export default function SpacePage() {
           onOpenAddPanel={() => openPanel('add')}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
+          movieMode={movieMode}
+          onMovieModeToggle={() => setMovieMode(!movieMode)}
           spaceId={spaceId}
           isPublic={spaces.find(s => s.id === spaceId)?.isPublic}
           shareSlug={spaces.find(s => s.id === spaceId)?.shareSlug}
@@ -1490,9 +1487,9 @@ export default function SpacePage() {
                 on360RotationAxisChange={handle360RotationAxisChange}
                 sortOrder={sortOrder}
                 onSortChange={setSortOrder}
-                onItem360Toggle={handleItem360Toggle}
                 movieMode={movieMode}
-                onMovieModeToggle={handleMovieModeToggle}
+                onMovieModeToggle={() => setMovieMode(!movieMode)}
+                onItem360Toggle={handleItem360Toggle}
              />
           )}
 

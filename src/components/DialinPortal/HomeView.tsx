@@ -82,6 +82,7 @@ interface HomeViewProps {
   isPublicSpace?: boolean;
   showPlayAllButton?: boolean;
   onEditMetadata?: (itemId: string) => void;
+  movieMode?: boolean;
   onMovieModeToggle?: () => void;
 }
 
@@ -137,10 +138,20 @@ export function HomeView({
   isPublicSpace = false,
   showPlayAllButton = false,
   onEditMetadata,
+  movieMode = false,
   onMovieModeToggle
 }: HomeViewProps) {
   const { isAutoplay, skipToNext, repeatMode } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);
+  const [showInfiniteScroll, setShowInfiniteScroll] = useState(false);
+
+  useEffect(() => {
+    if (movieMode) {
+      setShowInfiniteScroll(true);
+    } else {
+      setShowInfiniteScroll(false);
+    }
+  }, [movieMode]);
   const [showDialControlPanel, setShowDialControlPanel] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid');
@@ -411,6 +422,18 @@ export function HomeView({
     isPdfSelected
   );
  
+  if (showInfiniteScroll) {
+    return (
+      <InfiniteScrollView 
+        spaceId={spaceId}
+        onClose={() => {
+          setShowInfiniteScroll(false);
+          onMovieModeToggle?.();
+        }}
+      />
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}

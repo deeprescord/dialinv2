@@ -158,7 +158,7 @@ export function TopNav({ currentTab, onTabChange, selectedChipsCount, dialCount,
             )}
             
             {/* Movie Mode Toggle */}
-            {onMovieModeToggle && (
+            {onMovieModeToggle && currentTab !== 'home' && (
               <Button 
                 variant="ghost" 
                 size="icon" 

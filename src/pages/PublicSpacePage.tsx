@@ -531,7 +531,6 @@ const PublicSpacePage = () => {
           flipHorizontal={publicSpace.flip_horizontal}
           flipVertical={publicSpace.flip_vertical}
           onAddOptionSelect={handleGatedAction}
-          movieMode={false}
           spaceId={publicSpace.id}
           isPublicSpace={true}
           showItemsBar={showItemsBar}

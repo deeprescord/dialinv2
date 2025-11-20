@@ -78,8 +78,6 @@ interface HomeViewProps {
   on360RotationAxisChange?: (spaceId: string, axis: 'x' | 'y') => void;
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
-  movieMode?: boolean;
-  onMovieModeToggle?: () => void;
   onItem360Toggle?: (itemId: string, enabled: boolean) => void;
   isPublicSpace?: boolean;
   showPlayAllButton?: boolean;
@@ -134,8 +132,6 @@ export function HomeView({
   on360RotationAxisChange,
   sortOrder = 'custom',
   onSortChange,
-  movieMode = false,
-  onMovieModeToggle,
   onItem360Toggle,
   isPublicSpace = false,
   showPlayAllButton = false,
@@ -150,9 +146,6 @@ export function HomeView({
   const [pdfUrlForHero, setPdfUrlForHero] = useState<string | undefined>(undefined);
   // Signed media URL for item 360 playback in hero
   const [item360UrlForHero, setItem360UrlForHero] = useState<string | undefined>(undefined);
-
-  // Movie mode triggers infinite scroll
-  const showInfiniteScroll = movieMode;
 
   // DEBUG: Log selectedItem changes
   useEffect(() => {
@@ -415,18 +408,8 @@ export function HomeView({
     isImageSelected ||
     isPdfSelected
   );
-
-  // Show infinite scroll mode when movie mode is active (moved to end after all hooks)
-  if (showInfiniteScroll) {
-    return (
-      <InfiniteScrollView
-        spaceId={spaceId}
-        onClose={onMovieModeToggle || (() => {})}
-       />
-     );
-   }
  
-   return (
+  return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -494,20 +477,18 @@ export function HomeView({
            }
            allowDynamicHeight={true}
            showPlayAllButton={(() => {
-             const result = (selectedItem?.show_play_all_button || showPlayAllButton) && !isLobby;
-             console.log('🎬 HeroHeaderVideo showPlayAllButton check:', {
-               selectedItemButton: selectedItem?.show_play_all_button,
-               spaceButton: showPlayAllButton,
-               isLobby,
-               result,
-               onMovieModeToggle: !!onMovieModeToggle
-             });
-             return result;
-           })()}
-           onOpenAddPanel={onOpenAddPanel}
-           onVideoStateChange={onVideoStateChange}
-           onMediaEnd={onMediaEnd}
-           onMovieModeToggle={onMovieModeToggle}
+              const result = (selectedItem?.show_play_all_button || showPlayAllButton) && !isLobby;
+              console.log('🎬 HeroHeaderVideo showPlayAllButton check:', {
+                selectedItemButton: selectedItem?.show_play_all_button,
+                spaceButton: showPlayAllButton,
+                isLobby,
+                result
+              });
+              return result;
+            })()}
+            onOpenAddPanel={onOpenAddPanel}
+            onVideoStateChange={onVideoStateChange}
+            onMediaEnd={onMediaEnd}
          />
       )}
 
@@ -544,7 +525,6 @@ export function HomeView({
           onClose={onCloseItemsBar}
           onItem360Toggle={onItem360Toggle}
           isPublicSpace={isPublicSpace}
-          onMovieModeToggle={onMovieModeToggle}
         />
       )}
     </motion.div>

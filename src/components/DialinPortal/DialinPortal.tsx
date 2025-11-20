@@ -662,8 +662,6 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
         onOpenAddPanel={() => openPanel('add')}
         sortOrder={sortOrder}
         onSortChange={setSortOrder}
-        movieMode={movieMode}
-        onMovieModeToggle={() => setMovieMode(!movieMode)}
       />
 
       <MobileTabBar
@@ -700,8 +698,6 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
             onAddOptionSelect={handleAddOptionSelect}
             onOpenAddPanel={() => openPanel('add')}
             onUploadClick={handleFilesDropped}
-            movieMode={movieMode}
-            onMovieModeToggle={() => setMovieMode(!movieMode)}
             onVideoStateChange={handleVideoStateChange}
             heroRef={heroRef}
           />

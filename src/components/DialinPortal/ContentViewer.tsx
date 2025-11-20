@@ -66,6 +66,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const containerRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const touchStartDistance = useRef<number>(0);
+  const lastTapTime = useRef<number>(0);
 
   const isVideo = content.file_type === 'video' || content.mime_type?.startsWith('video/');
   const isAudio = content.file_type === 'audio' || content.mime_type?.startsWith('audio/');
@@ -401,6 +402,19 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (e.touches.length < 2) {
       touchStartDistance.current = 0;
+    }
+
+    // Double-tap to zoom
+    if (e.touches.length === 0 && e.changedTouches.length === 1) {
+      const currentTime = Date.now();
+      const tapInterval = currentTime - lastTapTime.current;
+      
+      if (tapInterval < 300 && tapInterval > 0) {
+        // Double-tap detected
+        setZoom(zoom === 1 ? 2 : 1);
+      }
+      
+      lastTapTime.current = currentTime;
     }
   };
 

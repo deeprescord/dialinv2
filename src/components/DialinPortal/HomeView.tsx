@@ -82,6 +82,7 @@ interface HomeViewProps {
   isPublicSpace?: boolean;
   showPlayAllButton?: boolean;
   onEditMetadata?: (itemId: string) => void;
+  onMovieModeToggle?: () => void;
 }
 
 export function HomeView({ 
@@ -135,7 +136,8 @@ export function HomeView({
   onItem360Toggle,
   isPublicSpace = false,
   showPlayAllButton = false,
-  onEditMetadata
+  onEditMetadata,
+  onMovieModeToggle
 }: HomeViewProps) {
   const { isAutoplay, skipToNext, repeatMode } = useMediaQueue();
   const [localSelectedItem, setLocalSelectedItem] = useState<any>(null);

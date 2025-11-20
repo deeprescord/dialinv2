@@ -1259,6 +1259,11 @@ export default function SpacePage() {
     setVideoState(prev => ({ ...prev, isLooping: !prev.isLooping }));
   };
 
+  const handleMovieModeToggle = () => {
+    console.log('🎬 Movie mode toggle called');
+    setMovieMode(prev => !prev);
+  };
+
   // Handle next/previous item within current space
   const handleNextItem = () => {
     if (!selectedItemData || spaceItems.length === 0) return;
@@ -1486,6 +1491,7 @@ export default function SpacePage() {
                 sortOrder={sortOrder}
                 onSortChange={setSortOrder}
                 onItem360Toggle={handleItem360Toggle}
+                onMovieModeToggle={handleMovieModeToggle}
              />
           )}
 

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Item } from '@/hooks/useItems';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImmersiveViewProps {
   items: Item[];
@@ -16,69 +17,24 @@ interface Floating3DItem {
   position: [number, number, number];
 }
 
-function FloatingIcon({ item, position }: { item: Item; position: [number, number, number] }) {
-  const getIcon = () => {
-    if (!item.mime_type) return 'file';
-    if (item.mime_type.startsWith('image/')) return 'image';
-    if (item.mime_type.startsWith('video/')) return 'video';
-    if (item.mime_type.startsWith('audio/')) return 'music';
-    if (item.mime_type.includes('text') || item.mime_type.includes('pdf')) return 'text';
-    return 'file';
-  };
-
-  const iconType = getIcon();
-  const iconMap = {
-    file: '📄',
-    image: '🖼️',
-    video: '🎬',
-    music: '🎵',
-    text: '📝'
-  };
-
-  return (
-    <mesh position={position}>
-      <sphereGeometry args={[0.3, 32, 32]} />
-      <meshStandardMaterial 
-        color="#8b5cf6" 
-        emissive="#8b5cf6" 
-        emissiveIntensity={0.5}
-        transparent
-        opacity={0.8}
-      />
-    </mesh>
-  );
-}
-
 function Skybox({ url }: { url?: string }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
-    const video = document.createElement('video');
-    video.src = url || '/media/skybox-360.mp4';
-    video.crossOrigin = 'anonymous';
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    
-    video.play().catch(err => console.log('Video autoplay failed:', err));
-    
-    const texture = new THREE.VideoTexture(video);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    texture.format = THREE.RGBFormat;
-    
-    setVideoTexture(texture);
-    videoRef.current = video;
-
-    return () => {
-      video.pause();
-      video.src = '';
-      texture.dispose();
-    };
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      url || '/media/deep-space-skybox.jpg',
+      (loadedTexture) => {
+        setTexture(loadedTexture);
+      },
+      undefined,
+      (error) => {
+        console.error('Error loading skybox texture:', error);
+      }
+    );
   }, [url]);
 
-  if (!videoTexture) {
+  if (!texture) {
     return (
       <mesh>
         <sphereGeometry args={[500, 60, 40]} />
@@ -91,7 +47,7 @@ function Skybox({ url }: { url?: string }) {
     <mesh>
       <sphereGeometry args={[500, 60, 40]} />
       <meshBasicMaterial 
-        map={videoTexture}
+        map={texture}
         side={THREE.BackSide}
         toneMapped={false}
       />
@@ -100,10 +56,8 @@ function Skybox({ url }: { url?: string }) {
 }
 
 function Floating3DCard({ item, position }: { item: Item; position: [number, number, number] }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const imageUrl = item.mime_type?.startsWith('image/') 
-    ? `${supabaseUrl}/storage/v1/object/public/user_files/${item.file_url}`
-    : null;
+  const { data: urlData } = supabase.storage.from('user_files').getPublicUrl(item.file_url);
+  const imageUrl = item.mime_type?.startsWith('image/') ? urlData.publicUrl : null;
 
   return (
     <mesh position={position}>
@@ -141,18 +95,6 @@ function Floating3DCard({ item, position }: { item: Item; position: [number, num
 export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
   const [floating3DItems, setFloating3DItems] = useState<Floating3DItem[]>([]);
   const [draggedItem, setDraggedItem] = useState<Item | null>(null);
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
-  // Arrange items in a circle around the viewer
-  const positions: [number, number, number][] = items.map((_, index) => {
-    const angle = (index / items.length) * Math.PI * 2;
-    const radius = 5;
-    return [
-      Math.cos(angle) * radius,
-      Math.sin(index * 0.5) * 2, // Vary height
-      Math.sin(angle) * radius
-    ];
-  });
 
   const handleDragStart = (item: Item) => {
     setDraggedItem(item);
@@ -199,15 +141,6 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
         
         {/* Skybox */}
         <Skybox url={backgroundUrl} />
-        
-        {/* Floating Items */}
-        {items.map((item, index) => (
-          <FloatingIcon 
-            key={item.id} 
-            item={item} 
-            position={positions[index]} 
-          />
-        ))}
 
         {/* Floating 3D Cards */}
         {floating3DItems.map((floatingItem) => (
@@ -237,9 +170,8 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
       >
         <div className="flex gap-3 items-center">
           {items.slice(0, 10).map((item) => {
-            const imageUrl = item.mime_type?.startsWith('image/') 
-              ? `${supabaseUrl}/storage/v1/object/public/user_files/${item.file_url}`
-              : null;
+            const { data: urlData } = supabase.storage.from('user_files').getPublicUrl(item.file_url);
+            const imageUrl = item.mime_type?.startsWith('image/') ? urlData.publicUrl : null;
 
             return (
               <motion.div

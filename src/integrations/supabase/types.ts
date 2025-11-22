@@ -1172,6 +1172,14 @@ export type Database = {
         Returns: boolean
       }
       generate_share_slug: { Args: { space_name: string }; Returns: string }
+      get_influence_tree: {
+        Args: { _user_id: string }
+        Returns: {
+          generation_depth: number
+          pointer_count: number
+          revenue_generated: number
+        }[]
+      }
       get_trending_dials: {
         Args: { p_content_type: string; p_days?: number; p_limit?: number }
         Returns: {
@@ -1187,6 +1195,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["interaction_role"]
       }
       refresh_public_semantic_layer: { Args: never; Returns: undefined }
+      refresh_user_influence: { Args: { _user_id: string }; Returns: undefined }
       update_influence_stats: {
         Args: {
           _lifetime_harvest?: number

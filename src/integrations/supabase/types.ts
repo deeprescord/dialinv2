@@ -687,6 +687,38 @@ export type Database = {
           },
         ]
       }
+      space_members: {
+        Row: {
+          last_seen_at: string | null
+          phase_coupling_score: number | null
+          role: string | null
+          space_id: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string | null
+          phase_coupling_score?: number | null
+          role?: string | null
+          space_id: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string | null
+          phase_coupling_score?: number | null
+          role?: string | null
+          space_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "space_members_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       space_metadata: {
         Row: {
           ai_confidence: number | null

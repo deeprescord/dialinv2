@@ -1,11 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Force use of my manual keys
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// DIALIN MAIN CREDENTIALS (Hardcoded for Alpha Test)
+const TO_URL = 'https://qdytxfauwfdjotnlcbuh.supabase.co';
+const TO_KEY = 'sb_publishable_tuZ7tUAnkHJISP5qUEf-GA_pEnAXY9l';
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Manual Supabase Keys missing!');
-}
+console.log('Manual Client connecting to:', TO_URL);
 
-export const manualSupabase = createClient(supabaseUrl, supabaseKey);
+export const manualSupabase = createClient(TO_URL, TO_KEY, {
+  auth: {
+    persistSession: false, // Pure anonymous mode
+    autoRefreshToken: false,
+  }
+});

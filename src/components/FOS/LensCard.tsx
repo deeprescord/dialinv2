@@ -20,12 +20,13 @@ export function LensCard({ item, index }: LensCardProps) {
   };
 
   const getPreviewUrl = () => {
-    if (item.mime_type?.startsWith('image/') && item.file_url) {
-      // Construct proper Supabase storage URL
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      // Remove any bucket prefix from file_url if present
-      const cleanPath = item.file_url.replace(/^user_files\//, '');
-      return `${supabaseUrl}/storage/v1/object/public/user_files/${cleanPath}`;
+    if (item.mime_type?.startsWith('image/')) {
+      // Use storage_path from database (or fallback to file_url)
+      const storagePath = (item as any).storage_path || item.file_url;
+      // Manually construct public URL
+      const publicUrl = `https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${storagePath}`;
+      console.log('🖼️ Image URL:', publicUrl);
+      return publicUrl;
     }
     return null;
   };

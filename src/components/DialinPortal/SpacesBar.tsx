@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { PlusCircle, MessageSquare, Bot } from '../icons';
-import { Package, Users, FileText, Music, Video, Image as ImageIcon, Folder, GripVertical, Play } from 'lucide-react';
+import { Package, Users, FileText, Music, Video, Image as ImageIcon, Folder, GripVertical, Play, CheckCircle2 } from 'lucide-react';
 import { DndContext, closestCenter, type DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { DraggableItem } from './DraggableItem';
@@ -28,6 +28,7 @@ import { safeLocalStorage } from '@/lib/safeLocalStorage';
 import type { SortOrder } from '@/types/organization';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
 import { useMediaQueue } from '@/contexts/MediaQueueContext';
+import { useSelection } from '@/contexts/SelectionContext';
 interface SpacesBarProps {
   spaces: Space[];
   currentSpaceId?: string;
@@ -132,6 +133,7 @@ export function SpacesBar({
   onMovieModeToggle
 }: SpacesBarProps) {
   const { isAutoplay, setIsAutoplay, repeatMode, setRepeatMode } = useMediaQueue();
+  const { isSelectMode, addToSelection, isSelected } = useSelection();
   const navigate = useNavigate();
   const { reorderItems } = useSpaceOrganization();
   
@@ -686,6 +688,20 @@ export function SpacesBar({
                               style={{ gap: `${spacing}px`, width: `${thumbWidth}px` }} 
                               onClick={() => {
                                 if (wasLongPress) return;
+                                
+                                // Selection mode - add to selection
+                                if (isSelectMode) {
+                                  addToSelection({
+                                    id: item.id,
+                                    type: isSpace ? 'space' : 'file',
+                                    name: item.original_name,
+                                    thumbnailUrl: thumbUrls[item.id],
+                                    isSpace: !!isSpace
+                                  });
+                                  return;
+                                }
+                                
+                                // Normal mode - navigate or play
                                 if (isSpace) {
                                   handleSpaceClick({ id: item.id, name: item.original_name, thumb: thumbUrls[item.id] || '/placeholder.svg' } as any);
                                 } else {
@@ -795,6 +811,12 @@ export function SpacesBar({
                               }}
                             >
                               <div className="relative rounded-2xl overflow-hidden glass-card group-hover:scale-105 transition-transform border border-white/10" style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}>
+                                {/* Selection indicator */}
+                                {isSelectMode && isSelected(item.id) && (
+                                  <div className="absolute top-2 right-2 z-10 bg-primary rounded-full p-1 animate-scale-in">
+                                    <CheckCircle2 className="w-5 h-5 text-primary-foreground" />
+                                  </div>
+                                )}
                                 {(() => {
                                   const url = thumbUrls[item.id];
                                   if (loadingThumbs && !url) {

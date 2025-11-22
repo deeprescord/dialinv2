@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.create-entanglement]
 verify_jwt = true
+
+[functions.ascribe-data]
+verify_jwt = true

@@ -639,6 +639,44 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_contracts: {
+        Row: {
+          contract_type: string
+          created_at: string | null
+          id: string
+          status: string | null
+          target_pointer_id: string
+          terms: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          contract_type: string
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          target_pointer_id: string
+          terms?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          contract_type?: string
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          target_pointer_id?: string
+          terms?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_contracts_target_pointer_id_fkey"
+            columns: ["target_pointer_id"]
+            isOneToOne: false
+            referencedRelation: "item_pointers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       space_connections: {
         Row: {
           coupling_strength: number | null

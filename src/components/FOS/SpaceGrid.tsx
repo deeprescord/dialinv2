@@ -40,13 +40,16 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
         const userFolder = ownerId || 'anonymous';
-        const fileName = `${userFolder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
-        console.log('📤 Uploading:', fileName, 'Size:', file.size, 'bytes');
+        // Define storage path upfront
+        const storagePath = `${userFolder}/${crypto.randomUUID()}.${fileExt}`;
         
+        console.log('📤 Uploading:', storagePath, 'Size:', file.size, 'bytes');
+        
+        // Upload using the defined path
         const { data: uploadData, error: uploadError } = await manualSupabase.storage
           .from('user_files')
-          .upload(fileName, file);
+          .upload(storagePath, file);
 
         if (uploadError) {
           console.error('❌ Upload error:', uploadError);
@@ -58,13 +61,15 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           continue;
         }
 
-        console.log('✅ File uploaded to storage:', uploadData.path);
+        console.log('✅ File uploaded to storage:', storagePath);
 
+        // Insert using the same storage path variable
         const { data: itemRecord, error: itemError } = await manualSupabase
           .from('items')
           .insert({
             owner_id: ownerId,
-            file_url: uploadData.path,
+            storage_path: storagePath,
+            file_url: storagePath,
             original_name: file.name,
             file_type: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'other',
             mime_type: file.type,

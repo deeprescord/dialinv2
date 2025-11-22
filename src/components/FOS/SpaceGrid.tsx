@@ -25,18 +25,18 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
 
   const handleFilesDropped = async (files: File[]) => {
     try {
-      // For now, we'll use a temporary space ID - in production this would come from user's spaces
-      const tempSpaceId = 'temp-space-id';
+      // Upload to items table without space assignment
+      const results = await uploadMultipleFiles(files, null as any);
       
-      await uploadMultipleFiles(files, tempSpaceId);
-      
-      toast({
-        title: "Item Entangled",
-        description: `${files.length} item${files.length > 1 ? 's' : ''} successfully entangled into the field`,
-      });
-      
-      // Refresh items after upload
-      fetchItems();
+      if (results.length > 0) {
+        toast({
+          title: "Item Entangled",
+          description: `${files.length} item${files.length > 1 ? 's' : ''} successfully entangled into the field`,
+        });
+        
+        // Refresh items after upload
+        fetchItems();
+      }
     } catch (error) {
       console.error('Upload error:', error);
       toast({

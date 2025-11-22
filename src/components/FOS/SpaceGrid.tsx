@@ -24,22 +24,16 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
 
   const handleFilesDropped = async (files: File[]) => {
     try {
-      // Upload files directly to items table (bypassing space requirement)
+      // Upload files directly to items table (allow anonymous uploads)
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to upload files",
-          variant: "destructive",
-        });
-        return;
-      }
+      const userId = user?.id || null;
 
       const uploadedItems = [];
       
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const userFolder = userId || 'anonymous';
+        const fileName = `${userFolder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
         // Upload to storage
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -51,11 +45,11 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           continue;
         }
 
-        // Create item record
+        // Create item record (allow null owner_id for anonymous uploads)
         const { data: itemRecord, error: itemError } = await supabase
           .from('items')
           .insert({
-            owner_id: user.id,
+            owner_id: userId,
             file_url: uploadData.path,
             original_name: file.name,
             file_type: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'other',

@@ -8,7 +8,7 @@ export interface TreeNode {
   spaceName: string;
   sharedByUserId: string;
   sharedByName: string;
-  upstreamToken: string | null;
+  upstreamPointerId: string | null;
   addedAt: string;
   permissions: {
     can_view: boolean;
@@ -42,7 +42,7 @@ export function usePointerTree(itemId?: string) {
           item_id,
           space_id,
           shared_by_user_id,
-          upstream_token,
+          upstream_pointer_id,
           added_at,
           permissions,
           space:spaces(name),
@@ -69,7 +69,7 @@ export function usePointerTree(itemId?: string) {
           spaceName: (p.space as any)?.name || 'Unknown Space',
           sharedByUserId: p.shared_by_user_id,
           sharedByName: (p.shared_by as any)?.full_name || 'Unknown User',
-          upstreamToken: p.upstream_token,
+          upstreamPointerId: p.upstream_pointer_id,
           addedAt: p.added_at,
           permissions: p.permissions as any,
           children: [],
@@ -77,11 +77,11 @@ export function usePointerTree(itemId?: string) {
         pointerMap.set(p.id, node);
       });
 
-      // Build hierarchy based on upstream_token
+      // Build hierarchy based on upstream_pointer_id
       let rootNode: TreeNode | null = null;
       pointerMap.forEach((node) => {
-        if (node.upstreamToken) {
-          const parent = pointerMap.get(node.upstreamToken);
+        if (node.upstreamPointerId) {
+          const parent = pointerMap.get(node.upstreamPointerId);
           if (parent) {
             parent.children.push(node);
           }
@@ -110,11 +110,8 @@ export function usePointerTree(itemId?: string) {
 
       if (error) throw error;
 
-      // Also delete all children that reference this pointer
-      await supabase
-        .from('item_pointers')
-        .delete()
-        .eq('upstream_token', pointerId);
+      // Children are automatically deleted via CASCADE from the foreign key
+      // No need for explicit deletion
 
       await fetchTree();
       return true;

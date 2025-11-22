@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Grid3x3, Globe } from 'lucide-react';
 import { useItems } from '@/hooks/useItems';
-import { useFileUpload } from '@/hooks/useFileUpload';
 import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { LensCard } from './LensCard';
 import { ImmersiveView } from './ImmersiveView';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SpaceGridProps {
   selectedSpace: string;
@@ -17,7 +17,6 @@ interface SpaceGridProps {
 
 export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridProps) {
   const { items, loading, fetchItems } = useItems();
-  const { uploadMultipleFiles, uploading } = useFileUpload();
 
   useEffect(() => {
     fetchItems();
@@ -25,16 +24,56 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
 
   const handleFilesDropped = async (files: File[]) => {
     try {
-      // Upload to items table without space assignment
-      const results = await uploadMultipleFiles(files, null as any);
-      
-      if (results.length > 0) {
+      // Upload files directly to items table (bypassing space requirement)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         toast({
-          title: "Item Entangled",
-          description: `${files.length} item${files.length > 1 ? 's' : ''} successfully entangled into the field`,
+          title: "Authentication Required",
+          description: "Please sign in to upload files",
+          variant: "destructive",
         });
+        return;
+      }
+
+      const uploadedItems = [];
+      
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
-        // Refresh items after upload
+        // Upload to storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('user-files')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          continue;
+        }
+
+        // Create item record
+        const { data: itemRecord, error: itemError } = await supabase
+          .from('items')
+          .insert({
+            owner_id: user.id,
+            file_url: uploadData.path,
+            original_name: file.name,
+            file_type: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'other',
+            mime_type: file.type,
+          })
+          .select()
+          .single();
+
+        if (!itemError && itemRecord) {
+          uploadedItems.push(itemRecord);
+        }
+      }
+
+      if (uploadedItems.length > 0) {
+        toast({
+          title: "Items Entangled",
+          description: `${uploadedItems.length} item${uploadedItems.length > 1 ? 's' : ''} successfully entangled into the field`,
+        });
         fetchItems();
       }
     } catch (error) {
@@ -122,15 +161,6 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           </div>
         )}
 
-        {uploading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed bottom-6 right-6 glass-card p-4 rounded-lg"
-          >
-            <p className="text-sm text-foreground">Entangling items...</p>
-          </motion.div>
-        )}
       </main>
     </DragDropZone>
   );

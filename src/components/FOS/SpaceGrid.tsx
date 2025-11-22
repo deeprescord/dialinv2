@@ -23,7 +23,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
 
     // Debug: Log Supabase connection info
     console.log('🔍 SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.log('🔍 Bucket name:', 'user-files');
+    console.log('🔍 Bucket name:', 'user_files');
     console.log('🔍 Files to process:', files.length);
 
     toast({
@@ -45,7 +45,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
         console.log('📤 Uploading:', fileName, 'Size:', file.size, 'bytes');
         
         const { data: uploadData, error: uploadError } = await manualSupabase.storage
-          .from('user-files')
+          .from('user_files')
           .upload(fileName, file);
 
         if (uploadError) {

@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Item } from '@/hooks/useItems';
-import { supabase } from '@/integrations/supabase/client';
 
 interface ImmersiveViewProps {
   items: Item[];
@@ -68,8 +67,10 @@ function Skybox({ url }: { url?: string }) {
 }
 
 function Floating3DCard({ item, position }: { item: Item; position: [number, number, number] }) {
-  const { data: urlData } = supabase.storage.from('user_files').getPublicUrl(item.file_url);
-  const imageUrl = item.mime_type?.startsWith('image/') ? urlData.publicUrl : null;
+  const storagePath = (item as any).storage_path || item.file_url;
+  const imageUrl = item.mime_type?.startsWith('image/') 
+    ? `https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${storagePath}`
+    : null;
 
   return (
     <mesh position={position}>
@@ -182,8 +183,11 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
       >
         <div className="flex gap-3 items-center">
           {items.slice(0, 10).map((item) => {
-            const { data: urlData } = supabase.storage.from('user_files').getPublicUrl(item.file_url);
-            const imageUrl = item.mime_type?.startsWith('image/') ? urlData.publicUrl : null;
+            const storagePath = (item as any).storage_path || item.file_url;
+            const imageUrl = item.mime_type?.startsWith('image/') 
+              ? `https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${storagePath}`
+              : null;
+            console.log('🎯 Dock image URL:', imageUrl);
 
             return (
               <motion.div

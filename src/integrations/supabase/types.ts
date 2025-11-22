@@ -309,6 +309,41 @@ export type Database = {
         }
         Relationships: []
       }
+      influence_stats: {
+        Row: {
+          last_updated: string | null
+          pending_harvest: number | null
+          total_branches_active: number | null
+          total_lifetime_harvest: number | null
+          unique_holders_count: number | null
+          user_id: string
+        }
+        Insert: {
+          last_updated?: string | null
+          pending_harvest?: number | null
+          total_branches_active?: number | null
+          total_lifetime_harvest?: number | null
+          unique_holders_count?: number | null
+          user_id: string
+        }
+        Update: {
+          last_updated?: string | null
+          pending_harvest?: number | null
+          total_branches_active?: number | null
+          total_lifetime_harvest?: number | null
+          unique_holders_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influence_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       item_connections: {
         Row: {
           coupling_strength: number | null
@@ -638,6 +673,8 @@ export type Database = {
         Row: {
           address: string | null
           address_public: boolean | null
+          amplitude_score: number | null
+          average_entropy_output: number | null
           bio: string | null
           bio_public: boolean | null
           created_at: string
@@ -654,10 +691,13 @@ export type Database = {
           profile_media_url: string | null
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           address?: string | null
           address_public?: boolean | null
+          amplitude_score?: number | null
+          average_entropy_output?: number | null
           bio?: string | null
           bio_public?: boolean | null
           created_at?: string
@@ -674,10 +714,13 @@ export type Database = {
           profile_media_url?: string | null
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           address?: string | null
           address_public?: boolean | null
+          amplitude_score?: number | null
+          average_entropy_output?: number | null
           bio?: string | null
           bio_public?: boolean | null
           created_at?: string
@@ -694,6 +737,7 @@ export type Database = {
           profile_media_url?: string | null
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -1143,6 +1187,16 @@ export type Database = {
         Returns: Database["public"]["Enums"]["interaction_role"]
       }
       refresh_public_semantic_layer: { Args: never; Returns: undefined }
+      update_influence_stats: {
+        Args: {
+          _lifetime_harvest?: number
+          _pending_harvest?: number
+          _total_branches?: number
+          _unique_holders?: number
+          _user_id: string
+        }
+        Returns: undefined
+      }
       user_owns_file: {
         Args: { _file_id: string; _user_id: string }
         Returns: boolean

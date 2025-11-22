@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ingest-file]
 verify_jwt = true
+
+[functions.create-entanglement]
+verify_jwt = true

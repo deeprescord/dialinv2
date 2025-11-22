@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ImageFallback } from '../ui/image-fallback';
 import { Settings, HardDrive, Database, Wallet, ChevronDown } from '../icons';
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, User } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthModal } from './AuthModal';
@@ -115,6 +115,13 @@ export const UserDropdown = React.memo(function UserDropdown() {
         >
           <Settings size={16} />
           <span>Settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className="flex items-center space-x-2 cursor-pointer"
+          onClick={() => navigate('/holo-profile')}
+        >
+          <User size={16} />
+          <span>Holo Profile</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-center space-x-2 cursor-pointer">
           <HardDrive width={16} height={16} />

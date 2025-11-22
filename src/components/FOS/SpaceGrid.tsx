@@ -21,6 +21,11 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
   const processFiles = async (files: File[]) => {
     if (files.length === 0) return;
 
+    // Debug: Log Supabase connection info
+    console.log('🔍 SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('🔍 Bucket name:', 'user-files');
+    console.log('🔍 Files to process:', files.length);
+
     toast({
       title: "Ingesting Matter...",
       description: `Processing ${files.length} file${files.length > 1 ? 's' : ''}`,
@@ -29,6 +34,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const ownerId = user?.id || null;
+      console.log('🔍 Owner ID:', ownerId || 'anonymous');
       const uploadedItems = [];
       
       for (const file of files) {
@@ -36,16 +42,23 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
         const userFolder = ownerId || 'anonymous';
         const fileName = `${userFolder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
-        console.log('Uploading:', fileName);
+        console.log('📤 Uploading:', fileName, 'Size:', file.size, 'bytes');
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('user-files')
           .upload(fileName, file);
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
+          console.error('❌ Upload error:', uploadError);
+          toast({
+            title: "Upload Failed",
+            description: `${file.name}: ${uploadError.message}`,
+            variant: "destructive",
+          });
           continue;
         }
+
+        console.log('✅ File uploaded to storage:', uploadData.path);
 
         const { data: itemRecord, error: itemError } = await supabase
           .from('items')
@@ -59,25 +72,41 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           .select()
           .single();
 
-        if (!itemError && itemRecord) {
+        if (itemError) {
+          console.error('❌ Item creation error:', itemError);
+          toast({
+            title: "Database Error",
+            description: `${file.name}: ${itemError.message}`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        if (itemRecord) {
+          console.log('✅ Item created in database:', itemRecord.id);
           uploadedItems.push(itemRecord);
-        } else if (itemError) {
-          console.error('Item creation error:', itemError);
+          toast({
+            title: "Upload Successful",
+            description: file.name,
+          });
         }
       }
 
       if (uploadedItems.length > 0) {
+        console.log('🎉 Entanglement complete! Refreshing items...');
+        fetchItems();
         toast({
           title: "Entanglement Complete",
           description: `${uploadedItems.length} item${uploadedItems.length > 1 ? 's' : ''} entangled`,
         });
-        fetchItems();
+      } else {
+        console.warn('⚠️ No items were successfully uploaded');
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('💥 Unexpected error:', error);
       toast({
         title: "Entanglement Failed",
-        description: "Failed to entangle items",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
     }

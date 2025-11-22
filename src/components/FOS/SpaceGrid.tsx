@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Grid3x3, Globe } from 'lucide-react';
 import { useItems } from '@/hooks/useItems';
@@ -16,27 +16,15 @@ interface SpaceGridProps {
 
 export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridProps) {
   const { items, loading, fetchItems } = useItems();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  const processFiles = async (files: File[]) => {
+    if (files.length === 0) return;
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('Drop detected', e.dataTransfer.files);
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length === 0) {
-      console.log('No files in drop event');
-      return;
-    }
+    toast({
+      title: "Ingesting Matter...",
+      description: `Processing ${files.length} file${files.length > 1 ? 's' : ''}`,
+    });
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -95,6 +83,47 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
     }
   };
 
+  useEffect(() => {
+    fetchItems();
+
+    // Global drop zone - attach to window
+    const handleWindowDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleWindowDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('Global drop detected', e.dataTransfer?.files);
+      
+      if (e.dataTransfer?.files) {
+        const files = Array.from(e.dataTransfer.files);
+        processFiles(files);
+      }
+    };
+
+    window.addEventListener('dragover', handleWindowDragOver);
+    window.addEventListener('drop', handleWindowDrop);
+
+    return () => {
+      window.removeEventListener('dragover', handleWindowDragOver);
+      window.removeEventListener('drop', handleWindowDrop);
+    };
+  }, []);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      processFiles(files);
+    }
+  };
+
+  const handleClickToUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   if (loading && items.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -104,11 +133,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
   }
 
   return (
-    <main 
-      className="flex-1 overflow-auto p-6 relative"
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
+    <main className="flex-1 overflow-auto p-6 relative">
         {/* View Toggle */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -151,14 +176,25 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
             </motion.div>
 
             {items.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex flex-col items-center justify-center h-96 glass-card rounded-2xl border-2 border-dashed border-primary/30"
-              >
-                <p className="text-xl text-muted-foreground mb-2">Drop files here to entangle</p>
-                <p className="text-sm text-muted-foreground/60">Or click to select files</p>
-              </motion.div>
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                  accept="*/*"
+                />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={handleClickToUpload}
+                  className="flex flex-col items-center justify-center h-96 glass-card rounded-2xl border-2 border-dashed border-primary/30 cursor-pointer hover:border-primary/50 transition-colors"
+                >
+                  <p className="text-xl text-muted-foreground mb-2">Drop files anywhere to entangle</p>
+                  <p className="text-sm text-muted-foreground/60">Or click here to select files</p>
+                </motion.div>
+              </>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {items.map((item, index) => (

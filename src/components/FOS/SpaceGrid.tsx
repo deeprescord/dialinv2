@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Grid3x3, Globe } from 'lucide-react';
 import { useItems } from '@/hooks/useItems';
-import { DragDropZone } from '@/components/DialinPortal/DragDropZone';
 import { LensCard } from './LensCard';
 import { ImmersiveView } from './ImmersiveView';
 import { Button } from '@/components/ui/button';
@@ -22,20 +21,35 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
     fetchItems();
   }, []);
 
-  const handleFilesDropped = async (files: File[]) => {
-    try {
-      // Upload files directly to items table (allow anonymous uploads)
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || null;
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('Drop detected', e.dataTransfer.files);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) {
+      console.log('No files in drop event');
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const ownerId = user?.id || null;
       const uploadedItems = [];
       
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
-        const userFolder = userId || 'anonymous';
+        const userFolder = ownerId || 'anonymous';
         const fileName = `${userFolder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
-        // Upload to storage
+        console.log('Uploading:', fileName);
+        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('user-files')
           .upload(fileName, file);
@@ -45,11 +59,10 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           continue;
         }
 
-        // Create item record (allow null owner_id for anonymous uploads)
         const { data: itemRecord, error: itemError } = await supabase
           .from('items')
           .insert({
-            owner_id: userId,
+            owner_id: ownerId,
             file_url: uploadData.path,
             original_name: file.name,
             file_type: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'other',
@@ -60,13 +73,15 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
 
         if (!itemError && itemRecord) {
           uploadedItems.push(itemRecord);
+        } else if (itemError) {
+          console.error('Item creation error:', itemError);
         }
       }
 
       if (uploadedItems.length > 0) {
         toast({
-          title: "Items Entangled",
-          description: `${uploadedItems.length} item${uploadedItems.length > 1 ? 's' : ''} successfully entangled into the field`,
+          title: "Entanglement Complete",
+          description: `${uploadedItems.length} item${uploadedItems.length > 1 ? 's' : ''} entangled`,
         });
         fetchItems();
       }
@@ -74,7 +89,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
       console.error('Upload error:', error);
       toast({
         title: "Entanglement Failed",
-        description: "Failed to entangle items into the field",
+        description: "Failed to entangle items",
         variant: "destructive",
       });
     }
@@ -89,8 +104,11 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
   }
 
   return (
-    <DragDropZone onFilesDropped={handleFilesDropped}>
-      <main className="flex-1 overflow-auto p-6 relative">
+    <main 
+      className="flex-1 overflow-auto p-6 relative"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
         {/* View Toggle */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -155,7 +173,6 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           </div>
         )}
 
-      </main>
-    </DragDropZone>
+    </main>
   );
 }

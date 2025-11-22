@@ -6,7 +6,7 @@ import { LensCard } from './LensCard';
 import { ImmersiveView } from './ImmersiveView';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { manualSupabase } from '@/lib/manualSupabase';
 
 interface SpaceGridProps {
   selectedSpace: string;
@@ -32,7 +32,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
     });
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await manualSupabase.auth.getUser();
       const ownerId = user?.id || null;
       console.log('🔍 Owner ID:', ownerId || 'anonymous');
       const uploadedItems = [];
@@ -44,7 +44,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
         
         console.log('📤 Uploading:', fileName, 'Size:', file.size, 'bytes');
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await manualSupabase.storage
           .from('user-files')
           .upload(fileName, file);
 
@@ -60,7 +60,7 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
 
         console.log('✅ File uploaded to storage:', uploadData.path);
 
-        const { data: itemRecord, error: itemError } = await supabase
+        const { data: itemRecord, error: itemError } = await manualSupabase
           .from('items')
           .insert({
             owner_id: ownerId,

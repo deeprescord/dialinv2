@@ -32,6 +32,7 @@ interface MediaGridProps {
   onMove?: (itemId: string, isSpace: boolean) => void;
   onConnect?: (itemId: string) => void;
   onDelete?: (itemId: string, isSpace: boolean) => void;
+  onHide?: (itemId: string, isSpace: boolean) => void;
   onEditMetadata?: (itemId: string) => void;
 }
 
@@ -46,6 +47,7 @@ export function MediaGrid({
   onMove,
   onConnect,
   onDelete,
+  onHide,
   onEditMetadata
 }: MediaGridProps) {
   const { isSelectMode, addToSelection, isSelected } = useSelection();
@@ -159,7 +161,7 @@ export function MediaGrid({
           <div key={item.id}>{cardContent}</div>
         );
 
-        const withContextMenu = (onAdd || onMove || onConnect || onDelete || onEditMetadata) ? (
+        const withContextMenu = (onAdd || onMove || onConnect || onDelete || onHide || onEditMetadata) ? (
           <OrganizationMenu
             key={item.id}
             itemId={item.id}
@@ -170,6 +172,7 @@ export function MediaGrid({
             onMove={onMove ? () => onMove(item.id, isSpace) : undefined}
             onConnect={isSpace && onConnect ? () => onConnect(item.id) : undefined}
             onDelete={onDelete ? () => onDelete(item.id, isSpace) : undefined}
+            onHide={!isSpace && onHide ? () => onHide(item.id, isSpace) : undefined}
             onEditMetadata={!isSpace && onEditMetadata ? () => onEditMetadata(item.id) : undefined}
             isDraggable={enableDragDrop}
           >

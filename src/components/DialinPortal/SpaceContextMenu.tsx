@@ -6,7 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Slider } from '../ui/slider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink, BarChart3, CheckSquare } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, X, Globe, MessageSquare, ChevronDown, ChevronUp, Volume2, VolumeX, Image, Upload, Sparkles, Video, ImageIcon, Settings, Play, Link, Unlink, BarChart3, CheckSquare, Eye } from 'lucide-react';
 import { useSelection } from '@/contexts/SelectionContext';
 import { MediaCarousel } from './MediaCarousel';
 import { supabase } from '@/integrations/supabase/client';
@@ -975,7 +975,31 @@ export function SpaceContextMenu({
                         <GripVertical size={14} className="text-white" />
                         <span className="text-xs text-white">Move Right</span>
                       </button>
-...
+
+                      {/* Show All Hidden Items */}
+                      <button
+                        className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-black/30 rounded-lg transition-colors text-left"
+                        onClick={async () => {
+                          try {
+                            const { error } = await supabase
+                              .from('space_files')
+                              .update({ hidden: false })
+                              .eq('space_id', space.id)
+                              .eq('hidden', true);
+                            
+                            if (error) throw error;
+                            toast.success('All items shown');
+                            window.dispatchEvent(new CustomEvent('refetch-spaces'));
+                            onClose();
+                          } catch (error) {
+                            console.error('Error showing all items:', error);
+                            toast.error('Failed to show all items');
+                          }
+                        }}
+                      >
+                        <Eye size={14} className="text-white" />
+                        <span className="text-xs text-white">Show All Hidden Items</span>
+                      </button>
                     </div>
                   </div>
                 )}

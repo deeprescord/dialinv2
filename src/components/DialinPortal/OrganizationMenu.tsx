@@ -5,7 +5,8 @@ import {
   Trash2, 
   GripVertical,
   Edit,
-  CheckSquare
+  CheckSquare,
+  EyeOff
 } from 'lucide-react';
 import {
   ContextMenu,
@@ -27,6 +28,7 @@ interface OrganizationMenuProps {
   onConnect?: () => void;
   onDelete?: () => void;
   onEditMetadata?: () => void;
+  onHide?: () => void;
   isDraggable?: boolean;
 }
 
@@ -41,6 +43,7 @@ export function OrganizationMenu({
   onConnect,
   onDelete,
   onEditMetadata,
+  onHide,
   isDraggable = true,
 }: OrganizationMenuProps) {
   const { addToSelection, toggleSelectMode, isSelectMode } = useSelection();
@@ -99,6 +102,13 @@ export function OrganizationMenu({
           <ContextMenuItem onClick={onEditMetadata}>
             <Edit className="mr-2 h-4 w-4" />
             Edit Metadata
+          </ContextMenuItem>
+        )}
+        
+        {onHide && (
+          <ContextMenuItem onClick={onHide}>
+            <EyeOff className="mr-2 h-4 w-4" />
+            Hide
           </ContextMenuItem>
         )}
         

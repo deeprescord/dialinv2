@@ -18,23 +18,35 @@ interface Floating3DItem {
 }
 
 function Skybox({ url }: { url?: string }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.load(
-      url || '/media/deep-space-skybox.jpg',
-      (loadedTexture) => {
-        setTexture(loadedTexture);
-      },
-      undefined,
-      (error) => {
-        console.error('Error loading skybox texture:', error);
-      }
-    );
+    const video = document.createElement('video');
+    video.src = url || '/media/skybox-360.mp4';
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    
+    video.play().catch(err => console.log('Video autoplay failed:', err));
+    
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+    
+    setVideoTexture(texture);
+    videoRef.current = video;
+
+    return () => {
+      video.pause();
+      video.src = '';
+      texture.dispose();
+    };
   }, [url]);
 
-  if (!texture) {
+  if (!videoTexture) {
     return (
       <mesh>
         <sphereGeometry args={[500, 60, 40]} />
@@ -47,7 +59,7 @@ function Skybox({ url }: { url?: string }) {
     <mesh>
       <sphereGeometry args={[500, 60, 40]} />
       <meshBasicMaterial 
-        map={texture}
+        map={videoTexture}
         side={THREE.BackSide}
         toneMapped={false}
       />

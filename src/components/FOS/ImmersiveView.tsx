@@ -1,10 +1,9 @@
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Html } from '@react-three/drei';
 import { motion } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Item } from '@/hooks/useItems';
-import skyboxImage from '@/assets/skybox-space.jpg';
 
 interface ImmersiveViewProps {
   items: Item[];
@@ -51,13 +50,48 @@ function FloatingIcon({ item, position }: { item: Item; position: [number, numbe
 }
 
 function Skybox({ url }: { url?: string }) {
-  const texture = useLoader(THREE.TextureLoader, url || skyboxImage);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+
+  useEffect(() => {
+    const video = document.createElement('video');
+    video.src = url || '/media/skybox-360.mp4';
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    
+    video.play().catch(err => console.log('Video autoplay failed:', err));
+    
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+    
+    setVideoTexture(texture);
+    videoRef.current = video;
+
+    return () => {
+      video.pause();
+      video.src = '';
+      texture.dispose();
+    };
+  }, [url]);
+
+  if (!videoTexture) {
+    return (
+      <mesh>
+        <sphereGeometry args={[500, 60, 40]} />
+        <meshBasicMaterial color="#0a0118" side={THREE.BackSide} />
+      </mesh>
+    );
+  }
   
   return (
     <mesh>
       <sphereGeometry args={[500, 60, 40]} />
       <meshBasicMaterial 
-        map={texture}
+        map={videoTexture}
         side={THREE.BackSide}
         toneMapped={false}
       />

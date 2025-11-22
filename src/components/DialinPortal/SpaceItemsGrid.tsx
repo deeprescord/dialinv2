@@ -279,6 +279,24 @@ export function SpaceItemsGrid({
     }
   };
 
+  const handleOrgHide = async (itemId: string, isSpace: boolean) => {
+    if (!spaceId || isSpace) return; // Only files can be hidden, not spaces
+    
+    try {
+      const { error } = await supabase
+        .from('space_files')
+        .update({ hidden: true })
+        .match({ space_id: spaceId, file_id: itemId });
+      
+      if (error) throw error;
+      toast.success('Item hidden');
+      refetch();
+    } catch (error) {
+      console.error('Error hiding item:', error);
+      toast.error('Failed to hide item');
+    }
+  };
+
   const handleReorder = async (itemIds: string[]) => {
     if (!spaceId) return;
     
@@ -369,6 +387,7 @@ export function SpaceItemsGrid({
         onMove={handleOrgMove}
         onConnect={handleOrgConnect}
         onDelete={handleOrgDelete}
+        onHide={handleOrgHide}
         onEditMetadata={onEditMetadata}
       />
 

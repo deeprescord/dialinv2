@@ -547,6 +547,7 @@ export type Database = {
           added_at: string
           added_by: string
           file_id: string
+          hidden: boolean
           id: string
           position: number | null
           space_id: string
@@ -555,6 +556,7 @@ export type Database = {
           added_at?: string
           added_by: string
           file_id: string
+          hidden?: boolean
           id?: string
           position?: number | null
           space_id: string
@@ -563,6 +565,7 @@ export type Database = {
           added_at?: string
           added_by?: string
           file_id?: string
+          hidden?: boolean
           id?: string
           position?: number | null
           space_id?: string

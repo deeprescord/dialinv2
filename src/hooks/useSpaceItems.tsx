@@ -79,6 +79,7 @@ export function useSpaceItems(spaceId?: string) {
           .select(`
             file_id,
             position,
+            hidden,
             files!inner(
               id,
               original_name,
@@ -92,6 +93,7 @@ export function useSpaceItems(spaceId?: string) {
             )
           `)
           .eq('space_id', spaceId)
+          .eq('hidden', false)
           .order('position', { ascending: true })
           .limit(50) // Limit initial load
       ]);

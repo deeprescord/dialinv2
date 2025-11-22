@@ -410,6 +410,99 @@ export type Database = {
           },
         ]
       }
+      item_pointers: {
+        Row: {
+          added_at: string
+          hidden: boolean
+          id: string
+          item_id: string
+          permissions: Json | null
+          position: number | null
+          render_properties: Json | null
+          shared_by_user_id: string
+          space_id: string
+          upstream_token: string | null
+        }
+        Insert: {
+          added_at?: string
+          hidden?: boolean
+          id?: string
+          item_id: string
+          permissions?: Json | null
+          position?: number | null
+          render_properties?: Json | null
+          shared_by_user_id: string
+          space_id: string
+          upstream_token?: string | null
+        }
+        Update: {
+          added_at?: string
+          hidden?: boolean
+          id?: string
+          item_id?: string
+          permissions?: Json | null
+          position?: number | null
+          render_properties?: Json | null
+          shared_by_user_id?: string
+          space_id?: string
+          upstream_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_pointers_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_pointers_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          created_at: string
+          file_type: string
+          file_url: string
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          original_name: string
+          owner_id: string
+          uip_metrics: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_type: string
+          file_url: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          original_name: string
+          owner_id: string
+          uip_metrics?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_type?: string
+          file_url?: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          original_name?: string
+          owner_id?: string
+          uip_metrics?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profile_media_history: {
         Row: {
           created_at: string
@@ -641,6 +734,7 @@ export type Database = {
           creator_id: string | null
           description: string | null
           dial_values: Json | null
+          environment_settings: Json | null
           flip_horizontal: boolean | null
           flip_vertical: boolean | null
           hashtags: string[] | null
@@ -661,6 +755,7 @@ export type Database = {
           share_slug: string | null
           show_360: boolean | null
           show_play_all_button: boolean | null
+          space_type: string | null
           thumbnail_url: string | null
           updated_at: string
           user_id: string
@@ -678,6 +773,7 @@ export type Database = {
           creator_id?: string | null
           description?: string | null
           dial_values?: Json | null
+          environment_settings?: Json | null
           flip_horizontal?: boolean | null
           flip_vertical?: boolean | null
           hashtags?: string[] | null
@@ -698,6 +794,7 @@ export type Database = {
           share_slug?: string | null
           show_360?: boolean | null
           show_play_all_button?: boolean | null
+          space_type?: string | null
           thumbnail_url?: string | null
           updated_at?: string
           user_id: string
@@ -715,6 +812,7 @@ export type Database = {
           creator_id?: string | null
           description?: string | null
           dial_values?: Json | null
+          environment_settings?: Json | null
           flip_horizontal?: boolean | null
           flip_vertical?: boolean | null
           hashtags?: string[] | null
@@ -735,6 +833,7 @@ export type Database = {
           share_slug?: string | null
           show_360?: boolean | null
           show_play_all_button?: boolean | null
+          space_type?: string | null
           thumbnail_url?: string | null
           updated_at?: string
           user_id?: string

@@ -11,12 +11,13 @@ import { toast } from '@/hooks/use-toast';
 
 interface SpaceGridProps {
   selectedSpace: string;
+  viewMode: 'grid' | '360';
+  setViewMode: (mode: 'grid' | '360') => void;
 }
 
-export function SpaceGrid({ selectedSpace }: SpaceGridProps) {
+export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridProps) {
   const { items, loading, fetchItems } = useItems();
   const { uploadMultipleFiles, uploading } = useFileUpload();
-  const [viewMode, setViewMode] = useState<'grid' | '360'>('grid');
 
   useEffect(() => {
     fetchItems();

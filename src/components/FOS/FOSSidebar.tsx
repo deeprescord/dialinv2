@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 interface FOSSidebarProps {
   selectedSpace: string;
   onSelectSpace: (space: string) => void;
+  floating?: boolean;
 }
 
-export function FOSSidebar({ selectedSpace, onSelectSpace }: FOSSidebarProps) {
+export function FOSSidebar({ selectedSpace, onSelectSpace, floating = false }: FOSSidebarProps) {
   const navItems = [
     { id: 'all', label: 'All Items', icon: Grid },
     { id: 'home', label: 'Home', icon: Home },
@@ -18,7 +19,7 @@ export function FOSSidebar({ selectedSpace, onSelectSpace }: FOSSidebarProps) {
     <motion.aside 
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-64 glass border-r border-border/20 p-4"
+      className={`w-64 border-r border-border/20 p-4 h-full ${floating ? 'glass-card bg-background/40 backdrop-blur-xl' : 'glass'}`}
     >
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground mb-1">FOS</h1>

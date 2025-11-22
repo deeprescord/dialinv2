@@ -47,9 +47,21 @@ function Skybox({ url }: { url?: string }) {
     <mesh>
       <sphereGeometry args={[500, 60, 40]} />
       <meshBasicMaterial 
-        color="#0a0118"
+        color="#0f0520"
         side={2} // THREE.BackSide
+        toneMapped={false}
       />
+      {/* Gradient overlay for depth */}
+      <mesh>
+        <sphereGeometry args={[499, 60, 40]} />
+        <meshBasicMaterial 
+          color="#1a0b2e"
+          side={2}
+          transparent
+          opacity={0.5}
+          toneMapped={false}
+        />
+      </mesh>
     </mesh>
   );
 }
@@ -67,9 +79,9 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
   });
 
   return (
-    <div className="relative w-full h-full">
+    <div className="fixed inset-0 w-screen h-screen z-0">
       {/* 3D Canvas */}
-      <Canvas>
+      <Canvas className="w-full h-full">
         <PerspectiveCamera makeDefault position={[0, 0, 0]} />
         
         {/* Lighting */}
@@ -99,13 +111,14 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
         />
       </Canvas>
 
-      {/* Bottom Dock */}
+      {/* Bottom Dock - Mac OS Style */}
       <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 glass-card px-6 py-3 rounded-full border border-border/20"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 20 }}
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-20 glass-card px-4 py-3 rounded-2xl border border-border/30 bg-background/60 backdrop-blur-xl shadow-2xl"
       >
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center">
           {items.slice(0, 10).map((item) => {
             const getIcon = () => {
               if (!item.mime_type) return <File className="w-5 h-5" />;
@@ -119,8 +132,10 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
             return (
               <motion.button
                 key={item.id}
-                whileHover={{ scale: 1.1, y: -4 }}
-                className="p-3 glass rounded-lg border border-primary/30 text-primary hover:border-primary/60 transition-all"
+                whileHover={{ scale: 1.2, y: -8 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="p-3 glass rounded-xl border border-primary/40 text-primary hover:border-primary/70 hover:bg-primary/10 transition-all shadow-lg hover:shadow-primary/20"
                 title={item.original_name}
               >
                 {getIcon()}
@@ -128,19 +143,23 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
             );
           })}
           {items.length > 10 && (
-            <div className="text-xs text-muted-foreground">
-              +{items.length - 10} more
+            <div className="text-xs text-muted-foreground pl-2">
+              +{items.length - 10}
             </div>
           )}
         </div>
       </motion.div>
 
       {/* Instructions */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 glass-card px-4 py-2 rounded-lg border border-border/20">
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="fixed top-6 left-1/2 transform -translate-x-1/2 z-20 glass-card px-4 py-2 rounded-lg border border-border/20 bg-background/60 backdrop-blur-xl"
+      >
         <p className="text-xs text-muted-foreground">
           Click and drag to look around • Scroll to zoom
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

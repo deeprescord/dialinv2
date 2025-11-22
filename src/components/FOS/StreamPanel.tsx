@@ -1,12 +1,16 @@
 import { motion } from 'framer-motion';
 import { Activity } from 'lucide-react';
 
-export function StreamPanel() {
+interface StreamPanelProps {
+  floating?: boolean;
+}
+
+export function StreamPanel({ floating = false }: StreamPanelProps) {
   return (
     <motion.aside 
       initial={{ x: 20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-80 glass border-l border-border/20 p-4 overflow-auto"
+      className={`w-80 border-l border-border/20 p-4 overflow-auto h-full ${floating ? 'glass-card bg-background/40 backdrop-blur-xl' : 'glass'}`}
     >
       <div className="mb-6">
         <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">

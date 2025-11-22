@@ -510,6 +510,48 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content_text: string | null
+          created_at: string | null
+          id: string
+          linked_item_pointer_id: string | null
+          sender_id: string
+          space_id: string
+        }
+        Insert: {
+          content_text?: string | null
+          created_at?: string | null
+          id?: string
+          linked_item_pointer_id?: string | null
+          sender_id: string
+          space_id: string
+        }
+        Update: {
+          content_text?: string | null
+          created_at?: string | null
+          id?: string
+          linked_item_pointer_id?: string | null
+          sender_id?: string
+          space_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_linked_item_pointer_id_fkey"
+            columns: ["linked_item_pointer_id"]
+            isOneToOne: false
+            referencedRelation: "item_pointers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_media_history: {
         Row: {
           created_at: string

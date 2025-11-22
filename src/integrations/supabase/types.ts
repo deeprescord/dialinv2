@@ -510,6 +510,64 @@ export type Database = {
         }
         Relationships: []
       }
+      ledger: {
+        Row: {
+          amount: number
+          contract_id: string | null
+          currency: string
+          from_wallet_id: string | null
+          id: string
+          notes: string | null
+          status: string | null
+          timestamp: string | null
+          to_wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          contract_id?: string | null
+          currency?: string
+          from_wallet_id?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          timestamp?: string | null
+          to_wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          contract_id?: string | null
+          currency?: string
+          from_wallet_id?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          timestamp?: string | null
+          to_wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "smart_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_from_wallet_id_fkey"
+            columns: ["from_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_to_wallet_id_fkey"
+            columns: ["to_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content_text: string | null
@@ -988,6 +1046,33 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["interaction_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string | null
+          currency: string
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

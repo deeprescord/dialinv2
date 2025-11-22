@@ -19,7 +19,7 @@ export interface ItemPointer {
     scale: number;
     cover_override_url?: string;
   };
-  upstream_token: string | null;
+  upstream_pointer_id: string | null;
   hidden: boolean;
   position: number;
   added_at: string;
@@ -87,7 +87,7 @@ export function useItemPointers(spaceId?: string) {
     spaceId: string;
     permissions?: object;
     renderProperties?: object;
-    upstreamToken?: string;
+    upstreamPointerId?: string;
   }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -101,13 +101,13 @@ export function useItemPointers(spaceId?: string) {
           shared_by_user_id: user.id,
           permissions: params.permissions as any,
           render_properties: params.renderProperties as any,
-          upstream_token: params.upstreamToken,
+          upstream_pointer_id: params.upstreamPointerId,
         })
         .select()
         .single();
 
       if (error) throw error;
-      return data as ItemPointer;
+      return data as unknown as ItemPointer;
     } catch (error) {
       console.error('Error creating pointer:', error);
       return null;

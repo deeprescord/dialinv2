@@ -421,7 +421,7 @@ export type Database = {
           render_properties: Json | null
           shared_by_user_id: string
           space_id: string
-          upstream_token: string | null
+          upstream_pointer_id: string | null
         }
         Insert: {
           added_at?: string
@@ -433,7 +433,7 @@ export type Database = {
           render_properties?: Json | null
           shared_by_user_id: string
           space_id: string
-          upstream_token?: string | null
+          upstream_pointer_id?: string | null
         }
         Update: {
           added_at?: string
@@ -445,7 +445,7 @@ export type Database = {
           render_properties?: Json | null
           shared_by_user_id?: string
           space_id?: string
-          upstream_token?: string | null
+          upstream_pointer_id?: string | null
         }
         Relationships: [
           {
@@ -460,6 +460,13 @@ export type Database = {
             columns: ["space_id"]
             isOneToOne: false
             referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_pointers_upstream_pointer_id_fkey"
+            columns: ["upstream_pointer_id"]
+            isOneToOne: false
+            referencedRelation: "item_pointers"
             referencedColumns: ["id"]
           },
         ]
@@ -914,6 +921,10 @@ export type Database = {
       calculate_item_similarity: {
         Args: { _from_item_id: string; _to_item_id: string }
         Returns: number
+      }
+      check_access_chain: {
+        Args: { _item_id: string; _user_id: string }
+        Returns: boolean
       }
       file_shared_with_user: {
         Args: { _file_id: string; _user_id: string }

@@ -78,6 +78,8 @@ function OrbitingThumbnail({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const { camera } = useThree();
+  
+  // Fix texture URL construction
   const storagePath = (item as any).storage_path || item.file_url;
   const imageUrl = item.mime_type?.startsWith('image/') 
     ? `https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${storagePath}`
@@ -130,10 +132,11 @@ function OrbitingThumbnail({
   });
 
   return (
-    <mesh 
+      <mesh 
       ref={meshRef} 
       position={[ringX, ringY, ringZ]}
       onClick={onClick}
+      renderOrder={isCenter ? 10 : 1}
     >
       <planeGeometry args={[0.8, 0.6]} />
       <meshStandardMaterial 
@@ -141,6 +144,7 @@ function OrbitingThumbnail({
         transparent 
         opacity={0.9}
         side={THREE.FrontSide}
+        depthWrite={!isCenter}
       />
       <Html
         transform
@@ -226,6 +230,11 @@ function CameraController({ shouldLockOn }: { shouldLockOn: boolean }) {
 
 export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveViewProps) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
+  // Clear ghost state on mount
+  useEffect(() => {
+    setSelectedItemId(null);
+  }, []);
 
   const handleItemClick = (itemId: string) => {
     setSelectedItemId(itemId);

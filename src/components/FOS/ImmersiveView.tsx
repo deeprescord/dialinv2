@@ -5,10 +5,6 @@ import { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Item } from '@/hooks/useItems';
 
-interface ImmersiveViewProps {
-  items: Item[];
-  backgroundUrl?: string;
-}
 
 interface Floating3DItem {
   id: string;
@@ -105,9 +101,16 @@ function Floating3DCard({ item, position }: { item: Item; position: [number, num
   );
 }
 
-export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
+interface ImmersiveViewProps {
+  items: Item[];
+  backgroundUrl?: string;
+  onExitTo360?: () => void;
+}
+
+export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveViewProps) {
   const [floating3DItems, setFloating3DItems] = useState<Floating3DItem[]>([]);
   const [draggedItem, setDraggedItem] = useState<Item | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   const handleDragStart = (item: Item) => {
     setDraggedItem(item);
@@ -137,6 +140,10 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
     e.preventDefault();
   };
 
+  const handleDockClick = (item: Item) => {
+    setSelectedItem(item);
+  };
+
   return (
     <div 
       className="fixed inset-0 w-screen h-screen z-0"
@@ -145,7 +152,7 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
     >
       {/* 3D Canvas */}
       <Canvas className="w-full h-full">
-        <PerspectiveCamera makeDefault position={[0, 0, 0]} />
+        <PerspectiveCamera makeDefault position={[0, 0, 5]} rotation={[0, 0, 0]} />
         
         {/* Lighting */}
         <ambientLight intensity={0.5} />
@@ -171,8 +178,65 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
           enableRotate={true}
           minDistance={1}
           maxDistance={100}
+          target={[0, 0, 0]}
+          minPolarAngle={0}
+          maxPolarAngle={Math.PI}
         />
       </Canvas>
+
+      {/* Exit Button */}
+      {onExitTo360 && (
+        <motion.div
+          initial={{ x: -100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="fixed top-6 left-6 z-20"
+        >
+          <button
+            onClick={onExitTo360}
+            className="glass-card px-4 py-2 rounded-lg border border-border/30 bg-background/60 backdrop-blur-xl hover:bg-background/80 transition-all text-sm font-medium text-foreground hover:border-primary/50"
+          >
+            ← Back to Grid
+          </button>
+        </motion.div>
+      )}
+
+      {/* Holographic Card - Large centered display when item selected */}
+      {selectedItem && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+        >
+          <div className="glass-card border border-primary/40 rounded-2xl p-6 w-[400px] backdrop-blur-2xl bg-background/80 shadow-2xl shadow-primary/20">
+            {selectedItem.mime_type?.startsWith('image/') ? (
+              <img
+                src={`https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${(selectedItem as any).storage_path || selectedItem.file_url}`}
+                alt={selectedItem.original_name}
+                className="w-full h-64 object-cover rounded-lg mb-4"
+              />
+            ) : (
+              <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-4 flex items-center justify-center">
+                <span className="text-4xl text-primary">{selectedItem.file_type}</span>
+              </div>
+            )}
+            <h3 className="text-xl font-bold text-foreground mb-2">{selectedItem.original_name}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{selectedItem.file_type}</p>
+            <div className="flex gap-2">
+              <button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors">
+                Monetize
+              </button>
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="px-4 py-2 rounded-lg border border-border/40 hover:bg-background/60 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Bottom Dock - Mac OS Style */}
       <motion.div
@@ -194,10 +258,11 @@ export function ImmersiveView({ items, backgroundUrl }: ImmersiveViewProps) {
                 key={item.id}
                 draggable
                 onDragStart={() => handleDragStart(item)}
+                onClick={() => handleDockClick(item)}
                 whileHover={{ scale: 1.2, y: -8 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="w-14 h-14 glass rounded-xl border border-primary/40 hover:border-primary/70 hover:bg-primary/10 transition-all shadow-lg hover:shadow-primary/20 overflow-hidden cursor-grab active:cursor-grabbing"
+                className="w-14 h-14 glass rounded-xl border border-primary/40 hover:border-primary/70 hover:bg-primary/10 transition-all shadow-lg hover:shadow-primary/20 overflow-hidden cursor-pointer"
                 title={item.original_name}
               >
                 {imageUrl ? (

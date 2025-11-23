@@ -239,7 +239,10 @@ export function SpaceGrid({ selectedSpace, viewMode, setViewMode }: SpaceGridPro
           </>
         ) : (
           <div className="h-full">
-            <ImmersiveView items={items} />
+            <ImmersiveView 
+              items={items} 
+              onExitTo360={() => setViewMode('grid')}
+            />
           </div>
         )}
 

@@ -1,8 +1,9 @@
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Html } from '@react-three/drei';
 import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
+import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import type { Item } from '@/hooks/useItems';
 
 
@@ -88,10 +89,10 @@ function OrbitingThumbnail({
   const ringZ = -Math.sin(angle) * radius;
   const ringY = -0.5;
 
-  // Center position
+  // Center position - adjusted for better focus
   const centerX = 0;
-  const centerY = 0;
-  const centerZ = -2;
+  const centerY = 0.2;
+  const centerZ = -3;
 
   // Animation with lerp
   useFrame(() => {
@@ -111,9 +112,19 @@ function OrbitingThumbnail({
       meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, targetScale, 0.1);
       meshRef.current.scale.z = THREE.MathUtils.lerp(meshRef.current.scale.z, targetScale, 0.1);
 
-      // Make items in ring face the camera
-      if (!isCenter) {
-        meshRef.current.lookAt(0, ringY, 0);
+      // Billboarding - always face the camera
+      const camera = meshRef.current.parent?.parent?.children.find(
+        (child) => child instanceof THREE.Camera
+      ) as THREE.Camera | undefined;
+      
+      if (camera) {
+        if (isCenter) {
+          // Center item faces camera directly (billboard)
+          meshRef.current.lookAt(camera.position);
+        } else {
+          // Ring items face inward
+          meshRef.current.lookAt(0, ringY, 0);
+        }
       }
     }
   });
@@ -172,6 +183,44 @@ interface ImmersiveViewProps {
   onExitTo360?: () => void;
 }
 
+function CameraController({ targetPosition }: { targetPosition: [number, number, number] | null }) {
+  const { camera } = useThree();
+  const controlsRef = useRef<OrbitControlsType>(null);
+
+  useEffect(() => {
+    if (targetPosition && controlsRef.current) {
+      // Smoothly animate camera to look at target
+      const targetVector = new THREE.Vector3(...targetPosition);
+      
+      // Calculate the direction from camera to target
+      const direction = new THREE.Vector3().subVectors(targetVector, camera.position).normalize();
+      
+      // Calculate spherical coordinates for OrbitControls
+      const distance = camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
+      const phi = Math.acos(direction.y / distance);
+      const theta = Math.atan2(direction.x, direction.z);
+      
+      // Smoothly transition the controls
+      controlsRef.current.target.lerp(targetVector, 0.1);
+      controlsRef.current.update();
+    }
+  }, [targetPosition, camera]);
+
+  return (
+    <OrbitControls 
+      ref={controlsRef}
+      enableZoom={true}
+      enablePan={true}
+      enableRotate={true}
+      minDistance={1}
+      maxDistance={100}
+      target={[0, 0, 0]}
+      minPolarAngle={Math.PI / 2 - 0.5}
+      maxPolarAngle={Math.PI / 2 + 0.5}
+    />
+  );
+}
+
 export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveViewProps) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
@@ -180,6 +229,11 @@ export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveVi
   };
 
   const selectedItem = items.find(item => item.id === selectedItemId) || null;
+  
+  // Target position for camera lock-on
+  const targetPosition: [number, number, number] | null = selectedItemId 
+    ? [0, 0.2, -3] 
+    : null;
 
   return (
     <div className="fixed inset-0 w-screen h-screen z-0">
@@ -207,17 +261,8 @@ export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveVi
           />
         ))}
         
-        {/* Controls */}
-        <OrbitControls 
-          enableZoom={true}
-          enablePan={true}
-          enableRotate={true}
-          minDistance={1}
-          maxDistance={100}
-          target={[0, 0, 0]}
-          minPolarAngle={Math.PI / 2 - 0.5}
-          maxPolarAngle={Math.PI / 2 + 0.5}
-        />
+        {/* Camera Controls with Lock-On */}
+        <CameraController targetPosition={targetPosition} />
       </Canvas>
 
       {/* Exit Button */}

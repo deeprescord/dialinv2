@@ -102,16 +102,17 @@ function OrbitingThumbnail({
         cameraForward.applyQuaternion(camera.quaternion);
         
         const targetPosition = cameraWorldPosition.clone().add(
-          cameraForward.multiplyScalar(1.5)
+          cameraForward.multiplyScalar(3.5)
         );
+        targetPosition.y += 0.5; // Lift it to eye level
         
         meshRef.current.position.lerp(targetPosition, 0.1);
         
         // Always face the camera perfectly
         meshRef.current.lookAt(camera.position);
         
-        // Scale
-        const targetScale = 2.5;
+        // Scale - smaller to fit between panels
+        const targetScale = 2.0;
         meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
       } else {
         // Ring position

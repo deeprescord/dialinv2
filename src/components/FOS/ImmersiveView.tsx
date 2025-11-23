@@ -203,39 +203,77 @@ export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveVi
 
       {/* Holographic Card - Large centered display when item selected */}
       {selectedItem && (
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
-        >
-          <div className="glass-card border border-primary/40 rounded-2xl p-6 w-[400px] backdrop-blur-2xl bg-background/80 shadow-2xl shadow-primary/20">
-            {selectedItem.mime_type?.startsWith('image/') ? (
-              <img
-                src={`https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${(selectedItem as any).storage_path || selectedItem.file_url}`}
-                alt={selectedItem.original_name}
-                className="w-full h-64 object-cover rounded-lg mb-4"
-              />
-            ) : (
-              <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-4 flex items-center justify-center">
-                <span className="text-4xl text-primary">{selectedItem.file_type}</span>
-              </div>
-            )}
-            <h3 className="text-xl font-bold text-foreground mb-2">{selectedItem.original_name}</h3>
-            <p className="text-sm text-muted-foreground mb-4">{selectedItem.file_type}</p>
-            <div className="flex gap-2">
-              <button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors">
-                Monetize
-              </button>
+        <>
+          {/* Background overlay - click to close */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedItem(null)}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-30 cursor-pointer"
+          />
+          
+          <motion.div
+            initial={{ scale: 0, opacity: 0, y: 0 }}
+            animate={{ 
+              scale: 1, 
+              opacity: 1,
+              y: [0, -10, 0],
+            }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{
+              scale: { duration: 0.3 },
+              opacity: { duration: 0.3 },
+              y: { 
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40"
+          >
+            <div 
+              className="relative rounded-2xl p-6 w-[400px] border border-white/20 shadow-[0_0_30px_rgba(139,92,246,0.3)]"
+              style={{
+                backdropFilter: 'blur(20px)',
+                background: 'rgba(0, 0, 0, 0.4)',
+              }}
+            >
+              {/* Close button */}
               <button
                 onClick={() => setSelectedItem(null)}
-                className="px-4 py-2 rounded-lg border border-border/40 hover:bg-background/60 transition-colors"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all"
               >
-                Close
+                ✕
+              </button>
+
+              {selectedItem.mime_type?.startsWith('image/') ? (
+                <img
+                  src={`https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${(selectedItem as any).storage_path || selectedItem.file_url}`}
+                  alt={selectedItem.original_name}
+                  className="w-full h-64 object-cover rounded-lg mb-4"
+                />
+              ) : (
+                <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-4 flex items-center justify-center">
+                  <span className="text-4xl text-primary">{selectedItem.file_type}</span>
+                </div>
+              )}
+              <h3 className="text-xl font-bold text-white mb-2">{selectedItem.original_name}</h3>
+              <p className="text-sm text-white/60 mb-4">{selectedItem.file_type}</p>
+              
+              {/* Initialize Smart Contract button with gold glow */}
+              <button 
+                className="w-full px-6 py-3 rounded-lg font-semibold text-black transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, #FFA500, #FFD700)',
+                  boxShadow: '0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 165, 0, 0.3)',
+                }}
+              >
+                Initialize Smart Contract
               </button>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
 
       {/* Bottom Dock - Mac OS Style */}

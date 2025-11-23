@@ -649,7 +649,7 @@ const [showCreateSpaceModal, setShowCreateSpaceModal] = useState(false);
   const show360 = homeSpace?.show360 ?? true; // Default to true for town square 360
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
       <TopNav
         currentTab={currentTab}

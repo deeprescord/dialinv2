@@ -73,9 +73,9 @@
   }
 
   body {
-    @apply text-foreground antialiased;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Montserrat', sans-serif;
-    background: transparent;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(220 14% 6%) 100%);
   }
 
   /* Glass morphism utilities */

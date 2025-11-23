@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { manualSupabase } from '@/lib/manualSupabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Item {
   id: string;
@@ -26,15 +26,21 @@ export function useItems() {
 
   const fetchItems = async () => {
     try {
-      // Fetch ALL items (global view) - no user filter
-      const { data, error } = await manualSupabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
         .from('items')
         .select('*')
+        .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setItems((data || []) as Item[]);
-      console.log('✅ Fetched items:', data?.length || 0);
     } catch (error) {
       console.error('Error fetching items:', error);
     } finally {
@@ -50,13 +56,13 @@ export function useItems() {
     metadata?: object;
   }): Promise<Item | null> => {
     try {
-      const { data: { user } } = await manualSupabase.auth.getUser();
-      const ownerId = user?.id || null;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await manualSupabase
+      const { data, error } = await supabase
         .from('items')
         .insert([{
-          owner_id: ownerId,
+          owner_id: user.id,
           file_url: itemData.file_url,
           file_type: itemData.file_type,
           original_name: itemData.original_name,
@@ -76,7 +82,7 @@ export function useItems() {
 
   const deleteItem = async (itemId: string) => {
     try {
-      const { error } = await manualSupabase
+      const { error } = await supabase
         .from('items')
         .delete()
         .eq('id', itemId);
@@ -93,8 +99,7 @@ export function useItems() {
   useEffect(() => {
     fetchItems();
 
-    // Realtime subscription for instant updates
-    const channel = manualSupabase
+    const channel = supabase
       .channel('items-changes')
       .on(
         'postgres_changes',
@@ -103,15 +108,14 @@ export function useItems() {
           schema: 'public',
           table: 'items',
         },
-        (payload) => {
-          console.log('🔄 Realtime update:', payload);
+        () => {
           fetchItems();
         }
       )
       .subscribe();
 
     return () => {
-      manualSupabase.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, []);
 

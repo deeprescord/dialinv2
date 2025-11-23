@@ -149,7 +149,7 @@ export function useFileUpload() {
       
       // Upload to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('user_files')
+        .from('user-files')
         .upload(fileName, file);
 
       if (uploadError) {
@@ -177,7 +177,7 @@ export function useFileUpload() {
       if (dbError) {
         console.error('Database error:', dbError);
         // Clean up uploaded file
-        await supabase.storage.from('user_files').remove([uploadData.path]);
+        await supabase.storage.from('user-files').remove([uploadData.path]);
         toast.error('Failed to save file metadata');
         return null;
       }

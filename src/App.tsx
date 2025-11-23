@@ -14,7 +14,6 @@ import SettingsPage from "./pages/SettingsPage";
 import PublicSpacePage from "./pages/PublicSpacePage";
 import DefaultHomePage from "./pages/DefaultHomePage";
 import HoloProfileDemo from "./pages/HoloProfileDemo";
-import FOSPage from "./pages/FOSPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +31,7 @@ const App = () => {
                 <BrowserRouter>
                   <MediaQueueProvider>
                     <Routes>
-                      <Route path="/" element={<FOSPage />} />
-                      <Route path="/portal" element={<Index />} />
+                      <Route path="/" element={<Index />} />
                       <Route path="/home" element={<DefaultHomePage />} />
                       <Route path="/space/:spaceId" element={<SpacePage />} />
                       <Route path="/settings" element={<SettingsPage />} />

@@ -13,6 +13,7 @@ import SpacePage from "./pages/SpacePage";
 import SettingsPage from "./pages/SettingsPage";
 import PublicSpacePage from "./pages/PublicSpacePage";
 import DefaultHomePage from "./pages/DefaultHomePage";
+import ImmersiveHomePage from "./pages/ImmersiveHomePage";
 import HoloProfileDemo from "./pages/HoloProfileDemo";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => {
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/home" element={<DefaultHomePage />} />
+                      <Route path="/immersive" element={<ImmersiveHomePage />} />
                       <Route path="/space/:spaceId" element={<SpacePage />} />
                       <Route path="/settings" element={<SettingsPage />} />
                       <Route path="/holo-profile" element={<HoloProfileDemo />} />

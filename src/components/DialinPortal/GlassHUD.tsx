@@ -9,9 +9,9 @@ interface GlassHUDProps {
 
 export function GlassHUD({ children, className = '', variant = 'default' }: GlassHUDProps) {
   const variants = {
-    default: 'backdrop-blur-2xl bg-background/10 border-2 border-primary/20 shadow-[0_8px_32px_0_rgba(118,51,204,0.37)]',
-    compact: 'backdrop-blur-xl bg-background/5 border border-border/30',
-    minimal: 'backdrop-blur-md bg-background/5 border border-border/20'
+    default: 'backdrop-blur-3xl bg-background/10 border border-white/10 shadow-[0_8px_32px_0_rgba(118,51,204,0.4),inset_0_1px_1px_0_rgba(255,255,255,0.1)]',
+    compact: 'backdrop-blur-2xl bg-background/5 border border-white/10 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.08)]',
+    minimal: 'backdrop-blur-xl bg-background/5 border border-white/5 shadow-[inset_0_1px_0.5px_0_rgba(255,255,255,0.05)]'
   };
 
   return (
@@ -20,15 +20,23 @@ export function GlassHUD({ children, className = '', variant = 'default' }: Glas
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-3xl ${variants[variant]} ${className}`}
       style={{
-        backdropFilter: 'blur(40px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
       }}
     >
-      {/* Holographic edge effect */}
+      {/* Inner white glow - thick glass effect */}
       <div 
         className="absolute inset-0 rounded-3xl pointer-events-none"
         style={{
-          background: 'linear-gradient(135deg, rgba(118, 51, 204, 0.1) 0%, transparent 50%, rgba(118, 51, 204, 0.1) 100%)',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 50%, rgba(255, 255, 255, 0.08) 100%)',
+        }}
+      />
+      
+      {/* Holographic prismatic edge */}
+      <div 
+        className="absolute inset-0 rounded-3xl pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(118, 51, 204, 0.15) 0%, transparent 30%, transparent 70%, rgba(0, 188, 212, 0.15) 100%)',
         }}
       />
       
@@ -46,7 +54,7 @@ export function GlassHUD({ children, className = '', variant = 'default' }: Glas
         <div 
           className="h-1 w-full"
           style={{
-            background: 'linear-gradient(to bottom, transparent, rgba(118, 51, 204, 0.3), transparent)',
+            background: 'linear-gradient(to bottom, transparent, rgba(118, 51, 204, 0.4), transparent)',
           }}
         />
       </motion.div>

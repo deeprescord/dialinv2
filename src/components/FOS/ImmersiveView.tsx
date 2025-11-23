@@ -77,6 +77,7 @@ function OrbitingThumbnail({
   onClick: () => void;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const { camera } = useThree();
   const storagePath = (item as any).storage_path || item.file_url;
   const imageUrl = item.mime_type?.startsWith('image/') 
     ? `https://qdytxfauwfdjotnlcbuh.supabase.co/storage/v1/object/public/user_files/${storagePath}`
@@ -89,42 +90,40 @@ function OrbitingThumbnail({
   const ringZ = -Math.sin(angle) * radius;
   const ringY = -0.5;
 
-  // Center position - adjusted for better focus
-  const centerX = 0;
-  const centerY = 0.2;
-  const centerZ = -3;
-
   // Animation with lerp
   useFrame(() => {
     if (meshRef.current) {
-      const targetX = isCenter ? centerX : ringX;
-      const targetY = isCenter ? centerY : ringY;
-      const targetZ = isCenter ? centerZ : ringZ;
-      
-      // Smooth lerp animation
-      meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
-      meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, targetY, 0.1);
-      meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, 0.1);
-
-      // Scale animation
-      const targetScale = isCenter ? 2.5 : 1;
-      meshRef.current.scale.x = THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1);
-      meshRef.current.scale.y = THREE.MathUtils.lerp(meshRef.current.scale.y, targetScale, 0.1);
-      meshRef.current.scale.z = THREE.MathUtils.lerp(meshRef.current.scale.z, targetScale, 0.1);
-
-      // Billboarding - always face the camera
-      const camera = meshRef.current.parent?.parent?.children.find(
-        (child) => child instanceof THREE.Camera
-      ) as THREE.Camera | undefined;
-      
-      if (camera) {
-        if (isCenter) {
-          // Center item faces camera directly (billboard)
-          meshRef.current.lookAt(camera.position);
-        } else {
-          // Ring items face inward
-          meshRef.current.lookAt(0, ringY, 0);
-        }
+      if (isCenter) {
+        // Attach to camera - always centered in view
+        const cameraWorldPosition = new THREE.Vector3();
+        camera.getWorldPosition(cameraWorldPosition);
+        
+        const cameraForward = new THREE.Vector3(0, 0, -1);
+        cameraForward.applyQuaternion(camera.quaternion);
+        
+        const targetPosition = cameraWorldPosition.clone().add(
+          cameraForward.multiplyScalar(1.5)
+        );
+        
+        meshRef.current.position.lerp(targetPosition, 0.1);
+        
+        // Always face the camera perfectly
+        meshRef.current.lookAt(camera.position);
+        
+        // Scale
+        const targetScale = 2.5;
+        meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+      } else {
+        // Ring position
+        meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, ringX, 0.1);
+        meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, ringY, 0.1);
+        meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, ringZ, 0.1);
+        
+        // Ring items face inward
+        meshRef.current.lookAt(0, ringY, 0);
+        
+        // Scale
+        meshRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
       }
     }
   });
@@ -135,12 +134,17 @@ function OrbitingThumbnail({
       position={[ringX, ringY, ringZ]}
       onClick={onClick}
     >
-      <boxGeometry args={[0.8, 0.6, 0.1]} />
-      <meshStandardMaterial color="#8b5cf6" transparent opacity={0.9} />
+      <planeGeometry args={[0.8, 0.6]} />
+      <meshStandardMaterial 
+        color="#8b5cf6" 
+        transparent 
+        opacity={0.9}
+        side={THREE.FrontSide}
+      />
       <Html
         transform
         distanceFactor={1}
-        position={[0, 0, 0.06]}
+        position={[0, 0, 0.01]}
         style={{
           width: isCenter ? '400px' : '120px',
           height: isCenter ? '300px' : '90px',
@@ -155,7 +159,8 @@ function OrbitingThumbnail({
           textAlign: 'center',
           padding: '4px',
           cursor: 'pointer',
-          pointerEvents: 'auto'
+          pointerEvents: 'auto',
+          backfaceVisibility: 'hidden',
         }}
       >
         {imageUrl ? (
@@ -183,28 +188,25 @@ interface ImmersiveViewProps {
   onExitTo360?: () => void;
 }
 
-function CameraController({ targetPosition }: { targetPosition: [number, number, number] | null }) {
+function CameraController({ shouldLockOn }: { shouldLockOn: boolean }) {
   const { camera } = useThree();
   const controlsRef = useRef<OrbitControlsType>(null);
 
-  useEffect(() => {
-    if (targetPosition && controlsRef.current) {
-      // Smoothly animate camera to look at target
-      const targetVector = new THREE.Vector3(...targetPosition);
+  useFrame(() => {
+    if (shouldLockOn && controlsRef.current) {
+      // Smoothly rotate camera to look straight ahead (center of view)
+      const lookAtTarget = new THREE.Vector3(0, 0, 0);
+      const cameraWorldPosition = new THREE.Vector3();
+      camera.getWorldPosition(cameraWorldPosition);
       
-      // Calculate the direction from camera to target
-      const direction = new THREE.Vector3().subVectors(targetVector, camera.position).normalize();
+      const cameraForward = new THREE.Vector3(0, 0, -1);
+      cameraForward.applyQuaternion(camera.quaternion);
+      lookAtTarget.copy(cameraWorldPosition).add(cameraForward.multiplyScalar(10));
       
-      // Calculate spherical coordinates for OrbitControls
-      const distance = camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
-      const phi = Math.acos(direction.y / distance);
-      const theta = Math.atan2(direction.x, direction.z);
-      
-      // Smoothly transition the controls
-      controlsRef.current.target.lerp(targetVector, 0.1);
+      controlsRef.current.target.lerp(lookAtTarget, 0.05);
       controlsRef.current.update();
     }
-  }, [targetPosition, camera]);
+  });
 
   return (
     <OrbitControls 
@@ -229,11 +231,6 @@ export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveVi
   };
 
   const selectedItem = items.find(item => item.id === selectedItemId) || null;
-  
-  // Target position for camera lock-on
-  const targetPosition: [number, number, number] | null = selectedItemId 
-    ? [0, 0.2, -3] 
-    : null;
 
   return (
     <div className="fixed inset-0 w-screen h-screen z-0">
@@ -262,7 +259,7 @@ export function ImmersiveView({ items, backgroundUrl, onExitTo360 }: ImmersiveVi
         ))}
         
         {/* Camera Controls with Lock-On */}
-        <CameraController targetPosition={targetPosition} />
+        <CameraController shouldLockOn={!!selectedItemId} />
       </Canvas>
 
       {/* Exit Button */}

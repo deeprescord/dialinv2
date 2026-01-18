@@ -965,7 +965,11 @@ export type Database = {
           rotation_axis: string | null
           rotation_enabled: boolean | null
           rotation_speed: number | null
+          share_description: string | null
+          share_image_url: string | null
           share_slug: string | null
+          share_title: string | null
+          share_video_url: string | null
           show_360: boolean | null
           show_play_all_button: boolean | null
           space_type: string | null
@@ -1004,7 +1008,11 @@ export type Database = {
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
+          share_description?: string | null
+          share_image_url?: string | null
           share_slug?: string | null
+          share_title?: string | null
+          share_video_url?: string | null
           show_360?: boolean | null
           show_play_all_button?: boolean | null
           space_type?: string | null
@@ -1043,7 +1051,11 @@ export type Database = {
           rotation_axis?: string | null
           rotation_enabled?: boolean | null
           rotation_speed?: number | null
+          share_description?: string | null
+          share_image_url?: string | null
           share_slug?: string | null
+          share_title?: string | null
+          share_video_url?: string | null
           show_360?: boolean | null
           show_play_all_button?: boolean | null
           space_type?: string | null
@@ -1164,6 +1176,10 @@ export type Database = {
         Returns: boolean
       }
       generate_share_slug: { Args: { space_name: string }; Returns: string }
+      generate_space_slug: {
+        Args: { space_id: string; space_name: string }
+        Returns: string
+      }
       get_influence_tree: {
         Args: { _user_id: string }
         Returns: {

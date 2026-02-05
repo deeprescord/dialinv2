@@ -21,6 +21,7 @@ interface PublicSpace {
   cover_url: string | null;
   thumbnail_url: string | null;
   show_360: boolean;
+  show_play_all_button: boolean;
   x_axis_offset: number;
   y_axis_offset: number;
   volume: number;
@@ -41,6 +42,9 @@ const PublicSpacePage = () => {
   const [show360Settings, setShow360Settings] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
+  
+  // Movie mode state for Play All
+  const [movieMode, setMovieMode] = useState(false);
   
   // Public media queue state
   const { 
@@ -165,6 +169,7 @@ const PublicSpacePage = () => {
         cover_url: data.cover_url,
         thumbnail_url: data.thumbnail_url,
         show_360: data.show_360 ?? false,
+        show_play_all_button: data.show_play_all_button ?? false,
         x_axis_offset: data.x_axis_offset ?? 0,
         y_axis_offset: data.y_axis_offset ?? 0,
         volume: data.volume ?? 70,
@@ -547,7 +552,7 @@ const PublicSpacePage = () => {
           flipHorizontal={publicSpace.flip_horizontal}
           flipVertical={publicSpace.flip_vertical}
           onAddOptionSelect={handleGatedAction}
-          movieMode={false}
+          movieMode={movieMode}
           spaceId={publicSpace.id}
           isPublicSpace={true}
           showItemsBar={showItemsBar}
@@ -559,6 +564,8 @@ const PublicSpacePage = () => {
           onItemClick={handleMediaClick}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
+          showPlayAllButton={publicSpace.show_play_all_button}
+          onMovieModeToggle={() => setMovieMode(!movieMode)}
         />
 
         {/* Bottom SpacesBar - Pass spaceId to show items directly */}

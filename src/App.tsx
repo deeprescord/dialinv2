@@ -8,6 +8,7 @@ import { SpacesProvider } from "@/contexts/SpacesContext";
 import { MediaQueueProvider } from "@/contexts/MediaQueueContext";
 import { InteractionProvider } from "@/contexts/InteractionContext";
 import { SelectionProvider } from "@/contexts/SelectionContext";
+import { PublicMediaQueueProvider } from "@/contexts/PublicMediaQueueContext";
 import Index from "./pages/Index";
 import SpacePage from "./pages/SpacePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -40,7 +41,11 @@ const App = () => {
                       <Route path="/space/:spaceId" element={<SpacePage />} />
                       <Route path="/settings" element={<SettingsPage />} />
                       <Route path="/holo-profile" element={<HoloProfileDemo />} />
-                      <Route path="/s/:shareSlug" element={<PublicSpacePage />} />
+                      <Route path="/s/:shareSlug" element={
+                        <PublicMediaQueueProvider>
+                          <PublicSpacePage />
+                        </PublicMediaQueueProvider>
+                      } />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>

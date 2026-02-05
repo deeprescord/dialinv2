@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { usePublicMediaQueue } from "@/contexts/PublicMediaQueueContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeView } from "@/components/DialinPortal/HomeView";
@@ -40,6 +41,21 @@ const PublicSpacePage = () => {
   const [show360Settings, setShow360Settings] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('custom');
+  
+  // Public media queue state
+  const { 
+    isAutoplay, 
+    setIsAutoplay, 
+    repeatMode, 
+    setRepeatMode,
+    queue,
+    updateQueue,
+    currentIndex,
+    setCurrentIndex,
+    isPlaying,
+    setIsPlaying
+  } = usePublicMediaQueue();
+  
   // Don't auto-open items bar for public pages
   const [showItemsBar, setShowItemsBar] = useState(false);
   const [itemsPeopleView, setItemsPeopleView] = useState<'items' | 'people'>('items');
@@ -563,6 +579,11 @@ const PublicSpacePage = () => {
             hideNewButton={true}
             hideAIButton={true}
             hideChatButton={true}
+            isPublicMode={true}
+            isAutoplay={isAutoplay}
+            onAutoplayChange={setIsAutoplay}
+            repeatMode={repeatMode}
+            onRepeatModeChange={setRepeatMode}
             videoControlsState={videoState}
             onVideoPlayPause={handleVideoPlayPause}
             onVideoSeek={handleVideoSeek}

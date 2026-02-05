@@ -27,7 +27,6 @@ import { sortItems } from '@/lib/sortItems';
 import { safeLocalStorage } from '@/lib/safeLocalStorage';
 import type { SortOrder } from '@/types/organization';
 import { useSpaceOrganization } from '@/hooks/useSpaceOrganization';
-import { useMediaQueue } from '@/contexts/MediaQueueContext';
 import { useSelection } from '@/contexts/SelectionContext';
 interface SpacesBarProps {
   spaces: Space[];
@@ -83,6 +82,12 @@ interface SpacesBarProps {
   sortOrder?: SortOrder;
   onSortChange?: (sort: SortOrder) => void;
   onMovieModeToggle?: () => void;
+  // Public mode props - when set, these override context-based values
+  isPublicMode?: boolean;
+  isAutoplay?: boolean;
+  onAutoplayChange?: (autoplay: boolean) => void;
+  repeatMode?: "off" | "one" | "all";
+  onRepeatModeChange?: (mode: "off" | "one" | "all") => void;
 }
 
 export function SpacesBar({
@@ -130,12 +135,29 @@ export function SpacesBar({
   isHome = false,
   sortOrder: propSortOrder,
   onSortChange: propOnSortChange,
-  onMovieModeToggle
+  onMovieModeToggle,
+  isPublicMode = false,
+  isAutoplay: propIsAutoplay,
+  onAutoplayChange,
+  repeatMode: propRepeatMode,
+  onRepeatModeChange
 }: SpacesBarProps) {
-  const { isAutoplay, setIsAutoplay, repeatMode, setRepeatMode } = useMediaQueue();
-  const { isSelectMode, addToSelection, isSelected } = useSelection();
+  // Use props in public mode, otherwise use defaults
+  const isAutoplay = propIsAutoplay ?? true;
+  const repeatMode = propRepeatMode ?? "off";
+  const setIsAutoplay = onAutoplayChange ?? (() => {});
+  const setRepeatMode = onRepeatModeChange ?? (() => {});
+  
+  // Selection context - disabled for public mode
+  const isSelectMode = false;
+  const addToSelection = (_item: any) => {};
+  const isSelected = (_id: string) => false;
+  
   const navigate = useNavigate();
-  const { reorderItems } = useSpaceOrganization();
+  
+  // Space organization - disabled for public mode, only used if not public
+  const spaceOrgHook = useSpaceOrganization();
+  const reorderItems = isPublicMode ? (async () => {}) : spaceOrgHook.reorderItems;
   
   const [scale, setScale] = useState<number>(() => {
     const saved = safeLocalStorage.getItem('spaces-bar-scale');

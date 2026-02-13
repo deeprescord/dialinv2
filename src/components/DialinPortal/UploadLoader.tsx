@@ -123,27 +123,26 @@ export function UploadLoader({ isUploading, progress = 0, fileCount = 0 }: Uploa
               </motion.h3>
 
               {/* Progress bar */}
-              <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%]"
-                  animate={{
-                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                  style={{ width: `${progress}%` }}
-                />
+              <div className="w-48 space-y-2">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  />
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  {Math.round(progress)}%
+                </p>
               </div>
 
               <motion.p 
-                className="text-sm text-muted-foreground mt-3"
+                className="text-sm text-muted-foreground mt-2"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                Processing files...
+                {progress < 100 ? 'Uploading files...' : 'Processing...'}
               </motion.p>
             </div>
 

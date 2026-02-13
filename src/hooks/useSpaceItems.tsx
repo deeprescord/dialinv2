@@ -1,26 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+
+export interface PendingUploadItem {
+  id: string;
+  fileName: string;
+  fileType: string;
+  previewUrl?: string;
+}
 
 export interface SpaceItem {
   id: string;
-  file_id?: string; // Made optional since spaces won't have this
+  file_id?: string;
   original_name: string;
   file_type: string;
-  mime_type?: string; // Made optional for spaces
-  storage_path?: string; // Made optional for spaces
+  mime_type?: string;
+  storage_path?: string;
   thumbnail_path?: string;
   duration?: number;
   created_at: string;
   hashtags?: string[];
   dial_values?: Record<string, any>;
-  is_space?: boolean; // New flag to identify spaces
-  space_name?: string; // For display when it's a space
-  position?: number; // For custom ordering
-  file_size?: number; // For size sorting
+  is_space?: boolean;
+  space_name?: string;
+  position?: number;
+  file_size?: number;
+  isPending?: boolean;
+  previewUrl?: string;
 }
 
 export function useSpaceItems(spaceId?: string) {
   const [items, setItems] = useState<SpaceItem[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<PendingUploadItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchItems = async () => {
@@ -138,6 +148,12 @@ export function useSpaceItems(spaceId?: string) {
       }
 
       setItems(allItems);
+      
+      // Auto-remove pending uploads that now exist as real items
+      if (pendingUploads.length > 0) {
+        const realNames = new Set(allItems.map(i => i.original_name));
+        setPendingUploads(prev => prev.filter(p => !realNames.has(p.fileName)));
+      }
     } catch (error) {
       console.error('Error in fetchItems:', error);
       setItems([]);
@@ -191,9 +207,37 @@ export function useSpaceItems(spaceId?: string) {
       supabase.removeChannel(channel);
     };
   }, [spaceId]);
+
+  const addPendingUpload = useCallback((upload: PendingUploadItem) => {
+    setPendingUploads(prev => [...prev, upload]);
+  }, []);
+
+  const removePendingUpload = useCallback((id: string) => {
+    setPendingUploads(prev => prev.filter(p => p.id !== id));
+  }, []);
+
+  // Merge real items with pending placeholders
+  const realNames = new Set(items.map(i => i.original_name));
+  const pendingItems: SpaceItem[] = pendingUploads
+    .filter(p => !realNames.has(p.fileName))
+    .map(p => ({
+      id: `pending-${p.id}`,
+      original_name: p.fileName,
+      file_type: p.fileType,
+      created_at: new Date().toISOString(),
+      is_space: false,
+      isPending: true,
+      previewUrl: p.previewUrl,
+    }));
+
+  const allItems = [...items, ...pendingItems];
+
   return {
-    items,
+    items: allItems,
     loading,
     refetch: fetchItems,
+    addPendingUpload,
+    removePendingUpload,
+    pendingUploads,
   };
 }

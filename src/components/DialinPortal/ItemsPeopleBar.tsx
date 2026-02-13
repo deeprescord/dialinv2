@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useSpaceItems } from '@/hooks/useSpaceItems';
 import { friends } from '@/data/catalogs';
-import { FileText, Music, Video, Image as ImageIcon, File, LayoutGrid, List, Grid3x3, Columns, RefreshCw, Play } from 'lucide-react';
+import { FileText, Music, Video, Image as ImageIcon, File, LayoutGrid, List, Grid3x3, Columns, RefreshCw, Play, Loader2 } from 'lucide-react';
 import { ImageFallback } from '@/components/ui/image-fallback';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
@@ -398,19 +398,33 @@ export function ItemsPeopleBar({
             <CarouselItem key={item.id} className="pl-2 md:basis-1/2 lg:basis-1/3">
               <div className="p-4">
                 <div 
-                  className="cursor-pointer group flex flex-col items-center gap-3"
-                  onClick={() => handleItemClick(item)}
-                  onMouseDown={(e) => handleMouseDown(item, e)}
+                  className={`group flex flex-col items-center gap-3 ${item.isPending ? 'opacity-70' : 'cursor-pointer'}`}
+                  onClick={() => !item.isPending && handleItemClick(item)}
+                  onMouseDown={(e) => !item.isPending && handleMouseDown(item, e)}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseLeave}
                   onTouchStart={(e) => {
+                    if (item.isPending) return;
                     const touch = e.touches[0];
                     handleMouseDown(item, { clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
                   }}
                   onTouchEnd={handleMouseUp}
                 >
                   <div className="rounded-xl overflow-hidden group-hover:scale-105 transition-transform border border-white/20 relative bg-muted/50 flex items-center justify-center w-full aspect-[3/4]">
-                    {thumbnail ? (
+                    {item.isPending ? (
+                      <>
+                        {item.previewUrl ? (
+                          <ImageFallback src={item.previewUrl} alt={item.original_name} className="w-full h-full object-cover opacity-50" />
+                        ) : (
+                          <div className="w-full h-full bg-muted/30" />
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}>
+                            <Loader2 className="w-8 h-8 text-primary" />
+                          </motion.div>
+                        </div>
+                      </>
+                    ) : thumbnail ? (
                       <ImageFallback 
                         src={thumbnail}
                         alt={item.original_name}
@@ -420,6 +434,7 @@ export function ItemsPeopleBar({
                       getFileIcon(item.file_type)
                     )}
                     {/* File type icon badge */}
+                    {!item.isPending && (
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm rounded p-1.5">
                       {item.file_type === 'space' && <LayoutGrid className="w-4 h-4 text-white" />}
                       {item.file_type === 'image' && <ImageIcon className="w-4 h-4 text-white" />}
@@ -428,10 +443,14 @@ export function ItemsPeopleBar({
                       {item.file_type === 'document' && <FileText className="w-4 h-4 text-white" />}
                       {!['space', 'image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-4 h-4 text-white" />}
                     </div>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-foreground/90 max-w-full truncate">
                     {item.original_name}
                   </span>
+                  {item.isPending && (
+                    <span className="text-xs text-primary animate-pulse">Processing...</span>
+                  )}
                 </div>
               </div>
             </CarouselItem>
@@ -543,11 +562,31 @@ export function ItemsPeopleBar({
                 key={item.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="cursor-pointer group mb-4 break-inside-avoid"
-                onClick={() => handleItemClick(item)}
+                className={`group mb-4 break-inside-avoid ${item.isPending ? 'opacity-70' : 'cursor-pointer'}`}
+                onClick={() => !item.isPending && handleItemClick(item)}
               >
                 <div className="rounded-lg overflow-hidden group-hover:scale-105 transition-transform border border-white/10 relative bg-muted/50">
-                  {thumbnail ? (
+                  {item.isPending ? (
+                    <div className="w-full aspect-square flex items-center justify-center relative">
+                      {item.previewUrl ? (
+                        <ImageFallback
+                          src={item.previewUrl}
+                          alt={item.original_name}
+                          className="w-full h-full object-cover opacity-50"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted/30" />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Loader2 className="w-8 h-8 text-primary" />
+                        </motion.div>
+                      </div>
+                    </div>
+                  ) : thumbnail ? (
                     <ImageFallback 
                       src={thumbnail}
                       alt={item.original_name}
@@ -559,6 +598,7 @@ export function ItemsPeopleBar({
                     </div>
                   )}
                 {/* File type icon badge */}
+                {!item.isPending && (
                 <div className="absolute bottom-12 right-2 bg-black/60 backdrop-blur-sm rounded p-1">
                   {item.file_type === 'image' && <ImageIcon className="w-3 h-3 text-white" />}
                   {item.file_type === 'video' && <Video className="w-3 h-3 text-white" />}
@@ -566,10 +606,14 @@ export function ItemsPeopleBar({
                   {item.file_type === 'document' && <FileText className="w-3 h-3 text-white" />}
                   {!['image', 'video', 'audio', 'document'].includes(item.file_type) && <File className="w-3 h-3 text-white" />}
                 </div>
+                )}
                 <div className="p-2 bg-background/80 backdrop-blur">
                   <span className="text-xs font-medium text-foreground/80 line-clamp-2">
                     {item.original_name}
                   </span>
+                  {item.isPending && (
+                    <span className="text-xs text-primary animate-pulse block">Processing...</span>
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -199,8 +199,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
       setShowPlayAllButton(enabled);
       toast.success(enabled ? 'Play All button enabled' : 'Play All button disabled');
       onClose();
-      // Trigger a refetch to update the UI
-      window.location.reload();
+      window.dispatchEvent(new CustomEvent('refetch-spaces'));
     } catch (error) {
       console.error('Error updating play all button setting:', error);
       toast.error('Failed to update play all button setting');
@@ -346,8 +345,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
             if (error) throw error;
             toast.success('Item deleted successfully');
             onClose();
-            // Trigger a refetch
-            window.location.reload();
+            window.dispatchEvent(new CustomEvent('refetch-spaces'));
           } catch (error) {
             console.error('Error deleting item:', error);
             toast.error('Failed to delete item');
@@ -507,8 +505,7 @@ export function DialPopup({ isOpen, item, onClose, onUseAsFilters, onDelete, onR
         setIsRenaming(false);
         setNewName('');
         onClose();
-        // Trigger a refetch
-        window.location.reload();
+        window.dispatchEvent(new CustomEvent('refetch-spaces'));
       } catch (error) {
         console.error('Error renaming item:', error);
         toast.error('Failed to rename item');

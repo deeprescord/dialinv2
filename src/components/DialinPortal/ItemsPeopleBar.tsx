@@ -162,8 +162,8 @@ export function ItemsPeopleBar({
         );
       }
 
-      toast.success(`Generated ${processed} thumbnails. Refreshing...`);
-      setTimeout(() => window.location.reload(), 1000);
+      toast.success(`Generated ${processed} thumbnails.`);
+      window.dispatchEvent(new CustomEvent('refetch-spaces'));
       
     } catch (error) {
       console.error('Error regenerating thumbnails:', error);

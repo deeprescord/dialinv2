@@ -520,8 +520,8 @@ export function SpaceContextMenu({
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      // Force reload by toggling a timestamp query param
-                      window.location.reload();
+                      window.dispatchEvent(new CustomEvent('refetch-spaces'));
+                      onClose();
                     }}
                     className="h-8 px-3 bg-white/5 border-white/20 text-white hover:bg-white/10"
                   >
@@ -531,9 +531,9 @@ export function SpaceContextMenu({
                     variant="default"
                     size="sm"
                     onClick={() => {
-                      // Force reload to apply changes
                       toast.success('Settings saved');
-                      window.location.reload();
+                      window.dispatchEvent(new CustomEvent('refetch-spaces'));
+                      onClose();
                     }}
                     className="h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground"
                   >

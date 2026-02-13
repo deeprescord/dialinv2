@@ -87,7 +87,7 @@ export default function SpacePage() {
   const { uploadFile, uploading, analyzingWithAI, analyzeWithAI, saveMetadata } = useFileUpload();
   const { spaces: dbSpaces, loading: spacesLoading, updateSpace, deleteSpace, refetch } = useSpacesContext();
   const { skipToNext, skipToPrevious, setCurrentSpace, setIsPlaying: setQueuePlaying, isAutoplay, repeatMode } = useMediaQueue();
-  const { items: spaceItems } = useSpaceItems(spaceId && spaceId !== 'lobby' ? spaceId : undefined);
+  const { items: spaceItems, addPendingUpload } = useSpaceItems(spaceId && spaceId !== 'lobby' ? spaceId : undefined);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [lobbyRefreshTrigger, setLobbyRefreshTrigger] = useState(0);
   
@@ -615,6 +615,31 @@ export default function SpacePage() {
       try {
         toast.info(`Uploading ${files.length} file(s)...`);
         
+        // Add placeholder items immediately
+        const pendingIds: string[] = [];
+        for (const file of files) {
+          const pendingId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+          pendingIds.push(pendingId);
+          
+          // Generate preview for images
+          let previewUrl: string | undefined;
+          if (file.type.startsWith('image/')) {
+            previewUrl = URL.createObjectURL(file);
+          }
+          
+          const fileType = file.type.startsWith('image/') ? 'image' 
+            : file.type.startsWith('video/') ? 'video'
+            : file.type.startsWith('audio/') ? 'audio'
+            : 'document';
+          
+          addPendingUpload({
+            id: pendingId,
+            fileName: file.name,
+            fileType,
+            previewUrl,
+          });
+        }
+
         const uploadResults = [];
         for (const file of files) {
           const result = await uploadFile(file, spaceId);
@@ -637,6 +662,11 @@ export default function SpacePage() {
             });
           }
         }
+        
+        // Clean up object URLs
+        pendingIds.forEach(id => {
+          // Object URLs are auto-cleaned when pending items are removed by realtime
+        });
         
         if (uploadResults.length > 0) {
           toast.success(`Uploaded ${uploadResults.length} file(s) successfully`);

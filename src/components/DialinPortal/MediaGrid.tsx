@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -19,6 +20,7 @@ interface GridItem {
   duration?: string;
   artist?: string;
   distance?: string;
+  isPending?: boolean;
 }
 
 interface MediaGridProps {
@@ -78,6 +80,46 @@ export function MediaGrid({
   const gridContent = (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
       {items.map((item, index) => {
+        // Render pending upload placeholder
+        if (item.isPending) {
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="glass-card overflow-hidden opacity-70">
+                <div className="relative">
+                  <div className="w-full h-32 sm:h-40 bg-muted/50 flex items-center justify-center">
+                    {item.thumb !== '/placeholder.svg' ? (
+                      <ImageFallback
+                        src={item.thumb}
+                        alt={item.title}
+                        className="w-full h-full object-cover opacity-50"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted/30" />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Loader2 className="w-8 h-8 text-primary" />
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-3 sm:p-4">
+                  <h3 className="font-semibold text-sm mb-1 line-clamp-3 opacity-70">{item.title}</h3>
+                  <p className="text-xs text-primary animate-pulse">Processing...</p>
+                </div>
+              </Card>
+            </motion.div>
+          );
+        }
+
         const isSpace = !!(item as any).is_space;
         const itemIsSelected = isSelected(item.id);
         

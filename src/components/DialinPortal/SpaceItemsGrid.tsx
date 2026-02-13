@@ -11,6 +11,13 @@ import { toast } from 'sonner';
 import defaultVideoThumb from '@/assets/video-thumbnails.jpg';
 import { getAssetUrl } from '@/lib/signedUrl';
 
+export interface PendingUpload {
+  id: string;
+  fileName: string;
+  fileType: string;
+  previewUrl?: string;
+}
+
 interface SpaceItemsGridProps {
   spaceId?: string;
   onItemClick?: (item: any) => void;
@@ -20,6 +27,7 @@ interface SpaceItemsGridProps {
   enableDragDrop?: boolean;
   isPublicSpace?: boolean;
   onEditMetadata?: (itemId: string) => void;
+  pendingUploads?: PendingUpload[];
 }
 
 export function SpaceItemsGrid({ 
@@ -30,7 +38,8 @@ export function SpaceItemsGrid({
   showSort = true,
   enableDragDrop = true,
   isPublicSpace = false,
-  onEditMetadata
+  onEditMetadata,
+  pendingUploads = []
 }: SpaceItemsGridProps) {
   const { items, loading, refetch } = useSpaceItems(spaceId);
   const { addToSpace, moveToSpace, connectSpaces, reorderItems } = useSpaceOrganization();
@@ -349,6 +358,20 @@ export function SpaceItemsGrid({
     };
   });
 
+  // Add pending upload placeholders (filter out any that now exist as real items)
+  const realItemIds = new Set(items.map(i => i.original_name));
+  const pendingGridItems = pendingUploads
+    .filter(p => !realItemIds.has(p.fileName))
+    .map(p => ({
+      id: `pending-${p.id}`,
+      title: p.fileName,
+      thumb: p.previewUrl || '/placeholder.svg',
+      is_space: false,
+      isPending: true as const,
+    }));
+
+  const allGridItems = [...gridItems, ...pendingGridItems];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -360,7 +383,7 @@ export function SpaceItemsGrid({
     );
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && pendingUploads.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="text-muted-foreground">No items in this space yet</p>
@@ -377,7 +400,7 @@ export function SpaceItemsGrid({
       )}
       
       <MediaGrid
-        items={gridItems}
+        items={allGridItems}
         onItemClick={onItemClick || (() => {})}
         onItemLongPress={onItemLongPress}
         onDOSOpen={onDOSOpen}

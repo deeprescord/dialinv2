@@ -874,14 +874,14 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
             ) : (
               <div 
                 className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'))})` }}
+                style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : ''))})` }}
               />
             )}
           </div>
           <Suspense fallback={
             <div 
               className="w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'))})` }}
+              style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : ''))})` }}
             />
           }>
             <SkyboxViewer 
@@ -932,7 +932,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
                 loop
                 preload="metadata"
                 muted
-                poster={(posterSrc && !getIsVideo(posterSrc)) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'}
+                poster={(posterSrc && !getIsVideo(posterSrc)) ? posterSrc : undefined}
                 className={`transition-opacity duration-500 opacity-100 ${
                   isScrollableBackgroundVideo 
                     ? 'w-full h-auto object-contain block' 
@@ -947,7 +947,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
           ) : (
             <div 
               className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-500 opacity-100"
-              style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : '/lovable-uploads/d39f3d3e-93c9-409f-b7e7-7f358aac18f6.png'))})` }}
+              style={{ backgroundImage: `url(${(!isBackgroundVideo ? (backgroundImage || posterSrc) : (posterSrc && !getIsVideo(posterSrc) ? posterSrc : ''))})` }}
             />
           )}
         </>

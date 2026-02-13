@@ -117,9 +117,10 @@ export function SpaceItemsGrid({
             continue;
           }
 
-          const bucketGuess = path.split('/')[0];
-          const bucket = bucketGuess || 'user-files';
-          const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
+          const knownBuckets = ['space-covers', 'profile-media', 'user-files'];
+          const firstSegment = path.split('/')[0];
+          const bucket = knownBuckets.includes(firstSegment) ? firstSegment : 'user-files';
+          const objectPath = bucket === firstSegment ? path.slice(bucket.length + 1) : path;
 
           // Only public buckets on public pages
           if (bucket === 'space-covers' || bucket === 'profile-media') {
@@ -159,9 +160,10 @@ export function SpaceItemsGrid({
           continue;
         }
 
-        const bucketGuess = pathToUse.split('/')[0];
-        const bucket = bucketGuess || 'user-files';
-        const objectPath = pathToUse.startsWith(bucket + '/') ? pathToUse.slice(bucket.length + 1) : pathToUse;
+        const knownBuckets = ['space-covers', 'profile-media', 'user-files'];
+        const firstSegment = pathToUse.split('/')[0];
+        const bucket = knownBuckets.includes(firstSegment) ? firstSegment : 'user-files';
+        const objectPath = bucket === firstSegment ? pathToUse.slice(bucket.length + 1) : pathToUse;
 
         // Known public buckets
         if (bucket === 'space-covers' || bucket === 'profile-media') {

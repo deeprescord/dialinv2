@@ -223,9 +223,10 @@ export function ItemsPeopleBar({
           continue;
         }
 
-        const bucketGuess = path.split('/')[0];
-        const bucket = bucketGuess || 'user-files';
-        const objectPath = path.startsWith(bucket + '/') ? path.slice(bucket.length + 1) : path;
+        const knownBuckets = ['space-covers', 'profile-media', 'user-files'];
+        const firstSegment = path.split('/')[0];
+        const bucket = knownBuckets.includes(firstSegment) ? firstSegment : 'user-files';
+        const objectPath = bucket === firstSegment ? path.slice(bucket.length + 1) : path;
 
         // Known public buckets
         if (bucket === 'space-covers' || bucket === 'profile-media') {

@@ -7,6 +7,14 @@ interface ImageFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackClassName?: string;
 }
 
+const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.webm', '.avi', '.mkv'];
+
+function isVideoUrl(url?: string): boolean {
+  if (!url) return false;
+  const cleanUrl = url.split('?')[0].toLowerCase();
+  return VIDEO_EXTENSIONS.some(ext => cleanUrl.endsWith(ext));
+}
+
 export function ImageFallback({ 
   src, 
   alt, 
@@ -42,6 +50,24 @@ export function ImageFallback({
     setHasError(false);
   }, [src]);
 
+  // Render video thumbnail as a muted video element to show the first frame
+  if (!hasError && isVideoUrl(src)) {
+    return (
+      <video
+        src={src}
+        muted
+        playsInline
+        preload="metadata"
+        className={cn(className)}
+        onError={handleError}
+        onLoadedData={(e) => {
+          const video = e.currentTarget;
+          if (video.currentTime === 0) video.currentTime = 0.1;
+        }}
+      />
+    );
+  }
+
   return (
     <img
       src={hasError ? getSmartFallback() : src}
@@ -49,7 +75,7 @@ export function ImageFallback({
       className={cn(
         className,
         hasError && fallbackClassName,
-        hasError && "object-cover" // Ensure fallback images fit well
+        hasError && "object-cover"
       )}
       onError={handleError}
       {...props}

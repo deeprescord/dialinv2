@@ -761,8 +761,7 @@ export const ContentViewer = React.forwardRef<ContentViewerHandle, ContentViewer
         isOpen={showSetThumbnailModal}
         onClose={() => setShowSetThumbnailModal(false)}
         onSaved={() => {
-          // Optionally refetch to show new thumbnail
-          window.location.reload();
+          window.dispatchEvent(new CustomEvent('refetch-spaces'));
         }}
       />
     </div>

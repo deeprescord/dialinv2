@@ -95,6 +95,8 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
   const [iframeHeight, setIframeHeight] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const bgVideoRef = useRef<HTMLVideoElement>(null);
+  const fgInitializedRef = useRef(false);
+  const bgInitializedRef = useRef(false);
 
   // Determine which video element is active (foreground vs background)
   const getActiveVideo = (): HTMLVideoElement | null => {
@@ -164,6 +166,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     video.currentTime = 0;
     
     // Reset state when source/display changes
+    fgInitializedRef.current = false;
     setVideoLoaded(false);
     setVideoError(false);
     setCurrentTime(0);
@@ -172,6 +175,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
+      // Only run autoplay setup on the FIRST canplay event to avoid resetting user's mute/volume
+      if (fgInitializedRef.current) return;
+      fgInitializedRef.current = true;
       // Only autoplay if this is the active video (showVideo is true AND no 360 or web content)
       if (showVideo && !show360 && !webUrl && videoSrc) {
         // Ensure background video is completely stopped
@@ -447,6 +453,7 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
     bgVideo.pause();
     
     // Reset state when source changes
+    bgInitializedRef.current = false;
     setVideoLoaded(false);
     setVideoError(false);
     setCurrentTime(0);
@@ -455,6 +462,9 @@ export const HeroHeaderVideo = React.forwardRef<HeroHeaderVideoHandle, HeroHeade
 
     const handleCanPlay = () => {
       setVideoLoaded(true);
+      // Only run autoplay setup on the FIRST canplay event to avoid resetting user's mute/volume
+      if (bgInitializedRef.current) return;
+      bgInitializedRef.current = true;
       // Only autoplay if this is the active video (showVideo is false AND show360 is false AND no web)
       if (!showVideo && !show360 && !webUrl) {
         // Ensure foreground video is paused

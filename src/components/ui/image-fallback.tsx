@@ -56,14 +56,12 @@ export function ImageFallback({
       <video
         src={src}
         muted
+        autoPlay
+        loop
         playsInline
-        preload="metadata"
+        preload="auto"
         className={cn(className)}
         onError={handleError}
-        onLoadedData={(e) => {
-          const video = e.currentTarget;
-          if (video.currentTime === 0) video.currentTime = 0.1;
-        }}
       />
     );
   }

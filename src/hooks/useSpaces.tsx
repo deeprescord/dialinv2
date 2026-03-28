@@ -313,17 +313,23 @@ export function useSpaces() {
   useEffect(() => {
     fetchSpaces();
     
-    // Realtime subscription for spaces changes
-    const spacesChannel = supabase
-      .channel('user-spaces')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'spaces' },
-        () => {
-          fetchSpaces();
-        }
-      )
-      .subscribe();
+    let spacesChannel: ReturnType<typeof supabase.channel> | null = null;
+
+    // Get user ID to scope the realtime subscription
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+
+      spacesChannel = supabase
+        .channel('user-spaces')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'spaces', filter: `user_id=eq.${user.id}` },
+          () => {
+            fetchSpaces();
+          }
+        )
+        .subscribe();
+    });
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
@@ -334,7 +340,7 @@ export function useSpaces() {
     });
     
     return () => {
-      supabase.removeChannel(spacesChannel);
+      if (spacesChannel) supabase.removeChannel(spacesChannel);
       subscription.unsubscribe();
     };
   }, []);

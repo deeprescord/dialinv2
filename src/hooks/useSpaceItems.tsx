@@ -195,11 +195,9 @@ export function useSpaceItems(spaceId?: string) {
         { event: '*', schema: 'public', table: 'spaces', filter: `parent_id=eq.${spaceId}` },
         handleChange
       )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'files' },
-        handleChange
-      )
+      // Removed unfiltered 'files' table listener — space_files subscription
+      // already covers file additions/removals via the join, and listening to
+      // ALL file mutations globally was the #1 unnecessary compute cost.
       .subscribe();
 
     return () => {

@@ -50,16 +50,14 @@ export function ImageFallback({
     setHasError(false);
   }, [src]);
 
-  // Render video thumbnail as a muted video element to show the first frame
+  // Render video thumbnail — only load metadata to show first frame, not full video
   if (!hasError && isVideoUrl(src)) {
     return (
       <video
         src={src}
         muted
-        autoPlay
-        loop
         playsInline
-        preload="auto"
+        preload="metadata"
         className={cn(className)}
         onError={handleError}
       />
@@ -70,6 +68,8 @@ export function ImageFallback({
     <img
       src={hasError ? getSmartFallback() : src}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       className={cn(
         className,
         hasError && fallbackClassName,
